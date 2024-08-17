@@ -37,7 +37,6 @@ class CreatureGroup;
 struct ScriptInfo;
 struct ScriptAction;
 struct Position;
-struct WildBattlePetPool;
 class Battleground;
 class MapInstanced;
 class InstanceMap;
@@ -539,10 +538,6 @@ class Map : public GridRefManager<NGridType>
         bool CollideWithScriptedGameObject(float p_X, float p_Y, float p_Z, float* p_OutZ = nullptr) const;
 		GridMap* GetGrid(float x, float y);
 
-        void AddBattlePet(Creature* creature);
-        void RemoveBattlePet(Creature* creature);
-        WildBattlePetPool* GetWildBattlePetPool(Creature* creature);
-
     private:
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);
@@ -581,10 +576,6 @@ class Map : public GridRefManager<NGridType>
 
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
         void ScriptsProcess();
-
-        void PopulateBattlePet(uint32 diff);
-        void DepopulateBattlePet();
-        std::map<uint16, std::map<uint32, WildBattlePetPool>> m_wildBattlePetPool;
 
     protected:
 

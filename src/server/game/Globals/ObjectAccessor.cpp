@@ -180,9 +180,9 @@ Creature* ObjectAccessor::GetCreatureOrPetOrVehicle(WorldObject const& u, uint64
     return NULL;
 }
 
-Pet* ObjectAccessor::FindPet(ObjectGuid const& guid)
+Pet* ObjectAccessor::FindPet(uint64 guid)
 {
-    return GetObjectInWorld(guid, static_cast<Pet*>(nullptr));
+    return GetObjectInWorld(guid, (Pet*)NULL);
 }
 
 Player* ObjectAccessor::FindPlayer(uint64 guid)
@@ -200,9 +200,9 @@ Player* ObjectAccessor::FindPlayerInOrOutOfWorld(uint64 guid)
     return GetObjectInOrOutOfWorld(guid, (Player*)NULL);
 }
 
-Unit* ObjectAccessor::FindUnit(ObjectGuid const& guid)
+Unit* ObjectAccessor::FindUnit(uint64 guid)
 {
-    return GetObjectInWorld(guid, static_cast<Unit*>(nullptr));
+    return GetObjectInWorld(guid, (Unit*)NULL);
 }
 
 Player* ObjectAccessor::FindPlayerByName(const char* name)

@@ -97,13 +97,13 @@ class ObjectAccessor
         }
 
         // returns object if is in world
-        template<class T> static T* GetObjectInWorld(ObjectGuid guid, T* /*typeSpecifier*/)
+        template<class T> static T* GetObjectInWorld(uint64 guid, T* /*typeSpecifier*/)
         {
             return HashMapHolder<T>::Find(guid);
         }
 
         // Player may be not in world while in ObjectAccessor
-        static Player* GetObjectInWorld(ObjectGuid guid, Player* /*typeSpecifier*/)
+        static Player* GetObjectInWorld(uint64 guid, Player* /*typeSpecifier*/)
         {
             uint32 l_LowPart = GUID_LOPART(guid);
             Player* player   = nullptr;
@@ -129,28 +129,24 @@ class ObjectAccessor
             return HashMapHolder<Creature>::Find(guid);
         }
 
-        static Unit* GetObjectInWorld(ObjectGuid guid, Unit* /*typeSpecifier*/)
+        static Unit* GetObjectInWorld(uint64 guid, Unit* /*typeSpecifier*/)
         {
             if (IS_PLAYER_GUID(guid))
-                return static_cast<Unit*>(GetObjectInWorld(guid, static_cast<Player*>(nullptr)));
+                return (Unit*)GetObjectInWorld(guid, (Player*)NULL);
 
             if (IS_PET_GUID(guid))
-                return static_cast<Unit*>(GetObjectInWorld(guid, static_cast<Pet*>(nullptr)));
+                return (Unit*)GetObjectInWorld(guid, (Pet*)NULL);
 
-            return static_cast<Unit*>(GetObjectInWorld(guid, static_cast<Creature*>(nullptr)));
+            return (Unit*)GetObjectInWorld(guid, (Creature*)NULL);
         }
 
         // returns object if is in map
-        template<class T> static T* GetObjectInMap(ObjectGuid guid, Map* map, T* /*typeSpecifier*/)
+        template<class T> static T* GetObjectInMap(uint64 guid, Map* map, T* /*typeSpecifier*/)
         {
-            if (!map)
-                return nullptr;
-
-            if (T* obj = GetObjectInWorld(guid, static_cast<T*>(nullptr)))
-                if (obj->GetMap() == map && !obj->IsPreDelete())
+            if (T * obj = GetObjectInWorld(guid, (T*)NULL))
+                if (obj->GetMap() == map)
                     return obj;
-
-            return nullptr;
+            return NULL;
         }
 
         template<class T> static T* GetObjectInWorld(uint32 mapid, float x, float y, uint64 guid, T* /*fake*/)
@@ -199,7 +195,7 @@ class ObjectAccessor
 
         // these functions return objects if found in whole world
         // ACCESS LIKE THAT IS NOT THREAD SAFE
-        static Pet* FindPet(ObjectGuid const& g);
+        static Pet* FindPet(uint64);
         /// Find player /!\ IN WORLD !!!!
         static Player* FindPlayer(uint64);
 
@@ -208,7 +204,7 @@ class ObjectAccessor
         /// Find creature /!\ IN WORLD !!!!
         static Creature* FindCreature(uint64);
         /// Find unit /!\ IN WORLD !!!!
-        static Unit* FindUnit(ObjectGuid const& g);
+        static Unit* FindUnit(uint64);
         static Player* FindPlayerByName(const char* name);
 
         static Player* FindPlayerByNameInOrOutOfWorld(const char* name);

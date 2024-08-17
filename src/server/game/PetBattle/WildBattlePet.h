@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  MILLENIUM-STUDIO
-//  Copyright 2016 Millenium-studio SARL
-//  All Rights Reserved.
+// Project-Hellscream https://hellscream.org
+// Copyright (C) 2018-2020 Project-Hellscream-6.2
+// Discord https://discord.gg/CWCF3C9
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -19,62 +19,77 @@
 
 class Creature;
 
-struct WildBattlePetPool
+struct WildBattlePetPoolTemplate
 {
-    std::set<Creature*> ToBeReplaced;
-    std::set<Creature*> Replaced;
-    std::map<ObjectGuid, ObjectGuid> ReplacedRelation;
-};
+    uint32 Species;
+    uint32 Entry;
+    uint32 Replace;
+    uint32 Max;
+    uint32 RespawnTime;
+    uint32 MinLevel;
+    uint32 MaxLevel;
+    uint32 Breeds[10];
 
-struct WildPetPoolTemplate
-{
-    uint32 Species{};
-    uint32 BattlePetEntry{};
-    uint32 CreatureEntry{};
-    uint32 Max{};
-    uint32 RespawnTime{};
-    uint32 MinLevel{};
-    uint32 MaxLevel{};
+    std::list<uint64>            ToBeReplaced;
+    std::list<uint64>            Replaced;
+
+    /// @TODO: replace this
+    std::map<uint64, uint64>                                ReplacedRelation;
+    std::map<uint64, std::shared_ptr<BattlePetInstance>>    ReplacedBattlePetInstances;
 };
 
 class WildBattlePetZonePools
 {
-public:
-    void LoadPoolTemplate(Field* fields);
-    std::map<uint32, WildPetPoolTemplate> m_Templates;
+    public:
+        void LoadPoolTemplate(Field* fields);
+
+        void Populate();
+        void Depopulate();
+
+        void OnAddToMap(Creature* p_Creature);
+        void OnRemoveToMap(Creature* p_Creature);
+
+        void EnterInBattle(Creature* p_Creature);
+        void LeaveBattle(Creature* p_Creature, bool p_Defeated);
+
+        void ReplaceCreature(Creature* p_Creature, WildBattlePetPoolTemplate* p_Template);
+        void UnreplaceCreature(Creature* p_Creature, WildBattlePetPoolTemplate* p_Template);
+
+    public:
+        uint32 ZoneID;
+        uint32 MapID;
+
+        std::vector<WildBattlePetPoolTemplate> m_Templates;
 };
 
 class WildBattlePetMgr
 {
-public:
-    static WildBattlePetMgr* instance();
+    public:
+        WildBattlePetMgr();
 
-    WildBattlePetMgr();
+        void Load();
 
-    void Load();
+        void PopulateAll();
+        void PopulateMap(uint32 p_MapID);
+        void DepopulateMap(uint32 p_MapID);
 
-    void Populate(WildPetPoolTemplate* wTemplate, WildBattlePetPool* pTemplate);
-    void Depopulate(WildBattlePetPool* pTemplate);
+        void OnAddToMap(Creature* p_Creature);
+        void OnRemoveToMap(Creature* p_Creature);
 
-    void ReplaceCreature(Creature* creature, WildPetPoolTemplate* wTemplate, WildBattlePetPool* pTemplate);
-    void EnableWildBattle(Creature* creature);
-    void UnreplaceCreature(Creature* creature);
+        bool IsWildPet(Creature* p_Creature);
+        std::shared_ptr<BattlePetInstance> GetWildBattlePet(Creature* p_Creature);
 
-    bool IsWildPet(Creature* creature);
-    std::shared_ptr<BattlePetInstance> GetWildBattlePet(Creature* creature);
+        void EnterInBattle(Creature* p_Creature);
+        void LeaveBattle(Creature* p_Creature, bool p_Defeated);
 
-    void EnterInBattle(Creature* creature);
-    void LeaveBattle(Creature* creature, bool p_Defeated);
+        void Update(uint32 p_TimeDiff);
 
-    WildPetPoolTemplate* GetWildPetTemplate(uint32 mapId, uint32 zoneId, uint32 entry);
-    bool IsBattlePet(uint32 entry);
-
-private:
-    ///        map              zone          pools
-    std::vector<std::map<uint32, WildBattlePetZonePools>> m_PoolsByMap;
-    std::set<uint32> m_battlePetSetEntry;
+    private:
+        ///        map              zone          pools
+        std::map<uint32, std::map<uint32, WildBattlePetZonePools>>  m_PoolsByMap;
+        IntervalTimer                                               m_UpdateTime;
 };
 
-#define sWildBattlePetMgr WildBattlePetMgr::instance()
+#define sWildBattlePetMgr ACE_Singleton<WildBattlePetMgr, ACE_Null_Mutex>::instance()
 
 #endif

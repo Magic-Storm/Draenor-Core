@@ -174,11 +174,6 @@ std::string Object::_ConcatFields(uint16 startIndex, uint16 size) const
     return ss.str();
 }
 
-bool Object::IsPreDelete() const
-{
-    return m_preDelete;
-}
-
 void Object::AddToWorld()
 {
     if (m_inWorld)

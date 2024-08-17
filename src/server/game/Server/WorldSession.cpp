@@ -27,7 +27,6 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Player.h"
-#include "PetBattleSystem.h"
 #include "Vehicle.h"
 #include "ObjectMgr.h"
 #include "GuildMgr.h"

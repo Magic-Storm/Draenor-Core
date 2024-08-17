@@ -66,7 +66,6 @@
 #include "MMapFactory.h"
 #include "GameEventMgr.h"
 #include "PoolMgr.h"
-#include "PetBattleSystem.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "InstanceSaveMgr.h"
@@ -2294,6 +2293,13 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("misc", "Loading area skip update...");
     sObjectMgr->LoadSkipUpdateZone();
 
+    TC_LOG_INFO("server.loading", "Loading BattlePet template...");
+    sObjectMgr->LoadBattlePetTemplate();
+
+    TC_LOG_INFO("server.loading", "Loading BattlePet npc team member...");
+    sObjectMgr->LoadBattlePetNpcTeamMember();
+    ///sObjectMgr->ComputeBattlePetSpawns();
+
     TC_LOG_INFO("server.loading", "Loading Wild BattlePet pools...");
     sWildBattlePetMgr->Load();
 
@@ -2332,7 +2338,7 @@ void World::SetInitialWorldSettings()
     if (uint32 realmId = sConfigMgr->GetIntDefault("RealmID", 0)) // 0 reserved for auth
         sLog->SetRealmId(realmId);
 
-    //sWildBattlePetMgr->PopulateAll();
+    sWildBattlePetMgr->PopulateAll();
 }
 
 void World::DetectDBCLang()
@@ -2644,7 +2650,7 @@ void World::Update(uint32 diff)
 #endif
 
     sPetBattleSystem->Update(diff);
-    //sWildBattlePetMgr->Update(diff);
+    sWildBattlePetMgr->Update(diff);
 
     sLFGMgr->Update(diff);
     SetRecordDiff(RECORD_DIFF_LFG, getMSTime() - diffTime);

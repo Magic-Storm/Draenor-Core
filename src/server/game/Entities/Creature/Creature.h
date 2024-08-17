@@ -17,7 +17,6 @@
 #include "DatabaseEnv.h"
 #include "Cell.h"
 
-class BattlePetInstance;
 class SpellInfo;
 class GarrisonNPCAI;
 class CreatureAI;
@@ -784,9 +783,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint32 lootingGroupLowGUID;                         // used to find group which is looting corpse
-
-        ObjectGuid replacementFromGUID;
-        std::shared_ptr<BattlePetInstance> m_battlePetInstance;
 
         void SendZoneUnderAttackMessage(Player* attacker);
 
