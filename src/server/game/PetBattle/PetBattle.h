@@ -68,6 +68,7 @@ enum ePetBattleQualities
 
 enum eBattlePetTypes
 {
+	BATTLEPET_PETTYPE_ALL           = -1,
     BATTLEPET_PETTYPE_HUMANOID      = 0,
     BATTLEPET_PETTYPE_DRAGONKIN     = 1,
     BATTLEPET_PETTYPE_FLYING        = 2,

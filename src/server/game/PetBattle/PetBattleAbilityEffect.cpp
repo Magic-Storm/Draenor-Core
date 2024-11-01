@@ -678,7 +678,7 @@ void PetBattleAbilityEffect::Kill(uint32 target)
 
     // SetState(target, BATTLEPET_STATE_Special_ConsumedCorpse, 1);
 
-    PetBattleInstance->PetXDied.push_back(target);
+    PetBattleInstance->RoundDeadPets.push_back(target);
     PetBattleInstance->Kill(Caster, target, EffectInfo->id);
 
     StopChain = true;
