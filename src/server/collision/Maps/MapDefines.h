@@ -7,6 +7,19 @@
 const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
 #define MMAP_VERSION 7
 
+/// Represents a map magic value of 4 bytes (used in versions)
+union u_map_magic
+{
+    char asChar[4];
+    uint32 asUInt;
+};
+
+extern u_map_magic const MapMagic;
+extern u_map_magic const MapVersionMagic;
+extern u_map_magic const MapAreaMagic;
+extern u_map_magic const MapHeightMagic;
+extern u_map_magic const MapLiquidMagic;
+
 struct MmapTileHeader
 {
     uint32 mmapMagic;
