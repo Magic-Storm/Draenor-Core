@@ -1514,6 +1514,57 @@ public:
 	}
 };
 
+enum eSpells
+{
+	SPELL_SUPREME_DOOM_TRIGGER = 187471,
+};
+
+// 187466
+class spell_supreme_doom : public SpellScriptLoader
+{
+public:
+	spell_supreme_doom() : SpellScriptLoader("spell_supreme_doom") { }
+
+	class spell_supreme_doom_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_supreme_doom_SpellScript);
+
+		void FilterTargets(std::list<WorldObject*>& targets)
+		{
+			if (!targets.empty())
+			{
+				if (targets.size() >= 4)
+					Trinity::Containers::RandomResizeList(targets, targets.size() / 4);
+				else
+					Trinity::Containers::RandomResizeList(targets, 1);
+			}
+		}
+
+		void HandleScriptEffect(SpellEffIndex effIndex)
+		{
+			if (Unit* caster = GetCaster())
+			{
+				if (Unit* target = GetHitUnit())
+				{
+					float damage = target->GetHealth() - 1;
+					caster->CastSpell(target, SPELL_SUPREME_DOOM_TRIGGER, &damage, NULL, NULL, false);
+				}
+			}
+		}
+
+		void Register()
+		{
+			OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_supreme_doom_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+			OnEffectHitTarget += SpellEffectFn(spell_supreme_doom_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_DUMMY);
+		}
+	};
+
+	SpellScript* GetSpellScript() const
+	{
+		return new spell_supreme_doom_SpellScript();
+	}
+};
+
 #ifndef __clang_analyzer__
 void AddSC_tanaan_jungle_100()
 {
@@ -1538,6 +1589,7 @@ void AddSC_tanaan_jungle_100()
 
 	new boss_supreme_lord_kazzak();
 	new npc_twisted_reflection();
+	new spell_supreme_doom();
 
 	/*RegisterAreaTriggerAI(at_deathtalon_screech);
 	RegisterAuraScript(spell_deathtalon_quills);*/
