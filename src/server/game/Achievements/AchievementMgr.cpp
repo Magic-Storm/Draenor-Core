@@ -4150,13 +4150,13 @@ void AchievementGlobalMgr::LoadRewards()
 
 void AchievementGlobalMgr::LoadRewardLocales()
 {
-    uint32 l_OldMSTime = getMSTime();
+    uint32 oldMSTime = getMSTime();
 
-    m_achievementRewardLocales.clear();                       // Need for reload case
+    m_achievementRewardLocales.clear();                       // need for reload case
 
-	QueryResult result = WorldDatabase.Query("SELECT ID, Locale, Subject, Text FROM achievement_reward_locale");
+    QueryResult result = WorldDatabase.Query("SELECT ID, Locale, Subject, Text FROM achievement_reward_locale");
 
-    if (!l_Result)
+    if (!result)
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 achievement reward locale strings.  DB table `achievement_reward_locale` is empty");
         return;
@@ -4164,7 +4164,7 @@ void AchievementGlobalMgr::LoadRewardLocales()
 
     do
     {
-        Field* l_Fields = l_Result->Fetch();
+        Field* fields = result->Fetch();
 
         uint32 ID = fields[0].GetUInt32();
         std::string LocaleName = fields[1].GetString();
@@ -4183,12 +4183,11 @@ void AchievementGlobalMgr::LoadRewardLocales()
         if (locale == LOCALE_enUS)
             continue;
 
-        ObjectMgr::AddLocaleString(Subject, locale, data.Subject);
-        ObjectMgr::AddLocaleString(Text, locale, data.Text);
-    }
-    while (l_Result->NextRow());
+        ObjectMgr::AddLocaleString(Subject, locale, data.subject);
+        ObjectMgr::AddLocaleString(Text, locale, data.text);
+    } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %lu achievement reward locale strings in %u ms", (unsigned long)m_achievementRewardLocales.size(), GetMSTimeDiffToNow(l_OldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %lu achievement reward locale strings in %u ms", (unsigned long)m_achievementRewardLocales.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 AchievementEntry const* AchievementGlobalMgr::GetAchievement(uint32 p_AchievementID) const
