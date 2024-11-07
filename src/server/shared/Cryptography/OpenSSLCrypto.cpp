@@ -20,40 +20,28 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/provider.h>
+OSSL_PROVIDER* LegacyProvider;
+OSSL_PROVIDER* DefaultProvider;
+#endif
 
-std::vector<std::mutex*> cryptoLocks;
-
-void lockingCallback(int mode, int type, const char *file, int line)
+void OpenSSLCrypto::threadsSetup([[maybe_unused]] boost::filesystem::path const& providerModulePath)
 {
-    if (mode & CRYPTO_LOCK)
-        cryptoLocks[type]->lock();
-    else
-        cryptoLocks[type]->unlock();
-}
-
-void threadIdCallback(CRYPTO_THREADID * id)
-{
-    CRYPTO_THREADID_set_numeric(id, std::this_thread::get_id().hash());
-}
-
-void OpenSSLCrypto::threadsSetup()
-{
-    cryptoLocks.resize(CRYPTO_num_locks());
-    for(int i = 0 ; i < CRYPTO_num_locks(); ++i)
-    {
-        cryptoLocks[i] = new std::mutex;
-    }
-    CRYPTO_THREADID_set_callback(threadIdCallback);
-    CRYPTO_set_locking_callback(lockingCallback);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if PLATFORM == PLATFORM_WINDOWS
+    OSSL_PROVIDER_set_default_search_path(nullptr, providerModulePath.string().c_str());
+#endif
+    LegacyProvider = OSSL_PROVIDER_load(nullptr, "legacy");
+    DefaultProvider = OSSL_PROVIDER_load(nullptr, "default");
+#endif
 }
 
 void OpenSSLCrypto::threadsCleanup()
 {
-    CRYPTO_set_locking_callback(NULL);
-    CRYPTO_THREADID_set_callback(NULL);
-    for(int i = 0 ; i < CRYPTO_num_locks(); ++i)
-    {
-        delete cryptoLocks[i];
-    }
-    cryptoLocks.resize(0);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_PROVIDER_unload(LegacyProvider);
+    OSSL_PROVIDER_unload(DefaultProvider);
+    OSSL_PROVIDER_set_default_search_path(nullptr, nullptr);
+#endif
 }
