@@ -21,7 +21,7 @@ MySQL ≥ 5.5.0+ (users of MySQL 5.7 and higher need to remove NO_ZERO_DATE, NO_
 
 CMake ≥ 3.2+
 
-OpenSSL ≥ 1.1.1g
+OpenSSL ≥ 1.1.1g-3.0.x
 
 GCC ≥ 4.7.2 (Linux only)
 
