@@ -32,7 +32,7 @@ Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) 
             if (VehicleSeatEntry const* veSeat = sVehicleSeatStore.LookupEntry(seatId))
             {
                 Seats.insert(std::make_pair(i, VehicleSeat(veSeat)));
-                if (veSeat->CanEnterOrExit())
+                if (veSeat->CanEnterOrExit() || veSeat->IsUsableByOverride())
                     ++UsableSeatNum;
             }
     }
@@ -291,8 +291,9 @@ SeatMap::const_iterator Vehicle::GetNextEmptySeat(int8 seatId, bool next) const
         }
         else
         {
-            if (seat-- == Seats.begin())
+            if (seat == Seats.begin())
                 seat = Seats.end();
+            --seat;
         }
 
         // Make sure we don't loop indefinetly
@@ -326,7 +327,7 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
 
         // Force enter for force vehicle aura - 296
         if (GetRecAura())
-            accessory->_EnterVehicle(this, -1);
+            accessory->EnterVehicle(_me, -1);
         (void)_me->HandleSpellClick(accessory, seatId);
 
         /// If for some reason adding accessory to vehicle fails it will unsummon in
