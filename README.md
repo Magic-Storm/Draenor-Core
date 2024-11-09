@@ -9,7 +9,7 @@ For those scarce few interested in the continuation of WoD emulation development
 * Database NPCs and duplicates. - Some NPCs have an incorrect blizzlike coordinates and/or duplicates. To the best of my knowledge, at least 95% of the NPCs in the database are blizzlike as per the sniffs that were used back from 6.1-6.2.3. The only missing NPCs are ought to be the Tanaan Jungle and HellFire Citadel ones.
 * Draenor content - the draenor content is nowhere near blizzlike. My co-developers have developed some of the Shadowmoon Valley landing events leading up to the Garrison and before I had joined the project, they reworked introduction to Draenor questline entirely. Almost the entirety of the legendary questline was reworked and as it a blizzlike state. Some dungeons need optimizations and Hellfire Citadel has yet to be implemented.
 Lfg -not work(cherry picked from Trinitycore's)
-
+Vehicle - (cherry picked from Trinitycore's)
 
 Platform: Linux, Windows or Mac
  
