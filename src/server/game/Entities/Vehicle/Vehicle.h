@@ -12,7 +12,7 @@
 #include "ObjectDefines.h"
 #include "VehicleDefines.h"
 #include "Unit.h"
-#include <deque>
+#include <list>
 
 struct VehicleEntry;
 class Unit;
@@ -56,6 +56,9 @@ class Vehicle : public TransportBase
         inline bool CanBeCastedByPassengers() const { return _canBeCastedByPassengers; }
         void SetCanBeCastedByPassengers(bool canBeCastedByPassengers) { _canBeCastedByPassengers = canBeCastedByPassengers; }
 
+        void SetLastShootPos(Position const& pos) { _lastShootPos.Relocate(pos); }
+        Position GetLastShootPos() { return _lastShootPos; }
+
         SeatMap Seats;  ///< The collection of all seats on the vehicle. Including vacant ones.
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit const* passenger);
@@ -81,7 +84,6 @@ class Vehicle : public TransportBase
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
-        void CancelJoinEvent(VehicleJoinEvent* e);
         void RemovePendingEvent(VehicleJoinEvent* e);
         void RemovePendingEventsForSeat(int8 seatId);
 
@@ -91,12 +93,14 @@ private:
         GuidSet vehiclePlayers;
         uint32 _creatureEntry;         ///< Can be different than the entry of _me in case of players
         Status _status;     ///< Internal variable for sanity checks
-        uint32 _recAura;
+        Position _lastShootPos;
 
+        uint32 _recAura;
         bool _passengersSpawnedByAI;
         bool _canBeCastedByPassengers;
 
-        std::deque<VehicleJoinEvent*> _pendingJoinEvents;   ///< Collection of delayed join events for prospective passengers
+        typedef std::list<VehicleJoinEvent*> PendingJoinEventContainer;
+        PendingJoinEventContainer _pendingJoinEvents;       ///< Collection of delayed join events for prospective passengers
 };
 
 class VehicleJoinEvent : public BasicEvent

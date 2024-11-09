@@ -364,7 +364,6 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     SeatMap::iterator seat;
     VehicleJoinEvent* e = new VehicleJoinEvent(this, unit);
     unit->m_Events.AddEvent(e, unit->m_Events.CalculateTime(0));
-    _pendingJoinEvents.push_back(e);
 
     if (seatId < 0) // no specific seat requirement
     {
@@ -374,23 +373,24 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 
         if (seat == Seats.end()) // no available seat
         {
-            CancelJoinEvent(e);
+            e->to_Abort = true;
             return false;
         }
 
         e->Seat = seat;
+        _pendingJoinEvents.push_back(e);
     }
     else
     {
         seat = Seats.find(seatId);
         if (seat == Seats.end())
         {
-            CancelJoinEvent(e);
+            e->to_Abort = true;
             return false;
         }
 
         e->Seat = seat;
-
+        _pendingJoinEvents.push_back(e);
         if (seat->second.Passenger)
         {
             Unit* passenger = ObjectAccessor::GetUnit(*GetBase(), seat->second.Passenger);
@@ -400,6 +400,8 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 
         ASSERT(!seat->second.Passenger);
     }
+
+    return true;
 }
 
 void Vehicle::RemovePassenger(Unit* unit)
@@ -598,25 +600,6 @@ void Vehicle::CalculatePassengerOffset(float& p_X, float& p_Y, float& p_Z, float
 }
 
 /**
- * @fn void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
- *
- * @brief Aborts delayed @VehicleJoinEvent objects.
- * 		  Implies that the related unit will not be boarding the vehicle after all.
- *
- * @author Machiavelli
- * @date 17-2-2013
- *
- * @param [in,out] e The VehicleJoinEvent* to process.
- */
-
-void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
-{
-    ASSERT(_pendingJoinEvents.back() == e);
-    e->to_Abort = true;
-    _pendingJoinEvents.pop_back();
-}
-
-/**
  * @fn void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
  *
  * @brief Removes @VehicleJoinEvent objects from pending join event store.
@@ -631,7 +614,7 @@ void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
 
 void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
 {
-    for (std::deque<VehicleJoinEvent*>::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end(); ++itr)
+    for (PendingJoinEventContainer::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end(); ++itr)
     {
         if (*itr == e)
         {
@@ -654,7 +637,7 @@ void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
 
 void Vehicle::RemovePendingEventsForSeat(int8 seatId)
 {
-    for (std::deque<VehicleJoinEvent*>::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end();)
+    for (PendingJoinEventContainer::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end();)
     {
         if ((*itr)->Seat->first == seatId)
         {
