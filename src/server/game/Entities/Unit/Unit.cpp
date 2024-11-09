@@ -14986,7 +14986,9 @@ void Unit::setDeathState(DeathState s)
         if (IsNonMeleeSpellCasted(false))
             InterruptNonMeleeSpells(false);
 
-        ExitVehicle();
+        ExitVehicle();                                      // Exit vehicle before calling RemoveAllControlled
+        // vehicles use special type of charm that is not removed by the next function
+        // triggering an assert
 
         UnsummonAllTotems();
         RemoveAllControlled();
@@ -21543,7 +21545,10 @@ void Unit::_EnterVehicle(Vehicle* vehicle, int8 seatId, AuraApplication const* a
     if (Player* player = ToPlayer())
     {
         if (vehicle->GetBase()->IsPlayer() && player->isInCombat())
+        {
+            vehicle->GetBase()->RemoveAura(const_cast<AuraApplication*>(aurApp));
             return;
+        }
     }
 
     ASSERT(!m_vehicle);
