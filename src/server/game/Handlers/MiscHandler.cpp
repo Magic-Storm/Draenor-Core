@@ -2045,7 +2045,7 @@ void WorldSession::HandleCancelMountAuraOpcode(WorldPacket& /*recvData*/)
         return;
     }
 
-    m_Player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+    m_Player->RemoveAurasByType(SPELL_AURA_MOUNTED); // Calls Dismount()
 
     WorldPacket l_Data(SMSG_DISMOUNT);
     l_Data.appendPackGUID(m_Player->GetGUID());
