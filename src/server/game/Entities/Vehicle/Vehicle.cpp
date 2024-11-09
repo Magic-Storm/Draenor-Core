@@ -347,12 +347,12 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     /// @Prevent adding passengers when vehicle is uninstalling. (Bad script in OnUninstall/OnRemovePassenger/PassengerBoarded hook.)
     if (_status == STATUS_UNINSTALLING)
     {
-        TC_LOG_DEBUG("entities.vehicle", "Passenger GuidLow: %u, Entry: %u, attempting to board vehicle GuidLow: %u, Entry: %u during uninstall! SeatId: %i",
+        TC_LOG_DEBUG("entities.vehicle", "Passenger GuidLow: %u, Entry: %u, attempting to board vehicle GuidLow: %u, Entry: %u during uninstall! SeatId: %d",
             unit->GetGUIDLow(), unit->GetEntry(), _me->GetGUIDLow(), _me->GetEntry(), (int32)seatId);
         return false;
     }
 
-    TC_LOG_DEBUG("entities.vehicle", "Unit %s scheduling enter vehicle entry %u id %u dbguid %u seat %d", unit->GetName(), _me->GetEntry(), _vehicleInfo->m_ID, _me->GetGUIDLow(), seatId);
+    TC_LOG_DEBUG("entities.vehicle", "Unit %s scheduling enter vehicle entry %u id %u dbguid %u seat %u", unit->GetName(), _me->GetEntry(), _vehicleInfo->m_ID, _me->GetGUIDLow(), seatId);
 
     if (unit->IsPlayer() && unit->GetMap()->IsBattleArena())
         return false;
@@ -611,6 +611,7 @@ void Vehicle::CalculatePassengerOffset(float& p_X, float& p_Y, float& p_Z, float
 
 void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
 {
+    ASSERT(_pendingJoinEvents.back() == e);
     e->to_Abort = true;
     _pendingJoinEvents.pop_back();
 }
@@ -641,6 +642,31 @@ void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
 }
 
 /**
+ * @fn void Vehicle::RemovePendingEventsForSeat(uint8 seatId)
+ *
+ * @brief Removes any pending events for given seatId. Executed when a @VehicleJoinEvent::Execute is called
+ *
+ * @author Machiavelli
+ * @date 23-2-2013
+ *
+ * @param seatId Identifier for the seat.
+ */
+
+void Vehicle::RemovePendingEventsForSeat(int8 seatId)
+{
+    for (std::deque<VehicleJoinEvent*>::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end();)
+    {
+        if ((*itr)->Seat->first == seatId)
+        {
+            (*itr)->to_Abort = true;
+            _pendingJoinEvents.erase(itr++);
+        }
+        else
+            ++itr;
+    }
+}
+
+/**
  * @fn bool VehicleJoinEvent::Execute(uint64, uint32)
  *
  * @brief Actually adds the passenger @Passenger to vehicle @Target.
@@ -659,6 +685,9 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
 {
     ASSERT(Passenger->IsInWorld());
     ASSERT(Target->GetBase()->IsInWorld());
+    ASSERT(Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()));
+
+    Target->RemovePendingEventsForSeat(Seat->first);
 
     Seat->second.Passenger = Passenger->GetGUID();
     if (Seat->second.SeatInfo->CanEnterOrExit())
