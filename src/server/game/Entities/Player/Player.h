@@ -38,6 +38,7 @@
 #include "Common.h"
 #include "KillRewarder.h"
 #include "TradeData.h"
+#include "Opcodes.h"
 
 // for template
 #include "SpellMgr.h"
@@ -2222,6 +2223,12 @@ class Player : public Unit, public GridObject<Player>
         bool RemoveMItem(uint32 id)
         {
             return mMitems.erase(id) ? true : false;
+        }
+
+        void SendOnCancelExpectedVehicleRideAura()
+        {
+            WorldPacket data(SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA, 0);
+            GetSession()->SendPacket(&data);
         }
 
         void PetSpellInitialize();

@@ -20,7 +20,7 @@
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
 
-Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry),
+Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : UsableSeatNum(0), _me(unit), _vehicleInfo(vehInfo), _creatureEntry(creatureEntry),
  _status(STATUS_NONE), _passengersSpawnedByAI(false), _canBeCastedByPassengers(false)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
@@ -30,7 +30,7 @@ Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) 
             {
                 Seats.insert(std::make_pair(i, VehicleSeat(veSeat)));
                 if (veSeat->CanEnterOrExit())
-                    ++_usableSeatNum;
+                    ++UsableSeatNum;
             }
     }
 
@@ -131,14 +131,14 @@ void Vehicle::Reset(bool evading /*= false*/)
     TC_LOG_DEBUG("entities.vehicle", "Vehicle::Reset Entry: %u, GuidLow: %u", _creatureEntry, _me->GetGUIDLow());
     if (_me->IsPlayer())
     {
-        if (_usableSeatNum)
+        if (UsableSeatNum)
             _me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_PLAYER_VEHICLE);
     }
     else
     {
         ApplyAllImmunities();
         InstallAllAccessories(evading);
-        if (_usableSeatNum)
+        if (UsableSeatNum)
             _me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
     }
 
@@ -375,9 +375,9 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     seat->second.Passenger = unit->GetGUID();
     if (seat->second.SeatInfo->CanEnterOrExit())
     {
-        ASSERT(_usableSeatNum);
-        --_usableSeatNum;
-        if (!_usableSeatNum)
+        ASSERT(UsableSeatNum);
+        --UsableSeatNum;
+        if (!UsableSeatNum)
         {
             if (_me->IsPlayer())
                 _me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_PLAYER_VEHICLE);
@@ -471,14 +471,14 @@ void Vehicle::RemovePassenger(Unit* unit)
     seat->second.Passenger = 0;
     if (seat->second.SeatInfo->CanEnterOrExit())
     {
-        if (!_usableSeatNum)
+        if (!UsableSeatNum)
         {
             if (_me->IsPlayer())
                 _me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_PLAYER_VEHICLE);
             else
                 _me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
         }
-        ++_usableSeatNum;
+        ++UsableSeatNum;
     }
 
     unit->ClearUnitState(UNIT_STATE_ONVEHICLE);

@@ -379,6 +379,7 @@ class UnitAI;
 class Totem;
 class Transport;
 class Vehicle;
+class VehicleJoinEvent;
 class TransportBase;
 
 typedef std::list<Unit*> UnitList;
@@ -2604,6 +2605,7 @@ class Unit : public WorldObject
         uint32 GetReducedThreatPercent() { return m_reducedThreatPercent; }
         Unit* GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
 
+        friend class VehicleJoinEvent;
         bool IsAIEnabled, NeedChangeAI;
         bool CreateVehicleKit(uint32 id, uint32 creatureEntry);
         void RemoveVehicleKit(bool dismount = false);

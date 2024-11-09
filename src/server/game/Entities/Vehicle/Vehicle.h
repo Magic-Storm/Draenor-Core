@@ -11,11 +11,14 @@
 
 #include "ObjectDefines.h"
 #include "VehicleDefines.h"
+#include "Unit.h"
+#include <deque>
 
 struct VehicleEntry;
 class Unit;
 
 typedef std::set<uint64> GuidSet;
+class VehicleJoinEvent;
 
 class Vehicle : public TransportBase
 {
@@ -42,6 +45,7 @@ class Vehicle : public TransportBase
         bool CheckCustomCanEnter();
         bool AddPassenger(Unit* passenger, int8 seatId = -1);
         void RemovePassenger(Unit* passenger);
+        void RemovePendingPassengers();
         void RelocatePassengers();
         void RemoveAllPassengers(bool dismount = false);
         void Dismiss();
@@ -56,6 +60,10 @@ class Vehicle : public TransportBase
         SeatMap Seats;
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit const* passenger);
+
+        protected:
+            friend class VehicleJoinEvent;
+            uint32 UsableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
 
     private:
         enum Status
@@ -77,11 +85,26 @@ class Vehicle : public TransportBase
         Unit* _me;
         VehicleEntry const* _vehicleInfo;
         GuidSet vehiclePlayers;
-        uint32 _usableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
         uint32 _creatureEntry;         // Can be different than me->GetBase()->GetEntry() in case of players
         Status _status;
 
         bool _passengersSpawnedByAI;
         bool _canBeCastedByPassengers;
+
+        std::deque<VehicleJoinEvent*> _pendingJoinEvents;
+        void CancelJoinEvent(VehicleJoinEvent* e);
+};
+
+class VehicleJoinEvent : public BasicEvent
+{
+    friend class Vehicle;
+protected:
+    VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()) {}
+    bool Execute(uint64, uint32);
+    void Abort(uint64);
+
+    Vehicle* Target;
+    Unit* Passenger;
+    SeatMap::iterator Seat;
 };
 #endif

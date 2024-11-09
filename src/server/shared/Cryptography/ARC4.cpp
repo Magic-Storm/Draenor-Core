@@ -10,7 +10,7 @@
 #include <openssl/sha.h>
 #include "Errors.h"
 
-ARC4::ARC4(uint32 len) : m_ctx(EVP_CIPHER_CTX_new())
+ARC4::ARC4(uint32 len) : _ctx(EVP_CIPHER_CTX_new())
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     _cipher = EVP_CIPHER_fetch(nullptr, "RC4", nullptr);
@@ -22,9 +22,8 @@ ARC4::ARC4(uint32 len) : m_ctx(EVP_CIPHER_CTX_new())
     EVP_EncryptInit_ex(_ctx, EVP_rc4(), nullptr, nullptr, nullptr);
     EVP_CIPHER_CTX_set_key_length(_ctx, len);
 }
-}
 
-ARC4::ARC4(uint8* seed, uint32 len) : m_ctx(EVP_CIPHER_CTX_new())
+ARC4::ARC4(uint8* seed, uint32 len) : _ctx(EVP_CIPHER_CTX_new())
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     _cipher = EVP_CIPHER_fetch(nullptr, "RC4", nullptr);
