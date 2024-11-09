@@ -210,7 +210,7 @@ void Vehicle::RemoveAllPassengers(bool dismount/* = false*/)
 
     /// Setting to_Abort to true will cause @VehicleJoinEvent::Abort to be executed on next @Unit::UpdateEvents call
     /// This will properly "reset" the pending join process for the passenger.
-    while (_pendingJoinEvents.size())
+    while (!_pendingJoinEvents.empty())
     {
         VehicleJoinEvent* e = _pendingJoinEvents.front();
         e->to_Abort = true;
@@ -616,6 +616,31 @@ void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
 }
 
 /**
+ * @fn void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
+ *
+ * @brief Removes @VehicleJoinEvent objects from pending join event store.
+ *        This method only removes it after it's executed or aborted to prevent leaving
+ *        pointers to deleted events.
+ *
+ * @author Shauren
+ * @date 22-2-2013
+ *
+ * @param [in] e The VehicleJoinEvent* to remove from pending event store.
+ */
+
+void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
+{
+    for (std::deque<VehicleJoinEvent*>::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end(); ++itr)
+    {
+        if (*itr == e)
+        {
+            _pendingJoinEvents.erase(itr);
+            break;
+        }
+    }
+}
+
+/**
  * @fn bool VehicleJoinEvent::Execute(uint64, uint32)
  *
  * @brief Actually adds the passenger @Passenger to vehicle @Target.
@@ -650,6 +675,7 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     }
 
     Passenger->InterruptNonMeleeSpells(false);
+    Passenger->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
     Player* player = Passenger->ToPlayer();
     if (player)

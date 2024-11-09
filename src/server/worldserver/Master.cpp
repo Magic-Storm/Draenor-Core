@@ -42,7 +42,7 @@
 #if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
 #include <openssl/provider.h>
 #endif
-#include <boost/dll/runtime_symbol_info.hpp>
+//#include <boost/dll/runtime_symbol_info.hpp>
 
 #include "CliRunnable.h"
 #include "Log.h"
@@ -427,7 +427,7 @@ const char* dumpTables[32] =
 /// Main function
 int Master::Run()
 {
-    OpenSSLCrypto::threadsSetup(boost::dll::program_location().remove_filename());
+    OpenSSLCrypto::threadsSetup();
     BigNumber seed1;
     seed1.SetRand(16 * 8);
 
