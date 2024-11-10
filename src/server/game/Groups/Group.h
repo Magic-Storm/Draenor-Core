@@ -288,6 +288,7 @@ class Group
         void   LoadMemberFromDB(uint32 guidLow, uint8 memberFlags, uint8 subgroup, uint8 roles, uint8 playerClass, uint32 specId);
 #endif /* not CROSS */
         bool   AddInvite(Player* player);
+        void   SaveRolesToDB();
         void   RemoveInvite(Player* player);
         void   RemoveAllInvites();
         bool   AddLeaderInvite(Player* player);

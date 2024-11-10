@@ -52,7 +52,7 @@ Loot* Roll::getLoot()
 }
 
 Group::Group() : m_leaderGuid(0), m_leaderName(""), m_PartyFlags(PARTY_FLAG_NORMAL),
-m_dungeonDifficulty(DifficultyNormal), m_raidDifficulty(DifficultyRaidNormal), m_LegacyRaidDifficuty(Difficulty10N),
+m_dungeonDifficulty(DUNGEON_DIFFICULTY_NORMAL), m_raidDifficulty(DifficultyRaidNormal), m_LegacyRaidDifficuty(RAID_DIFFICULTY_10MAN_NORMAL),
     m_bgGroup(NULL), m_bfGroup(NULL), m_lootMethod(FREE_FOR_ALL), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(0),
     m_subGroupsCounts(NULL), m_guid(0), m_UpdateCount(0), m_maxEnchantingLevel(0), m_dbStoreId(0), m_readyCheckCount(0),
     m_membersInInstance(0), m_readyCheck(false), m_Team(0)
@@ -87,7 +87,7 @@ Group::~Group()
     // it is undefined whether objectmgr (which stores the groups) or instancesavemgr
     // will be unloaded first so we must be prepared for both cases
     // this may unload some instance saves
-    for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+    for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr2 = m_boundInstances[i].begin(); itr2 != m_boundInstances[i].end(); ++itr2)
             itr2->second.save->RemoveGroup(this);
 
@@ -113,9 +113,9 @@ bool Group::Create(Player* leader)
     m_lootThreshold = ITEM_QUALITY_UNCOMMON;
     m_looterGuid = leaderGuid;
 
-    m_dungeonDifficulty = DifficultyNormal;
+    m_dungeonDifficulty = DUNGEON_DIFFICULTY_NORMAL;
     m_raidDifficulty = DifficultyRaidNormal;
-    m_LegacyRaidDifficuty = Difficulty10N;
+    m_LegacyRaidDifficuty = RAID_DIFFICULTY_10MAN_NORMAL;
 
     m_Team = leader->GetTeam();
 
@@ -124,7 +124,7 @@ bool Group::Create(Player* leader)
         m_dungeonDifficulty = leader->GetDungeonDifficultyID();
 
         bool l_NewLFR = leader->getLevel() == MAX_LEVEL;
-        m_raidDifficulty = isLFGGroup() ? (l_NewLFR ? Difficulty::DifficultyRaidLFR : Difficulty::DifficultyRaidTool) : leader->GetLegacyRaidDifficultyID();
+        m_raidDifficulty = isLFGGroup() ? (l_NewLFR ? Difficulty::DifficultyRaidLFR : Difficulty::RAID_DIFFICULTY_25MAN_LFR) : leader->GetLegacyRaidDifficultyID();
 
         if (l_NewLFR)
         {
@@ -278,6 +278,12 @@ void Group::ChangeFlagEveryoneAssistant(bool apply)
         m_PartyFlags = PartyFlags(m_PartyFlags &~ PARTY_FLAG_EVERYONE_IS_ASSISTANT);
 
     this->SendUpdate();
+}
+
+void Group::SaveRolesToDB()
+{
+    for (member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+        CharacterDatabase.PExecute("UPDATE group_member SET roles='%u' WHERE guid='%u' AND memberGuid='%u'", itr->roles, m_dbStoreId, GUID_LOPART(itr->guid));
 }
 
 void Group::ConvertToLFG()
@@ -836,7 +842,7 @@ void Group::ChangeLeader(uint64 newLeaderGuid)
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
 #endif
         // Remove the groups permanent instance bindings
-        for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+        for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
         {
             for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end();)
             {
@@ -2534,20 +2540,20 @@ InstanceGroupBind* Group::GetBoundInstance(Difficulty difficulty, uint32 mapId)
 	uint32 retrievalDifficulty = 0;
 	switch (difficulty)
 	{
-		case Difficulty10N:
-			retrievalDifficulty = Difficulty25N;
+		case RAID_DIFFICULTY_10MAN_NORMAL:
+			retrievalDifficulty = RAID_DIFFICULTY_25MAN_NORMAL;
 			break;
 
-		case Difficulty25N:
-			retrievalDifficulty = Difficulty10N;
+		case RAID_DIFFICULTY_25MAN_NORMAL:
+			retrievalDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
 			break;
 
-		case Difficulty10HC:
-			retrievalDifficulty = Difficulty25HC;
+		case RAID_DIFFICULTY_10MAN_HEROIC:
+			retrievalDifficulty = RAID_DIFFICULTY_25MAN_HEROIC;
 			break;
 
-		case Difficulty25HC:
-			retrievalDifficulty = Difficulty10HC;
+		case RAID_DIFFICULTY_25MAN_HEROIC:
+			retrievalDifficulty = RAID_DIFFICULTY_10MAN_HEROIC;
 			break;
 
 	default: break;
@@ -2605,7 +2611,7 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave* save, bool permanent, boo
 
 void Group::UnbindInstance(uint32 p_MapID, uint8 p_DifficultyID, bool p_Unload)
 {
-    if (p_DifficultyID >= Difficulty::MaxDifficulties)
+    if (p_DifficultyID >= Difficulty::MAX_DIFFICULTY)
         return;
 
     if (m_boundInstances[p_DifficultyID].empty())
@@ -2768,14 +2774,14 @@ bool Group::IsGuildGroup(uint32 p_GuildID, bool p_SameMap, bool p_SameInstanceID
             {
                 switch (l_Player->GetMap()->GetDifficultyID())
                 {
-                    case Difficulty::Difficulty10N:
-                    case Difficulty::Difficulty10HC:
+                    case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
+                    case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
                         if (l_Counter >= 8)
                             l_IsOkay = true;
                         break;
-                    case Difficulty::Difficulty25N:
-                    case Difficulty::Difficulty25HC:
-                    case Difficulty::DifficultyRaidTool:
+                    case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
+                    case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
+                    case Difficulty::RAID_DIFFICULTY_25MAN_LFR:
                     case Difficulty::DifficultyRaidLFR:
                         if (l_Counter >= 20)
                             l_IsOkay = true;
@@ -3358,13 +3364,13 @@ bool Group::CanEnterInInstance()
     {
         switch (GetLegacyRaidDifficultyID())
         {
-            case Difficulty::Difficulty10N:
-            case Difficulty::Difficulty10HC:
+            case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
+            case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
                 maxplayers = 10;
                 break;
-            case Difficulty::Difficulty25N:
-            case Difficulty::Difficulty25HC:
-            case Difficulty::DifficultyRaidTool:
+            case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
+            case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
+            case Difficulty::RAID_DIFFICULTY_25MAN_LFR:
             case Difficulty::DifficultyRaidLFR:
                 maxplayers = 25;
                 break;

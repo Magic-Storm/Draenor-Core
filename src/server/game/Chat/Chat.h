@@ -45,6 +45,14 @@ class ChatHandler
         explicit ChatHandler(Player* player) : m_session(player->GetSession()), sentErrorMessage(false) {}
         virtual ~ChatHandler() {}
 
+        // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
+        static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
+            std::string const& senderName = "", std::string const& receiverName = "",
+            uint32 achievementId = 0, bool gmMessage = false, std::string const& channelName = "", std::string const& addonPrefix = "");
+
+        // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
+        static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message, uint32 achievementId = 0, std::string const& channelName = "", LocaleConstant locale = DEFAULT_LOCALE, std::string const& addonPrefix = "");
+
         static void FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, Unit* speaker, const char* addonPrefix = NULL, uint32 achievementId = 0);
 
         void FillMessageData(WorldPacket* data, uint8 type, uint32 language, uint64 target_guid, const char* message)

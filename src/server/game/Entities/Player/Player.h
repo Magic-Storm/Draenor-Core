@@ -2811,6 +2811,10 @@ class Player : public Unit, public GridObject<Player>
         void SetSemaphoreTeleportFar(bool semphsetting) { mSemaphoreTeleport_Far = semphsetting; }
         void ProcessDelayedOperations();
 
+        bool IsForcedTeleportFar() { return m_forcedTeleportFar; }
+        void SetForcedTeleportFar(bool forced) { m_forcedTeleportFar = forced; if (forced) SetrSemaphoreTeleportForcedFar(true); }
+        void SetrSemaphoreTeleportForcedFar(bool val) { m_forcedTeleportFarSemaphore = val; }
+
         void CheckAreaExploreAndOutdoor(void);
         bool m_IsOutdoors;
 
@@ -3300,7 +3304,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_HomebindTimer;
         bool m_InstanceValid;
         // permanent binds and solo binds by difficulty
-        BoundInstancesMap m_boundInstances[Difficulty::MaxDifficulties];
+        BoundInstancesMap m_boundInstances[Difficulty::MAX_DIFFICULTY];
         InstancePlayerBind* GetBoundInstance(uint32 mapId, Difficulty difficulty);
         BoundInstancesMap& GetBoundInstances(Difficulty difficulty) { return m_boundInstances[difficulty]; }
         InstanceSave* GetInstanceSave(uint32 mapid);
@@ -4247,6 +4251,9 @@ class Player : public Unit, public GridObject<Player>
 		uint32 m_teleport_option_param;
         bool mSemaphoreTeleport_Near;
         bool mSemaphoreTeleport_Far;
+
+        bool m_forcedTeleportFar;
+        bool m_forcedTeleportFarSemaphore = false;
 
         uint32 m_DelayedOperations;
         bool m_bCanDelayTeleport;

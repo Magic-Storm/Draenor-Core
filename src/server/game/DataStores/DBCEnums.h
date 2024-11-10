@@ -35,6 +35,34 @@ enum BattlegroundBracketId                                  // bracketId for lev
 // must be max value in PvPDificulty slot+1
 //#define MAX_BATTLEGROUND_BRACKETS  17
 
+enum LfgFlags
+{
+    LFG_FLAG_SEASONAL = 0x0004,
+    LFG_FLAG_USER_TELEPORT_NOT_ALLOWED = 0x0800,
+    LFG_FLAG_NON_BACKFILLABLE = 0x1000,
+};
+
+enum LfgSubType
+{
+    LFG_SUBTYPE_NONE = 0,
+    LFG_SUBTYPE_DUNGEON = 1,
+    LFG_SUBTYPE_RAID = 2,
+    LFG_SUBTYPE_SCENARIO = 3,
+    LFG_SUBTYPE_FLEX = 4,
+};
+
+enum LfgType
+{
+    LFG_TYPE_NONE = 0,       // Internal use only
+    LFG_TYPE_DUNGEON = 1,
+    LFG_TYPE_RAID = 2,
+    LFG_TYPE_QUEST = 3,       // not exist in dbc
+    LFG_TYPE_ZONE = 4,
+    LFG_TYPE_HEROIC = 5,       // not exist in dbc
+    LFG_TYPE_RANDOM = 6,
+    LFG_TYPE_SCENARIO = 7,       // not exist in dbc
+};
+
 enum CurrencyFlags
 {
     CURRENCY_FLAG_TRADEABLE             = 0x01,
@@ -121,20 +149,21 @@ enum AreaFlags2
 
 enum Difficulty
 {
-    DifficultyNone          = 0,  ///< difficulty_entry_0
-    DifficultyNormal        = 1,  ///< difficulty_entry_1
-    DifficultyHeroic        = 2,  ///< difficulty_entry_2
-    Difficulty10N           = 3,  ///< difficulty_entry_3
-    Difficulty25N           = 4,  ///< difficulty_entry_4
-    Difficulty10HC          = 5,  ///< difficulty_entry_5
-    Difficulty25HC          = 6,  ///< difficulty_entry_6
-    DifficultyRaidTool      = 7,  ///< difficulty_entry_7 (This is the first LFR system (pre-Flexible in 5.4.))
-    DifficultyChallenge     = 8,  ///< difficulty_entry_8
+    DifficultyNone          		 = 0,  ///< difficulty_entry_0
+    DUNGEON_DIFFICULTY_NORMAL        = 1,  ///< difficulty_entry_1
+    DUNGEON_DIFFICULTY_HEROIC        = 2,  ///< difficulty_entry_2
+    RAID_DIFFICULTY_10MAN_NORMAL     = 3,  ///< difficulty_entry_3
+    RAID_DIFFICULTY_25MAN_NORMAL     = 4,  ///< difficulty_entry_4
+    RAID_DIFFICULTY_10MAN_HEROIC     = 5,  ///< difficulty_entry_5
+    RAID_DIFFICULTY_25MAN_HEROIC     = 6,  ///< difficulty_entry_6
+    RAID_DIFFICULTY_25MAN_LFR        = 7,  ///< difficulty_entry_7 (This is the first LFR system (pre-Flexible in 5.4.))
+    DUNGEON_DIFFICULTY_CHALLENGE     = 8,  ///< difficulty_entry_8
     Difficulty40            = 9,  ///< difficulty_entry_9
-
+	
+    RAID_DIFFICULTY_1025MAN_FLEX = 14, // This is from the new Raid Flex system. Only Siege of Ogrimmar (Map 1136) has it.
+	
     DifficultyHCScenario    = 11, ///< difficulty_entry_11
     DifficultyNScenario     = 12, ///< difficulty_entry_12
-
     DifficultyRaidNormal    = 14, ///< difficulty_entry_14
     DifficultyRaidHeroic    = 15, ///< difficulty_entry_15
     DifficultyRaidMythic    = 16, ///< difficulty_entry_16
@@ -145,7 +174,13 @@ enum Difficulty
 
     DifficultyMythic        = 23,
     DifficultyTimewalker    = 24,
-    MaxDifficulties
+
+    MAX_DUNGEON_DIFFICULTY = DUNGEON_DIFFICULTY_CHALLENGE + 1,
+    MAX_RAID_DIFFICULTY = RAID_DIFFICULTY_1025MAN_FLEX + 1,
+    MAX_SCENARIO_DIFFICULTY = SCENARIO_DIFFICULTY_NORMAL + 1,
+    MAX_DIFFICULTY = RAID_DIFFICULTY_1025MAN_FLEX + 1,
+
+    MAX_CREATURE_DIFFICULTY = RAID_DIFFICULTY_1025MAN_FLEX + 24, // Spawns in battlegrounds
 };
 
 enum DifficultyFlags

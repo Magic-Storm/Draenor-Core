@@ -206,7 +206,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& p_RecvData)
                         case CHAT_MSG_RAID_LEADER:
                         case CHAT_MSG_RAID_WARNING:
                             // allow two side chat at group channel if two side group allowed
-                            if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP))
+                            if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_LFG))
                                 l_Language = LANG_UNIVERSAL;
                             break;
                         case CHAT_MSG_GUILD:

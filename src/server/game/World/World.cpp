@@ -734,6 +734,7 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_ALLOW_TWO_SIDE_ACCOUNTS]                      = sConfigMgr->GetBoolDefault("AllowTwoSide.Accounts", true);
     m_bool_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_CALENDAR]          = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.Calendar", false);
     m_bool_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT]              = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.Chat", false);
+    m_bool_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_LFG]               = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.DungeonFinder", false);
     m_bool_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL]           = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.Channel", false);
     m_bool_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP]             = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.Group", false);
     m_bool_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD]             = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.Guild", false);
@@ -4628,4 +4629,44 @@ void World::AutoRestartServer()
 
     m_NextServerRestart = time_t(m_NextServerRestart + DAY);
     sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, uint64(m_NextServerRestart));
+}
+
+void World::SendRaidQueueInfo(Player* player)
+{
+    using namespace lfg;
+
+    std::function<std::string(uint32, uint32, uint32, uint32)> makeText = [](uint32 dungeon, uint32 tanks, uint32 healers, uint32 dps)
+    {
+        return std::to_string(dungeon) + std::string("=") + std::to_string(tanks) + std::string(",") + std::to_string(healers) +
+            std::string(",") + std::to_string(dps) + std::string(";");
+    };
+
+    std::string text;
+    for (auto&& manager : sLFGMgr->GetQueueManagers())
+    {
+        for (auto&& dungeonId : { 416, 417, 527, 528, 529, 530, 526, 610, 611, 612, 613, 716, 717, 724, 725 })
+        {
+            auto& q = manager.second.GetQueue(dungeonId);
+            if (!q.GetBuckets().empty())
+                text += makeText(dungeonId, q.GetTotalPlayers(PLAYER_ROLE_TANK), q.GetTotalPlayers(PLAYER_ROLE_HEALER), q.GetTotalPlayers(PLAYER_ROLE_DAMAGE));
+            else
+                text += makeText(dungeonId, 0, 0, 0);
+        }
+    }
+
+    std::function<void(Player*)> sendInfo = [text](Player* plr)
+    {
+        WorldPacket data;
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, LANG_ADDON, plr, plr, text, 0, "", DEFAULT_LOCALE, "RaidQueue");
+        plr->GetSession()->SendPacket(&data);
+    };
+
+    if (player)
+        sendInfo(player);
+    else
+    {
+        for (auto&& itr : sWorld->GetAllSessions())
+            if (Player* plr = itr.second->GetPlayer())
+                sendInfo(plr);
+    }
 }

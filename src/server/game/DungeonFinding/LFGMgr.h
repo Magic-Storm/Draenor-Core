@@ -285,7 +285,7 @@ struct LFGDungeonData
         minlevel(dbc->minlevel), maxlevel(dbc->maxlevel), difficulty(Difficulty(dbc->difficulty)),
         seasonal(dbc->flags & LFG_FLAG_SEASONAL), x(0.0f), y(0.0f), z(0.0f), o(0.0f),
         requiredItemLevel(0), tanksNeeded(dbc->tankNeeded), healersNeeded(dbc->healerNeeded), dpsNeeded(dbc->dpsNeeded),
-        faction(dbc->faction), category(LfgCategory(dbc->category))
+        faction(dbc->m_Faction), category(LfgCategory(dbc->category))
         { }
 
     uint32 id;

@@ -1692,15 +1692,15 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
     {
         if (!isContinue)
             lfgGroup->UnbindInstance(dungeon->map, 0);
-        lfgGroup->SetDungeonDifficulty(Difficulty(REGULAR_DIFFICULTY));
-        lfgGroup->SetRaidDifficulty(Difficulty(dungeon->difficulty));
+        lfgGroup->SetDungeonDifficultyID(Difficulty(REGULAR_DIFFICULTY));
+        lfgGroup->SetRaidDifficultyID(Difficulty(dungeon->difficulty));
     }
     else
     {
         if (!isContinue)
             lfgGroup->UnbindInstance(dungeon->map, Difficulty(dungeon->difficulty));
-        lfgGroup->SetDungeonDifficulty(Difficulty(dungeon->difficulty));
-        lfgGroup->SetRaidDifficulty(Difficulty(REGULAR_DIFFICULTY));
+        lfgGroup->SetDungeonDifficultyID(Difficulty(dungeon->difficulty));
+        lfgGroup->SetRaidDifficultyID(Difficulty(REGULAR_DIFFICULTY));
     }
 
     uint64 gguid = lfgGroup->GetGUID();
@@ -2058,7 +2058,7 @@ void LFGMgr::UpdateBoot(uint64 guid, bool accept)
     if (agreeNum == sLFGMgr->GetBootVotesNeeded(gguid))           // Vote passed - Kick player
     {
         if (Group* group = sGroupMgr->GetGroupByGUID(GUID_LOPART(gguid)))
-            Player::RemoveFromGroup(group, boot.victim, GROUP_REMOVEMETHOD_KICK_LFG);
+            Player::RemoveFromGroup(group, boot.victim, GROUP_REMOVEMETHOD_KICK);
         DecreaseKicksLeft(gguid);
     }
     BootsStore.erase(itBoot);

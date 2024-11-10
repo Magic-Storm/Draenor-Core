@@ -109,6 +109,7 @@ enum WorldBoolConfigs
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL,
+    CONFIG_ALLOW_TWO_SIDE_INTERACTION_LFG,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_MOUNT,
     CONFIG_ALLOW_TWO_SIDE_INTERACTION_MOUNT_CAPITALS,
     CONFIG_ALLOW_TWO_SIDE_WHO_LIST,
@@ -780,6 +781,8 @@ class World
 
         void SetInterRealmSession(InterRealmSession* irt) { m_InterRealmSession = irt; }
         InterRealmSession* GetInterRealmSession() { return m_InterRealmSession; }
+
+        void SendRaidQueueInfo(Player* player = nullptr);
 
         void ResetEventSeasonalQuests(uint16 event_id);
         void ResetCurrencyWeekCap();
