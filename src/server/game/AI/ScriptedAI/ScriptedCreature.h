@@ -215,9 +215,9 @@ struct ScriptedAI : public CreatureAI
     {
         switch (_difficulty)
         {
-            case DifficultyNormal:
+            case DUNGEON_DIFFICULTY_NORMAL:
                 return normal5;
-            case DifficultyHeroic:
+            case DUNGEON_DIFFICULTY_HEROIC:
                 return heroic10;
             default:
                 break;

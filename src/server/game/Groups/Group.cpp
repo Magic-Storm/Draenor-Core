@@ -286,7 +286,7 @@ void Group::SaveRolesToDB()
         CharacterDatabase.PExecute("UPDATE group_member SET roles='%u' WHERE guid='%u' AND memberGuid='%u'", itr->roles, m_dbStoreId, GUID_LOPART(itr->guid));
 }
 
-void Group::ConvertToLFG()
+void Group::ConvertToLFG(bool flex)
 {
     m_PartyFlags = PartyFlags(m_PartyFlags | PARTY_FLAG_LFG | PARTY_FLAG_UNK1);
     m_lootMethod = NEED_BEFORE_GREED;
@@ -2691,6 +2691,15 @@ void Group::SetLooterGuid(uint64 guid)
 void Group::SetLootThreshold(ItemQualities threshold)
 {
     m_lootThreshold = threshold;
+}
+
+uint8 Group::GetLfgRoles(uint64 guid)
+{
+    member_witerator slot = _getMemberWSlot(guid);
+    if (slot == m_memberSlots.end())
+        return 0;
+
+    return slot->roles;
 }
 
 void Group::SetLfgRoles(uint64 guid, const uint8 roles)

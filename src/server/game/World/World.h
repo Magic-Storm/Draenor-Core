@@ -769,6 +769,7 @@ class World
         void SetInterRealmSession(InterRealmSession* irt) { m_InterRealmSession = irt; }
         InterRealmSession* GetInterRealmSession() { return m_InterRealmSession; }
 
+        std::thread::id GetThreadId() const { return m_threadId; }
         void SendRaidQueueInfo(Player* player = nullptr);
 
         void ResetEventSeasonalQuests(uint16 event_id);
@@ -1166,6 +1167,7 @@ class World
         bool m_allowMovement;
         std::string m_dataPath;
         MotdText m_Motd;
+        std::thread::id m_threadId;
 
         // for max speed access
         static float m_MaxVisibleDistanceOnContinents;

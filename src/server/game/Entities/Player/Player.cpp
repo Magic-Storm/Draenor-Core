@@ -778,9 +778,9 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
 
     m_HomebindTimer = 0;
     m_InstanceValid = true;
-    m_dungeonDifficulty = DifficultyNormal;
+    m_dungeonDifficulty = DUNGEON_DIFFICULTY_NORMAL;
     m_raidDifficulty = DifficultyRaidNormal;
-    m_LegacyRaidDifficulty = Difficulty10N;
+    m_LegacyRaidDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
     m_PrevMapDifficulty = DifficultyRaidNormal;
 
     m_LastPotion.m_LastPotionItemID = 0;
@@ -1033,7 +1033,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
         m_transport->RemovePassenger(this);
 
     // clean up player-instance binds, may unload some instance saves
-    for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+    for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
             itr->second.save->RemovePlayer(this);
 }
@@ -9393,19 +9393,19 @@ ReputationRank Player::GetReputationRank(uint32 faction) const
 }
 
 /// Calculate total reputation percent player gain with quest/creature level
-int32 Player::CalculateReputationGain(ReputationSource p_Source, uint32 p_CreatureOrQuestLevel, int32 p_Reputation, int32 faction, bool p_NoQuestBonus)
+float Player::CalculateReputationGain(ReputationSource source, uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool noQuestBonus)
 {
     float l_Percent         = 100.0f;
-    float l_ReputationMod   = p_NoQuestBonus ? 0.0f : float(GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN));
+    float l_ReputationMod   = noQuestBonus ? 0.0f : float(GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN));
 
     /// faction specific auras only seem to apply to kills
-    if (p_Source == REPUTATION_SOURCE_KILL)
+    if (source == REPUTATION_SOURCE_KILL)
         l_ReputationMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
 
-    l_Percent += p_Reputation > 0 ? l_ReputationMod : -l_ReputationMod;
+    l_Percent += rep > 0 ? l_ReputationMod : -l_ReputationMod;
 
     float l_Rate;
-    switch (p_Source)
+    switch (source)
     {
         case REPUTATION_SOURCE_KILL:
             l_Rate = sWorld->getRate(RATE_REPUTATION_LOWLEVEL_KILL);
@@ -9425,7 +9425,7 @@ int32 Player::CalculateReputationGain(ReputationSource p_Source, uint32 p_Creatu
             break;
     }
 
-    if (l_Rate != 1.0f && p_CreatureOrQuestLevel < Trinity::XP::GetGrayLevel(getLevel()))
+    if (l_Rate != 1.0f && creatureOrQuestLevel < Trinity::XP::GetGrayLevel(getLevel()))
         l_Percent *= l_Rate;
 
     if (l_Percent <= 0.0f)
@@ -9435,7 +9435,7 @@ int32 Player::CalculateReputationGain(ReputationSource p_Source, uint32 p_Creatu
     if (RepRewardRate const* repData = sObjectMgr->GetRepRewardRate(faction))
     {
         float l_ReputationRate = 0.0f;
-        switch (p_Source)
+        switch (source)
         {
             case REPUTATION_SOURCE_KILL:
                 l_ReputationRate = repData->creature_rate;
@@ -9461,10 +9461,10 @@ int32 Player::CalculateReputationGain(ReputationSource p_Source, uint32 p_Creatu
         l_Percent *= l_ReputationRate;
     }
 
-    if (p_Source != REPUTATION_SOURCE_SPELL && GetsRecruitAFriendBonus(false))
+    if (source != REPUTATION_SOURCE_SPELL && GetsRecruitAFriendBonus(false))
         l_Percent *= 1.0f + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS);
 
-    return CalculatePct(p_Reputation, l_Percent);
+    return CalculatePct(rep, l_Percent);
 }
 
 /// Calculates how many reputation points player gains in victim's enemy factions
@@ -9538,7 +9538,7 @@ void Player::RewardReputation(Unit* p_Victim, float p_Rate)
                     case CREATURE_ELITE_TRIVIAL:
                     case CREATURE_ELITE_NORMAL:
                     case CREATURE_ELITE_RARE:
-                        l_ReputationGain = l_Map->GetDifficultyID() == DifficultyHeroic ? 5 : 3;
+                        l_ReputationGain = l_Map->GetDifficultyID() == DUNGEON_DIFFICULTY_HEROIC ? 5 : 3;
                         break;
                     case CREATURE_ELITE_ELITE:
                         l_ReputationGain = 15;
@@ -10660,7 +10660,7 @@ void Player::_GarrisonSetIn()
     if (!l_GarrisonSiteEntry)
         return;
 
-    Difficulty l_DungeonDiff = DifficultyNormal;
+    Difficulty l_DungeonDiff = DUNGEON_DIFFICULTY_NORMAL;
     std::swap(l_DungeonDiff, m_dungeonDifficulty);
 
     SwitchToPhasedMap(l_GarrisonSiteEntry->MapID);
@@ -10691,7 +10691,7 @@ void Player::_SetInShipyard()
     if (!m_Garrison || !m_Garrison->HasShipyard())
         return;
 
-    Difficulty l_DungeonDiff = DifficultyNormal;
+    Difficulty l_DungeonDiff = DUNGEON_DIFFICULTY_NORMAL;
     std::swap(l_DungeonDiff, m_dungeonDifficulty);
 
     SwitchToPhasedMap(m_Garrison->GetShipyardMapId());
@@ -10728,18 +10728,8 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 	}
 
     // group update
-    if (Group* group = GetGroup())
-    {
+    if (GetGroup())
         SetGroupUpdateFlag(GROUP_UPDATE_FULL);
-        if (GetSession() && group->isLFGGroup() && sLFGMgr->IsTeleported(GetGUID()))
-        {
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
-            {
-                if (Player* member = itr->getSource())
-                    GetSession()->SendNameQueryOpcode(member->GetGUID());
-            }
-        }
-    }
 
     uint32 l_OldZone  = m_zoneUpdateId;
     m_zoneUpdateId    = newZone;
@@ -15753,23 +15743,12 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
 
 InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObject const* lootedObject) const
 {
-    LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(GetGUID());
-    if (dungeons.empty())
-        return EQUIP_ERR_OK;    // not using LFG
 
     if (!GetGroup() || !GetGroup()->isLFGGroup())
         return EQUIP_ERR_OK;    // not in LFG group
 
     // check if looted object is inside the lfg dungeon
-    bool lootedObjectInDungeon = false;
     Map const* map = lootedObject->GetMap();
-    if (uint32 dungeonId = sLFGMgr->GetDungeon(GetGroup()->GetGUID(), true))
-        if (LFGDungeonEntry const* dungeon = sLFGMgr->GetLFGDungeon(dungeonId))
-            if (uint32(dungeon->map) == map->GetId() && dungeon->difficulty == uint32(map->GetDifficulty()))
-                lootedObjectInDungeon = true;
-
-    if (!lootedObjectInDungeon)
-        return EQUIP_ERR_OK;
 
     if (!proto)
         return EQUIP_ERR_ITEM_NOT_FOUND;
@@ -23543,7 +23522,7 @@ void Player::_LoadGroup(PreparedQueryResult result)
 
 void Player::_LoadBoundInstances(PreparedQueryResult result)
 {
-    for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+    for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
         m_boundInstances[i].clear();
 
     Group* group = GetGroup();
@@ -23573,7 +23552,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
                 TC_LOG_ERROR("entities.player", "_LoadBoundInstances: player %s(%d) has bind to not existed or not dungeon map %d", GetName(), GetGUIDLow(), mapId);
                 deleteInstance = true;
             }
-            else if (difficulty >= Difficulty::MaxDifficulties)
+            else if (difficulty >= Difficulty::MAX_DIFFICULTY)
             {
                 TC_LOG_ERROR("entities.player", "_LoadBoundInstances: player %s(%d) has bind to not existed difficulty %d instance for map %u", GetName(), GetGUIDLow(), difficulty, mapId);
                 deleteInstance = true;
@@ -23793,7 +23772,7 @@ void Player::SendRaidInfo()
     ByteBuffer l_Buffer;
     time_t l_Now = time(NULL);
 
-    for (uint8 l_Iter = 0; l_Iter < Difficulty::MaxDifficulties; ++l_Iter)
+    for (uint8 l_Iter = 0; l_Iter < Difficulty::MAX_DIFFICULTY; ++l_Iter)
     {
         for (BoundInstancesMap::iterator l_Itr = m_boundInstances[l_Iter].begin(); l_Itr != m_boundInstances[l_Iter].end(); ++l_Itr)
         {
@@ -23829,7 +23808,7 @@ void Player::SendSavedInstances()
     bool hasBeenSaved = false;
     WorldPacket data;
 
-    for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+    for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
         {
@@ -23849,7 +23828,7 @@ void Player::SendSavedInstances()
     if (!hasBeenSaved)
         return;
 
-    for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+    for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
         {
@@ -23869,7 +23848,7 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, bool switchLe
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
 
-    for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+    for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
         {
@@ -30188,62 +30167,67 @@ PartyResult Player::CanUninviteFromGroup() const
 
     if (grp->isLFGGroup())
     {
+        if (grp->IsFlex() && grp->IsLeader(GetGUID()))
+            return ERR_PARTY_RESULT_OK;
+
+        if (grp->IsFlex() && !grp->IsLeader(GetGUID()))
+            return ERR_NOT_LEADER;
+
         uint64 gguid = grp->GetGUID();
         if (!sLFGMgr->GetKicksLeft(gguid))
             return ERR_PARTY_LFG_BOOT_LIMIT;
 
-        LfgState state = sLFGMgr->GetState(gguid);
-        if (state == LFG_STATE_BOOT)
+        lfg::LfgState state = sLFGMgr->GetActiveState(gguid);
+        if (state == lfg::LFG_STATE_BOOT)
             return ERR_PARTY_LFG_BOOT_IN_PROGRESS;
 
-        if (grp->GetMembersCount() <= sLFGMgr->GetVotesNeeded(gguid))
+        if (grp->GetMembersCount() <= sLFGMgr->GetBootVotesNeeded(gguid))
             return ERR_PARTY_LFG_BOOT_TOO_FEW_PLAYERS;
 
-        if (state == LFG_STATE_FINISHED_DUNGEON)
+        if (state == lfg::LFG_STATE_FINISHED_DUNGEON)
             return ERR_PARTY_LFG_BOOT_DUNGEON_COMPLETE;
+
+        if (state != lfg::LFG_STATE_DUNGEON)        // Disallow boot while in a queue. Causes bugs
+            return ERR_PARTY_LFG_BOOT_IN_COMBAT;    // Can't find a better error...
 
         if (grp->isRollLootActive())
             return ERR_PARTY_LFG_BOOT_LOOT_ROLLS;
 
-        // TODO: Should also be sent when anyone has recently left combat, with an aprox ~5 seconds timer.
+        /// @todo Should also be sent when anyone has recently left combat, with an aprox ~5 seconds timer.
         for (GroupReference const* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
             if (itr->getSource() && itr->getSource()->isInCombat())
                 return ERR_PARTY_LFG_BOOT_IN_COMBAT;
-
-        /* Missing support for these types
-            return ERR_PARTY_LFG_BOOT_COOLDOWN_S;
-            return ERR_PARTY_LFG_BOOT_NOT_ELIGIBLE_S;
-        */
     }
     else
     {
-        if (!grp->IsLeader(GetGUID()) && !grp->IsAssistant(GetGUID()) && !(grp->GetPartyFlags() & PARTY_FLAG_EVERYONE_IS_ASSISTANT))
+        if (!grp->IsLeader(GetGUID()) && !grp->IsAssistant(GetGUID()))
             return ERR_NOT_LEADER;
 
         if (InBattleground())
-            return ERR_LFG_PENDING;
+            return ERR_INVITE_RESTRICTED;
     }
 
     return ERR_PARTY_RESULT_OK;
 }
 
-bool Player::isUsingLfg()
+bool Player::IsUsingLfg(bool inProgressOnly)
 {
-    return sLFGMgr->GetState(GetGUID()) != LFG_STATE_NONE;
+    uint32 queueId = sLFGMgr->GetActiveQueueId(GetGUID());
+    if (!queueId)
+        return false;
+    if (!inProgressOnly)
+        return true;
+    return sLFGMgr->GetOldState(GetGUID(), queueId) == lfg::LFG_STATE_DUNGEON;
 }
 
 bool Player::inRandomLfgDungeon()
 {
-    if (isUsingLfg())
+    if (sLFGMgr->IsSelectedRandomLfgDungeon(GetGUID()))
     {
-        const LfgDungeonSet& dungeons = sLFGMgr->GetSelectedDungeons(GetGUID());
-        if (!dungeons.empty())
-        {
-            LFGDungeonEntry const* dungeon = sLFGMgr->GetLFGDungeon(*dungeons.begin());
-            if (dungeon && (dungeon->type == LFG_TYPE_RANDOM || dungeon->seasonal))
-                return true;
-        }
+        Map const* map = GetMap();
+        return sLFGMgr->InLfgDungeonMap(GetGUID(), map->GetId(), map->GetDifficultyID());
     }
+
     return false;
 }
 
@@ -31058,10 +31042,10 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot, uint8 linkedLootSlot)
                 case Difficulty::DifficultyRaidMythic:
                     l_Context = ItemContext::RaidMythic;
                     break;
-                case Difficulty::DifficultyNormal:
+                case Difficulty::DUNGEON_DIFFICULTY_NORMAL:
                     l_Context = ItemContext::DungeonNormal;
                     break;
-                case Difficulty::DifficultyHeroic:
+                case Difficulty::DUNGEON_DIFFICULTY_HEROIC:
                     l_Context = ItemContext::DungeonHeroic;
                     break;
                 case Difficulty::DifficultyMythic:
@@ -34899,7 +34883,7 @@ void Player::CutOffItemLevel(bool p_RescaleItems)
         l_MinLevel = sWorld->getIntConfig(CONFIG_PVP_ITEM_LEVEL_MIN);
         l_MaxLevel = sWorld->getIntConfig(CONFIG_PVP_ITEM_LEVEL_MAX);
     }
-    else if (l_Map->GetDifficultyID() == DifficultyChallenge && l_Map->IsDungeon())
+    else if (l_Map->GetDifficultyID() == DUNGEON_DIFFICULTY_CHALLENGE && l_Map->IsDungeon())
     {
         l_MaxLevel = sWorld->getIntConfig(CONFIG_CHALLENGE_MODE_ITEM_LEVEL_MAX);
     }
@@ -35806,13 +35790,13 @@ Difficulty Player::CheckLoadedDungeonDifficultyID(Difficulty difficulty)
 {
     DifficultyEntry const* l_DifficultyEntry = sDifficultyStore.LookupEntry(difficulty);
     if (!l_DifficultyEntry)
-        return DifficultyNormal;
+        return DUNGEON_DIFFICULTY_NORMAL;
 
     if (l_DifficultyEntry->InstanceType != MAP_INSTANCE)
-        return DifficultyNormal;
+        return DUNGEON_DIFFICULTY_NORMAL;
 
     if (!(l_DifficultyEntry->Flags & DIFFICULTY_FLAG_CAN_SELECT))
-        return DifficultyNormal;
+        return DUNGEON_DIFFICULTY_NORMAL;
 
     return difficulty;
 }
@@ -35836,13 +35820,13 @@ Difficulty Player::CheckLoadedLegacyRaidDifficultyID(Difficulty p_Difficulty)
 {
     DifficultyEntry const* l_DifficultyEntry = sDifficultyStore.LookupEntry(p_Difficulty);
     if (!l_DifficultyEntry)
-        return Difficulty10N;
+        return RAID_DIFFICULTY_10MAN_NORMAL;
 
     if (l_DifficultyEntry->InstanceType != MAP_RAID)
-        return Difficulty10N;
+        return RAID_DIFFICULTY_10MAN_NORMAL;
 
     if (!(l_DifficultyEntry->Flags & DIFFICULTY_FLAG_CAN_SELECT) || !(l_DifficultyEntry->Flags & DIFFICULTY_FLAG_LEGACY))
-        return Difficulty10N;
+        return RAID_DIFFICULTY_10MAN_NORMAL;
 
     return p_Difficulty;
 }

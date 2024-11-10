@@ -301,6 +301,7 @@ class Group
         void   UpdateLooterGuid(WorldObject* pLootedObject, bool ifneed = false);
         void   SetLootThreshold(ItemQualities threshold);
         void   Disband(bool hideDestroy=false);
+        uint8  GetLfgRoles(uint64 guid);
         void   SetLfgRoles(uint64 guid, const uint8 roles);
 
         // properties accessories
@@ -355,7 +356,7 @@ class Group
         uint8 GetMemberGroup(uint64 guid) const;
 
         void ChangeFlagEveryoneAssistant(bool apply);
-        void ConvertToLFG();
+        void ConvertToLFG(bool flex);
         void ConvertToRaid();
         void ConvertToGroup();
 

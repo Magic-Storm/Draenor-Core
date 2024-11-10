@@ -406,6 +406,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     /// LFG Data
     PREPARE_STATEMENT(CHAR_INS_LFG_DATA, "INSERT INTO lfg_data (guid, dungeon, state) VALUES (?, ?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_DEL_LFG_DATA, "DELETE FROM lfg_data WHERE guid = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_UPD_LFG_DATA, "UPDATE lfg_data SET state = ? WHERE guid = ?", CONNECTION_ASYNC);
 
     /// Player saving
     PREPARE_STATEMENT(CHAR_INS_CHARACTER, "INSERT INTO characters (guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, playerFlagsEx, "

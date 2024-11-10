@@ -3287,7 +3287,8 @@ class Player : public Unit, public GridObject<Player>
 
         static void RemoveAtLoginFlagFromDB(uint32 p_Guid, AtLoginFlags p_Flags);
 
-        bool isUsingLfg();
+        bool IsUsingLfg(bool inProgressOnly = false);
+        bool inRandomLfgDungeon();
 
         typedef std::set<uint32> DFQuestsDoneList;
         DFQuestsDoneList m_DFQuests;
@@ -3456,6 +3457,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetAverageItemLevelTotal() const;
         uint32 GetAverageItemLevelTotalWithOrWithoutPvPBonus(bool p_PvP) const;
         bool isDebugAreaTriggers;
+        float GetAverageItemLevel();
         bool m_IsDebugQuestLogs;
 
         void ClearWhisperWhiteList() { WhisperList.clear(); }
@@ -3677,6 +3679,8 @@ class Player : public Unit, public GridObject<Player>
         bool HasChallengeCompleted(uint32 p_MapID) const;
         CompletedChallenge* GetCompletedChallenge(uint32 p_MapID);
         void AddCompletedChallenge(uint32 p_MapID, CompletedChallenge p_Challenge);
+
+        std::unique_ptr<LootLockoutMap> m_lootLockouts;
 
         CompletedChallengesMap m_CompletedChallenges;
         //////////////////////////////////////////////////////////////////////////
@@ -4244,7 +4248,7 @@ class Player : public Unit, public GridObject<Player>
         // know currencies are not removed at any point (0 displayed)
         void AddKnownCurrency(uint32 itemId);
 
-        int32 CalculateReputationGain(ReputationSource source, uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool noQuestBonus = false);
+        float CalculateReputationGain(ReputationSource source, uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool noQuestBonus = false);
         void AdjustQuestReqItemCount(Quest const* quest);
 
         bool IsCanDelayTeleport() const { return m_bCanDelayTeleport; }
@@ -4385,8 +4389,6 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_PvPCombatTimer;
         bool m_pvpCombat;
-
-        std::unique_ptr<LootLockoutMap> m_lootLockouts;
 
         //////////////////////////////////////////////////////////////////////////
         /// Vignette

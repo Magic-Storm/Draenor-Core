@@ -1473,14 +1473,14 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
 
         RemovePlayerQueuesOnPartyFound(itr.guid, newQueueId);
 
-        for (uint32 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
-            if (BattlegroundQueueTypeId queueTypeId = player->GetBattlegroundQueueTypeId(i))
-                sBattlegroundMgr->RemovePlayerFromQueue(player, queueTypeId);
+        //for (uint32 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+            //if (BattlegroundQueueTypeId queueTypeId = player->GetBattlegroundQueueTypeId(i))
+                //sBattlegroundMgr->RemovePlayerFromQueue(player, queueTypeId);
 
         if (!lfgGroup)
         {
             lfgGroup = new Group();
-            lfgGroup->ConvertToLFG(dungeon->difficulty == RAID_DIFFICULTY_1025MAN_FLEX);
+            //lfgGroup->ConvertToLFG(dungeon->difficulty == RAID_DIFFICULTY_1025MAN_FLEX);
             lfgGroup->Create(player);
             uint64 gguid = lfgGroup->GetGUID();
             TC_LOG_DEBUG("lfg", "LFGMgr::MakeNewGroup: new group created: [" UI64FMTD "]", gguid);
@@ -1931,7 +1931,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
     if (!dungeon)
     {
         TC_LOG_ERROR("lfg", "TeleportPlayer: Player %s (%u) not in group/lfggroup or dungeon not found! (group: " UI64FMTD ", dungeon: %u)",
-            player->GetName().c_str(), player->GetGUIDLow(), group ? GetGuidForLog(group->GetGUID()) : 0, group ? GetDungeon(group->GetGUID()) : 0);
+            player->GetName(), player->GetGUIDLow(), group ? GetGuidForLog(group->GetGUID()) : 0, group ? GetDungeon(group->GetGUID()) : 0);
         player->GetSession()->SendLfgTeleportError(uint8(LFG_TELEPORTERROR_INVALID_LOCATION));
         return;
     }
@@ -1939,7 +1939,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
     if (out)
     {
         TC_LOG_DEBUG("lfg", "TeleportPlayer: Player %s (%u) is being teleported out. Current Map %u - Expected Map %u",
-            player->GetName().c_str(), player->GetGUIDLow(), player->GetMapId(), uint32(dungeon->map));
+            player->GetName(), player->GetGUIDLow(), player->GetMapId(), uint32(dungeon->map));
         if (player->GetMapId() == uint32(dungeon->map))
             player->TeleportToBGEntryPoint();
 
@@ -2015,7 +2015,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         player->GetSession()->SendLfgTeleportError(uint8(error));
 
     TC_LOG_DEBUG("lfg", "TeleportPlayer: Player %s is being teleported in to map %u "
-        "(x: %f, y: %f, z: %f) Result: %u", player->GetName().c_str(), dungeon->map,
+        "(x: %f, y: %f, z: %f) Result: %u", player->GetName(), dungeon->map,
         dungeon->x, dungeon->y, dungeon->z, error);
 }
 
@@ -2028,11 +2028,14 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 void LFGMgr::FinishDungeon(uint64 gguid, uint32 dungeonId, Map* map)
 {
     // Map can't disappear, right? rigth?
-    if (std::this_thread::get_id() != sWorld->GetThreadId())
-    {
-        TaskMgr::Default()->ScheduleInvocation([=] { sLFGMgr->FinishDungeon(gguid, dungeonId, map); });
-        return;
-    }
+    //if (std::this_thread::get_id() != sWorld->GetThreadId())
+    //{
+        //TaskMgr::Default()->ScheduleInvocation([=]
+            //{ 
+               // sLFGMgr->FinishDungeon(gguid, dungeonId, map); 
+            //});
+        //return;
+    //}
 
     uint32 queueId = GetActiveQueueId(gguid);
     if (!queueId)
@@ -2159,25 +2162,6 @@ void LFGMgr::FinishDungeon(uint64 gguid, uint32 dungeonId, Map* map)
                 // we give reward without informing client (retail does this)
                 if (quest)
                     player->RewardQuest(quest, 0, NULL, false);
-            }
-        }
-
-        // Award daily quest credit
-        if (sWorld->AreprojectDailyQuestsEnabled())
-        {
-            player->CreditprojectDailyQuest(180017); // project Daily Quest Credit - Random Dungeon
-            if (Group* group = sGroupMgr->GetGroupByGUID(gguid))
-            {
-                for (auto&& slot : group->GetMemberSlots())
-                {
-                    if (slot.guid == guid)
-                    {
-                        if (slot.roles & (PLAYER_ROLE_TANK | PLAYER_ROLE_HEALER | PLAYER_ROLE_DAMAGE))
-                            player->CreditprojectDailyQuest(slot.roles & PLAYER_ROLE_TANK ? 180006 : slot.roles & PLAYER_ROLE_HEALER ? 180007 : 180008); // project Daily Quest Credit - Random Dungeons as *
-                        if (slot.roles & (PLAYER_ROLE_TANK | PLAYER_ROLE_HEALER))
-                            player->CreditprojectDailyQuest(180016); // project Daily Quest Credit - Random Dungeons as Tank or Healer
-                    }
-                }
             }
         }
 
