@@ -35,17 +35,6 @@ class Quest;
 
 namespace lfg
 {
-struct QueueAnnounceContextLFG
-{
-    using Show = QueueAnnounceContext::Show;
-
-    uint32 DungeonId;
-    LfgRolesMap const& Queuers;
-
-    static bool IsEnabled();
-    void Announce() const;
-};
-
 enum LfgOptions
 {
     LFG_OPTION_ENABLE_DUNGEON_FINDER             = 0x01,
@@ -277,10 +266,10 @@ struct LfgPlayerBoot
 struct LFGDungeonData
 {
     LFGDungeonData(): id(0), name(""), map(0), type(0), expansion(0), group(0), minlevel(0),
-        maxlevel(0), difficulty(REGULAR_DIFFICULTY), seasonal(false), x(0.0f), y(0.0f), z(0.0f), o(0.0f),
+        maxlevel(0), difficulty(DifficultyNone), seasonal(false), x(0.0f), y(0.0f), z(0.0f), o(0.0f),
         requiredItemLevel(0), tanksNeeded(0), healersNeeded(0), dpsNeeded(0), faction(0)
         { }
-    LFGDungeonData(LFGDungeonEntry const* dbc): id(dbc->ID), name(dbc->name[DEFAULT_LOCALE]), map(dbc->map),
+    LFGDungeonData(LFGDungeonEntry const* dbc): id(dbc->ID), name(dbc->name), map(dbc->map),
         type(dbc->type), expansion(dbc->expansion), group(dbc->grouptype),
         minlevel(dbc->minlevel), maxlevel(dbc->maxlevel), difficulty(Difficulty(dbc->difficulty)),
         seasonal(dbc->flags & LFG_FLAG_SEASONAL), x(0.0f), y(0.0f), z(0.0f), o(0.0f),

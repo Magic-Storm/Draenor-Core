@@ -62,7 +62,7 @@ public:
             { "auctions", SEC_ADMINISTRATOR, true, &HandleReloadAuctionsCommand, "", NULL },
             { "access_requirement",           SEC_ADMINISTRATOR, true,  &HandleReloadAccessRequirementCommand,          "", NULL },
             { "lfr_access_requirement",       SEC_ADMINISTRATOR, true,  &HandleReloadLFRAccessRequirementCommand,       "", NULL },
-            { "lfg_entrances",                SEC_ADMINISTRATOR, true,  &HandleReloadLFGEntrancesCommand,               "", NULL },
+            { "lfg_dungeon_rewards",          SEC_ADMINISTRATOR, true,  &HandleReloadLfgRewardsCommand,                 "", NULL },
             { "achievement_criteria_data",    SEC_ADMINISTRATOR, true,  &HandleReloadAchievementCriteriaDataCommand,    "", NULL },
             { "achievement_reward",           SEC_ADMINISTRATOR, true,  &HandleReloadAchievementRewardCommand,          "", NULL },
             { "all",                          SEC_ADMINISTRATOR, true,  NULL,                                           "", reloadAllCommandTable },
@@ -384,11 +384,11 @@ public:
         return true;
     }
 
-    static bool HandleReloadLFGEntrancesCommand(ChatHandler* p_Handler, const char* /*args*/)
+    static bool HandleReloadLfgRewardsCommand(ChatHandler* p_Handler, const char* /*args*/)
     {
-        TC_LOG_INFO("misc", "Re-Loading LFG Entrances definitions...");
-        sLFGMgr->LoadEntrancePositions();
-        p_Handler->SendGlobalGMSysMessage("DB table `lfg_entrances` reloaded.");
+        TC_LOG_INFO("misc", "Re-Loading lfg dungeon rewards...");
+        sLFGMgr->LoadRewards();
+        p_Handler->SendGlobalGMSysMessage("DB table `dungeon rewards` reloaded.");
         return true;
     }
 

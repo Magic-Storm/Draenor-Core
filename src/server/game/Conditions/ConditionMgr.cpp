@@ -1162,7 +1162,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond) const
 {
     uint32 conditionEffMask = cond->SourceGroup;
 
-    for (uint32 l_Difficulty = Difficulty::DifficultyNone; l_Difficulty < Difficulty::MaxDifficulties; l_Difficulty++)
+    for (uint32 l_Difficulty = Difficulty::DifficultyNone; l_Difficulty < Difficulty::MAX_DIFFICULTY; l_Difficulty++)
     {
         SpellInfo* spellInfo = const_cast<SpellInfo*>(sSpellMgr->GetSpellForDifficulty(cond->SourceEntry, static_cast<Difficulty>(l_Difficulty)));
         ASSERT(spellInfo);

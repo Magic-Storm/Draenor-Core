@@ -161,9 +161,7 @@ enum Difficulty
     Difficulty40            = 9,  ///< difficulty_entry_9
 	
     RAID_DIFFICULTY_1025MAN_FLEX = 14, // This is from the new Raid Flex system. Only Siege of Ogrimmar (Map 1136) has it.
-	
-    DifficultyHCScenario    = 11, ///< difficulty_entry_11
-    DifficultyNScenario     = 12, ///< difficulty_entry_12
+
     DifficultyRaidNormal    = 14, ///< difficulty_entry_14
     DifficultyRaidHeroic    = 15, ///< difficulty_entry_15
     DifficultyRaidMythic    = 16, ///< difficulty_entry_16
@@ -171,6 +169,9 @@ enum Difficulty
     DifficultyEventRaid     = 18, ///< difficulty_entry_18
     DifficultyEventDungeon  = 19, ///< difficulty_entry_19
     DifficultyEventScenario = 20, ///< difficulty_entry_20
+
+    SCENARIO_DIFFICULTY_NORMAL = 12,
+    SCENARIO_DIFFICULTY_HEROIC = 11,
 
     DifficultyMythic        = 23,
     DifficultyTimewalker    = 24,
@@ -198,18 +199,18 @@ enum DifficultyFlags
 enum SpawnMask
 {
     SpawnMaskContinent          = (1 << Difficulty::DifficultyNone),
-    SpawnMaskDungeonNormal      = (1 << Difficulty::DifficultyNormal),
-    SpawnMaskDungeonHeroic      = (1 << Difficulty::DifficultyHeroic),
-    SpawnMaskRaid10Normal       = (1 << Difficulty::Difficulty10N ),
-    SpawnMaskRaid25Normal       = (1 << Difficulty::Difficulty25N),
-    SpawnMaskRaid10Heroic       = (1 << Difficulty::Difficulty10HC),
-    SpawnMaskRaid25Heroic       = (1 << Difficulty::Difficulty25HC),
-    SpawnMaskRaidTool           = (1 << Difficulty::DifficultyRaidTool),
-    SpawnMaskChallengeMode      = (1 << Difficulty::DifficultyChallenge),
+    SpawnMaskDungeonNormal      = (1 << Difficulty::DUNGEON_DIFFICULTY_NORMAL),
+    SpawnMaskDungeonHeroic      = (1 << Difficulty::DUNGEON_DIFFICULTY_HEROIC),
+    SpawnMaskRaid10Normal       = (1 << Difficulty::RAID_DIFFICULTY_10MAN_NORMAL),
+    SpawnMaskRaid25Normal       = (1 << Difficulty::RAID_DIFFICULTY_25MAN_NORMAL),
+    SpawnMaskRaid10Heroic       = (1 << Difficulty::RAID_DIFFICULTY_10MAN_HEROIC),
+    SpawnMaskRaid25Heroic       = (1 << Difficulty::RAID_DIFFICULTY_25MAN_HEROIC),
+    SpawnMaskRaidTool           = (1 << Difficulty::RAID_DIFFICULTY_25MAN_LFR),
+    SpawnMaskChallengeMode      = (1 << Difficulty::DUNGEON_DIFFICULTY_CHALLENGE),
     SpawnMaskRaid40Normal       = (1 << Difficulty::Difficulty40),
 
-    SpawnMaskScenarioHeroic     = (1 << Difficulty::DifficultyHCScenario),
-    SpawnMaskScenarioNormal     = (1 << Difficulty::DifficultyNScenario),
+    SpawnMaskScenarioHeroic     = (1 << Difficulty::SCENARIO_DIFFICULTY_HEROIC),
+    SpawnMaskScenarioNormal     = (1 << Difficulty::SCENARIO_DIFFICULTY_NORMAL),
     
     SpawnMaskRaidNormal         = (1 << Difficulty::DifficultyRaidNormal),
     SpawnMaskRaidHeroic         = (1 << Difficulty::DifficultyRaidHeroic),

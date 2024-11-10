@@ -70,6 +70,18 @@ enum AccountDataType
 
 #define REGISTERED_ADDON_PREFIX_SOFTCAP 64
 
+namespace lfg
+{
+    struct LfgJoinResultData;
+    struct LfgPlayerBoot;
+    struct LfgProposal;
+    struct LfgQueueStatusData;
+    struct LfgPlayerRewardData;
+    struct LfgRoleCheck;
+    struct PlayerQueueData;
+    enum LfgUpdateType : uint32;
+}
+
 struct AccountData
 {
     AccountData() : Time(0), Data("") {}

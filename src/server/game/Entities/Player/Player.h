@@ -3390,6 +3390,8 @@ class Player : public Unit, public GridObject<Player>
 
         bool isAllowedToLoot(const Creature* creature);
 
+        bool CreditprojectDailyQuest(uint32 entry, uint32 count = 1);
+
 		// Spell Queue
 		Spell* m_QueuedSpell;
 		uint32 m_spellQueueTimer;

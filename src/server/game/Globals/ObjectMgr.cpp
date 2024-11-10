@@ -1619,7 +1619,7 @@ void ObjectMgr::LoadCreatures()
 	std::map<uint32, uint32> spawnMasks;
 	for (uint32 i = 0; i < sMapStore.GetNumRows(); ++i)
 		if (sMapStore.LookupEntry(i))
-			for (int k = 0; k < Difficulty::MaxDifficulties; ++k)
+			for (int k = 0; k < Difficulty::MAX_DIFFICULTY; ++k)
 				if (GetMapDifficultyData(i, Difficulty(k)))
 					spawnMasks[i] |= (1 << k);
 

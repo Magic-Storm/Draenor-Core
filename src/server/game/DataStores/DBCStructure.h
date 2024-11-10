@@ -1923,7 +1923,7 @@ struct SpellEffect
 {
     SpellEffect()
     {
-        for (int i = 0; i < Difficulty::MaxDifficulties; i++)
+        for (int i = 0; i < Difficulty::MAX_DIFFICULTY; i++)
         {
             for (int y = 0; y < SpellEffIndex::MAX_EFFECTS; y++)
             {
@@ -1931,7 +1931,7 @@ struct SpellEffect
             }
         }
     }
-    SpellEffectEntry const* effects[Difficulty::MaxDifficulties][32];
+    SpellEffectEntry const* effects[Difficulty::MAX_DIFFICULTY][32];
 };
 
 typedef std::map<uint32, SpellEffect> SpellEffectMap;

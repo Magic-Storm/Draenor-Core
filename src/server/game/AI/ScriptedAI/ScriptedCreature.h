@@ -205,8 +205,8 @@ struct ScriptedAI : public CreatureAI
     Difficulty GetDifficulty() const { return _difficulty; }
 
     // return true for 25 man or 25 man heroic mode
-    bool Is25ManRaid() const { return _difficulty == Difficulty::Difficulty25N || _difficulty == Difficulty::Difficulty25HC || IsLFR(); }
-    bool IsLFR() const { return _difficulty == Difficulty::DifficultyRaidTool || _difficulty == Difficulty::DifficultyRaidLFR; }
+    bool Is25ManRaid() const { return _difficulty == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL || _difficulty == Difficulty::RAID_DIFFICULTY_25MAN_HEROIC || IsLFR(); }
+    bool IsLFR() const { return _difficulty == Difficulty::RAID_DIFFICULTY_25MAN_LFR || _difficulty == Difficulty::DifficultyRaidLFR; }
     bool IsHeroic() const { return me->GetMap()->IsHeroic(); }
     bool IsMythic() const { return me->GetMap()->IsMythic(); }
 
@@ -231,9 +231,9 @@ struct ScriptedAI : public CreatureAI
     {
         switch (_difficulty)
         {
-            case Difficulty10N:
+            case RAID_DIFFICULTY_10MAN_NORMAL:
                 return normal10;
-            case Difficulty25N:
+            case RAID_DIFFICULTY_25MAN_NORMAL:
                 return normal25;
             default:
                 break;
@@ -247,13 +247,13 @@ struct ScriptedAI : public CreatureAI
     {
         switch (_difficulty)
         {
-            case Difficulty10N:
+            case RAID_DIFFICULTY_10MAN_NORMAL:
                 return normal10;
-            case Difficulty25N:
+            case RAID_DIFFICULTY_25MAN_NORMAL:
                 return normal25;
-            case Difficulty10HC:
+            case RAID_DIFFICULTY_10MAN_HEROIC:
                 return heroic10;
-            case Difficulty25HC:
+            case RAID_DIFFICULTY_25MAN_HEROIC:
                 return heroic25;
             default:
                 break;

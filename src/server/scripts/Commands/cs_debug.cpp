@@ -160,7 +160,6 @@ class debug_commandscript: public CommandScript
                 { "log",                         SEC_ADMINISTRATOR,  false, &HandleDebugLogCommand,                  "", NULL },
                 { "movement",                    SEC_ADMINISTRATOR,  false, &HandleDebugMoveCommand,                 "", NULL },
                 { "boss",                        SEC_ADMINISTRATOR,  false, &HandleDebugBossCommand,                 "", NULL },
-                { "lfg",                         SEC_ADMINISTRATOR,  false, &HandleDebugLfgCommand,                  "", NULL },
                 { "scaleitem",                   SEC_ADMINISTRATOR,  true,  &HandleDebugScaleItem,                   "", NULL },
                 { "toy",                         SEC_ADMINISTRATOR,  false, &HandleDebugToyCommand,                  "", NULL },
                 { "charge",                      SEC_ADMINISTRATOR,  false, &HandleDebugClearSpellCharges,           "", NULL },
@@ -2825,22 +2824,6 @@ class debug_commandscript: public CommandScript
             return true;
         }
 
-        static bool HandleDebugLfgCommand(ChatHandler* p_Handler, char const * /*p_Args*/)
-        {
-            if (sLFGMgr->IsInDebug())
-            {
-                p_Handler->PSendSysMessage("Lfg debug mode is now disable");
-                sLFGMgr->SetDebug(false);
-            }
-            else
-            {
-                sLFGMgr->SetDebug(true);
-                p_Handler->PSendSysMessage("Lfg debug mode is now enable");
-            }
-
-            return true;
-        }
-
         static bool HandleDebugScaleItem(ChatHandler* handler, char const* args)
         {
             char* arg1 = strtok((char*)args, " ");
@@ -3912,7 +3895,7 @@ class debug_commandscript: public CommandScript
 
             l_Data << int32(l_ScenarioID);
             l_Data << int32(0);
-            l_Data << uint32(Difficulty::DifficultyChallenge);
+            l_Data << uint32(Difficulty::DUNGEON_DIFFICULTY_CHALLENGE);
             l_Data << uint32(0);
             l_Data << uint32(0);
             l_Data << uint32(0);

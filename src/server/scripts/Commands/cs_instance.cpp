@@ -64,7 +64,7 @@ public:
             player = handler->GetSession()->GetPlayer();
 
         uint32 counter = 0;
-        for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+        for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
         {
             Player::BoundInstancesMap &binds = player->GetBoundInstances(Difficulty(i));
             for (Player::BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end(); ++itr)
@@ -80,7 +80,7 @@ public:
         counter = 0;
         if (Group* group = player->GetGroup())
         {
-            for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+            for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
             {
                 Group::BoundInstancesMap &binds = group->GetBoundInstances(Difficulty(i));
                 for (Group::BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end(); ++itr)
@@ -121,7 +121,7 @@ public:
                 return false;
         }
 
-        for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+        for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
         {
             Player::BoundInstancesMap &binds = player->GetBoundInstances(Difficulty(i));
             for (Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end();)

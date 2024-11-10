@@ -309,12 +309,12 @@ void WorldSession::SendLfgPlayerLockInfo()
                             if ((itr->creditEntry == 60400 && GetPlayer()->HasLfrLockout(60400)) || // Will of Emperor
                                 (itr->creditEntry == 71475 && GetPlayer()->HasLfrLockout(71475)))   // The Fallen Protectors
                             {
-                                enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                enc_mask |= 1 << itr->dbcEntry->Bit;
                                 continue;
                             }
 
                             if (GetPlayer()->HasLfrLockout(itr->creditEntry))
-                                enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                enc_mask |= 1 << itr->dbcEntry->Bit;
                         }
                         else if (itr->creditType == ENCOUNTER_CREDIT_CAST_SPELL)
                         {
@@ -322,31 +322,31 @@ void WorldSession::SendLfgPlayerLockInfo()
                             {
                             case 104574: // Spine of Deathwing
                                 if (GetPlayer()->HasLfrLockout(210222))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 111533: // Madness of Deathwing
                                 if (GetPlayer()->HasLfrLockout(210079))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 123900: // Protectors of the Endless
                                 if (GetPlayer()->HasLfrLockout(60583) || GetPlayer()->HasLfrLockout(60586) || GetPlayer()->HasLfrLockout(60585))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 123901: // Tsulong
                                 if (GetPlayer()->HasLfrLockout(62442))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 123903: // Lei Shi
                                 if (GetPlayer()->HasLfrLockout(62983))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 128288: // The Stone Guard
                                 if (GetPlayer()->HasLfrLockout(59915))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 140353: // Megaera
                                 if (GetPlayer()->HasLfrLockout(70212))
-                                    enc_mask |= 1 << itr->dbcEntry->encounterIndex;
+                                    enc_mask |= 1 << itr->dbcEntry->Bit;
                                 break;
                             case 145904: // Spoils of Pandaria
                             case 148512: // Paragons of the Klaxxi
@@ -429,7 +429,7 @@ void WorldSession::SendLfgPlayerLockInfo()
         }
 
         lfgData << uint32(0);
-        lfgData << uint32(quest ? quest->GetRewardOrRequiredMoney() : 0);
+        lfgData << uint32(quest ? quest->GetRewMoney() : 0);
 
         if (quest && quest->GetRewItemsCount())
         {
@@ -528,7 +528,7 @@ void WorldSession::SendLfgPartyLockInfo()
     data.WriteBits(0, 22); // placeholder
     for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        ObjectGuid pguid = itr->GetSource()->GetGUID();
+        ObjectGuid pguid = itr->getSource()->GetGUID();
 
         if (pguid == guid)
             continue;
@@ -582,7 +582,7 @@ void WorldSession::HandleLfgGetStatus(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "CMSG_LFG_GET_STATUS %s", GetPlayer()->GetGUID());
 
-    if (!GetPlayer()->IsUsingLfg())
+    if (!GetPlayer()->isUsingLfg())
         return;
 
     if (auto queues = sLFGMgr->GetPlayerQueues(GetPlayer()->GetGUID()))
@@ -869,7 +869,7 @@ void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
 
     LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(queueData.dungeonId);
 
-    ObjectGuid guid = playerQueueData.OriginalGroup ? playerQueueData.OriginalGroup : _player->GetGUID();
+    ObjectGuid guid = playerQueueData.OriginalGroup ? playerQueueData.OriginalGroup : m_Player->GetGUID();
     WorldPacket data(SMSG_LFG_QUEUE_STATUS, 4 + 4 + 4 + 4 + 4 + 4 + 1 + 1 + 1 + 4 + 4 + 4 + 4 + 8);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[3]);
@@ -918,7 +918,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
 
     ByteBuffer bytereward;
     WorldPacket data(SMSG_LFG_PLAYER_REWARD);
-    data << uint32(rewardData.quest ? rewardData.quest->GetRewardOrRequiredMoney() : 0);
+    data << uint32(rewardData.quest ? rewardData.quest->GetRewMoney() : 0);
     data << uint32(rewardData.rdungeonEntry);                               // Random Dungeon Finished
     data << uint32(rewardData.quest ? rewardData.quest->XPValue(GetPlayer()) : 0);
     data << uint32(rewardData.sdungeonEntry);                               // Dungeon Finished
@@ -1012,7 +1012,7 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
         secsleft, lfg::LFG_GROUP_KICK_VOTES_NEEDED, boot.reason.c_str());
 
     ObjectGuid pguid = boot.victim;
-    WorldPacket data(SMSG_LFG_BOOT_PROPOSAL_UPDATE);
+    WorldPacket data(SMSG_LFG_PROPOSAL_UPDATE);
     data.WriteBit(boot.reason.empty());
     data.WriteGuidMask(pguid, 3);
     data.WriteBit(playerVote != lfg::LFG_ANSWER_PENDING);           // Did Vote
@@ -1047,7 +1047,7 @@ void WorldSession::SendLfgUpdateProposal(lfg::LfgProposal const& proposal)
     bool silent = !proposal.isNew && gguid && gguid == proposal.group;
     uint32 dungeonEntry = proposal.dungeonId;
     uint32 serverQueueId = proposal.players.find(guid)->second.queueId;
-    auto& queueData = sLFGMgr->GetPlayerQueueData(_player->GetGUID(), serverQueueId);
+    auto& queueData = sLFGMgr->GetPlayerQueueData(m_Player->GetGUID(), serverQueueId);
 
     TC_LOG_DEBUG("network", "SMSG_LFG_PROPOSAL_UPDATE %s state: %u",
         GetPlayer()->GetGUID(), proposal.state);

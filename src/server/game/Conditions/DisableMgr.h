@@ -24,7 +24,9 @@ enum DisableType
     DISABLE_TYPE_OUTDOORPVP             = 5,
     DISABLE_TYPE_VMAP                   = 6,
     DISABLE_TYPE_GARRISON_MISSION       = 7,
-    DISABLE_TYPE_MMAP                   = 8
+    DISABLE_TYPE_MMAP                   = 8,
+    DISABLE_TYPE_LFG_MAP                = 9,
+    DISABLE_TYPE_LFG_DUNGEON            = 10
 };
 
 enum SpellDisableTypes

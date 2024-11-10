@@ -851,7 +851,7 @@ class SpellMgr
         SkillLineAbilityMap        mSkillLineAbilityMap;
         PetLevelupSpellMap         mPetLevelupSpellMap;
         PetDefaultSpellsMap        mPetDefaultSpellsMap;           // only spells not listed in related mPetLevelupSpellMap entry
-        SpellInfoMap               mSpellInfoMap[Difficulty::MaxDifficulties];
+        SpellInfoMap               mSpellInfoMap[Difficulty::MAX_DIFFICULTY];
         SpellClassList             mSpellClassInfo;
         SpecializatioPerkMap       mSpecializationPerks;
         TalentSpellSet             mTalentSpellInfo;

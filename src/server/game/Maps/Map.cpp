@@ -2614,15 +2614,15 @@ MapDifficulty const* Map::GetMapDifficulty() const
 InstanceLockTypes Map::GetInstanceLockType()
 {
 	// Siege of Orgrimmar, Flex mode, all LFR raids and Wod raids.
-	if (IsRaid() && (GetDifficultyID() == DifficultyRaidNormal || GetDifficultyID() == DifficultyRaidHeroic || GetDifficultyID() == DifficultyRaidLFR || GetDifficultyID() == DifficultyRaidTool))
+	if (IsRaid() && (GetDifficultyID() == DifficultyRaidNormal || GetDifficultyID() == DifficultyRaidHeroic || GetDifficultyID() == DifficultyRaidLFR || GetDifficultyID() == RAID_DIFFICULTY_25MAN_LFR))
 		return INSTANCE_LOCK_LOOT_BASED;
 
 	// Dungeons, Vanilla + TBC raids, WOTLK + MOP Heroic raids.
-	if (IsNonRaidDungeon() || IsRaid() && (Expansion() < EXPANSION_WRATH_OF_THE_LICH_KING || Expansion() >= EXPANSION_WRATH_OF_THE_LICH_KING && (GetDifficultyID() == Difficulty10HC || GetDifficultyID() == Difficulty25HC)))
+	if (IsNonRaidDungeon() || IsRaid() && (Expansion() < EXPANSION_WRATH_OF_THE_LICH_KING || Expansion() >= EXPANSION_WRATH_OF_THE_LICH_KING && (GetDifficultyID() == RAID_DIFFICULTY_10MAN_HEROIC || GetDifficultyID() == RAID_DIFFICULTY_25MAN_HEROIC)))
 		return INSTANCE_LOCK_STRICT;
 
 	// Normal WOTLK, MOP raids.
-	if (IsRaid() && (Expansion() >= EXPANSION_WRATH_OF_THE_LICH_KING && (GetDifficultyID() == Difficulty10N || GetDifficultyID() == Difficulty25N)))
+	if (IsRaid() && (Expansion() >= EXPANSION_WRATH_OF_THE_LICH_KING && (GetDifficultyID() == RAID_DIFFICULTY_10MAN_NORMAL || GetDifficultyID() == RAID_DIFFICULTY_25MAN_NORMAL)))
 		return INSTANCE_LOCK_FLEXIBLE;
 
 	// Not a raid / dungeon map.
@@ -2644,11 +2644,11 @@ uint32 InstanceMap::GetMaxPlayers() const
 
     if (MapDifficulty const* mapDiff = GetMapDifficulty())
     {
-        if (mapDiff->MaxPlayers || GetDifficultyID() == DifficultyNormal)    // Normal case (expect that regular difficulty always have correct maxplayers)
+        if (mapDiff->MaxPlayers || GetDifficultyID() == DUNGEON_DIFFICULTY_NORMAL)    // Normal case (expect that regular difficulty always have correct maxplayers)
             return mapDiff->MaxPlayers;
         else                                                // DBC have 0 maxplayers for heroic instances with expansion < 2
         {                                                   // The heroic entry exists, so we don't have to check anything, simply return normal max players
-            MapDifficulty const* normalDiff = GetMapDifficultyData(GetId(), DifficultyNormal);
+            MapDifficulty const* normalDiff = GetMapDifficultyData(GetId(), DUNGEON_DIFFICULTY_NORMAL);
             return normalDiff ? normalDiff->MaxPlayers : 0;
         }
     }
@@ -2656,20 +2656,20 @@ uint32 InstanceMap::GetMaxPlayers() const
     {
         switch (GetDifficultyID())
         {
-            case Difficulty::DifficultyNScenario:
-            case Difficulty::DifficultyHCScenario:
+            case Difficulty::SCENARIO_DIFFICULTY_HEROIC:
+            case Difficulty::SCENARIO_DIFFICULTY_NORMAL:
                 return 3;
-            case Difficulty::DifficultyNormal:
-            case Difficulty::DifficultyHeroic:
-            case Difficulty::DifficultyChallenge:
+            case Difficulty::DUNGEON_DIFFICULTY_NORMAL:
+            case Difficulty::DUNGEON_DIFFICULTY_HEROIC:
+            case Difficulty::DUNGEON_DIFFICULTY_CHALLENGE:
                 return 5;
-            case Difficulty::Difficulty10N:
-            case Difficulty::Difficulty10HC:
+            case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
+            case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
                 return 10;
-            case Difficulty::Difficulty25N:
-            case Difficulty::Difficulty25HC:
+            case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
+            case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
             case Difficulty::DifficultyRaidLFR:
-            case Difficulty::DifficultyRaidTool:
+            case Difficulty::RAID_DIFFICULTY_25MAN_LFR:
                 return 25;
             case Difficulty::DifficultyRaidNormal:
             case Difficulty::DifficultyRaidHeroic:
@@ -2989,9 +2989,9 @@ ItemContext Map::GetLootItemContext() const
 
     switch (GetDifficultyID())
     {
-        case Difficulty::DifficultyNormal:
+        case Difficulty::DUNGEON_DIFFICULTY_NORMAL:
             return ItemContext::DungeonNormal;
-        case Difficulty::DifficultyHeroic:
+        case Difficulty::DUNGEON_DIFFICULTY_HEROIC:
             return ItemContext::DungeonHeroic;
         case Difficulty::DifficultyRaidNormal:
             return ItemContext::RaidNormal;

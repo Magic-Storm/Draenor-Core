@@ -600,19 +600,6 @@ enum WorldStates
     WS_WEEKLY_BOSS_LOOTED_RESET_TIME      = 20008                      ///< Next weekly boss looted reset time
 };
 
-struct CharacterNameData
-{
-    ~CharacterNameData() { delete m_declinedName; }
-
-    std::string m_name;
-    uint8 m_class;
-    uint8 m_race;
-    uint8 m_gender;
-    uint8 m_level;
-    uint32 m_accountID;
-    DeclinedName const* m_declinedName = nullptr;
-};
-
 // DB scripting commands
 enum ScriptCommands
 {
@@ -1023,7 +1010,6 @@ class World
 
         bool isEventKillStart;
 
-        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
         void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
@@ -1214,8 +1200,6 @@ class World
         PreparedQueryResultFuture m_transfersExpLoadCallback;
         uint32 m_recordDiff[RECORD_DIFF_MAX];
         LexicsCutter *m_lexicsCutter;
-
-        std::map<uint32, CharacterNameData> _characterNameDataMap;
 
         //////////////////////////////////////////////////////////////////////////
         /// New query holder callback system

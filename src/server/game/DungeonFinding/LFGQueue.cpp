@@ -409,16 +409,16 @@ void DungeonQueue::MakeProposals(ProposalList& proposals)
     }
 }
 
-void DungeonQueue::OutDebug(std::ostringstream& ss, bool client) const
-{
-    if (m_buckets.empty())
-        return;
+//void DungeonQueue::OutDebug(std::ostringstream& ss, bool client) const
+//{
+    //if (m_buckets.empty())
+        //return;
 
-    LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(m_dungeonID);
-    ss << "   --- DUNGEON QUEUE --- Dungeon: " << GetDungeonID() << " (" << (dungeon ? dungeon->name[DEFAULT_LOCALE] : "???") << ")" << (dungeon && dungeon->difficulty ? " (Heroic)" : "") << "\n";
-    for (auto&& bucket : m_buckets)
-        bucket.OutDebug(ss, client);
-}
+    //LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(m_dungeonID);
+    //ss << "   --- DUNGEON QUEUE --- Dungeon: " << GetDungeonID() << " (" << (dungeon ? dungeon->name[DEFAULT_LOCALE] : "???") << ")" << (dungeon && dungeon->difficulty ? " (Heroic)" : "") << "\n";
+    //for (auto&& bucket : m_buckets)
+        //bucket.OutDebug(ss, client);
+//}
 #pragma endregion
 
 #pragma region QueueManager
