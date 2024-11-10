@@ -101,6 +101,26 @@ void GroupMgr::RemoveGroup(Group* group)
 #ifndef CROSS
 }
 
+void GroupMgr::BindGroupToPlayer(uint64 playerGuid, Group* group)
+{
+    if (group->isBGGroup()) // Don't bind with battleground group
+        return;
+    GroupByPlayerStore.insert(std::make_pair(playerGuid, group));
+}
+
+void GroupMgr::UnbindGroupFromPlayer(uint64 playerGuid, Group* group)
+{
+    auto bounds = GroupByPlayerStore.equal_range(playerGuid);
+    for (auto it = bounds.first; it != bounds.second; ++it)
+    {
+        if (it->second == group)
+        {
+            GroupByPlayerStore.erase(it);
+            break;
+        }
+    }
+}
+
 void GroupMgr::LoadGroups()
 {
     {

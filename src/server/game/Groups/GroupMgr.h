@@ -21,6 +21,7 @@ private:
 public:
     typedef std::map<uint32, Group*> GroupContainer;
     typedef std::vector<Group*>      GroupDbContainer;
+    typedef std::multimap<uint64, Group*> PlayerGroups;
 
     Group* GetGroupByGUID(uint32 guid) const;
 
@@ -30,6 +31,9 @@ public:
     void   SetNextGroupDbStoreId(uint32 storageId) { NextGroupDbStoreId = storageId; };
     Group* GetGroupByDbStoreId(uint32 storageId) const;
     void   SetGroupDbStoreSize(uint32 newSize) { GroupDbStore.resize(newSize); }
+
+    void BindGroupToPlayer(uint64 playerGuid, Group* group);
+    void UnbindGroupFromPlayer(uint64 playerGuid, Group* group);
 
 #ifndef CROSS
     void   LoadGroups();
@@ -44,6 +48,7 @@ protected:
     uint32           NextGroupDbStoreId;
     GroupContainer   GroupStore;
     GroupDbContainer GroupDbStore;
+    PlayerGroups     GroupByPlayerStore;
 };
 
 #define sGroupMgr ACE_Singleton<GroupMgr, ACE_Null_Mutex>::instance()

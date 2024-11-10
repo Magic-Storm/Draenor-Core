@@ -10,6 +10,7 @@
 #define TRINITY_TIMER_H
 
 #include <chrono>
+#include "TimeValue.h"
 
 inline uint32 getMSTime()
 {
@@ -186,6 +187,59 @@ private:
 
     int32 i_period;
     int32 i_expireTime;
+};
+
+class Stopwatch
+{
+public:
+    Stopwatch(bool runNow = true)
+    {
+        Reset();
+
+        if (runNow)
+            Start();
+    }
+
+    ~Stopwatch() { }
+
+    void Start()
+    {
+        _running = true;
+        _startTime = Now();
+    }
+
+    void Stop()
+    {
+        _stopTime = Now();
+        _running = false;
+    }
+
+    void Reset()
+    {
+        _startTime = TimeValue::zero();
+        _stopTime = TimeValue::zero();
+        _running = false;
+    }
+
+    uint64 GetMicroSec()
+    {
+        return ((_running ? Now() : _stopTime) - _startTime).ToMicroseconds();
+    }
+
+    uint64 GetMilliSec()
+    {
+        return ((_running ? Now() : _stopTime) - _startTime).ToMilliseconds();
+    }
+
+    TimeValue Now()
+    {
+        return TimeValue::Now();
+    }
+
+private:
+    TimeValue   _startTime;
+    TimeValue   _stopTime;
+    bool        _running;
 };
 
 #endif

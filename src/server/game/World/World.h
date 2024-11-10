@@ -168,6 +168,10 @@ enum WorldBoolConfigs
     CONFIG_CHATLOG_BGROUND,
     CONFIG_DUNGEON_FINDER_ENABLE,
     CONFIG_AUTOBROADCAST,
+    CONFIG_LFG_CASTDESERTER,
+    CONFIG_LFG_OVERRIDE_ROLES_REQUIRED,
+    CONFIG_LFG_MULTIQUEUE_ENABLED,
+    CONFIG_LFG_KEEP_QUEUES_IN_DUNGEON,
     CONFIG_ALLOW_TICKETS,
     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
     CONFIG_PRESERVE_CUSTOM_CHANNELS,
@@ -386,6 +390,13 @@ enum WorldIntConfigs
     CONFIG_DB_PING_INTERVAL,
     CONFIG_PRESERVE_CUSTOM_CHANNEL_DURATION,
     CONFIG_PERSISTENT_CHARACTER_CLEAN_FLAGS,
+    CONFIG_LFG_OPTIONSMASK,
+    CONFIG_LFG_TANKS_NEEDED,
+    CONFIG_LFG_HEALERS_NEEDED,
+    CONFIG_LFG_DPS_NEEDED,
+    CONFIG_LFG_SHORTAGE_CHECK_INTERVAL,
+    CONFIG_LFG_SHORTAGE_PERCENT,
+    CONFIG_LFG_MAX_LFR_QUEUES,
     CONFIG_MAX_INSTANCES_PER_HOUR,
     CONFIG_WARDEN_CLIENT_RESPONSE_DELAY,
     CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF,
@@ -588,6 +599,19 @@ enum WorldStates
     WS_WEEKLY_BOSS_LOOTED_RESET_TIME      = 20008                      ///< Next weekly boss looted reset time
 };
 
+struct CharacterNameData
+{
+    ~CharacterNameData() { delete m_declinedName; }
+
+    std::string m_name;
+    uint8 m_class;
+    uint8 m_race;
+    uint8 m_gender;
+    uint8 m_level;
+    uint32 m_accountID;
+    DeclinedName const* m_declinedName = nullptr;
+};
+
 // DB scripting commands
 enum ScriptCommands
 {
@@ -622,6 +646,7 @@ enum ScriptCommands
     SCRIPT_COMMAND_CLOSE_GOSSIP          = 33,               // source = Player
     SCRIPT_COMMAND_PLAYMOVIE             = 34                // source = Player, datalong = movie id
 };
+
 
 /// Storage class for commands issued for delayed execution
 struct CliCommandHolder
@@ -995,6 +1020,8 @@ class World
 
         bool isEventKillStart;
 
+        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
+        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
         std::string GetRealmName() { return m_realmName; }
@@ -1184,6 +1211,8 @@ class World
         PreparedQueryResultFuture m_transfersExpLoadCallback;
         uint32 m_recordDiff[RECORD_DIFF_MAX];
         LexicsCutter *m_lexicsCutter;
+
+        std::map<uint32, CharacterNameData> _characterNameDataMap;
 
         //////////////////////////////////////////////////////////////////////////
         /// New query holder callback system

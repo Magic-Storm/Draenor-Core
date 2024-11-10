@@ -192,6 +192,7 @@ uint8 Group::GetPartyType() const
 void Group::LoadGroupFromDB(Field* fields)
 {
     m_dbStoreId = fields[15].GetUInt32();
+    m_guid = MAKE_NEW_GUID(sGroupMgr->GenerateGroupId(), 0, HIGHGUID_GROUP);
     m_leaderGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
 
     // group leader not exist
@@ -203,19 +204,39 @@ void Group::LoadGroupFromDB(Field* fields)
     m_lootThreshold = ItemQualities(fields[3].GetUInt8());
 
     for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
-        m_targetIcons[i] = fields[4+i].GetUInt32();
+        m_targetIcons[i] = fields[4 + i].GetUInt32();
 
-    m_PartyFlags  = PartyFlags(fields[12].GetUInt8());
-    if (m_PartyFlags & PARTY_FLAG_RAID)
+    m_groupType = GroupType(fields[12].GetUInt8());
+    if (m_groupType & GROUPTYPE_RAID)
         _initRaidSubGroupsCounter();
 
-    m_dungeonDifficulty = Player::CheckLoadedDungeonDifficultyID(Difficulty(fields[13].GetUInt8()));
-    m_raidDifficulty = Player::CheckLoadedRaidDifficultyID(Difficulty(fields[14].GetUInt8()));
+    uint32 diff = fields[13].GetUInt8();
+    if (diff >= MAX_DUNGEON_DIFFICULTY)
+        m_dungeonDifficulty = DUNGEON_DIFFICULTY_NORMAL;
+    else
+        m_dungeonDifficulty = Difficulty(diff);
 
-    if (m_PartyFlags & PARTY_FLAG_LFG)
-        sLFGMgr->_LoadFromDB(fields, GetGUID());
+    uint32 r_diff = fields[14].GetUInt8();
+    if (r_diff >= MAX_RAID_DIFFICULTY)
+        m_raidDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
+    else
+        m_raidDifficulty = Difficulty(r_diff);
 
-    m_LegacyRaidDifficuty = Player::CheckLoadedLegacyRaidDifficultyID(Difficulty(fields[18].GetUInt8()));
+    if (m_groupType & GROUPTYPE_LFG)
+        sLFGMgr->LoadFromDB(fields, GetGUID());
+
+    m_logResumeOnLogin = isRaidGroup() && !isBGGroup();
+
+    m_slot = GroupSlot(fields[18].GetUInt8());
+    if (m_slot >= GroupSlot::Max)
+    {
+        TC_LOG_ERROR("shitlog", "Group::LoadGroupFromDB invalid group slot (%u) for group %u", fields[13].GetUInt8(), m_dbStoreId);
+        m_slot = GroupSlot::Original;
+    }
+    if (m_slot == GroupSlot::Original && isLFGGroup())
+        TC_LOG_ERROR("shitlog", "Group::LoadGroupFromDB group is original group but it is lfg group %u", m_dbStoreId);
+    if (m_slot == GroupSlot::Instance && !isLFGGroup()) // Only lfg groups are stored to db
+        TC_LOG_ERROR("shitlog", "Group::LoadGroupFromDB group is instance group but it is not lfg group %u", m_dbStoreId);
 }
 
 #ifndef CROSS
@@ -243,13 +264,9 @@ void Group::LoadMemberFromDB(uint32 guidLow, uint8 memberFlags, uint8 subgroup, 
 
     SubGroupCounterIncrease(subgroup);
 
-    if (isLFGGroup())
-    {
-        LfgDungeonSet Dungeons;
-        Dungeons.insert(sLFGMgr->GetDungeon(GetGUID()));
-        sLFGMgr->SetSelectedDungeons(member.guid, Dungeons);
-        sLFGMgr->SetState(member.guid, sLFGMgr->GetState(GetGUID()));
-    }
+    if (sLFGMgr->GetActiveState(GetGUID()) != lfg::LFG_STATE_NONE)
+        sLFGMgr->SetupGroupMember(member.guid, GetGUID());
+    sGroupMgr->BindGroupToPlayer(member.guid, this);
 }
 
 #endif /* not CROSS */
@@ -307,6 +324,20 @@ void Group::ConvertToRaid()
     for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
         if (Player* player = ObjectAccessor::FindPlayer(citr->guid))
             player->UpdateForQuestWorldObjects();
+}
+
+void Group::FindNewLeader(uint64 exceptGuid)
+{
+    for (member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+    {
+        if (exceptGuid && itr->guid == exceptGuid)
+            continue;
+        if (ObjectAccessor::FindPlayer(itr->guid))
+        {
+            ChangeLeader(itr->guid);
+            return;
+        }
+    }
 }
 
 void Group::ConvertToGroup()
@@ -752,17 +783,23 @@ bool Group::RemoveMember(uint64 p_Guid, RemoveMethod const& p_Method /*= GROUP_R
 
         if (isLFGGroup() && GetMembersCount() == 1)
         {
-            Player* l_Leader = ObjectAccessor::FindPlayer(GetLeaderGUID());
-            const LFGDungeonEntry* l_Dungeon = sLFGDungeonStore.LookupEntry(sLFGMgr->GetDungeon(GetGUID()));
-
-            if ((l_Leader && l_Dungeon && l_Leader->isAlive() && l_Leader->GetMapId() != uint32(l_Dungeon->map)) || !l_Dungeon)
+            Player* leader = ObjectAccessor::FindPlayer(GetLeaderGUID());
+            uint32 mapId = sLFGMgr->GetDungeonMapId(GetGUID());
+            if (!mapId || !leader || (leader->IsAlive() && leader->GetMapId() != mapId))
             {
                 Disband();
                 return false;
             }
         }
 
-        if ((!sLFGListMgr->IsGroupQueued(this) || !m_memberMgr.getSize()) && m_memberMgr.getSize() < ((isLFGGroup() || isBGGroup()) ? 1u : 2u))
+        if (p_Guid == ReadyCheckInitiator())
+        {
+            if (l_Player)
+                l_Player->ReadyCheckComplete();
+            ReadyCheck(0);
+        }
+
+        if (m_memberSlots.size() < ((isLFGGroup() || isBGGroup()) ? 1u : 2u))
             Disband();
 
         return true;
@@ -771,7 +808,7 @@ bool Group::RemoveMember(uint64 p_Guid, RemoveMethod const& p_Method /*= GROUP_R
     else
     {
         /// Don't display "You have been removed from group" if player removes himself
-        Disband(p_Method == RemoveMethod::GROUP_REMOVEMETHOD_LEAVE);
+        Disband();
         return false;
     }
 

@@ -1530,6 +1530,13 @@ namespace InteractionStatus
     };
 }
 
+enum class GroupSlot : uint8
+{
+    Original,       // LE_PARTY_CATEGORY_HOME       (home i.e. home realm only)
+    Instance,       // LE_PARTY_CATEGORY_INSTANCE
+    Max,
+};
+
 class Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;

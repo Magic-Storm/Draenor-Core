@@ -1340,6 +1340,18 @@ void World::LoadConfigSettings(bool reload)
     // Dungeon finder
     m_bool_configs[CONFIG_DUNGEON_FINDER_ENABLE] = sConfigMgr->GetBoolDefault("DungeonFinder.Enable", false);
 
+    m_int_configs[CONFIG_LFG_OPTIONSMASK] = sConfigMgr->GetIntDefault("DungeonFinder.OptionsMask", 1);
+    m_bool_configs[CONFIG_LFG_CASTDESERTER] = sConfigMgr->GetBoolDefault("DungeonFinder.CastDeserter", false);
+    m_bool_configs[CONFIG_LFG_OVERRIDE_ROLES_REQUIRED] = sConfigMgr->GetBoolDefault("DungeonFinder.OverrideRolesRequired", false);
+    m_bool_configs[CONFIG_LFG_MULTIQUEUE_ENABLED] = sConfigMgr->GetBoolDefault("DungeonFinder.MultiqueueEnabled", false);
+    m_bool_configs[CONFIG_LFG_KEEP_QUEUES_IN_DUNGEON] = sConfigMgr->GetBoolDefault("DungeonFinder.KeepQueuesInDungeon", false);
+    m_int_configs[CONFIG_LFG_TANKS_NEEDED] = sConfigMgr->GetIntDefault("DungeonFinder.TanksNeeded", 1);
+    m_int_configs[CONFIG_LFG_HEALERS_NEEDED] = sConfigMgr->GetIntDefault("DungeonFinder.HealersNeeded", 1);
+    m_int_configs[CONFIG_LFG_DPS_NEEDED] = sConfigMgr->GetIntDefault("DungeonFinder.DPSNeeded", 3);
+    m_int_configs[CONFIG_LFG_SHORTAGE_CHECK_INTERVAL] = sConfigMgr->GetIntDefault("DungeonFinder.ShortageCheckInterval", 5);
+    m_int_configs[CONFIG_LFG_SHORTAGE_PERCENT] = sConfigMgr->GetIntDefault("DungeonFinder.ShortagePercent", 50);
+    m_int_configs[CONFIG_LFG_MAX_LFR_QUEUES] = sConfigMgr->GetIntDefault("DungeonFinder.MaxLfrQueues", 3);
+
     // DBC_ItemAttributes
     m_bool_configs[CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES] = sConfigMgr->GetBoolDefault("DBC.EnforceItemAttributes", true);
 
@@ -1853,7 +1865,7 @@ void World::SetInitialWorldSettings()
     sLFGMgr->LoadRewards();
 
     TC_LOG_INFO("server.loading", "Loading LFG entrance positions...");
-    sLFGMgr->LoadEntrancePositions();
+    sLFGMgr->LoadLFGDungeons();
 
     TC_LOG_INFO("server.loading", "Loading SpellArea Data...");                // must be after quest load
     sSpellMgr->LoadSpellAreas();
@@ -4178,6 +4190,16 @@ void World::ProcessQueryCallbacks()
         m_PreparedStatementCallbacks->push_front(m_PreparedStatementCallbacksBuffer->front());
         m_PreparedStatementCallbacksBuffer->pop_front();
     }
+}
+
+void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level)
+{
+    CharacterNameData& data = _characterNameDataMap[guid];
+    data.m_name = name;
+    data.m_race = race;
+    data.m_gender = gender;
+    data.m_class = playerClass;
+    data.m_level = level;
 }
 
 void World::UpdatePhaseDefinitions()

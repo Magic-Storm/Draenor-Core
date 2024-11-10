@@ -11,6 +11,8 @@
 
 #include "Define.h"
 
+inline bool IS_GROUP_GUID(uint64 guid);
+
 // used for creating values for respawn for example
 #define MAKE_PAIR64(l, h)  uint64(uint32(l) | (uint64(h) << 32))
 #define PAIR64_HIPART(x)   (uint32)((uint64(x) >> 32) & UI64LIT(0x00000000FFFFFFFF))
@@ -20,6 +22,12 @@
 #define MAKE_PAIR32(l, h)  uint32(uint16(l) | (uint32(h) << 16))
 #define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
 #define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
+
+
+bool IS_GROUP_GUID(uint64 guid)
+{
+    return GUID_HIPART(guid) == HIGHGUID_GROUP;
+}
 
 #endif
 

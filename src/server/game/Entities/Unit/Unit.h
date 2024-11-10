@@ -1999,6 +1999,11 @@ class Unit : public WorldObject
 
         void SendClearTarget();
 
+        bool IsAlive() const
+        {
+            return (m_deathState == ALIVE);
+        }
+
         void BuildHeartBeatMsg(WorldPacket* data) const;
 
         bool isAlive() const { return (m_deathState == ALIVE); };

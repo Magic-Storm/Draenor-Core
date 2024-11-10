@@ -1,73 +1,110 @@
-////////////////////////////////////////////////////////////////////////////////
-//
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
-//
-////////////////////////////////////////////////////////////////////////////////
+/*
+ * Copyright (C) 2011-2016 Project SkyFire <http://www.projectskyfire.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2016 MaNGOS <http://getmangos.com/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "LFG.h"
 #include "LFGGroupData.h"
 
-LfgGroupData::LfgGroupData():
-m_State(LFG_STATE_NONE), m_OldState(LFG_STATE_NONE), m_Dungeon(0),
-m_VotesNeeded(LFG_GROUP_KICK_VOTES_NEEDED), m_KicksLeft(LFG_GROUP_MAX_KICKS)
+namespace lfg
 {
+
+void LfgGroupData::AddPlayer(uint64 guid)
+{
+    m_players.insert(guid);
 }
 
-LfgGroupData::~LfgGroupData()
+uint8 LfgGroupData::RemovePlayer(uint64 guid)
 {
+    LfgGuidSet::iterator it = m_players.find(guid);
+    if (it != m_players.end())
+        m_players.erase(it);
+    return uint8(m_players.size());
 }
 
-void LfgGroupData::SetState(LfgState state)
+void LfgGroupData::RemoveAllPlayers()
 {
-    switch (state)
-    {
-        case LFG_STATE_NONE:
-        case LFG_STATE_DUNGEON:
-        case LFG_STATE_FINISHED_DUNGEON:
-            m_OldState = state;
-                    // No break on purpose
-        default:
-            m_State = state;
-    }
+    m_players.clear();
 }
 
-void LfgGroupData::RestoreState()
+void LfgGroupData::SetLeader(uint64 guid)
 {
-    m_State = m_OldState;
+    m_leader = guid;
 }
 
 void LfgGroupData::SetDungeon(uint32 dungeon)
 {
-    m_Dungeon = dungeon;
+    m_dungeon = dungeon;
+}
+
+void LfgGroupData::SetKicksLeft(uint8 kicksLeft)
+{
+    m_kicksLeft = kicksLeft;
 }
 
 void LfgGroupData::DecreaseKicksLeft()
 {
-    if (m_KicksLeft)
-      --m_KicksLeft;
+    if (m_kicksLeft)
+      --m_kicksLeft;
 }
 
-LfgState LfgGroupData::GetState() const
+LfgGuidSet const& LfgGroupData::GetPlayers() const
 {
-    return m_State;
+    return m_players;
+}
+
+uint8 LfgGroupData::GetPlayerCount() const
+{
+    return m_players.size();
+}
+
+uint64 LfgGroupData::GetLeader() const
+{
+    return m_leader;
 }
 
 uint32 LfgGroupData::GetDungeon(bool asId /* = true */) const
 {
     if (asId)
-        return (m_Dungeon & 0x00FFFFFF);
+        return (m_dungeon & 0x00FFFFFF);
     else
-        return m_Dungeon;
-}
-
-uint8 LfgGroupData::GetVotesNeeded() const
-{
-    return m_VotesNeeded;
+        return m_dungeon;
 }
 
 uint8 LfgGroupData::GetKicksLeft() const
 {
-    return m_KicksLeft;
+    return m_kicksLeft;
 }
+
+void LfgGroupData::SetSoloJoinedPlayersCount(uint8 count)
+{
+    m_soloJoinedPlayersCount = count;
+}
+
+uint8 LfgGroupData::GetSoloJoinedPlayersCount() const
+{
+    return m_soloJoinedPlayersCount;
+}
+
+void LfgGroupData::AddQueue(uint32 queueId)
+{
+    auto itr = m_queues.find(queueId);
+    ASSERT(itr == m_queues.end());
+    m_queues.emplace(queueId, GroupQueueData{});
+}
+
+} // namespace lfg

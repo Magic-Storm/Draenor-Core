@@ -32,6 +32,8 @@ class WorldSession;
 
 struct MapEntry;
 
+enum class GroupSlot : uint8;
+
 #define MAXGROUPSIZE 5
 #define MAXRAIDSIZE 40
 #define MAX_RAID_SUBGROUPS MAXRAIDSIZE/MAXGROUPSIZE
@@ -97,6 +99,18 @@ enum PartyIndex
 {
     PARTY_INDEX_NORMAL      = 0,
     PARTY_INDEX_INSTANCE    = 1
+};
+
+enum GroupType
+{
+    GROUPTYPE_NORMAL = 0x00,
+    GROUPTYPE_BG = 0x01,
+    GROUPTYPE_RAID = 0x02,
+    GROUPTYPE_BGRAID = GROUPTYPE_BG | GROUPTYPE_RAID,       // mask
+    GROUPTYPE_UNK1 = 0x04,
+    GROUPTYPE_LFG = 0x08,
+    GROUPTYPE_EVERYONE_IS_ASSISTANT = 0x40
+    // 0x10, leave/change group?, I saw this flag when leaving group and after leaving BG while in group
 };
 
 enum GroupUpdateFlags
@@ -280,6 +294,7 @@ class Group
         bool   AddMember(Player* player);
         bool   RemoveMember(uint64 guid, const RemoveMethod &method = GROUP_REMOVEMETHOD_DEFAULT, uint64 kicker = 0, const char* reason = NULL);
         void   ChangeLeader(uint64 guid);
+        void   FindNewLeader(uint64 exceptGuid = 0);
         void   SetLootMethod(LootMethod method);
         void   SetLooterGuid(uint64 guid);
         void   UpdateLooterGuid(WorldObject* pLootedObject, bool ifneed = false);
@@ -311,6 +326,8 @@ class Group
         bool IsAssistant(uint64 guid) const;
         bool IsGuildGroup(uint32 guildId, bool AllInSameMap = false, bool AllInSameInstanceId = false);
         void UpdateGuildAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1, uint32 miscValue2, uint32 miscValue3, Unit* unit, WorldObject* rewardSource);
+        bool ReadyCheckInProgress() const { return m_readyCheckGuid != 0; }
+        uint64 ReadyCheckInitiator() const { return m_readyCheckGuid; }
 
         Player* GetInvited(uint64 guid) const;
         Player* GetInvited(const std::string& name) const;
@@ -457,6 +474,7 @@ class Group
         InvitesList         m_invitees;
         uint64              m_leaderGuid;
         std::string         m_leaderName;
+        GroupType           m_groupType;
         PartyFlags           m_PartyFlags;
         Difficulty          m_dungeonDifficulty;
         Difficulty          m_raidDifficulty;
@@ -476,8 +494,12 @@ class Group
         uint32              m_dbStoreId;                    // Represents the ID used in database (Can be reused by other groups if group was disbanded)
         uint8               m_readyCheckCount;
         uint8               m_membersInInstance;
+        uint64              m_readyCheckGuid = 0;
         bool                m_readyCheck;
+        bool                m_logResumeOnLogin = false;
         uint32              m_Team;
+        GroupSlot           m_slot;
+        bool                m_flex = false;
 
         std::vector<RaidMarker> m_RaidMarkers;
 };
