@@ -22609,6 +22609,21 @@ bool Player::HasGlyph(uint32 spell_id) const
     return false;
 }
 
+bool Player::HasLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool checkPending) const
+{
+    return m_lootLockouts->HasLootLockout(type, lootedObjectEntry, difficulty, checkPending);
+}
+
+void Player::AddLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool pending)
+{
+    m_lootLockouts->AddLootLockout(type, lootedObjectEntry, difficulty, pending);
+}
+
+void Player::ClearLootLockouts()
+{
+    m_lootLockouts->Clear();
+}
+
 void Player::LoadCorpse()
 {
     if (isAlive())

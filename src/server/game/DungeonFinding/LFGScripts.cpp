@@ -62,10 +62,6 @@ void LFGPlayerScript::OnQuestRewarded(Player* player, const Quest* /*quest*/)
 
 void LFGPlayerScript::OnLogout(Player* player)
 {
-    if (Group* group = player->GetGroup())
-        if (group->IsLogging())
-            group->LogEvent("%s logs out", Group::Format(player).c_str());
-
     if (!sLFGMgr->isOptionEnabled(LFG_OPTION_ENABLE_DUNGEON_FINDER | LFG_OPTION_ENABLE_RAID_BROWSER))
         return;
 
@@ -81,10 +77,6 @@ void LFGPlayerScript::OnLogout(Player* player)
 
 void LFGPlayerScript::OnLogin(Player* player)
 {
-    if (Group* group = player->GetGroup())
-        if (group->IsLogging())
-            group->LogEvent("%s logs in (%s)", Group::Format(player).c_str(), Group::GetPlayerTalentString(player).c_str());
-
     if (!sLFGMgr->isOptionEnabled(LFG_OPTION_ENABLE_DUNGEON_FINDER | LFG_OPTION_ENABLE_RAID_BROWSER))
         return;
 
@@ -107,7 +99,7 @@ void LFGPlayerScript::OnMapChanged(Player* player)
 {
     Map const* map = player->GetMap();
 
-    if (sLFGMgr->InLfgDungeonMap(player->GetGUID(), map->GetId(), map->GetDifficulty()))
+    if (sLFGMgr->InLfgDungeonMap(player->GetGUID(), map->GetId(), map->GetDifficultyID()))
     {
         Group* group = player->GetGroup();
         // This function is also called when players log in
@@ -120,12 +112,12 @@ void LFGPlayerScript::OnMapChanged(Player* player)
             player->RemoveAurasDueToSpell(LFG_SPELL_LUCK_OF_THE_DRAW);
             player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, 0.0f);
             TC_LOG_ERROR("lfg", "LFGPlayerScript::OnMapChanged, Player %s (%u) is in LFG dungeon map but does not have a valid group! "
-                "Teleporting to homebind.", player->GetName().c_str(), player->GetGUIDLow());
+                "Teleporting to homebind.", player->GetName(), player->GetGUIDLow());
             return;
         }
 
         for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
-            if (Player* member = itr->GetSource())
+            if (Player* member = itr->getSource())
                 player->GetSession()->SendNameQueryOpcode(member->GetGUID());
 
         if (sLFGMgr->IsSelectedRandomLfgDungeon(player->GetGUID()))

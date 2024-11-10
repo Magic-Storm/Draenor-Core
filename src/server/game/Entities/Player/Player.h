@@ -65,6 +65,7 @@ class SpellCastTargets;
 class UpdateMask;
 class PhaseMgr;
 class SceneObject;
+class LootLockoutMap;
 
 namespace CUF
 {
@@ -252,6 +253,17 @@ struct SpellCooldown
 
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef ACE_Based::LockedMap<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
+
+enum class LootLockoutType
+{
+    PersonalLoot = 0,    // World bosses + Lfr + flex 
+    BonusLoot = 1,    // Per boss per week per difficult. Actually normal/heroic 10/25 must be one, but since we have all 4 difficulties as separate lockouts for normal loot...
+    MoguSeals = 2,    // Per boss per week. First quest for legendary cloak
+    SecretOfTheEmpire = 3,    // Per boss per week. Second quest for legendary cloak
+    TitanRunestone = 4,    // Per boss per week. Third quest for legendary cloak
+    HeirloomWeapon = 5,    // One boss (Garrosh) per week per difficulty
+    Max
+};
 
 enum TrainerSpellState
 {
@@ -2719,6 +2731,11 @@ class Player : public Unit, public GridObject<Player>
         void IncreaseBonusRollFails() { ++m_BonusRollFails; }
         void ResetBonusRollFails() { m_BonusRollFails = 0; }
 
+        bool HasLfrLockout(uint32 bossEntry) const { return HasLootLockout(LootLockoutType::PersonalLoot, bossEntry, RAID_DIFFICULTY_25MAN_LFR); }
+        bool HasLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool checkPending = false) const;
+        void AddLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool pending = true);
+        void ClearLootLockouts();
+
         void RemovedInsignia(Player* looterPlr);
 
         WorldSession* GetSession() const { return m_session; }
@@ -4366,6 +4383,8 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_PvPCombatTimer;
         bool m_pvpCombat;
+
+        std::unique_ptr<LootLockoutMap> m_lootLockouts;
 
         //////////////////////////////////////////////////////////////////////////
         /// Vignette

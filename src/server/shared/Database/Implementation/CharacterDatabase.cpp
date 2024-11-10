@@ -114,6 +114,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_BANNED_DURATION, "SELECT unbandate FROM character_banned WHERE guid = ? AND active = 1",  CONNECTION_BOTH)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_QUESTSTATUSREW, "SELECT quest FROM character_queststatus_rewarded WHERE guid = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_INSTANCELOCKTIMES, "SELECT instanceId, releaseTime FROM account_instance_times WHERE accountId = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_SEL_CHARACTER_LOOTLOCKOUTS, "SELECT entry, difficulty, type FROM character_loot_lockout WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_INS_CHARACTER_LOOTLOCKOUTS, "INSERT INTO character_loot_lockout (guid, entry, difficulty, type) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_DEL_CHARACTER_LOOTLOCKOUTS, "DELETE FROM character_loot_lockout WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_DEL_ALL_LOOTLOCKOUTS, "TRUNCATE TABLE character_loot_lockout", CONNECTION_ASYNC);
     // End LoginQueryHolder content
 
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_ACTIONS_SPEC, "SELECT button, action, type FROM character_action WHERE guid = ? AND spec = ? ORDER BY button", CONNECTION_SYNCH)

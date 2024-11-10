@@ -464,6 +464,87 @@ class ByteBuffer
             put(pos, (uint8 *)&value, sizeof(value));
         }
 
+        void ReadGuidMaskList(ObjectGuid& guid, int count, ...)
+        {
+            va_list ap;
+            va_start(ap, count);
+            for (uint8 i = 0; i < count; ++i)
+            {
+                uint8 offset = va_arg(ap, uint32);
+                guid[offset] = ReadBit();
+            }
+            va_end(ap);
+        }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1) { ReadGuidMaskList(guid, 1, v1); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2) { ReadGuidMaskList(guid, 2, v1, v2); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3) { ReadGuidMaskList(guid, 3, v1, v2, v3); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4) { ReadGuidMaskList(guid, 4, v1, v2, v3, v4); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5) { ReadGuidMaskList(guid, 5, v1, v2, v3, v4, v5); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6) { ReadGuidMaskList(guid, 6, v1, v2, v3, v4, v5, v6); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7) { ReadGuidMaskList(guid, 7, v1, v2, v3, v4, v5, v6, v7); }
+        void ReadGuidMask(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7, uint8 v8) { ReadGuidMaskList(guid, 8, v1, v2, v3, v4, v5, v6, v7, v8); }
+
+        void WriteGuidMaskList(const ObjectGuid& guid, int count, ...)
+        {
+            va_list ap;
+            va_start(ap, count);
+            for (uint8 i = 0; i < count; ++i)
+            {
+                uint8 offset = va_arg(ap, uint32);
+                WriteBit(guid[offset]);
+            }
+            va_end(ap);
+        }
+
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1) { WriteGuidMaskList(guid, 1, v1); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2) { WriteGuidMaskList(guid, 2, v1, v2); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3) { WriteGuidMaskList(guid, 3, v1, v2, v3); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4) { WriteGuidMaskList(guid, 4, v1, v2, v3, v4); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5) { WriteGuidMaskList(guid, 5, v1, v2, v3, v4, v5); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6) { WriteGuidMaskList(guid, 6, v1, v2, v3, v4, v5, v6); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7) { WriteGuidMaskList(guid, 7, v1, v2, v3, v4, v5, v6, v7); }
+        void WriteGuidMask(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7, uint8 v8) { WriteGuidMaskList(guid, 8, v1, v2, v3, v4, v5, v6, v7, v8); }
+
+        void ReadGuidBytesList(ObjectGuid& guid, int count, ...)
+        {
+            va_list ap;
+            va_start(ap, count);
+            for (uint8 i = 0; i < count; ++i)
+            {
+                uint8 offset = va_arg(ap, uint32);
+                ReadByteSeq(guid[offset]);
+            }
+            va_end(ap);
+        }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1) { ReadGuidBytesList(guid, 1, v1); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2) { ReadGuidBytesList(guid, 2, v1, v2); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3) { ReadGuidBytesList(guid, 3, v1, v2, v3); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4) { ReadGuidBytesList(guid, 4, v1, v2, v3, v4); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5) { ReadGuidBytesList(guid, 5, v1, v2, v3, v4, v5); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6) { ReadGuidBytesList(guid, 6, v1, v2, v3, v4, v5, v6); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7) { ReadGuidBytesList(guid, 7, v1, v2, v3, v4, v5, v6, v7); }
+        void ReadGuidBytes(ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7, uint8 v8) { ReadGuidBytesList(guid, 8, v1, v2, v3, v4, v5, v6, v7, v8); }
+
+        void WriteGuidBytesList(const ObjectGuid& guid, int count, ...)
+        {
+            va_list ap;
+            va_start(ap, count);
+            for (uint8 i = 0; i < count; ++i)
+            {
+                uint8 offset = va_arg(ap, uint32);
+                WriteByteSeq(guid[offset]);
+            }
+            va_end(ap);
+        }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1) { WriteGuidBytesList(guid, 1, v1); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2) { WriteGuidBytesList(guid, 2, v1, v2); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3) { WriteGuidBytesList(guid, 3, v1, v2, v3); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4) { WriteGuidBytesList(guid, 4, v1, v2, v3, v4); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5) { WriteGuidBytesList(guid, 5, v1, v2, v3, v4, v5); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6) { WriteGuidBytesList(guid, 6, v1, v2, v3, v4, v5, v6); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7) { WriteGuidBytesList(guid, 7, v1, v2, v3, v4, v5, v6, v7); }
+        void WriteGuidBytes(const ObjectGuid& guid, uint8 v1, uint8 v2, uint8 v3, uint8 v4, uint8 v5, uint8 v6, uint8 v7, uint8 v8) { WriteGuidBytesList(guid, 8, v1, v2, v3, v4, v5, v6, v7, v8); }
+
         /**
           * @name   PutBits
           * @brief  Places specified amount of bits of value at specified position in packet.
