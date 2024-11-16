@@ -559,7 +559,7 @@ public:
             Unit* target = GetExplTargetUnit();
             if (caster && target)
             {
-                uint32 id = uint32(caster->GetMap()->GetDifficultyID() == Difficulty::Difficulty10N ? SPELL_STATIC_DISRUPTION_CHECKED_10 : SPELL_STATIC_DISRUPTION_CHECKED_25);
+                uint32 id = uint32(caster->GetMap()->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL ? SPELL_STATIC_DISRUPTION_CHECKED_10 : SPELL_STATIC_DISRUPTION_CHECKED_25);
                 caster->CastSpell(target, id, true);
             }
         }
@@ -1227,7 +1227,7 @@ class spell_shield_of_runes: public SpellScriptLoader
                     return;
 
                 if (Unit* caster = GetCaster())
-                    caster->CastSpell(caster, caster->GetMap()->GetDifficultyID() == Difficulty::Difficulty10N ? SPELL_SHIELD_OF_RUNES_10_BUFF : SPELL_SHIELD_OF_RUNES_25_BUFF, true);
+                    caster->CastSpell(caster, caster->GetMap()->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL ? SPELL_SHIELD_OF_RUNES_10_BUFF : SPELL_SHIELD_OF_RUNES_25_BUFF, true);
             }
 
             void Register()

@@ -582,7 +582,7 @@ void WorldSession::HandleLfgGetStatus(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "CMSG_LFG_GET_STATUS %s", GetPlayer()->GetGUID());
 
-    if (!GetPlayer()->isUsingLfg())
+    if (!GetPlayer()->IsUsingLfg())
         return;
 
     if (auto queues = sLFGMgr->GetPlayerQueues(GetPlayer()->GetGUID()))

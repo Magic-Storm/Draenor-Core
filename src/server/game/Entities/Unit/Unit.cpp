@@ -19030,16 +19030,16 @@ void Unit::Kill(Unit* p_KilledVictim, bool p_DurabilityLoss, SpellInfo const* p_
                         if (Player* l_Player = l_Itr->getSource())
                         {
                             uint32 l_DungeonID = l_Player->GetGroup() ? sLFGMgr->GetDungeon(l_Player->GetGroup()->GetGUID()) : 0;
-                            if (!l_KilledCreature || l_Player->IsAtGroupRewardDistance(l_KilledCreature))
-                                sLFGMgr->RewardDungeonDoneFor(l_DungeonID, l_Player);
+                            //if (!l_KilledCreature || l_Player->IsAtGroupRewardDistance(l_KilledCreature))
+                                //sLFGMgr->RewardDungeonDoneFor(l_DungeonID, l_Player);
                         }
                     }
                 }
 
                 /// Handle loot assignation for LFR
                 Player* l_Player = l_PlayerList.begin()->getSource();
-                if (l_Player && l_Player->GetGroup())
-                    sLFGMgr->AutomaticLootAssignation(l_KilledCreature, l_Player->GetGroup());
+                //if (l_Player && l_Player->GetGroup())
+                    //sLFGMgr->AutomaticLootAssignation(l_KilledCreature, l_Player->GetGroup());
             }
 
             /// @TODO: do instance binding anyway if the charmer/owner is offline

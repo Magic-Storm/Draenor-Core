@@ -130,9 +130,9 @@ void LoadDisables()
                     case MAP_RAID:
                         if (flags & DUNGEON_STATUSFLAG_HEROIC && !GetMapDifficultyData(entry, DifficultyRaidHeroic))
                             isFlagInvalid = true;
-                        else if (flags & RAID_STATUSFLAG_10MAN_HEROIC && !GetMapDifficultyData(entry, Difficulty10HC))
+                        else if (flags & RAID_STATUSFLAG_10MAN_HEROIC && !GetMapDifficultyData(entry, RAID_DIFFICULTY_10MAN_HEROIC))
                             isFlagInvalid = true;
-                        else if (flags & RAID_STATUSFLAG_25MAN_HEROIC && !GetMapDifficultyData(entry, Difficulty25HC))
+                        else if (flags & RAID_STATUSFLAG_25MAN_HEROIC && !GetMapDifficultyData(entry, RAID_DIFFICULTY_25MAN_HEROIC))
                             isFlagInvalid = true;
                         break;
                     case MAP_BATTLEGROUND:
@@ -359,13 +359,13 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
                     GetDownscaledMapDifficultyData(entry, targetDifficulty);
                     switch (targetDifficulty)
                     {
-                        case DifficultyNormal:
+                        case DUNGEON_DIFFICULTY_NORMAL:
                             return disabledModes & DUNGEON_STATUSFLAG_NORMAL;
                         case DifficultyRaidHeroic:
                             return disabledModes & DUNGEON_STATUSFLAG_HEROIC;
-                        case Difficulty10HC:
+                        case RAID_DIFFICULTY_10MAN_HEROIC:
                             return disabledModes & RAID_STATUSFLAG_10MAN_HEROIC;
-                        case Difficulty25HC:
+                        case RAID_DIFFICULTY_25MAN_HEROIC:
                             return disabledModes & RAID_STATUSFLAG_25MAN_HEROIC;
                         default:
                             break;

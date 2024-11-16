@@ -40,7 +40,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*p_RecvData*/)
 
     uint32 l_RaidLockoutCount = 0;
 
-    for (uint8 l_Iter = 0; l_Iter < Difficulty::MaxDifficulties; ++l_Iter)
+    for (uint8 l_Iter = 0; l_Iter < Difficulty::MAX_DIFFICULTY; ++l_Iter)
     {
         for (Player::BoundInstancesMap::const_iterator l_Itr = m_Player->m_boundInstances[l_Iter].begin(); l_Itr != m_Player->m_boundInstances[l_Iter].end(); ++l_Itr)
         {
@@ -103,7 +103,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*p_RecvData*/)
         l_Data.WriteString(l_Title);
     }
 
-    for (uint8 l_Iter = 0; l_Iter < Difficulty::MaxDifficulties; ++l_Iter)
+    for (uint8 l_Iter = 0; l_Iter < Difficulty::MAX_DIFFICULTY; ++l_Iter)
     {
         for (Player::BoundInstancesMap::const_iterator l_Itr = m_Player->m_boundInstances[l_Iter].begin(); l_Itr != m_Player->m_boundInstances[l_Iter].end(); ++l_Itr)
         {

@@ -369,13 +369,6 @@ class boss_shekzeer : public CreatureScript
                         me->CastSpell(l_Player, SPELL_SHEKZEER_BONUS, true);
                 }
 
-                if (me->GetMap()->IsLFR())
-                {
-                    me->SetLootRecipient(NULL);
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                }
             }
 
             void KilledUnit(Unit* victim)

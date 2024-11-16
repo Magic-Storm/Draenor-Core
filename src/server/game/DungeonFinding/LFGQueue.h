@@ -130,8 +130,6 @@ public:
         return true;
     }
 
-    void OutDebug(std::ostringstream& ss, bool client) const;
-
 private:
     RoleContainer m_tanks, m_healers, m_damage;
     QueuerContainer m_uniqueQueuers;

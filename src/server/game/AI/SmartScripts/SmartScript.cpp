@@ -2384,11 +2384,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 return;
 
             std::set<uint32> l_DungeonSet;
-            uint8 l_Roles = e.action.enterLfgQueue.RoleMask;
+            uint8 roles = e.action.enterLfgQueue.RoleMask;
 
             l_DungeonSet.insert(e.action.enterLfgQueue.DungeonID);
 
-            sLFGMgr->Join(l_Player, l_Roles, l_DungeonSet, "");
+            sLFGMgr->JoinLfg(l_Player, lfg::LfgRoles(roles), l_DungeonSet, "");
             break;
         }
         case SMART_ACTION_PLAY_CINEMATIC:

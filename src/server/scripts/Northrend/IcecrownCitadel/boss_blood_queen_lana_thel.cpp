@@ -64,7 +64,7 @@ enum Shadowmourne
     SPELL_THIRST_QUENCHED                   = 72154
 };
 
-uint32 const vampireAuras[3][Difficulty::MaxDifficulties] =
+uint32 const vampireAuras[3][Difficulty::MAX_DIFFICULTY] =
 {
     {70867, 71473, 71532, 71533},
     {70879, 71525, 71530, 71531},
@@ -829,7 +829,7 @@ class achievement_once_bitten_twice_shy_n : public AchievementCriteriaScript
 
             if (LanaThelAI* lanaThelAI = CAST_AI(LanaThelAI, target->GetAI()))
             {
-                if (lanaThelAI->GetDifficulty() == Difficulty::Difficulty10N)
+                if (lanaThelAI->GetDifficulty() == Difficulty::RAID_DIFFICULTY_10MAN_NORMAL)
                     return !lanaThelAI->WasVampire(source->GetGUID());
             }
 
@@ -849,7 +849,7 @@ class achievement_once_bitten_twice_shy_v : public AchievementCriteriaScript
 
             if (LanaThelAI* lanaThelAI = CAST_AI(LanaThelAI, target->GetAI()))
             {
-                if (lanaThelAI->GetDifficulty() == Difficulty::Difficulty10N)
+                if (lanaThelAI->GetDifficulty() == Difficulty::RAID_DIFFICULTY_10MAN_NORMAL)
                     return lanaThelAI->WasVampire(source->GetGUID());
             }
 
@@ -869,7 +869,7 @@ class achievement_once_bitten_twice_shy_n25 : public AchievementCriteriaScript
 
             if (LanaThelAI* lanaThelAI = CAST_AI(LanaThelAI, target->GetAI()))
             {
-                if (lanaThelAI->GetDifficulty() == Difficulty::Difficulty25N)
+                if (lanaThelAI->GetDifficulty() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL)
                     return !lanaThelAI->WasVampire(source->GetGUID());
             }
 
@@ -889,7 +889,7 @@ class achievement_once_bitten_twice_shy_v25 : public AchievementCriteriaScript
 
             if (LanaThelAI* lanaThelAI = CAST_AI(LanaThelAI, target->GetAI()))
             {
-                if (lanaThelAI->GetDifficulty() == Difficulty::Difficulty25N)
+                if (lanaThelAI->GetDifficulty() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL)
                     return lanaThelAI->WasVampire(source->GetGUID());
             }
 

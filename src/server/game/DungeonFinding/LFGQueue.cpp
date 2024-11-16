@@ -84,36 +84,6 @@ Queuer::Compatibility Queuer::CheckCompatibilityWith(Queuer const& other, Dungeo
     return Compatibility::OK;
 }
 
-void Queuer::OutDebug(std::ostringstream& ss, QueueManager const* manager, Queuer const group) const
-{
-    if (IsGroup())
-    {
-        ss << "G-" << GUID_LOPART(GetGUID()) << "[";
-        uint32 i = 0;
-        for (auto&& guid : GetGroupPlayers())
-        {
-            ss << (i++ ? "||" : "");
-            Queuer(guid, GetQeueueId()).OutDebug(ss, manager, *this);
-        }
-        ss << "]";
-    }
-    else
-    {
-        if (ObjectAccessor::FindPlayerInOrOutOfWorld(GetGUID()))
-            ss << sWorld->GetCharacterNameData(GetGUID())->m_name;
-        else
-            ss << "|cFFFF0000" << sWorld->GetCharacterNameData(GetGUID())->m_name << "<OFFLINE>|r";
-
-        if (manager)
-        {
-            LfgRoles role = (LfgRoles)manager->GetQueuerData(group ? group : *this).Roles.find(GetGUID())->second;
-            if (role & PLAYER_ROLE_LEADER) ss << "|TInterface/LFGFrame/UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:0:18:1:19|t";
-            if (role & PLAYER_ROLE_TANK) ss << "|TInterface/LFGFrame/UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:0:18:22:40|t";
-            if (role & PLAYER_ROLE_HEALER) ss << "|TInterface/LFGFrame/UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:20:38:1:19|t";
-            if (role & PLAYER_ROLE_DAMAGE) ss << "|TInterface/LFGFrame/UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:20:38:22:40|t";
-        }
-    }
-}
 #pragma endregion
 
 #pragma region Bucket
@@ -193,19 +163,6 @@ void Bucket::Add(Queuer const& queuer)
     // Add new queuer
     for (auto&& role : m_queue->GetManager()->GetQueuerData(queuer).Roles)
         Add((LfgRoles)(assignedRoles[role.first] & ~PLAYER_ROLE_LEADER), queuer, role.first);
-}
-
-
-void Bucket::OutDebug(std::ostringstream& ss, bool client) const
-{
-    QueueManager* manager = client ? m_queue->GetManager() : nullptr;
-    ss << "   {" << (IsDirty() ? " |cFFFF0000[DIRTY]|r" : "") << "\n";
-    ss << "      " << (client ? "|cFF0000FF" : "") << "T" << (client ? "|r" : "") << ": ("; { uint32 i = 0; for (auto&& queuer : m_tanks  ) { ss << (i++ ? ", " : ""); queuer.OutDebug(ss, manager); } } ss << ")\n";
-    ss << "      " << (client ? "|cFF00FF00" : "") << "H" << (client ? "|r" : "") << ": ("; { uint32 i = 0; for (auto&& queuer : m_healers) { ss << (i++ ? ", " : ""); queuer.OutDebug(ss, manager); } } ss << ")\n";
-    ss << "      " << (client ? "|cFFFF0000" : "") << "D" << (client ? "|r" : "") << ": ("; { uint32 i = 0; for (auto&& queuer : m_damage ) { ss << (i++ ? ", " : ""); queuer.OutDebug(ss, manager); } } ss << ")\n";
-    ss << "      " << (client ? "|cFF808080" : "") << "UniqueQueuers" << (client ? "|r" : "") << ": ("; { uint32 i = 0; for (auto&& queuer : m_uniqueQueuers) { ss << (i++ ? ", " : ""); queuer.OutDebug(ss, manager); } } ss << ")\n";
-    ss << "      " << (client ? "|cFF808080" : "") << "QueuerPlayerRoles" << (client ? "|r" : "") << ": ("; { uint32 i = 0; for (auto&& role : m_queuerPlayerRoles) { ss << (i++ ? ", " : "") << sWorld->GetCharacterNameData(role.first)->m_name << "=" << (uint32)role.second; } } ss << ")\n";
-    ss << "   }\n";
 }
 
 uint32 Bucket::GetTotalSlots(LfgRoles role) const
@@ -796,29 +753,6 @@ LfgRoles QueueManager::GetRolesForCTAReward(uint32 dungeonId, LfgRoles roles)
     return LfgRoles(shortageRoles & roles);
 }
 
-void QueueManager::OutDebug(std::ostringstream& ss, uint32 dungeonID, bool client) const
-{
-    ss << "=== QUEUE MANAGER ===\n";
-    for (auto&& queue : m_queues)
-        if (!dungeonID || queue.second.GetDungeonID() == dungeonID)
-            queue.second.OutDebug(ss, client);
-    if (dungeonID)
-        return;
-    ss << "=== QUEUE MANAGER QUEUER DATAS ===\n";
-    for (auto&& data : m_queuerData)
-    {
-        Queuer(data.second.GUID, data.second.QueueId).OutDebug(ss, nullptr);
-        ss << ": { JoinTime: " << data.second.JoinTime << " Roles: {";
-        uint32 i = 0;
-        for (auto&& role : data.second.Roles)
-            ss << (i++ ? ", " : "") << sWorld->GetCharacterNameData(role.first)->m_name << "=" << (uint32)role.second;
-        ss << "} Dungeons: [";
-        i = 0;
-        for (auto&& dungeon : data.second.Dungeons)
-            ss << (i++ ? "," : "") << dungeon;
-        ss << "] }\n";
-    }
-}
 #pragma endregion
 
 } // namespace lfg

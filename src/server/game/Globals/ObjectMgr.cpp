@@ -452,7 +452,7 @@ void ObjectMgr::LoadCreatureTemplates()
 
 		l_CreatureTemplate->Entry = l_Entry;
 
-		for (uint8 i = 0; i < Difficulty::MaxDifficulties; ++i)
+		for (uint8 i = 0; i < Difficulty::MAX_DIFFICULTY; ++i)
 			l_CreatureTemplate->DifficultyEntry[i] = 0;
 
 		for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
@@ -563,7 +563,7 @@ void ObjectMgr::LoadCreatureTemplatesDifficulties()
 		uint32 l_DifficultyIndex = l_Fields[1].GetUInt32() - 2;
 		uint32 l_DifficultyEntry = l_Fields[2].GetUInt32();
 
-		if (l_DifficultyIndex >= Difficulty::MaxDifficulties)
+		if (l_DifficultyIndex >= Difficulty::MAX_DIFFICULTY)
 			continue;
 
 		CreatureTemplate* l_CreatureTemplate = m_CreatureTemplateStore[l_Entry];
@@ -649,7 +649,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 		return;
 
 	bool ok = true;                                     // bool to allow continue outside this loop
-	for (uint32 diff = 0; diff < Difficulty::MaxDifficulties - 1 && ok; ++diff)
+	for (uint32 diff = 0; diff < Difficulty::MAX_DIFFICULTY - 1 && ok; ++diff)
 	{
 		if (!cInfo->DifficultyEntry[diff])
 			continue;
@@ -664,7 +664,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 		}
 
 		bool ok2 = true;
-		for (uint32 diff2 = 0; diff2 < Difficulty::MaxDifficulties - 1 && ok2; ++diff2)
+		for (uint32 diff2 = 0; diff2 < Difficulty::MAX_DIFFICULTY - 1 && ok2; ++diff2)
 		{
 			ok2 = false;
 			if (_difficultyEntries[diff2].find(cInfo->Entry) != _difficultyEntries[diff2].end())
@@ -1682,7 +1682,7 @@ void ObjectMgr::LoadCreatures()
 			TC_LOG_ERROR("sql.sql", "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapid]: %u.", guid, data.spawnMask, data.mapid, spawnMasks[data.mapid]);
 
 		bool ok = true;
-		for (uint32 diff = 0; diff < Difficulty::MaxDifficulties - 1 && ok; ++diff)
+		for (uint32 diff = 0; diff < Difficulty::MAX_DIFFICULTY - 1 && ok; ++diff)
 		{
 			if (_difficultyEntries[diff].find(data.id) != _difficultyEntries[diff].end())
 			{
@@ -1975,7 +1975,7 @@ void ObjectMgr::LoadGameobjects()
 	std::map<uint32, uint32> spawnMasks;
 	for (uint32 i = 0; i < sMapStore.GetNumRows(); ++i)
 		if (sMapStore.LookupEntry(i))
-			for (int k = 0; k < Difficulty::MaxDifficulties; ++k)
+			for (int k = 0; k < Difficulty::MAX_DIFFICULTY; ++k)
 				if (GetMapDifficultyData(i, Difficulty(k)))
 					spawnMasks[i] |= (1 << k);
 
@@ -9554,7 +9554,7 @@ void ObjectMgr::LoadCreatureGroupSizeStats()
 			continue;
 		}
 
-		if (l_Difficulty >= MaxDifficulties)
+		if (l_Difficulty >= MAX_DIFFICULTY)
 		{
 			TC_LOG_ERROR("sql.sql", "Difficulty %u (entry %u) used in `creature_groupsizestats` is invalid.", l_Difficulty, l_CreatureEntry);
 			continue;

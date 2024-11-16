@@ -16,6 +16,7 @@
 #include "SpellInfo.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
+#include "LootLockoutMap.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {

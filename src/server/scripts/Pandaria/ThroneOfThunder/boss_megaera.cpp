@@ -273,29 +273,21 @@ class boss_megaera : public CreatureScript
                 {
                     switch (me->GetMap()->GetSpawnMode())
                     {
-                        case Difficulty::Difficulty10N:
+                        case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
                             p_Killer->SummonGameObject(GOB_MEGAERA_CHEST_10_NORMAL, chestPos.m_positionX, chestPos.m_positionY, chestPos.m_positionZ, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
-                        case Difficulty::Difficulty25N:
+                        case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
                             p_Killer->SummonGameObject(GOB_MEGAERA_CHEST_25_NORMAL, chestPos.m_positionX, chestPos.m_positionY, chestPos.m_positionZ, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
-                        case Difficulty::Difficulty10HC:
+                        case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
                             p_Killer->SummonGameObject(GOB_MEGAERA_CHEST_10_HEROIC, chestPos.m_positionX, chestPos.m_positionY, chestPos.m_positionZ, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
-                        case Difficulty::Difficulty25HC:
+                        case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
                             p_Killer->SummonGameObject(GOB_MEGAERA_CHEST_25_HEROIC, chestPos.m_positionX, chestPos.m_positionY, chestPos.m_positionZ, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
                         default:
                             break;
                     }
-                }
-
-                if (me->GetMap()->IsLFR())
-                {
-                    me->SetLootRecipient(NULL);
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootDistribution(me, l_Player->GetGroup());
                 }
             }
 

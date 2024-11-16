@@ -2315,13 +2315,6 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool p_Switched /*= false*/)
                         //ASSERT(playerBind->save == mapSave);
                 }
             }
-
-            if (group && group->isLFGGroup())
-                if (uint32 dungeonId = sLFGMgr->GetDungeon(group->GetGUID(), true))
-                    if (LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(dungeonId))
-                        if (LFGDungeonEntry const* randomDungeon = sLFGDungeonStore.LookupEntry(*(sLFGMgr->GetSelectedDungeons(player->GetGUID()).begin())))
-                            if (uint32(dungeon->map) == GetId() && dungeon->difficulty == uint32(GetDifficultyID()) && randomDungeon->type == uint32(TYPEID_RANDOM_DUNGEON))
-                                player->CastSpell(player, LFG_SPELL_LUCK_OF_THE_DRAW, true);
         }
 
         // for normal instances cancel the reset schedule when the
@@ -2358,19 +2351,19 @@ bool InstanceMap::AddPlayerToMap(Player* player, bool p_Switched /*= false*/)
     ///  9335,  9924,  9925
     switch (GetDifficultyID())
     {
-        case Difficulty::Difficulty10N:
+        case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
             player->SetWorldState(2193, 0);
             break;
 
-        case Difficulty::Difficulty25N:
+        case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
             player->SetWorldState(2193, 1);
             break;
 
-        case Difficulty::Difficulty10HC:
+        case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
             player->SetWorldState(2193, 2);
             break;
 
-        case Difficulty::Difficulty25HC:
+        case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
             player->SetWorldState(2193, 3);
             break;
 
@@ -2968,13 +2961,13 @@ CriteriaLegacyRaidType Map::GetLegacyRaidType() const
 {
     switch (GetDifficultyID())
     {
-        case Difficulty::Difficulty10N:
+        case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
             return CriteriaLegacyRaidType::Normal10;
-        case Difficulty::Difficulty25N:
+        case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
             return CriteriaLegacyRaidType::Normal25;
-        case Difficulty::Difficulty10HC:
+        case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
             return CriteriaLegacyRaidType::Normal10;
-        case Difficulty::Difficulty25HC:
+        case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
             return CriteriaLegacyRaidType::Heroic25;
         default:
             return CriteriaLegacyRaidType::None;

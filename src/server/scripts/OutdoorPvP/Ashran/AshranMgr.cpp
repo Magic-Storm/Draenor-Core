@@ -765,13 +765,13 @@ void OutdoorPvPAshran::HandlePlayerEnterMap(Player* p_Player, uint32 p_MapID)
     m_InvitedPlayers[p_Player->GetTeamId()][p_Player->GetGUID()] = uint32(time(nullptr)) + eAshranDatas::AshranTimeForInvite;
 
     /// Hotfix (2014-12-15): Players are now removed from a Dungeon Finder or Raid Finder group upon accepting the queue to enter Ashran.
-    {
-        Group* l_Group = p_Player->GetGroup();
+    //{
+       // Group* l_Group = p_Player->GetGroup();
 
         /// Check cheating - only leader can leave the queue
-        if (!l_Group || l_Group->GetLeaderGUID() == p_Player->GetGUID())
-            sLFGMgr->Leave(p_Player, l_Group);
-    }
+        //if (!l_Group || l_Group->GetLeaderGUID() == p_Player->GetGUID())
+           // sLFGMgr->LeaveLfg(p_Player, l_Group);
+   // }
 
     /// Sending the packet to player
     WorldPacket l_Data(Opcodes::SMSG_BFMGR_ENTRY_INVITE);

@@ -381,10 +381,10 @@ class boss_tsulong : public CreatureScript
 
                 switch (me->GetMap()->GetSpawnMode())
                 {
-                    case Difficulty::Difficulty10N:
+                    case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
                          me->SummonGameObject(CACHE_OF_TSULONG_10_NM, -1018.64f, -2996.85f, 12.30f, 4.75f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                         break;
-                    case Difficulty::Difficulty25N:
+                    case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
                          me->SummonGameObject(CACHE_OF_TSULONG_25_NM, -1018.64f, -2996.85f, 12.30f, 4.75f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                         break;
                     case Difficulty::Difficulty10HC:

@@ -2281,7 +2281,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
         if (!member->HasFreeBattlegroundQueueId())
             return ERR_BATTLEGROUND_TOO_MANY_QUEUES;        // not blizz-like
         // check if someone in party is using dungeon system
-        if (member->isUsingLfg())
+        if (member->IsUsingLfg())
             return ERR_LFG_CANT_USE_BATTLEGROUND;
         // check is someone in party is loading or teleporting
         if (member->GetSession()->PlayerLoading() || member->IsBeingTeleported())
@@ -3515,4 +3515,10 @@ void Group::UpdateGuildAchievementCriteria(AchievementCriteriaTypes type, uint32
             }
         }
     }
+}
+
+void Group::ReadyCheckResetResponded()
+{
+    for (member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); itr++)
+        itr->readyCheckHasResponded = false;
 }

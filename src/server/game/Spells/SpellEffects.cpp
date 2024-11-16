@@ -454,7 +454,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         break;
                     // Consumption
                     case 28865:
-                        damage = (((InstanceMap*)m_caster->GetMap())->GetDifficultyID() == DifficultyNormal ? 2750 : 4250);
+                        damage = (((InstanceMap*)m_caster->GetMap())->GetDifficultyID() == DUNGEON_DIFFICULTY_NORMAL ? 2750 : 4250);
                         break;
                     // percent from health with min
                     case 25599: // Thundercrash
@@ -4983,7 +4983,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                             m_originalCaster->CastSpell(unitTarget, 58689, true);
                             m_originalCaster->CastSpell(unitTarget, 58692, true);
                         }
-                        if (((InstanceMap*)m_originalCaster->GetMap())->GetDifficultyID() == DifficultyNormal)
+                        if (((InstanceMap*)m_originalCaster->GetMap())->GetDifficultyID() == DUNGEON_DIFFICULTY_NORMAL)
                         {
                             m_originalCaster->CastSpell(unitTarget, 58695, true);
                             m_originalCaster->CastSpell(unitTarget, 58696, true);

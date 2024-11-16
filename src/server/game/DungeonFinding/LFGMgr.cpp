@@ -45,15 +45,6 @@
 #include "WorldPacket.h"
 #include <numeric>
 
-template <typename... Args>
-static void AlmostAssert(char const* filter, Args... args)
-{
-    auto str = Format(filter, args...);
-    TC_LOG_ERROR("lfg", str.c_str());
-    ACE_Stack_Trace st;
-    TC_LOG_ERROR("shitlog", "%s\n%s", str.c_str(), st.c_str());
-}
-
 namespace lfg
 {
 LFGMgr::LFGMgr(): m_QueueTimer(0), m_ShortageCheckTimer(0), m_lfgProposalId(1),
@@ -504,6 +495,7 @@ void LFGMgr::JoinLfg(Player* player, LfgRoles roles, LfgDungeonSet& dungeons, co
     uint32 rDungeonId = 0;
     uint32 queueId = GetActiveQueueId(gguid);
     bool isContinue = false;
+    bool isContinueDungeonRequest = group && group->isLFGGroup() != LFG_STATE_FINISHED_DUNGEON;
 
     // Check if all dungeons are valid
     if (joinData.result == LFG_JOIN_OK)
@@ -701,7 +693,6 @@ void LFGMgr::JoinLfg(Player* player, LfgRoles roles, LfgDungeonSet& dungeons, co
         DungeonQueue const& queue = GetQueueManager(gguid).GetQueue(*dungeons.begin());
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(*dungeons.begin());
         bool flex = dungeon && dungeon->difficulty == RAID_DIFFICULTY_1025MAN_FLEX;
-
         roleCheck.neededTanks   = flex ? 0 : queue.GetRoleSlots(PLAYER_ROLE_TANK);
         roleCheck.neededHealers = flex ? 0 : queue.GetRoleSlots(PLAYER_ROLE_HEALER);
         roleCheck.neededDamage  = flex ? group->GetMembersCount() : queue.GetRoleSlots(PLAYER_ROLE_DAMAGE);
@@ -715,35 +706,23 @@ void LFGMgr::JoinLfg(Player* player, LfgRoles roles, LfgDungeonSet& dungeons, co
         if (!isContinue)
             AddQueue(gguid, queueId);
         SetState(gguid, queueId, LFG_STATE_ROLECHECK);
-        for (auto&& member : *group)
+        for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            uint64 pguid = member->GetGUID();
-            if (!isContinue)
+            if (Player* plrg = itr->getSource())
             {
-                AddQueue(pguid, queueId, gguid);
-                SetSelectedDungeons(pguid, queueId, dungeons);
-                if (rDungeonId)
-                    SetRandomDungeon(pguid, queueId, rDungeonId);
-            }
-            SetState(pguid, queueId, LFG_STATE_ROLECHECK);
-            // Is this still needed?...
-            uint64 oldGroup = GetGroup(pguid, queueId);
-            if (oldGroup)
-            {
-                if (oldGroup != gguid)
-                {
-                    AlmostAssert("LFGMgr::JoinLfg oldGroup != gguid, player: %u, oldGroup: " UI64FMTD ", gguid: " UI64FMTD, member->GetGUIDLow(), oldGroup, gguid);
-                    RemovePlayerFromGroup(oldGroup, queueId, pguid);
-                }
-            }
-            AddPlayerToGroup(gguid, queueId, pguid);
-            if (pguid == group->GetLeaderGUID())
-                SetLeader(gguid, pguid);
+                ObjectGuid pguid = plrg->GetGUID();
+                SetRoles(pguid, queueId, roles);
+                //plrg->GetSession()->SendLfgUpdateParty(updateData);
+                plrg->GetSession()->SendLfgJoinResult(player->GetGUID(), joinData);
+                SetState(pguid, queueId, LFG_STATE_ROLECHECK);
+                if (!isContinueDungeonRequest)
+                    SetSelectedDungeons(pguid, queueId, dungeons);
+                roleCheck.roles[pguid] = 0;
 
-            roleCheck.roles[pguid] = 0;
-            if (!debugNames.empty())
-                debugNames.append(", ");
-            debugNames.append(member->GetName());
+                if (!debugNames.empty())
+                    debugNames.append(", ");
+                debugNames.append(plrg->GetName());
+            }
         }
         // Update leader role
         UpdateRoleCheck(gguid, guid, roles);
@@ -756,18 +735,17 @@ void LFGMgr::JoinLfg(Player* player, LfgRoles roles, LfgDungeonSet& dungeons, co
         rolesMap[guid] = roles;
         GetQueueManager(guid).AddQueueData({ guid, queueId }, now, dungeons, rolesMap, isContinue);
 
-        if (isContinue)
-            AlmostAssert("LFGMgr::JoinLfg - !group && isContinue, player: %u", guid);
-
-        if (rDungeonId)
+        if (!isContinueDungeonRequest)
         {
-            dungeons.clear();
-            dungeons.insert(rDungeonId);
-            SetRandomDungeon(guid, queueId, rDungeonId);
+            if (rDungeonId)
+            {
+                dungeons.clear();
+                dungeons.insert(rDungeonId);
+                SetRandomDungeon(guid, queueId, rDungeonId);
+            }
+
+            SetSelectedDungeons(guid, queueId, dungeons);
         }
-
-        SetSelectedDungeons(guid, queueId, dungeons);
-
         // Send update to player
         SetRoles(guid, queueId, roles);
         SetJoinTime(guid, queueId, now);
@@ -1419,8 +1397,6 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
                             reuseGroup = true;
             if (reuseGroup)
                 newQueueId = queueId;
-            else
-                AlmostAssert("LFGMgr::MakeNewGroup lfgGroup: [" UI64FMTD "] not reused", lfgGroup->GetGUID());
         }
     }
 
@@ -1457,14 +1433,6 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
         bool isNew = true;
         Group* instanceGroup = player->GetGroup(GroupSlot::Instance);
         Group* originalGroup = player->GetGroup(GroupSlot::Original);
-        if (instanceGroup && instanceGroup->isLFGGroup())
-        {
-            if (lfgGroup)
-            {
-                if (lfgGroup != instanceGroup)
-                    AlmostAssert("LFGMgr::MakeNewGroup grp != group, player %u, lfgGroup: [" UI64FMTD "], instanceGroup: [" UI64FMTD "]", player->GetGUIDLow(), lfgGroup->GetGUID(), instanceGroup->GetGUID());
-            }
-        }
 
         // Before group creation.
         // This queue moved to new ID, same as ID for lfg group. But client queue ID still be the same
@@ -1666,12 +1634,6 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
             waitTime = int32((joinTime - queueData.JoinTime) / IN_MILLISECONDS);
 
         SendLfgUpdateStatus(LFG_UPDATETYPE_GROUP_FOUND, pguid, queueId);
-
-        if (!dungeonId)
-        {
-            AlmostAssert("LFGMgr::UpdateProposal !dungeonId. player: %u, proposal dungeonId: %u", GUID_LOPART(pguid), proposal.dungeonId);
-            continue;
-        }
 
         // Update timers
         if (!flex)
@@ -2149,8 +2111,8 @@ void LFGMgr::FinishDungeon(uint64 gguid, uint32 dungeonId, Map* map)
                     {
                         if (auto factionEntry = sFactionStore.LookupEntry(bonusRepFaction))
                         {
-                            float donerep = player->CalculateReputationGain(REPUTATION_SOURCE_DAILY_QUEST, quest->GetQuestLevel(), 300, bonusRepFaction);
-                            player->GetReputationMgr().ModifyReputation(factionEntry, donerep);
+                            //float donerep = player->CalculateReputationGain(REPUTATION_SOURCE_DAILY_QUEST, quest->GetQuestLevel(), 300, bonusRepFaction);
+                            //player->GetReputationMgr().ModifyReputation(factionEntry, donerep);
                         }
                     }
                 }
@@ -2719,13 +2681,7 @@ void LFGMgr::AddPlayerToGroup(uint64 gguid, uint32 queueId, uint64 guid)
 
 void LFGMgr::SetLeader(uint64 gguid, uint64 leader)
 {
-    auto itr = GroupsStore.find(gguid);
-    if (itr == GroupsStore.end())
-    {
-        AlmostAssert("LFGMgr::SetLeader group [" UI64FMTD "] not found", gguid);
-        return;
-    }
-    itr->second.SetLeader(leader);
+    GroupsStore[gguid].SetLeader(leader);
 }
 
 void LFGMgr::SetTeam(uint64 guid, uint8 team)

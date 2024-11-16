@@ -1184,6 +1184,19 @@ struct DeclinedName
     std::string name[MAX_DECLINED_NAME_CASES];
 };
 
+struct CharacterNameData
+{
+    ~CharacterNameData() { delete m_declinedName; }
+
+    std::string m_name;
+    uint8 m_class;
+    uint8 m_race;
+    uint8 m_gender;
+    uint8 m_level;
+    uint32 m_accountID;
+    DeclinedName const* m_declinedName = nullptr;
+};
+
 enum CurrentSpellTypes
 {
     CURRENT_MELEE_SPELL             = 0,

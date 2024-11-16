@@ -9392,79 +9392,85 @@ ReputationRank Player::GetReputationRank(uint32 faction) const
     return GetReputationMgr().GetRank(factionEntry);
 }
 
-/// Calculate total reputation percent player gain with quest/creature level
+// Calculate total reputation percent player gain with quest/creature level
 float Player::CalculateReputationGain(ReputationSource source, uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool noQuestBonus)
 {
-    float l_Percent         = 100.0f;
-    float l_ReputationMod   = noQuestBonus ? 0.0f : float(GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN));
+    float val = rep;
+    float percent = 100.0f;
 
-    /// faction specific auras only seem to apply to kills
+    float repMod = noQuestBonus ? 0.0f : float(GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN));
+
+    // faction specific auras only seem to apply to kills
     if (source == REPUTATION_SOURCE_KILL)
-        l_ReputationMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
+        repMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
 
-    l_Percent += rep > 0 ? l_ReputationMod : -l_ReputationMod;
+    percent += rep > 0 ? repMod : -repMod;
 
-    float l_Rate;
+    float rate;
     switch (source)
     {
-        case REPUTATION_SOURCE_KILL:
-            l_Rate = sWorld->getRate(RATE_REPUTATION_LOWLEVEL_KILL);
-            break;
-
-        case REPUTATION_SOURCE_QUEST:
-        case REPUTATION_SOURCE_DAILY_QUEST:
-        case REPUTATION_SOURCE_WEEKLY_QUEST:
-        case REPUTATION_SOURCE_MONTHLY_QUEST:
-        case REPUTATION_SOURCE_REPEATABLE_QUEST:
-            l_Rate = sWorld->getRate(RATE_REPUTATION_LOWLEVEL_QUEST);
-            break;
-
-        case REPUTATION_SOURCE_SPELL:
-        default:
-            l_Rate = 1.0f;
-            break;
+    case REPUTATION_SOURCE_KILL:
+        rate = sWorld->getRate(RATE_REPUTATION_LOWLEVEL_KILL);
+        break;
+    case REPUTATION_SOURCE_QUEST:
+    case REPUTATION_SOURCE_DAILY_QUEST:
+    case REPUTATION_SOURCE_WEEKLY_QUEST:
+    case REPUTATION_SOURCE_MONTHLY_QUEST:
+    case REPUTATION_SOURCE_REPEATABLE_QUEST:
+        rate = sWorld->getRate(RATE_REPUTATION_LOWLEVEL_QUEST);
+        break;
+    case REPUTATION_SOURCE_SPELL:
+    default:
+        rate = 1.0f;
+        break;
     }
 
-    if (l_Rate != 1.0f && creatureOrQuestLevel < Trinity::XP::GetGrayLevel(getLevel()))
-        l_Percent *= l_Rate;
+    if (rate != 1.0f && creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))
+        percent *= rate;
 
-    if (l_Percent <= 0.0f)
+    if (percent <= 0.0f)
         return 0;
 
-    /// Multiply result with the faction specific rate
+    // Multiply result with the faction specific rate
     if (RepRewardRate const* repData = sObjectMgr->GetRepRewardRate(faction))
     {
-        float l_ReputationRate = 0.0f;
+        float repRate = 0.0f;
         switch (source)
         {
-            case REPUTATION_SOURCE_KILL:
-                l_ReputationRate = repData->creature_rate;
-                break;
-
-            case REPUTATION_SOURCE_QUEST:
-            case REPUTATION_SOURCE_DAILY_QUEST:         ///< @TODO
-            case REPUTATION_SOURCE_WEEKLY_QUEST:        ///< @TODO
-            case REPUTATION_SOURCE_MONTHLY_QUEST:       ///< @TODO
-            case REPUTATION_SOURCE_REPEATABLE_QUEST:    ///< @TODO
-                l_ReputationRate = repData->quest_rate;
-                break;
-
-            case REPUTATION_SOURCE_SPELL:
-                l_ReputationRate = repData->spell_rate;
-                break;
+        case REPUTATION_SOURCE_KILL:
+            repRate = repData->creature_rate;
+            break;
+        case REPUTATION_SOURCE_QUEST:
+            repRate = repData->quest_rate;
+            break;
+        case REPUTATION_SOURCE_DAILY_QUEST:
+            repRate = repData->quest_rate;
+            break;
+        case REPUTATION_SOURCE_WEEKLY_QUEST:
+            repRate = repData->quest_rate;
+            break;
+        case REPUTATION_SOURCE_MONTHLY_QUEST:
+            repRate = repData->quest_rate;
+            break;
+        case REPUTATION_SOURCE_REPEATABLE_QUEST:
+            repRate = repData->quest_rate;
+            break;
+        case REPUTATION_SOURCE_SPELL:
+            repRate = repData->spell_rate;
+            break;
         }
 
-        /// for custom, a rate of 0.0 will totally disable reputation gain for this faction/type
-        if (l_ReputationRate <= 0.0f)
+        // for custom, a rate of 0.0 will totally disable reputation gain for this faction/type
+        if (repRate <= 0.0f)
             return 0;
 
-        l_Percent *= l_ReputationRate;
+        percent *= repRate;
     }
 
     if (source != REPUTATION_SOURCE_SPELL && GetsRecruitAFriendBonus(false))
-        l_Percent *= 1.0f + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS);
+        percent *= 1.0f + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS);
 
-    return CalculatePct(rep, l_Percent);
+    return CalculatePct(val, percent);
 }
 
 /// Calculates how many reputation points player gains in victim's enemy factions
@@ -22588,21 +22594,6 @@ bool Player::HasGlyph(uint32 spell_id) const
     return false;
 }
 
-bool Player::HasLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool checkPending) const
-{
-    return m_lootLockouts->HasLootLockout(type, lootedObjectEntry, difficulty, checkPending);
-}
-
-void Player::AddLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool pending)
-{
-    m_lootLockouts->AddLootLockout(type, lootedObjectEntry, difficulty, pending);
-}
-
-void Player::ClearLootLockouts()
-{
-    m_lootLockouts->Clear();
-}
-
 void Player::LoadCorpse()
 {
     if (isAlive())
@@ -23603,20 +23594,20 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapId, Difficulty difficulty
 	uint32 retrievalDifficulty = 0;
 	switch (difficulty)
 	{
-		case Difficulty10N:
-			retrievalDifficulty = Difficulty25N;
+		case RAID_DIFFICULTY_10MAN_NORMAL:
+			retrievalDifficulty = RAID_DIFFICULTY_25MAN_NORMAL;
 			break;
 
-		case Difficulty25N:
-			retrievalDifficulty = Difficulty10N;
+		case RAID_DIFFICULTY_25MAN_NORMAL:
+			retrievalDifficulty = RAID_DIFFICULTY_25MAN_NORMAL;
 			break;
 
-		case Difficulty10HC:
-			retrievalDifficulty = Difficulty25HC;
+		case RAID_DIFFICULTY_10MAN_HEROIC:
+			retrievalDifficulty = RAID_DIFFICULTY_25MAN_HEROIC;
 			break;
 
-		case Difficulty25HC:
-			retrievalDifficulty = Difficulty10HC;
+		case RAID_DIFFICULTY_25MAN_HEROIC:
+			retrievalDifficulty = RAID_DIFFICULTY_10MAN_HEROIC;
 			break;
 
 	default: break;
@@ -23694,7 +23685,7 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
 
 InstancePlayerBind* Player::BindToInstance(InstanceSave* p_InstanceSave, bool p_Permanent, bool p_Load)
 {
-    if (p_InstanceSave && p_InstanceSave->GetDifficultyID() != Difficulty::DifficultyRaidLFR && p_InstanceSave->GetDifficultyID() != Difficulty::DifficultyRaidTool)
+    if (p_InstanceSave && p_InstanceSave->GetDifficultyID() != Difficulty::DifficultyRaidLFR && p_InstanceSave->GetDifficultyID() != Difficulty::RAID_DIFFICULTY_25MAN_LFR)
     {
         InstancePlayerBind& l_InstanceBind = m_boundInstances[p_InstanceSave->GetDifficultyID()][p_InstanceSave->GetMapId()];
         if (l_InstanceBind.save)
@@ -29427,6 +29418,22 @@ bool Player::HasQuestForGO(uint32 GOId) const
     }
     return false;
 }
+
+void Player::ReadyCheckComplete()
+{
+    Group* group = GetGroup();
+    if (!group)
+        return;
+
+    if (group->ReadyCheckInitiator() != GetGUID())
+        return;
+
+    _readyCheckTimer = 0;
+
+    group->ReadyCheck(0);
+    group->ReadyCheckResetResponded();
+}
+
 uint32 Player::GetQuestObjectiveCounter(uint32 objectiveId) const
 {
     QuestObjectiveStatusMap::const_iterator citr = m_questObjectiveStatus.find(objectiveId);

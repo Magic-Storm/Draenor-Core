@@ -93,14 +93,14 @@ public:
                     platformGUID = go->GetGUID();
                     break;
                 case GO_FOCUSING_IRIS_10:
-                    if (instance->GetDifficultyID() == Difficulty::Difficulty10N)
+                    if (instance->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_10MAN_NORMAL)
                     {
                         irisGUID = go->GetGUID();
                         go->GetPosition(&focusingIrisPosition);
                     }
                     break;
                 case GO_FOCUSING_IRIS_25:
-                    if (instance->GetDifficultyID() == Difficulty::Difficulty25N)
+                    if (instance->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL)
                     {
                         irisGUID = go->GetGUID();
                         go->GetPosition(&focusingIrisPosition);
@@ -111,11 +111,11 @@ public:
                     go->GetPosition(&exitPortalPosition);
                     break;
                 case GO_HEART_OF_MAGIC_10:
-                    if (instance->GetDifficultyID() == Difficulty::Difficulty10N)
+                    if (instance->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_10MAN_NORMAL)
                         heartOfMagicGUID = go->GetGUID();
                     break;
                 case GO_HEART_OF_MAGIC_25:
-                    if (instance->GetDifficultyID() == Difficulty::Difficulty25N)
+                    if (instance->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL)
                         heartOfMagicGUID = go->GetGUID();
                     break;
             }
@@ -238,7 +238,7 @@ public:
                     PowerSparksHandling();
                     break;
                 case DATA_RESPAWN_IRIS:
-                    SpawnGameObject(instance->GetDifficultyID() == Difficulty::Difficulty10N ? GO_FOCUSING_IRIS_10 : GO_FOCUSING_IRIS_25, focusingIrisPosition);
+                    SpawnGameObject(instance->GetDifficultyID() == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL ? GO_FOCUSING_IRIS_10 : GO_FOCUSING_IRIS_25, focusingIrisPosition);
                     break;
             }
         }

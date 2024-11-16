@@ -309,16 +309,16 @@ class boss_lei_shi : public CreatureScript
 
                     switch (me->GetMap()->GetSpawnMode())
                     {
-                        case Difficulty::Difficulty10N:
+                        case Difficulty::RAID_DIFFICULTY_10MAN_NORMAL:
                             me->SummonGameObject(GOB_LEI_SHI_CHEST_NORMAL_10, leiShiPos.GetPositionX(), leiShiPos.GetPositionY(), leiShiPos.GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
-                        case Difficulty::Difficulty25N:
+                        case Difficulty::RAID_DIFFICULTY_25MAN_NORMAL:
                             me->SummonGameObject(GOB_LEI_SHI_CHEST_NORMAL_25, leiShiPos.GetPositionX(), leiShiPos.GetPositionY(), leiShiPos.GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
-                        case Difficulty::Difficulty10HC:
+                        case Difficulty::RAID_DIFFICULTY_10MAN_HEROIC:
                             me->SummonGameObject(GOB_LEI_SHI_CHEST_HEROIC_10, leiShiPos.GetPositionX(), leiShiPos.GetPositionY(), leiShiPos.GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
-                        case Difficulty::Difficulty25HC:
+                        case Difficulty::RAID_DIFFICULTY_25MAN_HEROIC:
                             me->SummonGameObject(GOB_LEI_SHI_CHEST_HEROIC_25, leiShiPos.GetPositionX(), leiShiPos.GetPositionY(), leiShiPos.GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
                             break;
                         default:
@@ -340,14 +340,6 @@ class boss_lei_shi : public CreatureScript
                             if (!IsLFR())
                                 l_Player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 40);
                         }
-                    }
-
-                    if (IsLFR())
-                    {
-                        me->SetLootRecipient(NULL);
-                        Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                        if (l_Player && l_Player->GetGroup())
-                            sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
                     }
 
                     for (auto itr : animatedProtectors)

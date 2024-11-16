@@ -446,7 +446,7 @@ struct GameObjectTemplate
         struct
         {
             uint32 InstanceType;                            // 0 Instance Type, enum { Not Instanced, Party Dungeon, Raid Dungeon, PVP Battlefield, Arena Battlefield, Scenario, }; Default: Party Dungeon
-            uint32 DifficultyNormal;                        // 1 Difficulty Normal, References: animationdata, NoValue = 0
+            uint32 DUNGEON_DIFFICULTY_NORMAL;                        // 1 Difficulty Normal, References: animationdata, NoValue = 0
             uint32 DifficultyHeroic;                        // 2 Difficulty Heroic, References: animationdata, NoValue = 0
             uint32 DifficultyEpic;                          // 3 Difficulty Epic, References: animationdata, NoValue = 0
             uint32 DifficultyLegendary;                     // 4 Difficulty Legendary, References: animationdata, NoValue = 0

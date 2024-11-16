@@ -4193,16 +4193,6 @@ void World::ProcessQueryCallbacks()
     }
 }
 
-void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level)
-{
-    CharacterNameData& data = _characterNameDataMap[guid];
-    data.m_name = name;
-    data.m_race = race;
-    data.m_gender = gender;
-    data.m_class = playerClass;
-    data.m_level = level;
-}
-
 void World::UpdatePhaseDefinitions()
 {
 #ifdef CROSS
@@ -4657,7 +4647,7 @@ void World::SendRaidQueueInfo(Player* player)
     std::function<void(Player*)> sendInfo = [text](Player* plr)
     {
         WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, LANG_ADDON, plr, plr, text, 0, "", DEFAULT_LOCALE, "RaidQueue");
+        //ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, LANG_ADDON, plr, plr, text, 0, "", DEFAULT_LOCALE, "RaidQueue");
         plr->GetSession()->SendPacket(&data);
     };
 

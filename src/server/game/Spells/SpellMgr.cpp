@@ -1480,7 +1480,7 @@ void SpellMgr::LoadSpellRanks()
     // cleanup core data before reload - remove reference to ChainNode from SpellInfo
     for (SpellChainMap::iterator itr = mSpellChains.begin(); itr != mSpellChains.end(); ++itr)
     {
-        for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+        for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
         {
             if (mSpellInfoMap[difficulty][itr->first])
                 mSpellInfoMap[difficulty][itr->first]->ChainEntry = NULL;
@@ -1574,7 +1574,7 @@ void SpellMgr::LoadSpellRanks()
             mSpellChains[addedSpell].last = GetSpellInfo(rankChain.back().first);
             mSpellChains[addedSpell].rank = itr->second;
             mSpellChains[addedSpell].prev = GetSpellInfo(prevRank);
-            for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+            for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
                 if (mSpellInfoMap[difficulty][addedSpell])
                     mSpellInfoMap[difficulty][addedSpell]->ChainEntry = &mSpellChains[addedSpell];
             prevRank = addedSpell;
@@ -3185,7 +3185,7 @@ void SpellMgr::LoadSpellInfoStore()
     uint32 oldMSTime = getMSTime();
 
     UnloadSpellInfoStore();
-    for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+    for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
         mSpellInfoMap[difficulty].resize(sSpellStore.GetNumRows(), nullptr);
 
     for (uint32 l_ID = 0; l_ID < sSpellXSpellVisualStore.GetNumRows(); ++l_ID)
@@ -3218,7 +3218,7 @@ void SpellMgr::LoadSpellInfoStore()
         if (!spellPower)
             continue;
 
-        for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+        for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
         {
             SpellInfo* spell = mSpellInfoMap[difficulty][spellPower->SpellId];
             if (!spell)
@@ -3252,7 +3252,7 @@ void SpellMgr::LoadSpellInfoStore()
 
 void SpellMgr::UnloadSpellInfoStore()
 {
-    for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+    for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
     {
         for (uint32 i = 0; i < mSpellInfoMap[difficulty].size(); ++i)
         {
@@ -3265,7 +3265,7 @@ void SpellMgr::UnloadSpellInfoStore()
 
 void SpellMgr::UnloadSpellInfoImplicitTargetConditionLists()
 {
-    for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+    for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
     {
         for (uint32 i = 0; i < mSpellInfoMap[difficulty].size(); ++i)
         {
@@ -3282,7 +3282,7 @@ void SpellMgr::LoadSpellCustomAttr()
     SpellInfo* spellInfo = NULL;
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
-        for (int difficulty = 0; difficulty < Difficulty::MaxDifficulties; difficulty++)
+        for (int difficulty = 0; difficulty < Difficulty::MAX_DIFFICULTY; difficulty++)
         {
             spellInfo = mSpellInfoMap[difficulty][i];
             if (!spellInfo)

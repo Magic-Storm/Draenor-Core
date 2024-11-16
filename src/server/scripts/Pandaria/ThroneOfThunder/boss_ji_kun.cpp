@@ -576,17 +576,8 @@ class boss_ji_kun : public CreatureScript
                             if (l_DungeonID != eMisc::LFRToTSecondPart)
                                 continue;
 
-                            if (!me || l_Player->IsAtGroupRewardDistance(me))
-                                sLFGMgr->RewardDungeonDoneFor(l_DungeonID, l_Player);
-
                             if (l_Assigned)
                                 continue;
-
-                            if (Group* l_Group = l_Player->GetGroup())
-                            {
-                                l_Assigned = true;
-                                sLFGMgr->AutomaticLootAssignation(me, l_Group);
-                            }
                         }
                     }
                 }

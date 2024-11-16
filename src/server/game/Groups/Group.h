@@ -245,6 +245,7 @@ class Group
             uint8       roles;
             uint8       playerClass;
             uint32      specID;
+            bool        readyCheckHasResponded;
         };
 
         typedef ACE_Based::LockedVector<MemberSlot> MemberSlotList;
@@ -383,6 +384,9 @@ class Group
         uint16 InInstance();
         bool InCombatToInstance(uint32 instanceId);
         void ResetInstances(uint8 method, bool isRaid, bool isLegacy, Player* SendMsgTo);
+
+        void ReadyCheck(uint64 playerGuid) { m_readyCheckGuid = playerGuid; }
+        void ReadyCheckResetResponded();
 
         // -no description-
         //void SendInit(WorldSession* session);

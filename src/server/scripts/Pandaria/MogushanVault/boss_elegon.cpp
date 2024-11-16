@@ -644,13 +644,6 @@ class boss_elegon : public CreatureScript
                     if (Player* l_Player = l_Itr->getSource())
                         me->CastSpell(l_Player, SPELL_ELEGON_BONUS, true);
                 }
-
-                if (IsLFR())
-                {
-                    Player* l_Player = l_PlrList.begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                }
             }
 
             void MoveInLineOfSight(Unit* who)
@@ -1966,7 +1959,7 @@ class spell_total_annihilation : public SpellScriptLoader
 
                     uint8 diffic = caster->GetMap()->GetDifficultyID();
 
-                    if ((!targetCount &&  diffic == Difficulty10N) || (targetCount < 3 && diffic == Difficulty25N))
+                    if ((!targetCount &&  diffic == RAID_DIFFICULTY_10MAN_NORMAL) || (targetCount < 3 && diffic == RAID_DIFFICULTY_25MAN_NORMAL))
                         caster->CastSpell(caster, SPELL_CATASTROPHIC_ANOMALY, false);
                 }
             }

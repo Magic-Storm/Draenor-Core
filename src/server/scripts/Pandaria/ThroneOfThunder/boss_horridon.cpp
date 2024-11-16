@@ -403,13 +403,7 @@ class boss_horridon : public CreatureScript
                     pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DEADLY_PLAGUE);
                 }
 
-                if (me->GetMap()->IsLFR())
-                {
-                    me->SetLootRecipient(NULL);
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootDistribution(me, l_Player->GetGroup());
-                }
+
             }
 
             void DamageTaken(Unit* /*p_Attacker*/, uint32& damage, SpellInfo const*  /*p_SpellInfo*/)

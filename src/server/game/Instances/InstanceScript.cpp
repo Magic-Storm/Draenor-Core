@@ -1631,8 +1631,8 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType p_Type, uint32 p_C
                     if (Player* l_Player = l_Itr->getSource())
                     {
                         uint32 l_DungeonID = l_Player->GetGroup() ? sLFGMgr->GetDungeon(l_Player->GetGroup()->GetGUID()) : 0;
-                        if (l_Player->IsAtGroupRewardDistance(p_Source))
-                            sLFGMgr->RewardDungeonDoneFor(l_DungeonID, l_Player);
+                        //if (l_Player->IsAtGroupRewardDistance(p_Source))
+                           // sLFGMgr->RewardDungeonDoneFor(l_DungeonID, l_Player);
                     }
                 }
             }

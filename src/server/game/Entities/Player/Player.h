@@ -52,6 +52,7 @@ class Channel;
 class Creature;
 class DynamicObject;
 class Group;
+class LootLockoutMap;
 #ifndef CROSS
 class Guild;
 #else /* CROSS */
@@ -65,7 +66,7 @@ class SpellCastTargets;
 class UpdateMask;
 class PhaseMgr;
 class SceneObject;
-class LootLockoutMap;
+
 
 namespace CUF
 {
@@ -3362,6 +3363,11 @@ class Player : public Unit, public GridObject<Player>
         void SetGroupInvite(uint32 groupGUID) { m_groupInviteGUID = groupGUID; }
         Group* GetGroup() { return m_group.getTarget(); }
         const Group* GetGroup() const { return (const Group*)m_group.getTarget(); }
+        Group* GetGroup(GroupSlot slot)
+        {
+            ASSERT(slot < GroupSlot::Max);
+            return m_group.getTarget();
+        }
         GroupReference& GetGroupRef() { return m_group; }
         void SetGroup(Group* group, int8 subgroup = -1);
         uint8 GetSubGroup() const { return m_group.getSubGroup(); }
@@ -3632,6 +3638,7 @@ class Player : public Unit, public GridObject<Player>
             pvpInfo.inFFAPvPArea = false;
         }
 
+        void ReadyCheckComplete();
         uint32 GetQuestObjectiveCounter(uint32 objectiveId) const;
 
         //////////////////////////////////////////////////////////////////////////
@@ -3680,7 +3687,6 @@ class Player : public Unit, public GridObject<Player>
         CompletedChallenge* GetCompletedChallenge(uint32 p_MapID);
         void AddCompletedChallenge(uint32 p_MapID, CompletedChallenge p_Challenge);
 
-        std::unique_ptr<LootLockoutMap> m_lootLockouts;
 
         CompletedChallengesMap m_CompletedChallenges;
         //////////////////////////////////////////////////////////////////////////
@@ -4310,6 +4316,9 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 _lastTargetedGO;
         float m_PersonnalXpRate;
+
+
+        uint32 _readyCheckTimer;
 
         //////////////////////////////////////////////////////////////////////////
         /// Garrison

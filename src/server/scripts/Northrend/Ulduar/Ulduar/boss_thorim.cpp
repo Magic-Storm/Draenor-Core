@@ -869,7 +869,7 @@ class PrePhaseAddHelper
 
         PrePhaseAddHelper(Difficulty raidDifficulty)
         {
-            if (raidDifficulty == Difficulty::Difficulty25N) // should not be heroic, just for the case
+            if (raidDifficulty == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL) // should not be heroic, just for the case
                 diffi = In10Man;
             else
                 diffi = In25Man;
@@ -1091,7 +1091,7 @@ class ArenaPhaseAddHelper
 
         ArenaPhaseAddHelper(Difficulty raidDifficulty)
         {
-            if (raidDifficulty == Difficulty::Difficulty25N) // should not be heroic, just for the case
+            if (raidDifficulty == Difficulty::RAID_DIFFICULTY_25MAN_NORMAL) // should not be heroic, just for the case
                 diffi = In10Man;
             else
                 diffi = In25Man;

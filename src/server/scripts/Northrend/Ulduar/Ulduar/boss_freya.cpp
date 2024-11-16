@@ -409,7 +409,7 @@ class boss_freya : public CreatureScript
                 std::map<uint32, std::vector<uint32>> summonSpell =
                 {
                     {
-                        Difficulty::Difficulty10N,
+                        Difficulty::RAID_DIFFICULTY_25MAN_NORMAL,
                         {
                             62957,
                             62955,
@@ -418,7 +418,7 @@ class boss_freya : public CreatureScript
                         }
                     },
                     {
-                        Difficulty::Difficulty25N,
+                        Difficulty::RAID_DIFFICULTY_25MAN_NORMAL,
                         {
                             62958,
                             62956,

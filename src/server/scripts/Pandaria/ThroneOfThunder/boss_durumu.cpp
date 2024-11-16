@@ -164,15 +164,6 @@ class boss_durumu : public CreatureScript
                     m_Instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                     m_Instance->SetBossState(DATA_DURUMU_THE_FORGOTTEN, DONE);
                 }
-
-                // LFR Loots
-                if (me->GetMap()->IsLFR())
-                {
-                    me->SetLootRecipient(NULL);
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootDistribution(me, l_Player->GetGroup());
-                }
             }
 
             void UpdateAI(const uint32 p_Diff)

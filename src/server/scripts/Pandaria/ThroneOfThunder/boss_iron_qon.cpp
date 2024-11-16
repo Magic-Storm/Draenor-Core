@@ -338,18 +338,6 @@ public:
 
             EncounterDone(me);
             _JustDied();
-
-            // LFR Loot
-            if (m_Instance->GetBossState(DATA_IRON_QON) == DONE)
-            {
-                if (me->GetMap()->IsLFR())
-                {
-                    me->SetLootRecipient(NULL);
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                }
-            }
         }
 
         void EnterCombat(Unit* /*p_Attacker*/)

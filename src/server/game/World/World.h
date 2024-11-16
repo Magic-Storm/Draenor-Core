@@ -1011,7 +1011,6 @@ class World
 
         bool isEventKillStart;
 
-        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
         std::string GetRealmName() { return m_realmName; }

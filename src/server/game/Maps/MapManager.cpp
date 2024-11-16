@@ -164,7 +164,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 
 #ifndef CROSS
     if (entry->MapID == player->GetGarrisonMapID() || entry->MapID == player->GetShipyardMapID())
-        targetDifficulty = Difficulty::DifficultyNormal;
+        targetDifficulty = Difficulty::DUNGEON_DIFFICULTY_NORMAL;
 #endif
 
     //The player has a heroic mode and tries to enter into instance which doesn't have a normal / heroic mode.

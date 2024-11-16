@@ -1581,10 +1581,12 @@ class spell_gen_luck_of_the_draw: public SpellScriptLoader
 
             void Update(AuraEffect* /*effect*/)
             {
+                uint32 newQueueId = 0;
+
                 if (Player* owner = GetUnitOwner()->ToPlayer())
                 {
-                    const LfgDungeonSet dungeons = sLFGMgr->GetSelectedDungeons(owner->GetGUID());
-                    LfgDungeonSet::const_iterator itr = dungeons.begin();
+                    std::set<uint32> dungeons = sLFGMgr->GetSelectedDungeons(owner->GetGUID(), newQueueId);
+                    std::set<uint32>::const_iterator itr = dungeons.begin();
 
                     if (itr == dungeons.end())
                     {
@@ -1600,7 +1602,7 @@ class spell_gen_luck_of_the_draw: public SpellScriptLoader
                                 if (uint32 dungeonId = sLFGMgr->GetDungeon(group->GetGUID(), true))
                                     if (LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(dungeonId))
                                         if (uint32(dungeon->map) == map->GetId() && dungeon->difficulty == uint32(map->GetDifficultyID()))
-                                            if (randomDungeon && randomDungeon->type == TYPEID_RANDOM_DUNGEON)
+                                            if (randomDungeon && randomDungeon->type == LFG_TYPE_RANDOM)
                                                 return; // in correct dungeon
 
                     Remove(AURA_REMOVE_BY_DEFAULT);

@@ -447,14 +447,6 @@ class boss_ancient_regail : public CreatureScript
                                     me->CastSpell(l_Player, SPELL_PROTECTORS_BONUS, true);
                             }
 
-                            if (kaolan && IsLFR())
-                            {
-                                me->SetLootRecipient(NULL);
-                                Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                                if (l_Player && l_Player->GetGroup())
-                                    sLFGMgr->AutomaticLootAssignation(kaolan, l_Player->GetGroup());
-                            }
-
                             break;
                         }
                         default:
@@ -797,14 +789,6 @@ class boss_ancient_asani : public CreatureScript
                             {
                                 if (Player* l_Player = l_Itr->getSource())
                                     me->CastSpell(l_Player, SPELL_PROTECTORS_BONUS, true);
-                            }
-
-                            if (kaolan && IsLFR())
-                            {
-                                me->SetLootRecipient(NULL);
-                                Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                                if (l_Player && l_Player->GetGroup())
-                                    sLFGMgr->AutomaticLootAssignation(kaolan, l_Player->GetGroup());
                             }
 
                             break;
