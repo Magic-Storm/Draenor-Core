@@ -1631,22 +1631,22 @@ void InitOpcodes()
     //////////////////////////////////////////////////////////////////////////
     DEFINE_OPCODE_HANDLER(CMSG_QUERY_BATTLE_PET_NAME,                           STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetQueryName,                    PROCESS_LOCAL);
 
-    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PETS_RECONVERT,                           STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetsReconvert,                   PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PETS_RECONVERT,                           STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_UPDATE_NOTIFY,                        STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetUpdateNotify,                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_REQUEST_JOURNAL_LOCK,                 STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetRequestJournalLock,           PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_REQUEST_JOURNAL,                      STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetRequestJournal,               PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_DELETE_PET,                           STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetDeletePet,                    PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_DELETE_PET_CHEAT,                     STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetDeletePetCheat,               PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_DELETE_JOURNAL,                       STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetDeleteJournal,                PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_DELETE_JOURNAL,                       STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_MODIFY_NAME,                          STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetModifyName,                   PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SUMMON,                               STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetSummon,                       PROCESS_DISTANT_IF_NEED);
-    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SET_LEVEL,                            STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetSetLevel,                     PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SET_LEVEL,                            STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SET_BATTLE_SLOT,                      STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetSetBattleSlot,                PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SET_COLLAR,                           STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetSetCollar,                    PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SET_COLLAR,                           STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PET_SET_FLAGS,                            STATUS_LOGGEDIN,    PROCESS_THREADSAFE,     &WorldSession::HandleBattlePetSetFlags,                     PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_RESTORE_BATTLE_PETS_HEALTH,                      STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetsRestoreHealth,               PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_ADD_BATTLE_PET,                                  STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetAdd,                          PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_CHEAT_BATTLE_PET_SET_QUALITY,                    STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::HandleBattlePetSetQualityCheat,              PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_RESTORE_BATTLE_PETS_HEALTH,                      STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_ADD_BATTLE_PET,                                  STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_CHEAT_BATTLE_PET_SET_QUALITY,                    STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_CAGE_BATTLE_PET,                                 STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleBattlePetCage,                         PROCESS_LOCAL);
 
     DEFINE_OPCODE_HANDLER(CMSG_JOIN_PET_BATTLE_QUEUE,                           STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleJoinQueue,                    PROCESS_LOCAL);
@@ -1657,12 +1657,12 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_REQUEST_UPDATE,                       STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleRequestUpdate,                PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_QUIT_NOTIFY,                          STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleQuitNotify,                   PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_FINAL_NOTIFY,                         STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleFinalNotify,                  PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_SCRIPT_ERROR_NOTIFY,                  STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleScriptErrorNotify,            PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_SCRIPT_ERROR_NOTIFY,                  STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_QUEUE_PROPOSE_MATCH_RESULT,           STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleQueueProposeMatchResult,      PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_INPUT_FIRST_PET,                      STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleFirstPet,                     PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_INPUT_FIRST_PET,                      STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_INPUT,                                STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleInput,                        PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_REPLACE_FRONT_PET,                    STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleReplaceFrontPet,              PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_DEBUG_QUEUE_DUMP,                     STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandlePetBattleDebugQueueDump,               PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_PET_BATTLE_DEBUG_QUEUE_DUMP,                     STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::Handle_NULL,                                 PROCESS_LOCAL);
 
     //////////////////////////////////////////////////////////////////////////
     /// Battle pay

@@ -1412,22 +1412,15 @@ class WorldSession
         void SendBattlePetError(uint32 p_Result, uint32 p_CreatureID);
         void SendBattlePetCageDateError(uint32 p_SecondsUntilCanCage);
         void HandleBattlePetQueryName(WorldPacket& p_RecvData);
-        void HandleBattlePetsReconvert(WorldPacket& p_RecvData);
         void HandleBattlePetUpdateNotify(WorldPacket& p_RecvData);
         void HandleBattlePetRequestJournalLock(WorldPacket& p_RecvData);
         void HandleBattlePetRequestJournal(WorldPacket& p_RecvData);
         void HandleBattlePetDeletePet(WorldPacket& p_RecvData);
         void HandleBattlePetDeletePetCheat(WorldPacket& p_RecvData);
-        void HandleBattlePetDeleteJournal(WorldPacket& p_RecvData);
         void HandleBattlePetModifyName(WorldPacket& p_RecvData);
         void HandleBattlePetSummon(WorldPacket& p_RecvData);
-        void HandleBattlePetSetLevel(WorldPacket& p_RecvData);
         void HandleBattlePetSetBattleSlot(WorldPacket& p_RecvData);
-        void HandleBattlePetSetCollar(WorldPacket& p_RecvData);
         void HandleBattlePetSetFlags(WorldPacket& p_RecvData);
-        void HandleBattlePetsRestoreHealth(WorldPacket& p_RecvData);
-        void HandleBattlePetAdd(WorldPacket& p_RecvData);
-        void HandleBattlePetSetQualityCheat(WorldPacket& p_RecvData);
         void HandleBattlePetCage(WorldPacket& p_RecvData);
 
         /// Pet battle
@@ -1454,12 +1447,9 @@ class WorldSession
         void HandlePetBattleRequestUpdate(WorldPacket& p_RecvData);
         void HandlePetBattleQuitNotify(WorldPacket& p_RecvData);
         void HandlePetBattleFinalNotify(WorldPacket& p_RecvData);
-        void HandlePetBattleScriptErrorNotify(WorldPacket& p_RecvData);
         void HandlePetBattleQueueProposeMatchResult(WorldPacket& p_RecvData);
-        void HandlePetBattleFirstPet(WorldPacket& p_RecvData);
         void HandlePetBattleInput(WorldPacket& p_RecvData);
         void HandlePetBattleReplaceFrontPet(WorldPacket& p_RecvData);
-        void HandlePetBattleDebugQueueDump(WorldPacket& p_RecvData);
 
         //////////////////////////////////////////////////////////////////////////
         /// ToyBox
