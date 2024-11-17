@@ -10206,10 +10206,10 @@ void ObjectMgr::ComputeBattlePetSpawns()
 			{
 				BattlePetSpeciesEntry const* l_Entry = sBattlePetSpeciesStore.LookupEntry(l_I);
 
-				if (!l_Entry || l_Entry->entry != l_CurrentTemplate->first)
+				if (!l_Entry || l_Entry->CreatureID != l_CurrentTemplate->first)
 					continue;
 
-				l_Species = l_Entry->id;
+				l_Species = l_Entry->ID;
 				break;
 			}
 
@@ -10769,7 +10769,6 @@ void ObjectMgr::LoadQuestObjectives()
 		{
 		case QUEST_OBJECTIVE_TYPE_NPC:
 		case QUEST_OBJECTIVE_TYPE_NPC_INTERACT:
-		case QUEST_OBJECTIVE_TYPE_PET_BATTLE_TAMER:
 		{
 			if (!GetCreatureTemplate(l_ObjectiveObjectID))
 			{

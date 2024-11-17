@@ -1549,6 +1549,11 @@ class Unit : public WorldObject
         void CleanupBeforeRemoveFromMap(bool finalCleanup);
         void CleanupsBeforeDelete(bool finalCleanup = true);                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
+        void AddDelayedEvent(std::function<void()> p_Lambda, uint32 p_Delay = 0)
+        {
+            m_Events.AddEvent(new GenericDelayedEvent(p_Lambda), m_Events.CalculateTime(p_Delay));
+        }
+
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
         void IncrDiminishing(DiminishingGroup group);
         float ApplyDiminishingToDuration(DiminishingGroup  group, int32 &duration, Unit* caster, DiminishingLevels Level, int32 limitduration);

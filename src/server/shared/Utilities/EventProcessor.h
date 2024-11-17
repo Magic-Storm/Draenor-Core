@@ -38,6 +38,26 @@ class BasicEvent
         uint64 m_execTime;                                  // planned time of next execution, filled by event handler
 };
 
+class GenericDelayedEvent : public BasicEvent
+{
+public:
+    GenericDelayedEvent(std::function<void()> p_Lambda) :
+        BasicEvent(), m_Lambda(p_Lambda) {}
+
+    virtual ~GenericDelayedEvent() { }
+
+    virtual bool Execute(uint64 /*p_EndTime*/, uint32 /*p_Time*/)
+    {
+        m_Lambda();
+        return true;
+    }
+
+    virtual void Abort(uint64 p_EndTime) { }
+
+private:
+    std::function<void()> m_Lambda;
+};
+
 typedef std::multimap<uint64, BasicEvent*> EventList;
 
 class EventProcessor

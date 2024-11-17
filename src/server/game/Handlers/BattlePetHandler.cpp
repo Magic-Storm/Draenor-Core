@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Project-Hellscream https://hellscream.org
+//  MILLENIUM-STUDIO
 //  Copyright 2014-2015 Millenium-studio SARL
-// Discord https://discord.gg/CWCF3C9
+//  All Rights Reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,6 +28,8 @@ void WorldSession::SendBattlePetUpdates(bool p_AddedPet)
 
     WorldPacket l_Packet(SMSG_BATTLE_PET_UPDATES, 15 * 1024);
     l_Packet << uint32(l_Pets.size());                                                                      ///< Pets count
+    l_Packet.WriteBit(p_AddedPet);                                                                          ///< HasJournalLock
+    l_Packet.FlushBits();
 
     for (std::vector<BattlePet::Ptr>::iterator l_It = l_Pets.begin(); l_It != l_Pets.end(); ++l_It)
     {
@@ -41,7 +43,7 @@ void WorldSession::SendBattlePetUpdates(bool p_AddedPet)
 
         l_Packet.appendPackGUID(l_Guid);                                                                    ///< BattlePetGUID
         l_Packet << uint32(l_Pet->Species);                                                                 ///< SpeciesID
-        l_Packet << uint32(l_SpeciesInfo ? l_SpeciesInfo->entry : 0);                                       ///< CreatureID
+        l_Packet << uint32(l_SpeciesInfo ? l_SpeciesInfo->CreatureID : 0);                                  ///< CreatureID
         l_Packet << uint32(l_Pet->DisplayModelID);                                                          ///< DisplayID
         l_Packet << uint16(l_Pet->Breed);                                                                   ///< BreedID
         l_Packet << uint16(l_Pet->Level);                                                                   ///< Level
@@ -70,8 +72,6 @@ void WorldSession::SendBattlePetUpdates(bool p_AddedPet)
         }
     }
 
-    l_Packet.WriteBit(p_AddedPet);                                                                          ///< HasJournalLock
-    l_Packet.FlushBits();
 
     SendPacket(&l_Packet);
 }
@@ -117,8 +117,12 @@ void WorldSession::SendBattlePetJournal()
 
     WorldPacket l_Packet(SMSG_BATTLE_PET_JOURNAL, 15 * 1024);
     l_Packet << uint16(m_Player->GetBattlePetTrapLevel());                                                  ///< Trap level
-    l_Packet << uint32(MAX_PETBATTLE_SLOTS);                                                                                  ///< Slots count
+    l_Packet << uint32(MAX_PETBATTLE_SLOTS);                                                                ///< Slots count
     l_Packet << uint32(l_Pets.size());                                                                      ///< Pets count
+    l_Packet << int32(BATTLEPET_MAX_COUNT);
+
+    l_Packet.WriteBit(true);                                                                                ///< HasJournalLock
+    l_Packet.FlushBits();
 
     for (uint32 l_I = 0; l_I < MAX_PETBATTLE_SLOTS; l_I++)
     {
@@ -151,7 +155,7 @@ void WorldSession::SendBattlePetJournal()
 
         l_Packet.appendPackGUID(l_Guid);                                                                    ///< BattlePetGUID
         l_Packet << uint32(l_Pet->Species);                                                                 ///< SpeciesID
-        l_Packet << uint32(l_SpeciesInfo ? l_SpeciesInfo->entry : 0);                                       ///< CreatureID
+        l_Packet << uint32(l_SpeciesInfo ? l_SpeciesInfo->CreatureID : 0);                                  ///< CreatureID
         l_Packet << uint32(l_Pet->DisplayModelID);                                                          ///< DisplayID
         l_Packet << uint16(l_Pet->Breed);                                                                   ///< BreedID
         l_Packet << uint16(l_Pet->Level);                                                                   ///< Level
@@ -179,9 +183,6 @@ void WorldSession::SendBattlePetJournal()
             l_Packet << uint32(g_RealmID);                                                                  ///< PlayerNativeRealm
         }
     }
-
-    l_Packet.WriteBit(true);                                                                                ///< HasJournalLock
-    l_Packet.FlushBits();
 
     SendPacket(&l_Packet);
 }
@@ -225,7 +226,7 @@ void WorldSession::SendBattlePetLicenseChanged()
 void WorldSession::SendBattlePetError(uint32 p_Result, uint32 p_CreatureID)
 {
     WorldPacket l_Packet(SMSG_BATTLE_PET_ERROR, 1 + 4);
-    l_Packet.WriteBits(p_Result, 4);
+    l_Packet.WriteBits(p_Result, 3);
     l_Packet.FlushBits();
     l_Packet << uint32(p_CreatureID);
 
@@ -305,12 +306,6 @@ void WorldSession::HandleBattlePetQueryName(WorldPacket& p_RecvData)
     m_Player->GetSession()->SendPacket(&l_Packet);
 }
 
-/// [INTERNAL]
-void WorldSession::HandleBattlePetsReconvert(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
-}
-
 void WorldSession::HandleBattlePetUpdateNotify(WorldPacket& p_RecvData)
 {
     uint64 l_BattlePetGUID;
@@ -321,10 +316,6 @@ void WorldSession::HandleBattlePetUpdateNotify(WorldPacket& p_RecvData)
 
 void WorldSession::HandleBattlePetRequestJournalLock(WorldPacket& /*p_RecvData*/)
 {
-    if (m_IsPetBattleJournalLocked)
-        SendBattlePetJournalLockAcquired();
-    else
-        SendBattlePetJournalLockDenied();
 }
 
 void WorldSession::HandleBattlePetRequestJournal(WorldPacket& /*p_RecvData*/)
@@ -348,27 +339,18 @@ void WorldSession::HandleBattlePetDeletePetCheat(WorldPacket& p_RecvData)
     /// @TODO
 }
 
-/// [INTERNAL]
-void WorldSession::HandleBattlePetDeleteJournal(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
-}
-
 void WorldSession::HandleBattlePetModifyName(WorldPacket& p_RecvData)
 {
     DeclinedName    l_DeclinedNames;
     uint64          l_PetJournalID;
     bool            l_HaveDeclinedNames = false;
     uint32          l_NameLenght        = 0;
-    std::string     l_Name;
 
     uint32 l_DeclinedNameLens[MAX_DECLINED_NAME_CASES];
 
     p_RecvData.readPackGUID(l_PetJournalID);
     l_NameLenght        = p_RecvData.ReadBits(7);
     l_HaveDeclinedNames = p_RecvData.ReadBit();
-
-    l_Name = p_RecvData.ReadString(l_NameLenght);
 
     if (l_HaveDeclinedNames)
     {
@@ -380,6 +362,8 @@ void WorldSession::HandleBattlePetModifyName(WorldPacket& p_RecvData)
         for (size_t l_I = 0; l_I < MAX_DECLINED_NAME_CASES; ++l_I)
             l_DeclinedNames.name[l_I] = p_RecvData.ReadString(l_DeclinedNameLens[l_I]);
     }
+
+    std::string l_Name = p_RecvData.ReadString(l_NameLenght);
 
     PetNameInvalidReason l_NameInvalidReason = sObjectMgr->CheckPetName(l_Name);
     if (l_NameInvalidReason != PET_NAME_SUCCESS)
@@ -433,12 +417,6 @@ void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
     }
 }
 
-/// [INTERNAL]
-void WorldSession::HandleBattlePetSetLevel(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
-}
-
 void WorldSession::HandleBattlePetSetBattleSlot(WorldPacket& p_RecvData)
 {
     if (m_IsPetBattleJournalLocked)
@@ -471,12 +449,6 @@ void WorldSession::HandleBattlePetSetBattleSlot(WorldPacket& p_RecvData)
     SendPetBattleSlotUpdates(false);
 }
 
-/// [INTERNAL]
-void WorldSession::HandleBattlePetSetCollar(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
-}
-
 void WorldSession::HandleBattlePetSetFlags(WorldPacket& p_RecvData)
 {
     uint64 l_PetJournalID;
@@ -497,24 +469,6 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& p_RecvData)
         else
             l_BattlePet->Flags |= l_Flag;
     }
-}
-
-/// [INTERNAL]
-void WorldSession::HandleBattlePetsRestoreHealth(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
-}
-
-/// [INTERNAL]
-void WorldSession::HandleBattlePetAdd(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
-}
-
-/// [INTERNAL]
-void WorldSession::HandleBattlePetSetQualityCheat(WorldPacket& /*p_RecvData*/)
-{
-    /// Internal handler
 }
 
 void WorldSession::HandleBattlePetCage(WorldPacket& /*p_RecvData*/)

@@ -5550,17 +5550,17 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         for (uint32 speciesId = 0; speciesId != sBattlePetSpeciesStore.GetNumRows(); ++speciesId)
         {
             BattlePetSpeciesEntry const* speciesInfo = sBattlePetSpeciesStore.LookupEntry(speciesId);
-            if (!speciesInfo || speciesInfo->spellId != spellId)
+            if (!speciesInfo || speciesInfo->SummonSpellID != spellId)
                 continue;
 
             BattlePet pet;
             pet.Slot = PETBATTLE_NULL_SLOT;
             pet.NameTimeStamp = 0;
-            pet.Species = speciesInfo->id;
+            pet.Species = speciesInfo->ID;
             pet.DisplayModelID = 0;
             pet.Flags = 0;
 
-            if (BattlePetTemplate const* temp = sObjectMgr->GetBattlePetTemplate(speciesInfo->id))
+            if (BattlePetTemplate const* temp = sObjectMgr->GetBattlePetTemplate(speciesInfo->ID))
             {
                 pet.Breed = temp->Breed;
                 pet.Quality = temp->Quality;
@@ -21162,7 +21162,6 @@ void Player::SendQuestUpdateAddCredit(Quest const* p_Quest, const QuestObjective
         case QUEST_OBJECTIVE_TYPE_MONEY:
         case QUEST_OBJECTIVE_TYPE_PLAYER:
         case QUEST_OBJECTIVE_TYPE_AREATRIGGER:
-        case QUEST_OBJECTIVE_TYPE_PET_BATTLE_TAMER:
         case QUEST_OBJECTIVE_TYPE_PET_BATTLE_ELITE:
         case QUEST_OBJECTIVE_TYPE_PET_BATTLE_PVP:
         case QUEST_OBJECTIVE_TYPE_PET_BATTLE_UNK2:
@@ -22115,9 +22114,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder* holder, SQLQueryHolder* p_L
             {
                 BattlePetSpeciesEntry const* speciesInfo = sBattlePetSpeciesStore.LookupEntry(l_I);
 
-                if (speciesInfo && speciesInfo->spellId == l_SpellID)
+                if (speciesInfo && speciesInfo->SummonSpellID == l_SpellID)
                 {
-                    m_OldPetBattleSpellToMerge.push_back(std::make_pair(l_SpellID, speciesInfo->id));
+                    m_OldPetBattleSpellToMerge.push_back(std::make_pair(l_SpellID, speciesInfo->ID));
                     break;
                 }
             }
@@ -23417,9 +23416,9 @@ void Player::_LoadSpells(PreparedQueryResult result)
             {
                 BattlePetSpeciesEntry const* speciesInfo = sBattlePetSpeciesStore.LookupEntry(l_I);
 
-                if (speciesInfo && speciesInfo->spellId == l_SpellID)
+                if (speciesInfo && speciesInfo->SummonSpellID == l_SpellID)
                 {
-                    m_OldPetBattleSpellToMerge.push_back(std::make_pair(l_SpellID, speciesInfo->id));
+                    m_OldPetBattleSpellToMerge.push_back(std::make_pair(l_SpellID, speciesInfo->ID));
                     break;
                 }
 
@@ -34273,7 +34272,7 @@ void Player::SummonBattlePet(uint64 p_JournalID)
 
     TempSummon * l_CurrentPet = new Minion(l_SummonProperties, this, false);
 
-    if (!l_CurrentPet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), GetMap(), l_Phase, l_SpeciesInfo->entry, 0, l_Team, l_Position.m_positionX, l_Position.m_positionY, l_Position.m_positionZ, GetOrientation()))
+    if (!l_CurrentPet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), GetMap(), l_Phase, l_SpeciesInfo->CreatureID, 0, l_Team, l_Position.m_positionX, l_Position.m_positionY, l_Position.m_positionZ, GetOrientation()))
     {
         delete l_CurrentPet;
         l_CurrentPet = 0;
@@ -34304,7 +34303,7 @@ void Player::SummonBattlePet(uint64 p_JournalID)
         l_CurrentPet->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, 0);
 
     l_CurrentPet->SetUInt32Value(UNIT_FIELD_SHAPESHIFT_FORM, !l_BattlePet->Name.empty());
-    l_CurrentPet->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, l_SpeciesInfo->spellId);
+    l_CurrentPet->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, l_SpeciesInfo->SummonSpellID);
 
     l_CurrentPet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_15);
     l_CurrentPet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
@@ -35126,8 +35125,8 @@ bool Player::_LoadPetBattles(PreparedQueryResult&& p_Result)
             l_AlreadyKnownPet.push_back(m_BattlePets[l_PetID]->Species);
 
             BattlePetSpeciesEntry const* l_SpeciesEntry = sBattlePetSpeciesStore.LookupEntry(m_BattlePets[l_PetID]->Species);
-            if (l_SpeciesEntry != nullptr && !HasSpell(l_SpeciesEntry->spellId))
-                addSpell(l_SpeciesEntry->spellId, true, true, false, false, false, false, false);
+            if (l_SpeciesEntry != nullptr && !HasSpell(l_SpeciesEntry->SummonSpellID))
+                addSpell(l_SpeciesEntry->SummonSpellID, true, true, false, false, false, false, false);
 
             ++l_PetID;
         } while (p_Result->NextRow());

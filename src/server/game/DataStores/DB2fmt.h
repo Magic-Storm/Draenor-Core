@@ -257,6 +257,35 @@ const char CharShipmentContainerEntryfmt[] =
     FT_END
 };
 
+const char AreaTablefmt[] =
+{
+    FT_INDEX,                                       ///< id
+    FT_STRING,                                      ///< SortName_lang
+    FT_STRING,                                      ///< AreaNameLang
+    FT_ARR_2, FT_INT,                               ///< Flags & Flags2
+    FT_FLOAT,                                       ///< AmbientMultiplier
+    FT_SHORT,                                       ///< ContinentID
+    FT_SHORT,                                       ///< ParentAreaID
+    FT_SHORT,                                       ///< AreaBit
+    FT_SHORT,                                       ///< AmbienceID
+    FT_SHORT,                                       ///< ZoneMusic
+    FT_SHORT,                                       ///< IntroSound
+    FT_ARR_4, FT_SHORT,                             ///< LiquidTypeID[4]
+    FT_SHORT,                                       ///< UwZoneMusic
+    FT_SHORT,                                       ///< UwAmbience
+    FT_SHORT,                                       ///< PvpCombatWorldStateID
+    FT_BYTE,                                        ///< SoundProviderPref
+    FT_BYTE,                                        ///< SoundProviderPrefUnderwater
+    FT_BYTE,                                        ///< ExplorationLevel
+    FT_BYTE,                                        ///< FactionGroupMask
+    FT_BYTE,                                        ///< MountFlags
+    FT_BYTE,                                        ///< WildBattlePetLevelMin
+    FT_BYTE,                                        ///< WildBattlePetLevelMax
+    FT_BYTE,                                        ///< WindSettingsID
+    FT_INT,                                         ///< UwIntroSound
+    FT_END
+};
+
 const char BattlePetAbilityfmt[] = "niiiiiss";
 const char BattlePetSpeciesEntryfmt[] = "iniiiiiss";
 const char BattlePetAbilityEffectfmt[] = "niiiiiiiiiii";

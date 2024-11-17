@@ -44,12 +44,6 @@ Map::~Map()
 {
     sScriptMgr->OnDestroyMap(this);
 
-    // We need to depopulate WildBattlePet for respawn replaced creatures next time
-    // Because respawn time is saved in database
-    sWildBattlePetMgr->DepopulateMap(GetId());
-
-    UnloadAll();
-
     while (!i_worldObjects.empty())
     {
         WorldObject* obj = *i_worldObjects.begin();
@@ -64,6 +58,11 @@ Map::~Map()
         sScriptMgr->DecreaseScheduledScriptCount(m_scriptSchedule.size());
 
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
+
+    // We need to depopulate WildBattlePet for respawn replaced creatures next time
+    // Because respawn time is saved in database
+    m_WildBattlePetPools->Depopulate();
+    delete m_WildBattlePetPools;
 }
 
 NGridType* Map::getNGrid(uint32 x, uint32 y) const
@@ -249,6 +248,8 @@ i_gridExpiry(expiry), i_scriptLock(false)
     Map::InitVisibilityDistance();
 
     sScriptMgr->OnCreateMap(this);
+
+    m_WildBattlePetPools = new WildBattlePetZonePools(sWildBattlePetMgr->GetZonePoolsForNewMap(id));
 }
 
 void Map::InitVisibilityDistance()
@@ -552,7 +553,7 @@ bool Map::AddToMap(T* obj)
     obj->UpdateObjectVisibility(true);
 
     if (obj->ToCreature())
-        sWildBattlePetMgr->OnAddToMap(obj->ToCreature());
+        m_WildBattlePetPools->OnAddToMap(obj->ToCreature());
 
     return true;
 }
@@ -775,7 +776,7 @@ template<class T>
 void Map::RemoveFromMap(T *obj, bool remove)
 {
     if (Creature* creature = obj->ToCreature())
-        sWildBattlePetMgr->OnRemoveToMap(creature);
+        m_WildBattlePetPools->OnRemoveToMap(creature);
 
     obj->RemoveFromWorld();
     if (obj->isActiveObject())

@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +40,7 @@ class npc_PetBattleTrainer : public CreatureScript
 
                 if (!sObjectMgr->GetPetBattleTrainerTeam(me->GetEntry()).empty())
                 {
-                    std::vector<QuestObjective> l_Objs = sObjectMgr->GetQuestObjectivesByType(QUEST_OBJECTIVE_TYPE_PET_BATTLE_TAMER);
+                    std::vector<QuestObjective> l_Objs = sObjectMgr->GetQuestObjectivesByType(QUEST_OBJECTIVE_TYPE_PET_TRAINER_DEFEAT);
 
                     for (std::size_t l_I = 0; l_I < l_Objs.size(); ++l_I)
                     {
@@ -68,18 +68,6 @@ class npc_PetBattleTrainer : public CreatureScript
                 if (me->isQuestGiver())
                     p_Player->PrepareQuestMenu(me->GetGUID());
 
-                ///if (m_IsTrainer && p_Player->HasQuest(m_QuestID))
-                ///{
-                ///  /*  const char* localizedEntry;
-                ///    switch (p_Player->GetSession()->GetSessionDbcLocale())
-                ///    {
-                ///        case LOCALE_deDE: localizedEntry = LOCALE_INNKEEPER_3; break;
-                ///        case LOCALE_enUS: default: localizedEntry = LOCALE_INNKEEPER_0;
-                ///    }*/
-                ///
-                ///    p_Player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "GO FIGHT !!", GOSSIP_SENDER_MAIN, PetBattleTrainerFightActionID);
-                ///}
-
                 p_Player->TalkedToCreature(me->GetEntry(), me->GetGUID());
                 p_Player->SEND_GOSSIP_MENU(p_Player->GetGossipTextId(me), me->GetGUID());
             }
@@ -96,7 +84,7 @@ class npc_PetBattleTrainer : public CreatureScript
 
             if (p_Action == PetBattleTrainerFightActionID)
             {
-                p_Player->CLOSE_GOSSIP_MENU();
+                p_Player->PlayerTalkClass->SendCloseGossip();
 
                 float const l_Distance = 10.0f;
 
@@ -110,7 +98,7 @@ class npc_PetBattleTrainer : public CreatureScript
                     l_PlayerPosition.m_positionY = l_Y;
                     l_PlayerPosition.m_positionZ = l_Z;
 
-                    l_PlayerPosition.m_orientation = atan2(p_Creature->m_positionY - l_Y, p_Creature->m_positionX - l_X);
+                    l_PlayerPosition.m_orientation = std::atan2(p_Creature->m_positionY - l_Y, p_Creature->m_positionX - l_X);
                     l_PlayerPosition.m_orientation = (l_PlayerPosition.m_orientation >= 0) ? l_PlayerPosition.m_orientation : 2 * M_PI + l_PlayerPosition.m_orientation;
                 }
 
@@ -129,11 +117,6 @@ class npc_PetBattleTrainer : public CreatureScript
                     l_BattleCenterPosition.m_positionZ      = p_Player->GetMap()->GetHeight(l_BattleCenterPosition.m_positionX, l_BattleCenterPosition.m_positionY, MAX_HEIGHT);
                     l_BattleCenterPosition.m_orientation = l_TrainerPosition.m_orientation + M_PI;
                 }
-
-                /// Debug code, show visual position of computed coordinates
-                ///p_Player->SummonCreature((uint32)1, l_PlayerPosition, (TempSummonType)TEMPSUMMON_MANUAL_DESPAWN);
-                ///p_Player->SummonCreature((uint32)1, l_TrainerPosition, (TempSummonType)TEMPSUMMON_MANUAL_DESPAWN);
-                ///p_Player->SummonCreature((uint32)1, l_BattleCenterPosition, (TempSummonType)TEMPSUMMON_MANUAL_DESPAWN);
 
                 PetBattleRequest* l_BattleRequest = sPetBattleSystem->CreateRequest(p_Player->GetGUID());
 
@@ -191,21 +174,21 @@ class npc_PetBattleTrainer : public CreatureScript
 
                     uint32 l_DisplayID = 0;
 
-                    if (sBattlePetSpeciesStore.LookupEntry(l_Current.Specie) && sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->entry))
+                    if (sBattlePetSpeciesStore.LookupEntry(l_Current.Specie) && sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->CreatureID))
                     {
-                        l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->entry)->Modelid1;
+                        l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->CreatureID)->Modelid1;
 
                         if (!l_DisplayID)
                         {
-                            l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->entry)->Modelid2;
+                            l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->CreatureID)->Modelid2;
 
                             if (!l_DisplayID)
                             {
-                                l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->entry)->Modelid3;
+                                l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->CreatureID)->Modelid3;
 
                                 if (!l_DisplayID)
                                 {
-                                    l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->entry)->Modelid4;
+                                    l_DisplayID = sObjectMgr->GetCreatureTemplate(sBattlePetSpeciesStore.LookupEntry(l_Current.Specie)->CreatureID)->Modelid4;
                                 }
                             }
                         }
@@ -293,10 +276,10 @@ class npc_PetBattleTrainer : public CreatureScript
                         l_WildBattlePets[l_CurrentPetID] = nullptr;
                 }
 
-                //p_Player->GetMotionMaster()->MovePointWithRot(PETBATTLE_ENTER_MOVE_SPLINE_ID, l_PlayerPosition.m_positionX, l_PlayerPosition.m_positionY, l_PlayerPosition.m_positionZ, l_PlayerPosition.m_orientation);
+                p_Player->GetMotionMaster()->MovePointWithRot(PETBATTLE_ENTER_MOVE_SPLINE_ID, l_PlayerPosition.m_positionX, l_PlayerPosition.m_positionY, l_PlayerPosition.m_positionZ, l_PlayerPosition.m_orientation);
             }
             else
-                p_Player->CLOSE_GOSSIP_MENU();
+                p_Player->PlayerTalkClass->SendCloseGossip();
 
             return true;
         }

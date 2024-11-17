@@ -1672,7 +1672,7 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
 
-    sWildBattlePetMgr->OnAddToMap(this);
+    GetMap()->GetWildBattlePetPools()->OnAddToMap(this);
 
     return true;
 }

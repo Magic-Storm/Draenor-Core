@@ -109,10 +109,10 @@ class battlepay_commandscript: public CommandScript
                     for (size_t l_I = 0; l_I < sBattlePetSpeciesStore.GetNumRows(); ++l_I)
                     {
                         BattlePetSpeciesEntry const* l_BattlePet = sBattlePetSpeciesStore.LookupEntry(l_I);
-                        if (!l_BattlePet || l_BattlePet->spellId != l_Item->Spells[1].SpellId)
+                        if (!l_BattlePet || l_BattlePet->SummonSpellID != l_Item->Spells[1].SpellId)
                             continue;
 
-                        CreatureTemplate const* l_CreatureTemplate = sObjectMgr->GetCreatureTemplate(l_BattlePet->entry);
+                        CreatureTemplate const* l_CreatureTemplate = sObjectMgr->GetCreatureTemplate(l_BattlePet->CreatureID);
                         if (l_CreatureTemplate == nullptr)
                             continue;
 

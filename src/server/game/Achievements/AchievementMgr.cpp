@@ -3480,7 +3480,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(CriteriaEntry const* p_C
                 if (!l_SpeciesInfo)
                     return false;
 
-                if (l_SpeciesInfo->id != l_ReqValue)
+                if (l_SpeciesInfo->ID != l_ReqValue)
                     return false;
                 break;
             }

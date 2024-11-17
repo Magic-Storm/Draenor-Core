@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +34,8 @@ class Field;
 #define PETBATTLE_PVE_TEAM_ID 1
 
 #define BATTLEPET_MAX_LEVEL 25
+
+#define BATTLEPET_MAX_COUNT 1000
 
 enum PetBattleType
 {
@@ -68,7 +70,6 @@ enum ePetBattleQualities
 
 enum eBattlePetTypes
 {
-	BATTLEPET_PETTYPE_ALL           = -1,
     BATTLEPET_PETTYPE_HUMANOID      = 0,
     BATTLEPET_PETTYPE_DRAGONKIN     = 1,
     BATTLEPET_PETTYPE_FLYING        = 2,
@@ -227,6 +228,9 @@ enum BattlePetState
     BATTLEPET_STATE_Cosmetic_TreasureGoblin         = 176,
     BATTLEPET_STATE_Ignore_Damage_Below_Threshold   = 191,
     BATTLEPET_STATE_Cosmetic_Spectral_Blue          = 196,
+    BATTLEPET_STATE_Special_Egg                     = 199,
+    BATTLEPET_STATE_Ignore_Damage_Above_Threshold   = 200,
+
     NUM_BATTLEPET_STATES
 };
 
@@ -422,13 +426,13 @@ class BattlePetInstance : public BattlePet
 enum PetBattleEventType
 {
     PETBATTLE_EVENT_UPDATE_FRONTPET         = 0,
-    PETBATTLE_EVENT_UPDATE_NPC_EMOTE        = 1,
-    PETBATTLE_EVENT_UPDATE_BUFF             = 2,
-    PETBATTLE_EVENT_UPDATE_SPEED            = 3,
-    PETBATTLE_EVENT_UPDATE_HEALTH           = 4,
-    PETBATTLE_EVENT_UPDATE_ABILITY_CHANGE   = 5,
-    PETBATTLE_EVENT_UPDATE_TRIGGER          = 6,
-    PETBATTLE_EVENT_UPDATE_STATE            = 7
+    PETBATTLE_EVENT_UPDATE_BUFF             = 1,
+    PETBATTLE_EVENT_UPDATE_STATE            = 2,
+    PETBATTLE_EVENT_UPDATE_HEALTH           = 3,
+    PETBATTLE_EVENT_UPDATE_SPEED            = 4,
+    PETBATTLE_EVENT_UPDATE_TRIGGER          = 5,
+    PETBATTLE_EVENT_UPDATE_ABILITY_CHANGE   = 6,
+    PETBATTLE_EVENT_UPDATE_NPC_EMOTE        = 7,
 };
 
 /// Pet battle event
@@ -882,6 +886,8 @@ class PetBattleSystem
         /// Can player enter in a pet battle
         eBattlePetRequests CanPlayerEnterInPetBattle(Player* p_Player, PetBattleRequest* p_Request);
 
+        std::recursive_mutex& GetLock() { return m_Lock; }
+
     private:
         uint32                              m_MaxPetBattleID;       ///< Global battle unique id
         std::map<uint64, PetBattle*>        m_PetBattles;           ///< All running battles
@@ -895,6 +901,7 @@ class PetBattleSystem
         std::map<uint64, LFBTicket*>                m_LFBRequests;
         std::mutex                                  m_LFBRequestsMutex;
         IntervalTimer                               m_LFBRequestsUpdateTimer;
+        std::recursive_mutex                        m_Lock;
 };
 
 /// Pet battle system class singleton init

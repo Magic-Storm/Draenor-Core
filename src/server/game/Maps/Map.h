@@ -21,6 +21,7 @@
 #include "DynamicTree.h"
 #include "GameObjectModel.h"
 #include "Common.h"
+#include "WildBattlePet.h"
 
 #include <bitset>
 
@@ -42,6 +43,7 @@ class Battleground;
 class MapInstanced;
 class InstanceMap;
 class Transport;
+class WildBattlePetZonePools;
 namespace Trinity { struct ObjectUpdater; }
 
 struct ScriptAction
@@ -512,6 +514,8 @@ class Map : public GridRefManager<NGridType>
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
         void ScriptsProcess();
 
+        WildBattlePetZonePools* GetWildBattlePetPools() const { return m_WildBattlePetPools; }
+
     protected:
 
         void SetUnloadReferenceLock(const GridCoord &p, bool on)
@@ -578,6 +582,8 @@ class Map : public GridRefManager<NGridType>
         std::set<WorldObject*> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
         std::set<WorldObject*> i_worldObjects;
+
+        WildBattlePetZonePools* m_WildBattlePetPools;
 
         typedef std::multimap<time_t, ScriptAction> ScriptScheduleMap;
         ScriptScheduleMap m_scriptSchedule;

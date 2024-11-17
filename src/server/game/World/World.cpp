@@ -2350,8 +2350,6 @@ void World::SetInitialWorldSettings()
 
     if (uint32 realmId = sConfigMgr->GetIntDefault("RealmID", 0)) // 0 reserved for auth
         sLog->SetRealmId(realmId);
-
-    sWildBattlePetMgr->PopulateAll();
 }
 
 void World::DetectDBCLang()
@@ -2663,7 +2661,6 @@ void World::Update(uint32 diff)
 #endif
 
     sPetBattleSystem->Update(diff);
-    sWildBattlePetMgr->Update(diff);
 
     sLFGMgr->Update(diff);
     SetRecordDiff(RECORD_DIFF_LFG, getMSTime() - diffTime);

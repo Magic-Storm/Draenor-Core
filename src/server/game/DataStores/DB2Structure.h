@@ -255,15 +255,17 @@ enum BattlePetSpeciesFlags
 
 struct BattlePetSpeciesEntry
 {
-    uint32 id;                                                      ///< 0
-    uint32 entry;                                                   ///< 1
-    uint32 iconId;                                                  ///< 2
-    uint32 spellId;                                                 ///< 3
-    uint32 type;                                                    ///< 4
-    uint32 obtainmentCategoryDescription;                           ///< 5
-    uint32 flags;                                                   ///< 6
-    LocalizedString const* source;                                  ///< 7
-    LocalizedString const* description;                             ///< 8
+    LocalizedString const* SourceText;                      ///< 3
+    LocalizedString const* Description;                     ///< 4
+    uint32              CreatureID;                         ///< 0
+    uint32              IconFileID;                         ///< 1
+    uint32              SummonSpellID;                      ///< 2
+    uint16              Flags;                              ///< 5
+    uint8               Source;                             ///< 6
+    int8                PetType;                            ///< 7
+    uint32              ID;                                 ///< 8
+    uint32              CardModelSceneID;                   ///< 9
+    uint32              LoadoutModelSceneID;                ///< 10
 };
 
 struct BattlePetSpeciesStateEntry
