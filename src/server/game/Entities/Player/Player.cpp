@@ -71,6 +71,7 @@
 #include "MSCallback.hpp"
 #include "Vignette.hpp"
 #include "WowTime.hpp"
+#include "LootLockoutMap.h"
 
 #ifndef CROSS
 # include "CharacterDatabaseCleaner.h"
@@ -619,6 +620,8 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
 	m_InPartyGarrison = false;
 	m_CanJoinPartyGarrison = false;
     m_VoidStorageLoaded = false;
+
+    m_lootLockouts.reset(new LootLockoutMap(this));
 
     CurrentPlayedMovie = 0;
 
@@ -12154,6 +12157,21 @@ void Player::_ApplyAllItemMods()
     }
 
     TC_LOG_DEBUG("entities.player.items", "_ApplyAllItemMods complete.");
+}
+
+bool Player::HasLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool checkPending) const
+{
+    return m_lootLockouts->HasLootLockout(type, lootedObjectEntry, difficulty, checkPending);
+}
+
+void Player::AddLootLockout(LootLockoutType type, uint32 lootedObjectEntry, Difficulty difficulty, bool pending)
+{
+    m_lootLockouts->AddLootLockout(type, lootedObjectEntry, difficulty, pending);
+}
+
+void Player::ClearLootLockouts()
+{
+    m_lootLockouts->Clear();
 }
 
 /*  If in a battleground a player dies, and an enemy removes the insignia, the player's bones is lootable
@@ -36541,4 +36559,49 @@ void Player::SendSoundToAll(uint32 soundId, uint64 source)
         if (Player* player = i->getSource())
             player->SendSound(soundId, source);
     }
+}
+
+static bool IsTwoHandWeapon(ItemTemplate const* proto)
+{
+    switch (proto->SubClass)
+    {
+    case ITEM_SUBCLASS_WEAPON_AXE2:
+    case ITEM_SUBCLASS_WEAPON_BOW:
+    case ITEM_SUBCLASS_WEAPON_GUN:
+    case ITEM_SUBCLASS_WEAPON_MACE2:
+    case ITEM_SUBCLASS_WEAPON_POLEARM:
+    case ITEM_SUBCLASS_WEAPON_SWORD2:
+    case ITEM_SUBCLASS_WEAPON_STAFF:
+    case ITEM_SUBCLASS_WEAPON_SPEAR:
+    case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+    case ITEM_SUBCLASS_WEAPON_FISHING_POLE:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
+float Player::GetAverageItemLevel()
+{
+    float sum = 0;
+    uint32 count = 0;
+
+    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+    {
+        // don't check tabard, ranged, offhand or shirt
+        if (i == EQUIPMENT_SLOT_TABARD || i == EQUIPMENT_SLOT_RANGED || i == EQUIPMENT_SLOT_BODY)
+            continue;
+
+        if (i == EQUIPMENT_SLOT_OFFHAND && !m_items[i])
+            if (m_items[EQUIPMENT_SLOT_MAINHAND] && IsTwoHandWeapon(m_items[EQUIPMENT_SLOT_MAINHAND]->GetTemplate()))
+                continue;
+
+        if (m_items[i] && m_items[i]->GetTemplate())
+            sum += m_items[i]->GetItemLevelBonusFromItemBonuses();
+
+        ++count;
+    }
+
+    return ((float)sum) / count;
 }

@@ -308,14 +308,6 @@ class boss_feng : public CreatureScript
                     if (Player* l_Player = l_Itr->getSource())
                         me->CastSpell(l_Player, SPELL_FENG_THE_ACCURSED_BONUS, true);
                 }
-
-                if (me->GetMap()->IsLFR())
-                {
-                    me->SetLootRecipient(NULL);
-                    Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                    if (l_Player && l_Player->GetGroup())
-                        sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                }
             }
 
             void JustReachedHome()
@@ -1395,8 +1387,8 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
                 float distance = caster->GetExactDist2d(target);
 
                 uint8 mode = GetCaster()->GetInstanceScript()->instance->GetSpawnMode();
-                int32 mindmg  = (mode == RAID_DIFFICULTY_25MAN_NORMAL ? 39000 : (mode == Difficulty25N ? 44850 : (mode == Difficulty10HC ? 58500 : (mode == Difficulty25HC ? 67275 : 16770))));
-                int32 range   = (mode == RAID_DIFFICULTY_25MAN_NORMAL ?  2000 : (mode == Difficulty25N ?  2300 : (mode == Difficulty10HC ?  3000 : (mode == Difficulty25HC ?  3450 :   860))));
+                int32 mindmg  = (mode == RAID_DIFFICULTY_10MAN_NORMAL ? 39000 : (mode == RAID_DIFFICULTY_25MAN_NORMAL ? 44850 : (mode == RAID_DIFFICULTY_10MAN_HEROIC ? 58500 : (mode == RAID_DIFFICULTY_25MAN_HEROIC ? 67275 : 16770))));
+                int32 range   = (mode == RAID_DIFFICULTY_10MAN_NORMAL ?  2000 : (mode == RAID_DIFFICULTY_25MAN_NORMAL ?  2300 : (mode == RAID_DIFFICULTY_10MAN_HEROIC ?  3000 : (mode == RAID_DIFFICULTY_25MAN_HEROIC ?  3450 :   860))));
 
                 if (distance >= 0.0f && distance <= 60.0f)
                     SetHitDamage(mindmg + int32(range * (distance / MAX_DIST)));

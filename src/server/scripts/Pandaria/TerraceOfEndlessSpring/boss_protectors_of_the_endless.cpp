@@ -1146,14 +1146,6 @@ class boss_protector_kaolan : public CreatureScript
                                     me->CastSpell(l_Player, SPELL_PROTECTORS_BONUS, true);
                             }
 
-                            if (IsLFR())
-                            {
-                                me->SetLootRecipient(NULL);
-                                Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                                if (l_Player && l_Player->GetGroup())
-                                    sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                            }
-
                             break;
                         }
                         default:

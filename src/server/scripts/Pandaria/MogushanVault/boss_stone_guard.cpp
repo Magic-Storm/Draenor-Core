@@ -234,13 +234,6 @@ class boss_stone_guard_controler : public CreatureScript
                                 me->CastSpell(l_Player, SPELL_STONE_GUARD_BONUS, true);
                         }
 
-                        if (IsLFR() && !l_PlrList.isEmpty())
-                        {
-                            Player* l_Player = l_PlrList.begin()->getSource();
-                            if (l_Player && l_Player->GetGroup())
-                                sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                        }
-
                         break;
                     }
                     case ACTION_POWER_DOWN:

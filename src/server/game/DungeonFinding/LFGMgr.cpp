@@ -435,7 +435,7 @@ void LFGMgr::InitializeLockedDungeons(Player* player, uint8 level /* = 0 */)
             lockStatus = LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE;
         else if (AccessRequirement const* ar = sObjectMgr->GetAccessRequirement(dungeon->map, Difficulty(dungeon->difficulty)))
         {
-            if (ar->achievement && !player->HasAchieved(ar->achievement))
+            if (ar->achievement && !player->GetAchievementMgr().HasAchieved(ar->achievement))
                 lockStatus = LFG_LOCKSTATUS_MISSING_ACHIEVEMENT;
             else if (player->GetTeam() == ALLIANCE && ar->quest_A && !player->GetQuestRewardStatus(ar->quest_A))
                 lockStatus = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;
@@ -2429,18 +2429,6 @@ void LFGMgr::RestoreState(uint64 guid, uint32 queueId, char const* debugMsg)
 
 void LFGMgr::SetState(uint64 guid, uint32 queueId, LfgState state)
 {
-    if (state != LFG_STATE_QUEUED)
-    {
-        bool validCase = state == LFG_STATE_FINISHED_DUNGEON && GetOldState(guid, queueId) == LFG_STATE_DUNGEON;
-        if (!validCase && GetQueueManager(guid).Contains(Queuer{ guid, queueId }))
-        {
-            ACE_Stack_Trace st;
-            std::ostringstream ss;
-            Queuer(guid, queueId).OutDebug(ss, nullptr);
-            TC_LOG_ERROR("lfg", "LFGMgr::SetState(" UI64FMTD " (%s), state: %u, queueId: %u) while queuer still in queues, stack trace:\n%s", GetGuidForLog(guid), ss.str().c_str(), (uint32)state, queueId, st.c_str());
-        }
-    }
-
     if (IS_GROUP_GUID(guid))
     {
         LfgGroupData& data = GroupsStore[guid];
@@ -2826,12 +2814,12 @@ bool LFGMgr::IsSeasonActive(uint32 dungeonId)
 
 std::string LFGMgr::DumpQueueInfo(uint32 dungeonID, bool client)
 {
+    uint32 players = 0;
+    uint32 groups = 0;
+    uint32 playersInGroup = 0;
+
     std::ostringstream o;
-
-    o << "Number of Managers: " << QueueManagers.size() << "\n";
-    for (auto&& manager : QueueManagers)
-        manager.second.OutDebug(o, dungeonID, client);
-
+    o << "Queued Players: " << players << " (in group: " << playersInGroup << ") Groups: " << groups << "\n";
     return o.str();
 }
 

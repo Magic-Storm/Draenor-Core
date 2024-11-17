@@ -3397,8 +3397,6 @@ class Player : public Unit, public GridObject<Player>
 
         bool isAllowedToLoot(const Creature* creature);
 
-        bool CreditprojectDailyQuest(uint32 entry, uint32 count = 1);
-
 		// Spell Queue
 		Spell* m_QueuedSpell;
 		uint32 m_spellQueueTimer;
@@ -3439,7 +3437,6 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr<Player> const& GetAchievementMgr() const { return m_achievementMgr; }
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, uint64 miscValue3 = 0, Unit* unit = NULL, bool p_LoginCheck = false);
         void CompletedAchievement(AchievementEntry const* entry);
-        bool HasAchieved(uint32 achievementId) const;
 
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->MaskID); }
@@ -3688,6 +3685,7 @@ class Player : public Unit, public GridObject<Player>
         void AddCompletedChallenge(uint32 p_MapID, CompletedChallenge p_Challenge);
 
 
+        std::unique_ptr<LootLockoutMap> m_lootLockouts;
         CompletedChallengesMap m_CompletedChallenges;
         //////////////////////////////////////////////////////////////////////////
 

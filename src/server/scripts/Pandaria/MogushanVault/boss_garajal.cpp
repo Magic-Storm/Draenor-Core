@@ -177,24 +177,6 @@ class boss_garajal : public CreatureScript
                     me->SetLootRecipient(nullptr);
 
                     bool l_Assigned = false;
-                    for (Map::PlayerList::const_iterator l_Itr = l_PlrList.begin(); l_Itr != l_PlrList.end(); ++l_Itr)
-                    {
-                        if (Player* l_Player = l_Itr->getSource())
-                        {
-                            uint32 l_DungeonID = l_Player->GetGroup() ? sLFGMgr->GetDungeon(l_Player->GetGroup()->GetGUID()) : 0;
-                            if (!me || l_Player->IsAtGroupRewardDistance(me))
-                                sLFGMgr->RewardDungeonDoneFor(l_DungeonID, l_Player);
-
-                            if (l_Assigned)
-                                continue;
-
-                            if (Group* l_Group = l_Player->GetGroup())
-                            {
-                                l_Assigned = true;
-                                sLFGMgr->AutomaticLootAssignation(me, l_Group);
-                            }
-                        }
-                    }
                 }
             }
 

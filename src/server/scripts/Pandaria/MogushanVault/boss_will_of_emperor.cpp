@@ -361,14 +361,6 @@ class boss_jin_qin_xi : public CreatureScript
                             anc_mogu_machine->RemoveAura(SPELL_TITAN_GAS_HEROIC);
                         me->Kill(anc_mogu_machine->ToUnit());
                     }
-
-                    if (IsLFR())
-                    {
-                        me->SetLootRecipient(NULL);
-                        Player* l_Player = me->GetMap()->GetPlayers().begin()->getSource();
-                        if (l_Player && l_Player->GetGroup())
-                            sLFGMgr->AutomaticLootAssignation(me, l_Player->GetGroup());
-                    }
                 }
 
                 isActive = false;

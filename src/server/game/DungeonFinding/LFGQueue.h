@@ -64,8 +64,6 @@ public:
 
     Compatibility CheckCompatibilityWith(Queuer const& other, DungeonQueue* queue) const;
 
-    void OutDebug(std::ostringstream& ss, QueueManager const* manager, Queuer const group = {}) const;
-
     operator bool() const { return m_guid != 0; }
     bool operator==(Queuer const& other) const { return m_guid == other.m_guid && m_queueId == other.m_queueId; }
 
@@ -234,8 +232,6 @@ public:
 
     void MakeProposals(ProposalList& proposals);
 
-    void OutDebug(std::ostringstream& ss, bool client) const;
-
     bool IsRaid() const { return m_raid; }
 
 private:
@@ -311,8 +307,6 @@ public:
     void UpdateShortageData();
     LfgRoles GetShortageRoles(uint32 dungeonId) const;
     LfgRoles GetRolesForCTAReward(uint32 dungeonId, LfgRoles roles);
-
-    void OutDebug(std::ostringstream& ss, uint32 dungeonID, bool client) const;
 
     ProfilingData const& GetProfilingData(ProfilingType type) const { return m_profiling[(uint32)type]; }
     void RecordProfilingData(ProfilingType type, uint32 us, uint32 queuers)

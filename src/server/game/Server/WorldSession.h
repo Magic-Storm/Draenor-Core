@@ -50,6 +50,7 @@ struct LfgQueueStatusData;
 struct MovementInfo;
 struct PetBattleRequest;
 class PetBattle;
+class AccountAchievementMgr;
 
 enum AccountDataType
 {
@@ -682,7 +683,6 @@ class WorldSession
         /// @p_Data1 : Additional data 1
         /// @p_Data2 : Additional data 2
         void SendGameError(GameError::Type p_Error, uint32 p_Data1 = 0xF0F0F0F0, uint32 p_Data2 = 0xF0F0F0F0);
-
 #ifndef CROSS
         /// ============== Cross realm ========================= ///
         uint32 GetInterRealmBG() { return m_InterRealmZoneId; }

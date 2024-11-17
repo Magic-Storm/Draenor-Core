@@ -976,14 +976,6 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
     data.append(bytereward);
 
     SendPacket(&data);
-
-    if (auto dungeon = sLFGDungeonStore.LookupEntry(rewardData.sdungeonEntry & 0xFFFFFF))
-    {
-        if (dungeon->difficulty == SCENARIO_DIFFICULTY_NORMAL || dungeon->difficulty == SCENARIO_DIFFICULTY_HEROIC)
-            GetPlayer()->CreditprojectDailyQuest(180021); // project Daily Quest Credit - Scenario
-        if (dungeon->difficulty == RAID_DIFFICULTY_25MAN_LFR)
-            GetPlayer()->CreditprojectDailyQuest(180023); // project Daily Quest Credit - Raid Finder
-    }
 }
 
 void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
