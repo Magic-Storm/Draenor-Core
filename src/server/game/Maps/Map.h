@@ -21,7 +21,6 @@
 #include "DynamicTree.h"
 #include "GameObjectModel.h"
 #include "Common.h"
-#include "WildBattlePet.h"
 
 #include <bitset>
 
@@ -350,6 +349,7 @@ class Map : public GridRefManager<NGridType>
 
         uint32 Expansion() const { return i_mapEntry ? i_mapEntry->Expansion() : 0; }
 
+        WildBattlePetZonePools* GetWildBattlePetPools() const { return m_WildBattlePetPools; }
 
 		bool GetEntrancePos(int32 &mapid, float &x, float &y) { return i_mapEntry && i_mapEntry->GetEntrancePos(mapid, x, y); }
 
@@ -513,8 +513,6 @@ class Map : public GridRefManager<NGridType>
 
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
         void ScriptsProcess();
-
-        WildBattlePetZonePools* GetWildBattlePetPools() const { return m_WildBattlePetPools; }
 
     protected:
 

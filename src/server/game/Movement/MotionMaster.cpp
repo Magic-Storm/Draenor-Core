@@ -325,6 +325,21 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generate
 	}
 }
 
+void MotionMaster::MovePointWithRot(uint32 id, float x, float y, float z, float p_Orientation, bool generatePath)
+{
+    if (_owner->IsPlayer())
+    {
+        ///sLog->outDebug(LOG_FILTER_GENERAL, "Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), id, x, y, z);
+        Mutate(new PointMovementGenerator<Player>(id, x, y, z, generatePath, 0.0f, p_Orientation), MOTION_SLOT_ACTIVE);
+    }
+    else
+    {
+        ///sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
+        ///    _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z);
+        Mutate(new PointMovementGenerator<Creature>(id, x, y, z, generatePath, 0.0f, p_Orientation), MOTION_SLOT_ACTIVE);
+    }
+}
+
 void MotionMaster::MoveLand(uint32 id, Position const& pos)
 {
     float x, y, z;
@@ -869,19 +884,4 @@ bool MotionMaster::GetDestination(float &x, float &y, float &z)
     y = dest.y;
     z = dest.z;
     return true;
-}
-
-void MotionMaster::MovePointWithRot(uint32 id, float x, float y, float z, float p_Orientation, bool generatePath)
-{
-    if (_owner->IsPlayer())
-    {
-        ///sLog->outDebug(LOG_FILTER_GENERAL, "Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), id, x, y, z);
-        Mutate(new PointMovementGenerator<Player>(id, x, y, z, generatePath, 0.0f, p_Orientation), MOTION_SLOT_ACTIVE);
-    }
-    else
-    {
-        ///sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
-        ///    _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z);
-        Mutate(new PointMovementGenerator<Creature>(id, x, y, z, generatePath, 0.0f, p_Orientation), MOTION_SLOT_ACTIVE);
-    }
 }
