@@ -45,6 +45,7 @@
 #define CASC_GAME_DIABLO3    0x00030000         // Diablo 3 since PTR 2.2.0
 #define CASC_GAME_OVERWATCH  0x00040000         // Overwatch since PTR 24919
 #define CASC_GAME_STARCRAFT2 0x00050000         // Starcraft II - Legacy of the Void, since build 38996
+#define CASC_GAME_STARCRAFT1 0x00060000         // Starcraft 1 (remastered)
 #define CASC_GAME_MASK       0xFFFF0000         // Mask for getting game ID
 
 #define CASC_INDEX_COUNT          0x10
@@ -58,7 +59,7 @@
 #define BLTE_HEADER_DELTA       0x1E            // Distance of BLTE header from begin of the header area
 #define MAX_HEADER_AREA_SIZE    0x2A            // Length of the file header area
 
-// File header area in the data.xxx:
+// File header area in the data.nnn:
 //  BYTE  HeaderHash[MD5_HASH_SIZE];            // MD5 of the frame array
 //  DWORD dwFileSize;                           // Size of the file (see comment before CascGetFileSize for details)
 //  BYTE  SomeSize[4];                          // Some size (big endian)
@@ -205,6 +206,7 @@ typedef struct _TCascStorage
     QUERY_KEY ArchivesGroup;                        // Key array of the "archive-group"
     QUERY_KEY ArchivesKey;                          // Key array of the "archives"
     QUERY_KEY PatchArchivesKey;                     // Key array of the "patch-archives"
+    QUERY_KEY PatchArchivesGroup;                   // Key array of the "patch-archive-group"
     QUERY_KEY RootKey;
     QUERY_KEY PatchKey;
     QUERY_KEY DownloadKey;
@@ -344,6 +346,7 @@ int RootHandler_CreateMNDX(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFil
 int RootHandler_CreateDiablo3(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFile);
 int RootHandler_CreateOverwatch(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFile);
 int RootHandler_CreateWoW6(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFile, DWORD dwLocaleMask);
+int RootHandler_CreateSC1(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFile);
 
 //-----------------------------------------------------------------------------
 // Dumping CASC data structures

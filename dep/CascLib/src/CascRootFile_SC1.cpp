@@ -1,11 +1,11 @@
 /*****************************************************************************/
-/* CascRootFile_Ovr.cpp                   Copyright (c) Ladislav Zezula 2015 */
+/* CascRootFile_SC1.cpp                   Copyright (c) Ladislav Zezula 2017 */
 /*---------------------------------------------------------------------------*/
-/* Support for loading Overwatch ROOT file                                   */
+/* Support for loading Starcraft 1 ROOT file                                 */
 /*---------------------------------------------------------------------------*/
 /*   Date    Ver   Who  Comment                                              */
 /* --------  ----  ---  -------                                              */
-/* 28.10.15  1.00  Lad  The first version of CascRootFile_Ovr.cpp            */
+/* 28.10.15  1.00  Lad  The first version of CascRootFile_SC1.cpp            */
 /*****************************************************************************/
 
 #define __CASCLIB_SELF__
@@ -22,7 +22,7 @@ typedef struct _CASC_FILE_ENTRY
     DWORD dwFileName;                               // Offset of the file name in the name cache
 } CASC_FILE_ENTRY, *PCASC_FILE_ENTRY;
 
-struct TRootHandler_Ovr : public TRootHandler
+struct TRootHandler_SC1 : public TRootHandler
 {
     // Linear global list of file entries
     DYNAMIC_ARRAY FileTable;
@@ -38,7 +38,7 @@ struct TRootHandler_Ovr : public TRootHandler
 // Local functions
 
 static int InsertFileEntry(
-    TRootHandler_Ovr * pRootHandler,
+    TRootHandler_SC1 * pRootHandler,
     const char * szFileName,
     LPBYTE pbEncodingKey)
 {
@@ -69,15 +69,15 @@ static int InsertFileEntry(
 //-----------------------------------------------------------------------------
 // Implementation of Overwatch root file
 
-static int OvrHandler_Insert(
-    TRootHandler_Ovr * pRootHandler,
+static int SC1Handler_Insert(
+    TRootHandler_SC1 * pRootHandler,
     const char * szFileName,
     LPBYTE pbEncodingKey)
 {
     return InsertFileEntry(pRootHandler, szFileName, pbEncodingKey);
 }
 
-static LPBYTE OvrHandler_Search(TRootHandler_Ovr * pRootHandler, TCascSearch * pSearch, PDWORD /* PtrFileSize */, PDWORD /* PtrLocaleFlags */, PDWORD /* PtrFileDataId */)
+static LPBYTE SC1Handler_Search(TRootHandler_SC1 * pRootHandler, TCascSearch * pSearch, PDWORD /* PtrFileSize */, PDWORD /* PtrLocaleFlags */, PDWORD /* PtrFileDataId */)
 {
     PCASC_FILE_ENTRY pFileEntry;
 
@@ -86,36 +86,40 @@ static LPBYTE OvrHandler_Search(TRootHandler_Ovr * pRootHandler, TCascSearch * p
     {
         // Retrieve the file item
         pFileEntry = (PCASC_FILE_ENTRY)Array_ItemAt(&pRootHandler->FileTable, pSearch->IndexLevel1);
-        strcpy(pSearch->szFileName, (char *)Array_ItemAt(&pRootHandler->FileNames, pFileEntry->dwFileName));        
         
         // Prepare the pointer to the next search
         pSearch->IndexLevel1++;
-        return pFileEntry->EncodingKey.Value;
+		
+        char *filename = (char *)Array_ItemAt(&pRootHandler->FileNames, pFileEntry->dwFileName);
+        if (CheckWildCard(filename, pSearch->szMask)) {
+            strcpy(pSearch->szFileName, filename);
+            return pFileEntry->EncodingKey.Value;
+        }
     }
 
     // No more entries
     return NULL;
 }
 
-static void OvrHandler_EndSearch(TRootHandler_Ovr * /* pRootHandler */, TCascSearch * /* pSearch */)
+static void SC1Handler_EndSearch(TRootHandler_SC1 * /* pRootHandler */, TCascSearch * /* pSearch */)
 {
     // Do nothing
 }
 
-static LPBYTE OvrHandler_GetKey(TRootHandler_Ovr * pRootHandler, const char * szFileName)
+static LPBYTE SC1Handler_GetKey(TRootHandler_SC1 * pRootHandler, const char * szFileName)
 {
     ULONGLONG FileNameHash = CalcFileNameHash(szFileName);
 
     return (LPBYTE)Map_FindObject(pRootHandler->pRootMap, &FileNameHash, NULL);
 }
 
-static DWORD OvrHandler_GetFileId(TRootHandler_Ovr * /* pRootHandler */, const char * /* szFileName */)
+static DWORD SC1Handler_GetFileId(TRootHandler_SC1 * /* pRootHandler */, const char * /* szFileName */)
 {
   // Not implemented for Overwatch
   return 0;
 }
 
-static void OvrHandler_Close(TRootHandler_Ovr * pRootHandler)
+static void SC1Handler_Close(TRootHandler_SC1 * pRootHandler)
 {
     if(pRootHandler != NULL)
     {
@@ -136,32 +140,30 @@ static void OvrHandler_Close(TRootHandler_Ovr * pRootHandler)
 //-----------------------------------------------------------------------------
 // Public functions
 
-int RootHandler_CreateOverwatch(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFile)
+int RootHandler_CreateSC1(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFile)
 {
-    TRootHandler_Ovr * pRootHandler;
+    TRootHandler_SC1 * pRootHandler;
     ENCODING_KEY KeyBuffer;
     QUERY_KEY EncodingKey = {KeyBuffer.Value, MD5_HASH_SIZE};
     void * pTextFile;
     size_t nLength;
     char szOneLine[0x200];
-    char szFileName[MAX_PATH+1];
     DWORD dwFileCountMax = (DWORD)hs->pEncodingMap->TableSize;
-    int nFileNameIndex;
     int nError = ERROR_SUCCESS;
 
     // Allocate the root handler object
-    hs->pRootHandler = pRootHandler = CASC_ALLOC(TRootHandler_Ovr, 1);
+    hs->pRootHandler = pRootHandler = CASC_ALLOC(TRootHandler_SC1, 1);
     if(pRootHandler == NULL)
         return ERROR_NOT_ENOUGH_MEMORY;
 
     // Fill-in the handler functions
-    memset(pRootHandler, 0, sizeof(TRootHandler_Ovr));
-    pRootHandler->Insert      = (ROOT_INSERT)OvrHandler_Insert;
-    pRootHandler->Search      = (ROOT_SEARCH)OvrHandler_Search;
-    pRootHandler->EndSearch   = (ROOT_ENDSEARCH)OvrHandler_EndSearch;
-    pRootHandler->GetKey      = (ROOT_GETKEY)OvrHandler_GetKey;
-    pRootHandler->Close       = (ROOT_CLOSE)OvrHandler_Close;
-    pRootHandler->GetFileId   = (ROOT_GETFILEID)OvrHandler_GetFileId;
+    memset(pRootHandler, 0, sizeof(TRootHandler_SC1));
+    pRootHandler->Insert      = (ROOT_INSERT)SC1Handler_Insert;
+    pRootHandler->Search      = (ROOT_SEARCH)SC1Handler_Search;
+    pRootHandler->EndSearch   = (ROOT_ENDSEARCH)SC1Handler_EndSearch;
+    pRootHandler->GetKey      = (ROOT_GETKEY)SC1Handler_GetKey;
+    pRootHandler->Close       = (ROOT_CLOSE)SC1Handler_Close;
+    pRootHandler->GetFileId   = (ROOT_GETFILEID)SC1Handler_GetFileId;
 
     // Fill-in the flags
     pRootHandler->dwRootFlags |= ROOT_FLAG_HAS_NAMES;
@@ -185,22 +187,21 @@ int RootHandler_CreateOverwatch(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRo
     pTextFile = ListFile_FromBuffer(pbRootFile, cbRootFile);
     if(pTextFile != NULL)
     {
-        // Get the initial line, containing variable names
-        nLength = ListFile_GetNextLine(pTextFile, szOneLine, _maxchars(szOneLine));
-        
-        // Determine the index of the "FILENAME" variable
-        nError = GetRootVariableIndex(szOneLine, szOneLine + nLength, "FILENAME", &nFileNameIndex);
-        if(nError == ERROR_SUCCESS)
+        // Parse the next lines
+        while((nLength = ListFile_GetNextLine(pTextFile, szOneLine, _maxchars(szOneLine))) > 0)
         {
-            // Parse the next lines
-            while((nLength = ListFile_GetNextLine(pTextFile, szOneLine, _maxchars(szOneLine))) > 0)
+            LPSTR szEncodingKey;
+            BYTE EncodingKey[MD5_HASH_SIZE];
+
+            szEncodingKey = strchr(szOneLine, _T('|'));
+            if(szEncodingKey != NULL)
             {
-                // Parse the line
-                nError = ParseRootFileLine(szOneLine, szOneLine + nLength, nFileNameIndex, &EncodingKey, szFileName, _maxchars(szFileName));
-                if(nError == ERROR_SUCCESS)
-                {
-                    InsertFileEntry(pRootHandler, szFileName, KeyBuffer.Value);
-                }
+                // Split the name and encoding key
+                *szEncodingKey++ = 0;
+
+                // Insert the entry to the map
+                ConvertStringToBinary(szEncodingKey, MD5_STRING_SIZE, EncodingKey);
+                InsertFileEntry(pRootHandler, szOneLine, EncodingKey);
             }
         }
 
