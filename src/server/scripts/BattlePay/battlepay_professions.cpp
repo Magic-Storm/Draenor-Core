@@ -1,14 +1,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef CROSS
 #include "BattlepayMgr.h"
-#include "ScriptPCH.h"
 
 namespace BattlePay
 {
@@ -62,8 +61,7 @@ namespace BattlePay
     };
 }
 
-template<uint32 t_SkillID, uint32 t_Value>
-class BattlePay_Profession : BattlePayProductScript
+template<uint32 t_SkillID, uint32 t_Value> class BattlePay_Profession : BattlePayProductScript
 {
     public:
         BattlePay_Profession(std::string p_ScriptName) : BattlePayProductScript(p_ScriptName) {}

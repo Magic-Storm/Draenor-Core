@@ -18,7 +18,7 @@
     # include <ppl.h>
 # endif
 
-typedef ACE_TSS<SFMTRand> SFMTRandTSS;
+typedef ACE_TSS<CRandomSFMT> SFMTRandTSS;
 static SFMTRandTSS sfmtRand;
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
