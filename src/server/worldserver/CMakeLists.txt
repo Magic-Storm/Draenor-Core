@@ -181,6 +181,10 @@ include_directories(
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
 add_executable(worldserver
   ${worldserver_SRCS}
   ${worldserver_PCH_SRC}
@@ -213,6 +217,7 @@ target_link_libraries(worldserver
   ${READLINE_LIBRARY}
   ${TERMCAP_LIBRARY}
   ${ACE_LIBRARY}
+  ${Boost_LIBRARIES}
   ${MYSQL_LIBRARY}
   ${OPENSSL_LIBRARIES}
   ${OPENSSL_EXTRA_LIBRARIES}

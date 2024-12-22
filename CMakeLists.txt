@@ -82,6 +82,11 @@ if( UNIX )
   find_package(BZip2)
 endif()
 
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost COMPONENTS system locale filesystem thread regex serialization
+    REQUIRED
+)
+
 if( NOT DISABLEGITCHECK )
   find_package(Git)
 endif()

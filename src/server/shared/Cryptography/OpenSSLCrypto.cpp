@@ -26,7 +26,7 @@ OSSL_PROVIDER* LegacyProvider;
 OSSL_PROVIDER* DefaultProvider;
 #endif
 
-void OpenSSLCrypto::threadsSetup()
+void OpenSSLCrypto::threadsSetup([[maybe_unused]] boost::filesystem::path const& providerModulePath)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #if PLATFORM == PLATFORM_WINDOWS
