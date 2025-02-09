@@ -322,7 +322,7 @@ struct CreatureLocale
 {
     StringVector Name;
     StringVector SubName;
-    StringVector l_FemaleName;
+    StringVector FemaleName;
 };
 
 struct GossipMenuItemsLocale

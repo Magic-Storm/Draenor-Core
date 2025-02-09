@@ -138,10 +138,10 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
     if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(entry))
     {
 
-        std::string Name, SubName, l_FemaleName, SubNameAlt;
+        std::string Name, SubName, FemaleName, SubNameAlt;
         Name = creatureInfo->Name;
         SubName = creatureInfo->SubName;
-        l_FemaleName = creatureInfo->FemaleName;
+        FemaleName = creatureInfo->FemaleName;
         SubNameAlt = "";
 
         LocaleConstant locale = GetSessionDbLocaleIndex();
@@ -151,7 +151,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
             {
                 ObjectMgr::GetLocaleString(creatureLocale->Name, locale, Name);
                 ObjectMgr::GetLocaleString(creatureLocale->SubName, locale, SubName);
-                ObjectMgr::GetLocaleString(creatureLocale->l_FemaleName, locale, l_FemaleName);
+                ObjectMgr::GetLocaleString(creatureLocale->FemaleName, locale, FemaleName);
             }
         }
 
@@ -171,7 +171,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
         data.WriteBits(creatureInfo->IconName.size() ? creatureInfo->IconName.size() + 1 : 0, 6);
         data.WriteBit(creatureInfo->RacialLeader);                     ///< isRacialLeader
         data.WriteBits(Name.size() ? Name.size() + 1 : 0, 11);         ///< Male
-        data.WriteBits(l_FemaleName.size() ? l_FemaleName.size() + 1 : 0, 11);        ///< Female
+        data.WriteBits(FemaleName.size() ? FemaleName.size() + 1 : 0, 11);        ///< Female
 
         for (int i = 0; i < 6; i++)
             data.WriteBits(0, 11);                                      ///< Female and other Names - Never send it
@@ -180,8 +180,8 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
 
         if (Name.size())
             data << Name;                                               ///< Name
-        if (l_FemaleName.size())
-            data << l_FemaleName;                                       ///< Name
+        if (FemaleName.size())
+            data << FemaleName;                                       ///< Name
 
         data << uint32(creatureInfo->type_flags);                       ///< Flags
         data << uint32(creatureInfo->type_flags2);                      ///< Unknown meaning
@@ -204,8 +204,8 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
         if (SubName.size())
             data << SubName;                                            ///< Sub Name
 
-        if (l_FemaleName.size())
-            data << l_FemaleName;                                       ///< Female Name
+        if (FemaleName.size())
+            data << FemaleName;                                       ///< Female Name
 
         if (creatureInfo->IconName.size())
             data << creatureInfo->IconName;                             ///< Icon Name

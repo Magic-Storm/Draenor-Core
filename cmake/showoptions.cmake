@@ -1,8 +1,8 @@
 # output generic information about the core and buildtype chosen
 message("")
-message("* WoDCore revision   : ${rev_hash} ${rev_date} (${rev_branch} branch)")
+message("* DraenorCore revision   : ${rev_hash} ${rev_date} (${rev_branch} branch)")
 if( UNIX )
-  message("* WoDCore buildtype  : ${CMAKE_BUILD_TYPE}")
+  message("* DraenorCore buildtype  : ${CMAKE_BUILD_TYPE}")
 endif()
 message("")
 
