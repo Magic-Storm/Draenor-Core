@@ -93,7 +93,7 @@ add_executable(authserver
 )
 set_property(TARGET authserver PROPERTY FOLDER "server")
 
-add_dependencies(authserver revision_data.h)
+add_dependencies(authserver revision.h)
 
 if( UNIX AND NOT NOJEM AND NOT APPLE )
   set(authserver_LINK_FLAGS "-pthread")

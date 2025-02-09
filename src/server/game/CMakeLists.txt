@@ -263,7 +263,7 @@ add_library(game STATIC
 )
 set_property(TARGET game PROPERTY FOLDER "server")
 
-add_dependencies(game revision_data.h)
+add_dependencies(game revision.h)
 
 # Generate precompiled header
 if (USE_COREPCH)
