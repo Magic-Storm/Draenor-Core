@@ -17,6 +17,7 @@ file(GLOB_RECURSE sources_Configuration Configuration/*.cpp Configuration/*.h)
 file(GLOB_RECURSE sources_Cryptography Cryptography/*.cpp Cryptography/*.h)
 file(GLOB_RECURSE sources_Database Database/*.cpp Database/*.h Database/*.hpp)
 file(GLOB_RECURSE sources_DataStores DataStores/*.cpp DataStores/*.h)
+file(GLOB_RECURSE sources_Debugging Debugging/*.cpp Debugging/*.h)
 file(GLOB_RECURSE sources_Dynamic Dynamic/*.cpp Dynamic/*.h)
 file(GLOB_RECURSE sources_Logging Logging/*.cpp Logging/*.h Logging/*.hpp)
 file(GLOB_RECURSE sources_Packets Packets/*.cpp Packets/*.h)
@@ -48,6 +49,7 @@ set(shared_STAT_SRCS
   ${sources_Cryptography}
   ${sources_Database}
   ${sources_DataStores}
+  ${sources_Debugging}
   ${sources_Dynamic}
   ${sources_Logging}
   ${sources_Packets}
@@ -55,28 +57,6 @@ set(shared_STAT_SRCS
   ${sources_Utilities}
   ${sources_Reporting}
   ${sources_localdir}
-  Debugging/Errors.h
-)
-
-MACRO( auto_group ProjectDirectory ProjectSources )
-	SET( DirectorySources "${ProjectSources}" )
-	FOREACH( Source ${DirectorySources} )
-		if ("${Source}" MATCHES "(/)+")
-			STRING( REGEX REPLACE "${ProjectDirectory}" "" RelativePath "${Source}" )
-			STRING( REGEX REPLACE "[\\\\/][^\\\\/]*$" "" RelativePath "${RelativePath}" )
-			STRING( REGEX REPLACE "^[\\\\/]" "" RelativePath "${RelativePath}" )
-			STRING( REGEX REPLACE "/" "\\\\\\\\" RelativePath "${RelativePath}" )
-			SOURCE_GROUP( "${RelativePath}" FILES ${Source} )
-		else()
-			SOURCE_GROUP( "" FILES ${Source} )
-		endif()
-	ENDFOREACH( Source )
-ENDMACRO( auto_group )
-
-auto_group("${CMAKE_CURRENT_SOURCE_DIR}" "${shared_STAT_SRCS}")
-
-set(shared_STAT_SRCS
-  ${shared_STAT_SRCS}
 )
 
 include_directories(
@@ -106,11 +86,11 @@ include_directories(
   ${OPENSSL_INCLUDE_DIR}
 )
 
-GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
-
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
+
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(shared STATIC
   ${shared_STAT_SRCS}
