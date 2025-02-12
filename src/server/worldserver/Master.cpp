@@ -702,6 +702,8 @@ int Master::Run()
     // fixes a memory leak related to detaching threads from the module
     //UnloadScriptingModule();
 
+    OpenSSLCrypto::threadsCleanup();
+
     // Exit the process with specified return value
     return World::GetExitCode();
 }
