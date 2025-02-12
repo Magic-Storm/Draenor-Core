@@ -157,7 +157,7 @@ find_path(MYSQL_INCLUDE_DIR
     /usr/include/mysql
     /usr/local/include
     /usr/local/include/mysql
-    /usr/local/mysql/
+    /usr/local/mysql/include
     "C:/Program Files/MySQL/MySQL Server 8.2/include"
     "C:/Program Files/MySQL/MySQL Server 8.1/include"
     "C:/Program Files/MySQL/MySQL Server 8.0/include"
