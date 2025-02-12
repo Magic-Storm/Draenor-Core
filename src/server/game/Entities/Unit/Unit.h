@@ -619,7 +619,7 @@ enum WeaponAttackType
 // Last check : 6.0.3
 enum CombatRating
 {
-    CR_UNUSED_1                         = 0,    //< Deprecated, CR_UNUSED_1 in PaperDollFrame.lua previously CR_WEAPON_SKILL
+    CR_WEAPON_SKILL                     = 0,
     CR_DEFENSE_SKILL                    = 1,    //< Deprecated
     CR_DODGE                            = 2,
     CR_PARRY                            = 3,
