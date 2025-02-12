@@ -12,18 +12,23 @@
 # Set projectname (must be done AFTER setting configurationtypes)
 
 # CMake policies (can not be handled elsewhere)
+
+project(LegacyWoD)
+
 cmake_minimum_required(VERSION 3.20.4)
+ 
+# CMake policies (can not be handled elsewhere)
 cmake_policy(SET CMP0005 NEW)
-if(POLICY CMP0043)
-  cmake_policy(SET CMP0043 NEW) # Disable 'Ignore COMPILE_DEFINITIONS_<Config> properties'
-endif(POLICY CMP0043)
+if (CMAKE_VERSION VERSION_LESS "3.16.0")
+  cmake_policy(SET CMP0043 OLD) # Disable 'Ignore COMPILE_DEFINITIONS_<Config> properties'
+else()
+  cmake_policy(SET CMP0043 NEW) # Cotire isn't used so set to NEW
+endif()
+cmake_policy(SET CMP0054 NEW) # Only interpret if() arguments as variables or keywords when unquoted - prevents intepreting if (SOME_STRING_VARIABLE MATCHES "MSVC") as if (SOME_STRING_VARIABLE MATCHES "1")
 
- # Set projectname (must be done AFTER setting configurationtypes)
-project(DraenorCore)
-
-# add this options before PROJECT keyword
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW) # find_package() uses <PackageName>_ROOT variables
+endif()
 
 # Set RPATH-handing (CMake parameters)
 set(CMAKE_SKIP_BUILD_RPATH 0)
@@ -35,7 +40,7 @@ else()
 endif()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-	   
+
 # set macro-directory
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 
@@ -65,25 +70,24 @@ if( NOPCH )
 endif()
 
 include(CheckPlatform)
+
 include(GroupSources)
 
 # basic packagesearching and setup (further support will be needed, this is a preliminary release!)
-set(OPENSSL_EXPECTED_VERSION 1.0.0)
-set(ACE_EXPECTED_VERSION 5.8.3)
-
 find_package(PCHSupport)
 find_package(ACE REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Threads REQUIRED)
-
-if( NOT USE_MYSQL_SOURCES )
-  find_package(MySQL REQUIRED)
-endif()
+# FIND_PACKAGE(msFramework REQUIRED)
+find_package(MySQL REQUIRED)
 
 if( UNIX )
   find_package(Readline)
   find_package(ZLIB)
   find_package(BZip2)
+endif()
+
+if( NOT DISABLEGITCHECK )
+  find_package(Git)
 endif()
 
 set(Boost_USE_STATIC_LIBS ON)

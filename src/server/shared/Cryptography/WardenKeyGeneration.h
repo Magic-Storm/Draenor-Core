@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -16,7 +16,7 @@ class SHA1Randx
 public:
     SHA1Randx(uint8* buff, uint32 size)
     {
-        uint32 taken = size/2;
+        uint32 taken = size / 2;
 
         sh.Initialize();
         sh.UpdateData(buff, taken);
@@ -63,7 +63,7 @@ private:
 
     SHA1Hash sh;
     uint32 taken;
-    uint8 o0[20],o1[20],o2[20];
+    uint8 o0[20], o1[20], o2[20];
 };
 
 #endif

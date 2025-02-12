@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Project-Hellscream https://hellscream.org
-// Copyright (C) 2018-2020 Project-Hellscream-6.2
-// Discord https://discord.gg/CWCF3C9
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -23,13 +23,13 @@ class SHA256Hash
 
         void UpdateBigNumbers(BigNumber* bn0, ...);
 
-        void UpdateData(const uint8 *dta, int len);
-        void UpdateData(const std::string &str);
+    void UpdateData(const uint8* dta, int len);
+    void UpdateData(const std::string& str);
 
         void Initialize();
         void Finalize();
 
-        uint8 *GetDigest(void) { return mDigest; };
+    uint8* GetDigest(void) { return mDigest; };
         int GetLength(void) const { return SHA256_DIGEST_LENGTH; };
 
     private:

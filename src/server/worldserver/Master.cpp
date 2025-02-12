@@ -52,6 +52,7 @@
 #include "Timer.h"
 #include "Util.h"
 
+#include "OpenSSLCrypto.h"
 #include "BigNumber.h"
 
 #ifdef CROSS
@@ -426,6 +427,7 @@ const char* dumpTables[32] =
 /// Main function
 int Master::Run()
 {
+    OpenSSLCrypto::threadsSetup(boost::dll::program_location().remove_filename());
     BigNumber seed1;
     seed1.SetRand(16 * 8);
 

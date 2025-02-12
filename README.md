@@ -17,7 +17,7 @@ Git ≥ 1.7+
 
 ACE ≥ 7.0.0
 
-MySQL ≥ 5.5.0+ (users of MySQL 5.7 and higher need to remove NO_ZERO_DATE, NO_ZERO_IN_DATE and ONLY_FULL_GROUP_BY from the global sql_mode)
+MySQL ≥ 8.x
 
 CMake ≥ 3.2+
 
