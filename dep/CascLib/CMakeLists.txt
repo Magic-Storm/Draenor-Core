@@ -47,6 +47,8 @@ set(TOMCRYPT_FILES
 
 include_directories(${CMAKE_SOURCE_DIR}/dep)
 
+target_compile_definitions(casc PUBLIC __SYS_ZLIB CASCLIB_NO_AUTO_LINK_LIBRARY CASCLIB_NODEBUG)
+
 add_library(casc STATIC ${SRC_FILES} ${TOMCRYPT_FILES})
 
 set_property(TARGET casc PROPERTY FOLDER "dep")
