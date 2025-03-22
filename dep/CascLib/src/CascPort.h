@@ -25,16 +25,11 @@
 
   // In MSVC 8.0, there are some functions declared as deprecated.
   #if _MSC_VER >= 1400
-    #ifndef _CRT_SECURE_NO_DEPRECATE
-      #define _CRT_SECURE_NO_DEPRECATE
-    #endif
-    #ifndef _CRT_NON_CONFORMING_SWPRINTFS
-      #define _CRT_NON_CONFORMING_SWPRINTFS
-    #endif
+  #define _CRT_SECURE_NO_DEPRECATE
+  #define _CRT_NON_CONFORMING_SWPRINTFS
   #endif
-
   #ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN
+  #define WIN32_LEAN_AND_MEAN
   #endif
 
   #include <tchar.h>
@@ -158,7 +153,6 @@
   typedef LONG         * PLONG;
   typedef DWORD        * PDWORD;
   typedef BYTE         * LPBYTE;
-  typedef char         * LPSTR;
 
   #ifdef PLATFORM_32BIT
     #define _LZMA_UINT32_IS_ULONG

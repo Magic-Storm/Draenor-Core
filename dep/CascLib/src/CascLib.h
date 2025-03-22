@@ -26,49 +26,57 @@
 extern "C" {
 #endif
 
-//-----------------------------------------------------------------------------
-// Use the apropriate library
-//
-// The library type is encoded in the library name as the following
-// CascLibXYZ.lib
-//
-//  X - D for Debug version, R for Release version
-//  Y - A for ANSI version, U for Unicode version
-//  Z - S for static-linked CRT library, D for multithreaded DLL CRT library
-//
-#if defined(_MSC_VER) && !defined(__CASCLIB_SELF__)
+    //-----------------------------------------------------------------------------
+    // Use the apropriate library
+    //
+    // The library type is encoded in the library name as the following
+    // CascLibXYZ.lib
+    //
+    //  X - D for Debug version, R for Release version
+    //  Y - A for ANSI version, U for Unicode version
+    //  Z - S for static-linked CRT library, D for dynamic CRT library (dll)
+    //
 
-  #ifdef _DEBUG                                 // DEBUG VERSIONS
-    #ifndef _UNICODE
-      #ifdef _DLL
-        #pragma comment(lib, "CascLibDAD.lib") // Debug Ansi CRT-DLL version
-      #else
-        #pragma comment(lib, "CascLibDAS.lib") // Debug Ansi CRT-LIB version
-      #endif
-    #else
-      #ifdef _DLL
-        #pragma comment(lib, "CascLibDUD.lib") // Debug Unicode CRT-DLL version
-      #else
-        #pragma comment(lib, "CascLibDUS.lib") // Debug Unicode CRT-LIB version
-      #endif
-    #endif
-  #else                                         // RELEASE VERSIONS
-    #ifndef _UNICODE
-      #ifdef _DLL
-        #pragma comment(lib, "CascLibRAD.lib") // Release Ansi CRT-DLL version
-      #else
-        #pragma comment(lib, "CascLibRAS.lib") // Release Ansi CRT-LIB version
-      #endif
-    #else
-      #ifdef _DLL
-        #pragma comment(lib, "CascLibRUD.lib") // Release Unicode CRT-DLL version
-      #else
-        #pragma comment(lib, "CascLibRUS.lib") // Release Unicode CRT-LIB version
-      #endif
-    #endif
-  #endif
-
+#if defined(_MSC_VER) && !defined(__CASCLIB_SELF__) && !defined(CASCLIB_NO_AUTO_LINK_LIBRARY)
+#ifndef WDK_BUILD
+#ifdef _DEBUG                                 // DEBUG VERSIONS
+#ifndef _UNICODE
+#ifdef _DLL
+#pragma comment(lib, "CascLibDAD.lib")  // Debug Ansi CRT-DLL version
+#else
+#pragma comment(lib, "CascLibDAS.lib")  // Debug Ansi CRT-LIB version
 #endif
+#else
+#ifdef _DLL
+#pragma comment(lib, "CascLibDUD.lib")  // Debug Unicode CRT-DLL version
+#else
+#pragma comment(lib, "CascLibDUS.lib")  // Debug Unicode CRT-LIB version
+#endif
+#endif
+#else                                         // RELEASE VERSIONS
+#ifndef _UNICODE
+#ifdef _DLL
+#pragma comment(lib, "CascLibRAD.lib")  // Release Ansi CRT-DLL version
+#else
+#pragma comment(lib, "CascLibRAS.lib")  // Release Ansi CRT-LIB version
+#endif
+#else
+#ifdef _DLL
+#pragma comment(lib, "CascLibRUD.lib")  // Release Unicode CRT-DLL version
+#else
+#pragma comment(lib, "CascLibRUS.lib")  // Release Unicode CRT-LIB version
+#endif
+#endif
+#endif
+#endif
+#endif
+
+#if defined(CASCLIB_DETECT_UNICODE_MISMATCHES)
+#if defined(_UNICODE) != defined(CASCLIB_UNICODE)
+#error CascLib was not built with the same UNICODE setting as your project
+#endif
+#endif
+
 //-----------------------------------------------------------------------------
 // Defines
 
@@ -151,7 +159,6 @@ typedef enum _CASC_STORAGE_INFO_CLASS
     CascStorageFeatures,
     CascStorageGameInfo,
     CascStorageGameBuild,
-    CascStorageInstalledLocales,
     CascStorageInfoClassMax
 
 } CASC_STORAGE_INFO_CLASS, *PCASC_STORAGE_INFO_CLASS;
@@ -170,7 +177,7 @@ typedef struct _CASC_FIND_DATA
     char * szPlainName;                         // Plain name of the found file
     BYTE   EncodingKey[MD5_HASH_SIZE];          // Encoding key
     DWORD  dwLocaleFlags;                       // Locale flags (WoW only)
-    DWORD  dwFileDataId;                        // File data ID (WoW only)
+    DWORD  dwFileDataId;                        // File data ID (WoW only) 
     DWORD  dwFileSize;                          // Size of the file
 
 } CASC_FIND_DATA, *PCASC_FIND_DATA;

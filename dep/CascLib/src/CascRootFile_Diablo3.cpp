@@ -606,7 +606,7 @@ static void ResolveFullFileNames(
     char szFullName[MAX_PATH+1];
 
     // Keep compiler happy
-    CASCLIB_UNUSED(dwFileIndexes);
+    UNREFERENCED_PARAMETER(dwFileIndexes);
 
     // Parse the entire file table
     for(size_t i = 0; i < pRootHandler->FileTable.ItemCount; i++)

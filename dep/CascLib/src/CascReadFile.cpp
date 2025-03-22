@@ -494,7 +494,7 @@ bool WINAPI CascReadFile(HANDLE hFile, void * pvBuffer, DWORD dwBytesToRead, PDW
     if(nError == ERROR_SUCCESS && hf->FilePointer >= hf->FileSize)
     {
         *pdwBytesRead = 0;
-        return true;
+        return ERROR_SUCCESS;
     }
 
     // Find the file frame where to read from
