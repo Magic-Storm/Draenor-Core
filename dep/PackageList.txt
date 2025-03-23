@@ -39,3 +39,7 @@ recastnavigation (Recast is state of the art navigation mesh construction toolse
 CURL (command line tool and library for transferring data with URL syntax)
 https://curl.haxx.se/
 Version: 7.47.1
+
+protobuf (Protocol Buffers - Google's data interchange format https://developers.google.com/protocol-buffers/)
+  https://github.com/google/protobuf
+  Version: v2.6.1
