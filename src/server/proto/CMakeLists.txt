@@ -14,12 +14,6 @@ else()
   add_definitions(-w)
 endif()
 
-CollectSourceFiles(
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE_SOURCES
-  # Exclude
-  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders)
-
 if (USE_COREPCH)
   set(PRIVATE_PCH_HEADER PrecompiledHeaders/protoPCH.h)
   set(PRIVATE_PCH_SOURCE PrecompiledHeaders/protoPCH.cpp)
@@ -33,12 +27,6 @@ add_library(proto STATIC
   ${PRIVATE_SOURCES}
   ${PRIVATE_PCH_SOURCE}
 )
-
-CollectIncludeDirectories(
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  PUBLIC_INCLUDES
-  # Exclude
-  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders)
 
 target_include_directories(proto
   PUBLIC

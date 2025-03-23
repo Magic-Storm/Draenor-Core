@@ -99,9 +99,9 @@ add_library(shared STATIC
 set_property(TARGET shared PROPERTY FOLDER "server")
 
 target_link_libraries(shared
-  ${ACE_LIBRARY
+  ${ACE_LIBRARY}
     rapidjson
-    proto}
+    proto
 )
 
 add_dependencies(shared revision.h)
