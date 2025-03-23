@@ -50,6 +50,7 @@ endif()
 if(SERVERS)
   add_subdirectory(gsoap)
   add_subdirectory(protobuf)
+  add_subdirectory(rapidjson)
 endif()
 
 if(TOOLS)
