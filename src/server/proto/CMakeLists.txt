@@ -79,7 +79,6 @@ target_include_directories(proto
 
 target_link_libraries(proto
   PUBLIC
-    common
 	protobuf)
 
 set_target_properties(proto
