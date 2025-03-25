@@ -8,6 +8,8 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+file(GLOB_RECURSE sources_Client Client/*.cpp Client/*.h)
+
 if (MSVC)
   add_definitions(/W0)
 else()
@@ -18,6 +20,28 @@ if (USE_COREPCH)
   set(PRIVATE_PCH_HEADER PrecompiledHeaders/protoPCH.h)
   set(PRIVATE_PCH_SOURCE PrecompiledHeaders/protoPCH.cpp)
 endif()
+
+set(shared_STAT_SRCS
+  ${shared_STAT_SRCS}
+  ${sources_Client}
+)
+
+include_directories(
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+  ${CMAKE_SOURCE_DIR}/dep/SFMT
+  ${CMAKE_SOURCE_DIR}/dep/sockets/include
+  ${CMAKE_SOURCE_DIR}/dep/utf8cpp
+  ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
+  ${CMAKE_SOURCE_DIR}/src/server
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/Client
+  ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Object
+  ${ACE_INCLUDE_DIR}
+  ${MYSQL_INCLUDE_DIR}
+  ${OPENSSL_INCLUDE_DIR}
+)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
