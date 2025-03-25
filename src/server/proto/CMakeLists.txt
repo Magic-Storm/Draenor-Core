@@ -36,6 +36,25 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/src/server
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/src/server/collision
+  ${CMAKE_SOURCE_DIR}/src/server/collision/Management
+  ${CMAKE_SOURCE_DIR}/src/server/collision/Models
+  ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
+  ${CMAKE_SOURCE_DIR}/src/server/collision/Pathfinding
+  ${CMAKE_SOURCE_DIR}/src/server/shared
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography/Authentication
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Database
+  ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Logging
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Reporting
   ${CMAKE_CURRENT_SOURCE_DIR}/Client
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Object
   ${ACE_INCLUDE_DIR}
