@@ -4,8 +4,6 @@
 /**
  *  @file    Condition_T.h
  *
- *   Moved from Synch.h.
- *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -114,7 +112,6 @@ protected:
   MUTEX &mutex_;
 
 private:
-  // = Prevent assignment and initialization.
   void operator= (const ACE_Condition<MUTEX> &) = delete;
   ACE_Condition (const ACE_Condition<MUTEX> &) = delete;
 };
@@ -155,13 +152,7 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/Condition_T.inl"
 #endif /* __ACE_INLINE__ */
 
-#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Condition_T.cpp"
-#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
-
-#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
-#pragma implementation ("Condition_T.cpp")
-#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #endif /* ACE_HAS_THREADS */
 

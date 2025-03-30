@@ -150,7 +150,7 @@ ACE_High_Res_Timer::get_cpuinfo ()
                   ACELIB_DEBUG ((LM_DEBUG,
                               ACE_TEXT ("\nThe BogoMIPS metric is not supported on this platform"
                                          "\n\tReport the results of the clock calibration and"
-                                         "\n\tthe contents of /proc/cpuinfo to the ace-users mailing list")));
+                                         "\n\tthe contents of /proc/cpuinfo to the ACE github project")));
                 }
 #endif /* 0 */
               break;
@@ -227,7 +227,7 @@ ACE_High_Res_Timer::global_scale_factor ()
 #endif /* (ACE_WIN32 || ACE_HAS_POWERPC_TIMER || \
            ACE_HAS_PENTIUM) && \
           ! ACE_HAS_HI_RES_TIMER &&
-          ((WIN32 && ! WINCE) || ghs || __GNUG__) */
+          ((WIN32) || ghs || __GNUG__) */
 
   return ACE_High_Res_Timer::global_scale_factor_;
 }
@@ -374,8 +374,7 @@ ACE_High_Res_Timer::elapsed_time (ACE_hrtime_t &nanoseconds) const
   // For more background on this, please see bugzilla #1024.
   nanoseconds = ACE_High_Res_Timer::elapsed_hrtime (this->end_, this->start_)
             * (1024000u / ACE_High_Res_Timer::global_scale_factor ());
-  // Caution - Borland has a problem with >>=, so resist the temptation.
-  nanoseconds = nanoseconds >> 10;
+  nanoseconds >>= 10;
   // Right shift is implemented for non native 64-bit ints
   // operator/ only for a 32 bit result !
 #else
@@ -391,15 +390,11 @@ ACE_High_Res_Timer::elapsed_time_incr (ACE_hrtime_t &nanoseconds) const
 {
 #if !defined (ACE_WIN32)
   // Same as above.
-  nanoseconds = this->total_
-          * (1024000u / ACE_High_Res_Timer::global_scale_factor ());
-  // Caution - Borland has a problem with >>=, so resist the temptation.
-  nanoseconds = nanoseconds >> 10;
+  nanoseconds = this->total_ * (1024000u / ACE_High_Res_Timer::global_scale_factor ());
+  nanoseconds >>= 10;
 #else
   // This a higher-precision version, specific for Windows systems
-  nanoseconds =
-      this->total_ * 1000000000u /
-      ACE_High_Res_Timer::global_scale_factor ();
+  nanoseconds = this->total_ * 1000000000u / ACE_High_Res_Timer::global_scale_factor ();
 #endif
 }
 

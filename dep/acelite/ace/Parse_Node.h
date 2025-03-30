@@ -8,7 +8,6 @@
  */
 //=============================================================================
 
-
 #ifndef ACE_PARSE_NODE_H
 #define ACE_PARSE_NODE_H
 
@@ -22,10 +21,10 @@
 
 #if (ACE_USES_CLASSIC_SVC_CONF == 1)
 
-#include "ace/Auto_Ptr.h"
 #include "ace/DLL.h"
 #include "ace/SString.h"
 #include "ace/Svc_Conf.h"
+#include <memory>
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -46,18 +45,18 @@ class ACE_Service_Type;
 class ACE_Parse_Node
 {
 public:
-  ACE_Parse_Node (void);
+  ACE_Parse_Node ();
   explicit ACE_Parse_Node (const ACE_TCHAR *name);
-  virtual ~ACE_Parse_Node (void);
+  virtual ~ACE_Parse_Node ();
 
-  ACE_Parse_Node *link (void) const;
+  ACE_Parse_Node *link () const;
   void link (ACE_Parse_Node *);
 
   /// Will update the yyereno member and/or the corresponding configuration
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno) = 0;
 
-  const ACE_TCHAR *name (void) const;
-  void print (void) const;
+  const ACE_TCHAR *name () const;
+  void print () const;
 
   /// Dump the state of an object.
   void dump () const;
@@ -87,7 +86,7 @@ class ACE_Suspend_Node : public ACE_Parse_Node
 {
 public:
   ACE_Suspend_Node (const ACE_TCHAR *name);
-  ~ACE_Suspend_Node (void);
+  ~ACE_Suspend_Node ();
 
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
 
@@ -115,7 +114,7 @@ class ACE_Resume_Node : public ACE_Parse_Node
 {
 public:
   ACE_Resume_Node (const ACE_TCHAR *name);
-  ~ACE_Resume_Node (void);
+  ~ACE_Resume_Node ();
 
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
 
@@ -143,7 +142,7 @@ class ACE_Remove_Node : public ACE_Parse_Node
 {
 public:
   ACE_Remove_Node (const ACE_TCHAR *name);
-  ~ACE_Remove_Node (void);
+  ~ACE_Remove_Node ();
 
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
 
@@ -171,12 +170,12 @@ class ACE_Static_Node : public ACE_Parse_Node
 {
 public:
   ACE_Static_Node (const ACE_TCHAR *name, ACE_TCHAR *params = 0);
-  virtual ~ACE_Static_Node (void);
+  virtual ~ACE_Static_Node ();
 
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
   virtual const ACE_Service_Type *record (const ACE_Service_Gestalt *g) const;
 
-  ACE_TCHAR *parameters (void) const;
+  ACE_TCHAR *parameters () const;
 
   /// Dump the state of an object.
   void dump () const;
@@ -210,9 +209,9 @@ class ACE_Dynamic_Node : public ACE_Static_Node
 public:
   ACE_Dynamic_Node (ACE_Service_Type_Factory const *, ACE_TCHAR *params);
 
-  virtual ~ACE_Dynamic_Node (void);
+  virtual ~ACE_Dynamic_Node ();
 
-  //  virtual const ACE_Service_Type *record (void) const;
+  //  virtual const ACE_Service_Type *record () const;
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
 
   /// Dump the state of an object.
@@ -223,7 +222,7 @@ public:
 
 private:
   /// Pointer to a descriptor that describes this node.
-  ACE_Auto_Ptr<const ACE_Service_Type_Factory> factory_;
+  std::unique_ptr<const ACE_Service_Type_Factory> factory_;
 
 private:
   ACE_Dynamic_Node (const ACE_Dynamic_Node&) = delete;
@@ -243,7 +242,7 @@ class ACE_Stream_Node : public ACE_Parse_Node
 {
 public:
   ACE_Stream_Node (const ACE_Static_Node *, const ACE_Parse_Node *);
-  virtual ~ACE_Stream_Node (void);
+  virtual ~ACE_Stream_Node ();
 
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
 
@@ -275,7 +274,7 @@ class ACE_Dummy_Node : public ACE_Parse_Node
 {
 public:
   ACE_Dummy_Node (const ACE_Static_Node *, const ACE_Parse_Node *);
-  ~ACE_Dummy_Node (void);
+  ~ACE_Dummy_Node ();
 
   virtual void apply (ACE_Service_Gestalt *cfg, int &yyerrno);
 
@@ -307,13 +306,13 @@ private:
 class ACE_Location_Node
 {
 public:
-  ACE_Location_Node (void);
-  const ACE_DLL &dll (void);
-  const ACE_TCHAR *pathname (void) const;
+  ACE_Location_Node ();
+  const ACE_DLL &dll ();
+  const ACE_TCHAR *pathname () const;
   void pathname (const ACE_TCHAR *h);
-  int dispose (void) const;
+  int dispose () const;
 
-  virtual ~ACE_Location_Node (void);
+  virtual ~ACE_Location_Node ();
   virtual void set_symbol (void *h);
 
   /// Will update the yyerrno member and/or corresponding configuration
@@ -368,7 +367,7 @@ public:
   virtual void *symbol (ACE_Service_Gestalt *config,
                         int &yyerrno,
                         ACE_Service_Object_Exterminator * = 0);
-  virtual ~ACE_Object_Node (void);
+  virtual ~ACE_Object_Node ();
 
   /// Dump the state of an object.
   void dump () const;
@@ -401,7 +400,7 @@ public:
   virtual void *symbol (ACE_Service_Gestalt *config,
                         int &yyerrno,
                         ACE_Service_Object_Exterminator *gobbler = 0);
-  virtual ~ACE_Function_Node (void);
+  virtual ~ACE_Function_Node ();
 
   /// Dump the state of an object.
   void dump () const;
@@ -410,7 +409,6 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 private:
-
   /// Return mangled function name that takes into account ACE
   /// versioned namespace.
   /**
@@ -431,7 +429,6 @@ private:
   ACE_TCHAR * make_func_name (ACE_TCHAR const * func_name);
 
 private:
-
   /// Name of the function that we're parsing.
   const ACE_TCHAR *function_name_;
 
@@ -458,7 +455,7 @@ public:
   virtual void *symbol (ACE_Service_Gestalt *config,
                         int &yyerrno,
                         ACE_Service_Object_Exterminator * = 0);
-  virtual ~ACE_Static_Function_Node (void);
+  virtual ~ACE_Static_Function_Node ();
 
   /// Dump the state of an object.
   void dump () const;
@@ -486,17 +483,16 @@ public:
                             ACE_Location_Node *location,
                             bool active);
 
-  ~ACE_Service_Type_Factory (void);
+  ~ACE_Service_Type_Factory ();
 
   ACE_Service_Type *make_service_type (ACE_Service_Gestalt *pcfg) const;
 
-  ACE_TCHAR const* name (void) const;
+  ACE_TCHAR const* name () const;
 
   /// Declare the dynamic allocation hooks.
   ACE_ALLOC_HOOK_DECLARE;
 
 private:
-
   /**
    * Not implemented to enforce no copying
    */
@@ -506,7 +502,7 @@ private:
 private:
   ACE_TString name_;
   int type_;
-  ACE_Auto_Ptr<ACE_Location_Node> location_;
+  std::unique_ptr<ACE_Location_Node> location_;
   bool const is_active_;
 };
 

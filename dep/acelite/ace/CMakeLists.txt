@@ -1,13 +1,7 @@
-# Copyright (C) 2011-2021 Project SkyFire <https://www.projectskyfire.org/>
-# Copyright (C) 2008-2021 TrinityCore <http://www.trinitycore.org/>
 #
-# This file is free software; as a special exception the author gives
-# unlimited permission to copy and/or distribute it, with or without
-# modifications, as long as this notice is preserved.
+# This file is part of Project SkyFire https://www.projectskyfire.org. 
+# See COPYRIGHT file for Copyright information
 #
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # NOTE: Do not use glob here, it would include files we don't want
 set(ace_STAT_SRCS
@@ -40,7 +34,7 @@ set(ace_STAT_SRCS
   ATM_Stream.cpp
   Atomic_Op.cpp
   Atomic_Op_GCC_T.cpp
-  Atomic_Op_Sparc.c
+  
   Atomic_Op_T.cpp
   Auto_Event.cpp
   Auto_Functor.cpp
@@ -53,7 +47,7 @@ set(ace_STAT_SRCS
   Basic_Stats.cpp
   Basic_Types.cpp
   Bound_Ptr.cpp
-  Cache_Map_Manager_T.cpp
+  # Cache_Map_Manager_T.cpp
   Cached_Connect_Strategy_T.cpp
   Caching_Strategies_T.cpp
   Caching_Utility_T.cpp
@@ -61,7 +55,7 @@ set(ace_STAT_SRCS
   CDR_Base.cpp
   CDR_Size.cpp
   CDR_Stream.cpp
-  CE_Screen_Output.cpp
+  
   Cleanup.cpp
   Cleanup_Strategies_T.cpp
   Codecs.cpp
@@ -292,7 +286,7 @@ set(ace_STAT_SRCS
   Remote_Name_Space.cpp
   Remote_Tokens.cpp
   Reverse_Lock_T.cpp
-  Rtems_init.c
+  
   RW_Mutex.cpp
   RW_Process_Mutex.cpp
   RW_Thread_Mutex.cpp
@@ -343,7 +337,7 @@ set(ace_STAT_SRCS
   Stream_Modules.cpp
   String_Base.cpp
   String_Base_Const.cpp
-  SUN_Proactor.cpp
+  
   SV_Message.cpp
   SV_Message_Queue.cpp
   SV_Semaphore_Complex.cpp

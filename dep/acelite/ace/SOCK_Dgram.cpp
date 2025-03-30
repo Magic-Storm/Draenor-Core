@@ -145,9 +145,7 @@ ACE_SOCK_Dgram::shared_open (const ACE_Addr &local,
 #endif /* ACE_HAS_IPV6 */
           )
         {
-          if (ACE::bind_port (this->get_handle (),
-                              INADDR_ANY,
-                              protocol_family) == -1)
+          if (ACE::bind_port (this->get_handle (), INADDR_ANY, protocol_family) == -1)
             error = true;
         }
     }
@@ -180,9 +178,7 @@ ACE_SOCK_Dgram::open (const ACE_Addr &local,
                       flags,
                       reuse_addr) == -1)
     return -1;
-  else if (this->shared_open (local,
-                              protocol_family,
-                              ipv6_only) == -1)
+  else if (this->shared_open (local, protocol_family, ipv6_only) == -1)
     return -1;
   else
     return 0;
@@ -210,15 +206,10 @@ ACE_SOCK_Dgram::open (const ACE_Addr &local,
 #endif /* ACE_HAS_IPV6 */
     }
 
-  if (ACE_SOCK::open (SOCK_DGRAM,
-                      protocol_family,
-                      protocol,
-                      reuse_addr) == -1)
+  if (ACE_SOCK::open (SOCK_DGRAM, protocol_family, protocol, reuse_addr) == -1)
     return -1;
   else
-    return this->shared_open (local,
-                              protocol_family,
-                              ipv6_only);
+    return this->shared_open (local, protocol_family, ipv6_only);
 }
 
 // Here's the general-purpose constructor used by a connectionless
@@ -301,14 +292,11 @@ ACE_SOCK_Dgram::send (const iovec iov[],
   send_msg.msg_controllen = 0;
 #endif
 
-  return ACE_OS::sendmsg (this->get_handle (),
-                          &send_msg,
-                          flags);
+  return ACE_OS::sendmsg (this->get_handle (), &send_msg, flags);
 }
 
 // Recv an iovec of size N to ADDR as a datagram (connectionless
 // version).
-
 ssize_t
 ACE_SOCK_Dgram::recv (iovec iov[],
                       int n,
@@ -323,12 +311,12 @@ ACE_SOCK_Dgram::recv (iovec iov[],
 #define ACE_USE_MSG_CONTROL
   union control_buffer {
     cmsghdr control_msg_header;
-#if defined (IP_RECVDSTADDR)
+#if defined (IP_RECVDSTADDR) && !defined (ACE_HAS_NONCONST_CMSG_SPACE)
     u_char padding[ACE_CMSG_SPACE (sizeof (in_addr))];
-#elif defined (IP_PKTINFO)
+#elif defined (IP_PKTINFO) && !defined (ACE_HAS_NONCONST_CMSG_SPACE)
     u_char padding[ACE_CMSG_SPACE (sizeof (in_pktinfo))];
 #endif
-#if defined (ACE_HAS_IPV6)
+#if defined (ACE_HAS_IPV6) && !defined (ACE_HAS_NONCONST_CMSG_SPACE)
     u_char padding6[ACE_CMSG_SPACE (sizeof (in6_pktinfo))];
 #endif
   } cbuf;
@@ -346,16 +334,14 @@ ACE_SOCK_Dgram::recv (iovec iov[],
   recv_msg.msg_namelen = addr.get_size ();
 
 #ifdef ACE_USE_MSG_CONTROL
-  recv_msg.msg_control = to_addr ? &cbuf : 0;
+  recv_msg.msg_control = to_addr ? std::addressof(cbuf) : nullptr;
   recv_msg.msg_controllen = to_addr ? sizeof (cbuf) : 0;
 #elif !defined ACE_LACKS_SENDMSG
-  recv_msg.msg_accrights = 0;
+  recv_msg.msg_accrights = nullptr;
   recv_msg.msg_accrightslen = 0;
 #endif
 
-  ssize_t status = ACE_OS::recvmsg (this->get_handle (),
-                                    &recv_msg,
-                                    flags);
+  ssize_t const status = ACE_OS::recvmsg (this->get_handle (), std::addressof(recv_msg), flags);
   addr.set_size (recv_msg.msg_namelen);
   addr.set_type (((sockaddr_in *) addr.get_addr())->sin_family);
 
@@ -363,7 +349,7 @@ ACE_SOCK_Dgram::recv (iovec iov[],
   if (to_addr) {
     this->get_local_addr (*to_addr);
     if (to_addr->get_type() == AF_INET) {
-#if defined (IP_RECVDSTADDR) || defined (IP_PKTINFO)
+#if (defined (IP_RECVDSTADDR) || defined (IP_PKTINFO)) && !defined (ACE_HAS_NONCONST_CMSG_SPACE)
       for (cmsghdr *ptr = ACE_CMSG_FIRSTHDR (&recv_msg); ptr; ptr = ACE_CMSG_NXTHDR (&recv_msg, ptr)) {
 #if defined (IP_RECVDSTADDR)
         if (ptr->cmsg_level == IPPROTO_IP && ptr->cmsg_type == IP_RECVDSTADDR) {
@@ -383,7 +369,7 @@ ACE_SOCK_Dgram::recv (iovec iov[],
       }
 #endif
     }
-#if defined (ACE_HAS_IPV6) && defined (IPV6_PKTINFO)
+#if defined (ACE_HAS_IPV6) && defined (IPV6_PKTINFO) && !defined (ACE_HAS_NONCONST_CMSG_SPACE)
     else if (to_addr->get_type() == AF_INET6) {
       for (cmsghdr *ptr = ACE_CMSG_FIRSTHDR (&recv_msg); ptr; ptr = ACE_CMSG_NXTHDR (&recv_msg, ptr)) {
         if (ptr->cmsg_level == IPPROTO_IPV6 && ptr->cmsg_type == IPV6_PKTINFO) {
@@ -404,9 +390,8 @@ ACE_SOCK_Dgram::recv (iovec iov[],
 
 #else /* ACE_HAS_MSG */
 
-// Send an iovec of size N to ADDR as a datagram (connectionless
-// version).
-
+/// Send an iovec of size N to ADDR as a datagram (connectionless
+/// version).
 ssize_t
 ACE_SOCK_Dgram::send (const iovec iov[],
                       int n,
@@ -420,8 +405,8 @@ ACE_SOCK_Dgram::send (const iovec iov[],
 
   // Determine the total length of all the buffers in <iov>.
   for (i = 0; i < n; i++)
-#if ! (defined(__BORLANDC__) || defined(ACE_LINUX) || defined(ACE_HAS_RTEMS))
-    // The iov_len is unsigned on Linux, RTEMS and with Borland. If we go
+#if ! (defined(ACE_LACKS_IOVEC) || defined(ACE_LINUX))
+    // The iov_len is unsigned on Linux and when using the ACE iovec struct. If we go
     // ahead and try the if, it will emit a warning.
     if (iov[i].iov_len < 0)
       return -1;
@@ -481,8 +466,8 @@ ACE_SOCK_Dgram::recv (iovec iov[],
   ACE_UNUSED_ARG (to_addr);
 
   for (i = 0; i < n; i++)
-#if ! (defined(__BORLANDC__) || defined(ACE_LINUX) || defined(ACE_HAS_RTEMS))
-    // The iov_len is unsigned on Linux, RTEMS and with Borland. If we go
+#if ! (defined(ACE_LACKS_IOVEC) || defined(ACE_LINUX))
+    // The iov_len is unsigned on Linux and when using the ACE iovec struct. If we go
     // ahead and try the if, it will emit a warning.
     if (iov[i].iov_len < 0)
       return -1;
@@ -490,7 +475,7 @@ ACE_SOCK_Dgram::recv (iovec iov[],
 #endif
       length += iov[i].iov_len;
 
-  char *buf = 0;
+  char *buf = nullptr;
 
 #if defined (ACE_HAS_ALLOCA)
   buf = alloca (length);
@@ -512,9 +497,7 @@ ACE_SOCK_Dgram::recv (iovec iov[],
       char *ptr = buf;
       int copyn = length;
 
-      for (i = 0;
-           i < n && copyn > 0;
-           i++)
+      for (i = 0; i < n && copyn > 0; i++)
         {
           ACE_OS::memcpy (iov[i].iov_base, ptr,
                           // iov_len is int on some platforms, size_t on others
@@ -615,9 +598,7 @@ ACE_SOCK_Dgram::set_nic (const ACE_TCHAR *net_if,
     {
       ACE_INET_Addr addr (static_cast<u_short> (0));
       ip_mreq  send_mreq;
-      if (this->make_multicast_ifaddr (&send_mreq,
-                                       addr,
-                                       net_if) == -1)
+      if (this->make_multicast_ifaddr (&send_mreq, addr, net_if) == -1)
         {
           if (!ipv6_mif_set)
             return -1;
@@ -631,14 +612,14 @@ ACE_SOCK_Dgram::set_nic (const ACE_TCHAR *net_if,
             return -1;
         }
     }
+# else /* ACE_HAS_IPV6 */
   ACE_UNUSED_ARG (addr_family);
   ACE_INET_Addr addr (static_cast<u_short> (0));
   ip_mreq  send_mreq;
-  if (this->make_multicast_ifaddr (&send_mreq,
-                                   addr,
-                                   net_if) == -1)
-    return -1;
-
+  //if (this->make_multicast_ifaddr (&send_mreq,
+  //                                 addr,
+  //                                 net_if) == -1)
+  //  return -1;
   if (this->ACE_SOCK::set_option (IPPROTO_IP,
                                   IP_MULTICAST_IF,
                                   &(send_mreq.imr_interface),
@@ -659,110 +640,9 @@ ACE_SOCK_Dgram::set_nic (const ACE_TCHAR *net_if,
   return 0;
 }
 
+
+
 #if defined (ACE_HAS_IPV6)
-int
-ACE_SOCK_Dgram::make_multicast_ifaddr (ip_mreq *ret_mreq,
-                                       const ACE_INET_Addr &mcast_addr,
-                                       const ACE_TCHAR *net_if)
-{
-  ACE_TRACE ("ACE_SOCK_Dgram::make_multicast_ifaddr");
-  ip_mreq  lmreq;       // Scratch copy.
-  if (net_if != 0)
-    {
-#if defined (ACE_WIN32)
-      // This port number is not necessary, just convenient
-      ACE_INET_Addr interface_addr;
-      if (interface_addr.set (mcast_addr.get_port_number (), net_if) == -1)
-        {
-#if defined (ACE_WIN32)
-          IP_ADAPTER_ADDRESSES tmp_addrs;
-          // Initial call to determine actual memory size needed
-          ULONG bufLen = 0;
-          if (::GetAdaptersAddresses (AF_INET, 0, 0, &tmp_addrs, &bufLen)
-              != ERROR_BUFFER_OVERFLOW)
-            {
-              return -1; // With output bufferlength 0 this can't be right.
-            }
-
-          // Get required output buffer and retrieve info for real.
-          char *buf = 0;
-          ACE_NEW_RETURN (buf, char[bufLen], -1);
-          PIP_ADAPTER_ADDRESSES pAddrs = reinterpret_cast<PIP_ADAPTER_ADDRESSES> (buf);
-          if (::GetAdaptersAddresses (AF_INET, 0, 0, pAddrs, &bufLen) != NO_ERROR)
-            {
-              delete[] buf; // clean up
-              return -1;
-            }
-
-          interface_addr = ACE_INET_Addr ();
-          int set_result = -1;
-          while (pAddrs && set_result == -1)
-            {
-              if (ACE_OS::strcmp (ACE_TEXT_ALWAYS_CHAR (net_if), pAddrs->AdapterName) == 0 ||
-                  ACE_OS::strcmp (ACE_TEXT_ALWAYS_WCHAR (net_if), pAddrs->FriendlyName) == 0)
-                {
-                  PIP_ADAPTER_UNICAST_ADDRESS pUnicast = pAddrs->FirstUnicastAddress;
-                  LPSOCKADDR sa = pUnicast->Address.lpSockaddr;
-                  if (sa->sa_family == AF_INET)
-                    {
-                      const void *addr = &(((sockaddr_in *)sa)->sin_addr);
-                      set_result = interface_addr.set_address ((const char*) addr, 4, 0);
-                    }
-                }
-              pAddrs = pAddrs->Next;
-            }
-
-          delete[] buf; // clean up
-          if (set_result == -1)
-            {
-              errno = EINVAL;
-              return -1;
-            }
-#else
-          ACE_NOTSUP_RETURN (-1);
-#endif /* ACE_WIN32 */
-        }
-      lmreq.imr_interface.s_addr =
-        ACE_HTONL (interface_addr.get_ip_address ());
-#else
-      ifreq if_address;
-      ACE_OS::strcpy (if_address.ifr_name, ACE_TEXT_ALWAYS_CHAR (net_if));
-      if (ACE_OS::ioctl (this->get_handle (),
-                         SIOCGIFADDR,
-                         &if_address) == -1)
-        {
-          // The net_if name failed to be found. It seems that older linux
-          // kernals only support the actual interface name (eg. "eth0"),
-          // not the IP address string of the interface (eg. "192.168.0.1"),
-          // which newer kernals seem to automatically translate.
-          // So assume that we have been given an IP Address and translate
-          // that instead, similar to the above for windows.
-          ACE_INET_Addr interface_addr;
-          if (interface_addr.set (mcast_addr.get_port_number (), net_if) == -1)
-            return -1;  // Still doesn't work, unknown device specified.
-          lmreq.imr_interface.s_addr =
-            ACE_HTONL (interface_addr.get_ip_address ());
-        }
-      else
-        {
-          sockaddr_in *socket_address =
-            reinterpret_cast<sockaddr_in*> (&if_address.ifr_addr);
-          lmreq.imr_interface.s_addr = socket_address->sin_addr.s_addr;
-        }
-#endif /* ACE_WIN32 */
-    }
-  else
-    lmreq.imr_interface.s_addr = INADDR_ANY;
-
-  lmreq.IMR_MULTIADDR.s_addr = ACE_HTONL (mcast_addr.get_ip_address ());
-
-  // Set return info, if requested.
-  if (ret_mreq)
-    *ret_mreq = lmreq;
-
-  return 0;
-}
-
 // XXX: This will not work on any operating systems that do not support
 //      if_nametoindex or that is not Win32 >= Windows XP/Server 2003
 int
@@ -773,9 +653,7 @@ ACE_SOCK_Dgram::make_multicast_ifaddr6 (ipv6_mreq *ret_mreq,
   ACE_TRACE ("ACE_SOCK_Dgram::make_multicast_ifaddr6");
   ipv6_mreq  lmreq;       // Scratch copy.
 
-  ACE_OS::memset (&lmreq,
-                  0,
-                  sizeof (lmreq));
+  ACE_OS::memset (&lmreq, 0, sizeof (lmreq));
 
 #if defined (ACE_WIN32) || !defined (ACE_LACKS_IF_NAMETOINDEX)
   if (net_if != 0)
@@ -787,7 +665,7 @@ ACE_SOCK_Dgram::make_multicast_ifaddr6 (ipv6_mreq *ret_mreq,
         (if_ix = ACE_OS::atoi (net_if)) > 0;
 
       ULONG bufLen = 15000; // Initial size as per Microsoft
-      char *buf = 0;
+      char *buf = nullptr;
       ACE_NEW_RETURN (buf, char[bufLen], -1);
       DWORD dwRetVal = 0;
       ULONG iterations = 0;

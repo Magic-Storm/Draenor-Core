@@ -45,6 +45,10 @@
 #  define ACE_HAS_GLIBC_2_2_3
 #endif /* __GLIBC__ > 2 || __GLIBC__ === 2 && __GLIBC_MINOR__ >= 3) */
 
+#  if (__GLIBC__ > 2) || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 12)
+#  define ACE_HAS_PTHREAD_SETNAME_NP
+#endif /* __GLIBC__ > 2 || __GLIBC__ === 2 && __GLIBC_MINOR__ >= 12) */
+
 #if (__GLIBC__  > 2)  || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 30)
 #  define ACE_LACKS_SYS_SYSCTL_H
 #endif /* __GLIBC__ > 2 || __GLIBC__ === 2 && __GLIBC_MINOR__ >= 30) */
@@ -52,16 +56,9 @@
 #if defined (__INTEL_COMPILER)
 #  include "ace/config-icc-common.h"
 #elif defined (__GNUG__)
-  // config-g++-common.h undef's ACE_HAS_STRING_CLASS with -frepo, so
-  // this must appear before its #include.
-#  define ACE_HAS_STRING_CLASS
 #  include "ace/config-g++-common.h"
-#elif defined (__SUNCC_PRO) || defined (__SUNPRO_CC)
-#  include "ace/config-suncc-common.h"
 #elif defined (__PGI)
 // Portable group compiler
-#  define ACE_HAS_STANDARD_CPP_LIBRARY 1
-#  define ACE_USES_STD_NAMESPACE_FOR_STDCPP_LIB 1
 #  define ACE_LACKS_SWAB
 #elif defined (__GNUC__)
 /**
@@ -72,7 +69,7 @@
  * (TAO/orbsvcs/orbsvcs/SSLIOP/params_dup.{h,c}) that may indirectly
  * include this
  */
-#else  /* ! __GNUG__ && !__DECCXX && !__INTEL_COMPILER && && !__PGI */
+#else  /* ! __GNUG__ && !__INTEL_COMPILER && && !__PGI */
 #  ifdef __cplusplus  /* Let it slide for C compilers. */
 #    error unsupported compiler in ace/config-linux.h
 #  endif  /* __cplusplus */

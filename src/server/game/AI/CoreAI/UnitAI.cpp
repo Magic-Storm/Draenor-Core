@@ -15,6 +15,7 @@
 #include "SpellInfo.h"
 #include "Spell.h"
 #include "CreatureAIImpl.h"
+#include "UnaryFunction.h"
 
 void UnitAI::AttackStart(Unit* victim)
 {
