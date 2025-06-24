@@ -13,9 +13,11 @@
 
 # CMake policies (can not be handled elsewhere)
 
-project(DraenorCore)
-
+# Called prior to project
 cmake_minimum_required(VERSION 3.20.4)
+
+# CMake project name
+project(DraenorCore)
  
 # CMake policies (can not be handled elsewhere)
 cmake_policy(SET CMP0005 NEW)
