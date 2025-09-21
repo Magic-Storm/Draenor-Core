@@ -20,7 +20,7 @@
 #include "Log.h"
 #include "Session.h"
 #include "Util.h"
-#include "BattlenetRpcErrorCodes.h"
+#include "../../proto/BattlenetRpcErrorCodes.h"
 
 Battlenet::Services::Connection::Connection(Session* session) : ConnectionService(session)
 {

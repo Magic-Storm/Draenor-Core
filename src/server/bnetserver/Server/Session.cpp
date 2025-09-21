@@ -16,7 +16,7 @@
  */
 
 #include "Session.h"
-#include "BattlenetRpcErrorCodes.h"
+#include "../../proto/BattlenetRpcErrorCodes.h"
 #include "../../shared/Utilities/ByteConverter.h"
 #include "Database/DatabaseEnv.h"
 #include "LoginRESTService.h"
@@ -24,7 +24,7 @@
 #include "RealmList.h"
 #include "ServiceDispatcher.h"
 #include "../../proto/RealmList/RealmList.pb.h"
-#include <zlib.h>
+#include "../../../dep/zlib/zlib.h"
 
 void Battlenet::Session::AccountInfo::LoadResult(PreparedQueryResult result)
 {
