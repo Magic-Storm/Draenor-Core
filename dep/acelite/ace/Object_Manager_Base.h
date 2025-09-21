@@ -7,6 +7,8 @@
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  *  @author Jesper S. M|ller<stophph@diku.dk>
  *  @author and a cast of thousands...
+ *
+ *  Originally in OS.h.
  */
 //=============================================================================
 
@@ -116,7 +118,7 @@ private:
 };
 
 extern "C"
-void ACE_OS_Object_Manager_Internal_Exit_Hook ();
+void ACE_OS_Object_Manager_Internal_Exit_Hook (void);
 
 // @@ This forward declaration should go away.
 class ACE_Log_Msg;
@@ -177,14 +179,14 @@ public:
   /// Returns the existing thread hook and assign a <new_thread_hook>.
   static ACE_Thread_Hook *thread_hook (ACE_Thread_Hook *new_thread_hook);
 
-#if defined (ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS)
+#if defined (ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS)
   /// Get/Set TSS exception action.
-  static ACE_SEH_EXCEPT_HANDLER seh_except_selector ();
+  static ACE_SEH_EXCEPT_HANDLER seh_except_selector (void);
   static ACE_SEH_EXCEPT_HANDLER seh_except_selector (ACE_SEH_EXCEPT_HANDLER);
 
-  static ACE_SEH_EXCEPT_HANDLER seh_except_handler ();
+  static ACE_SEH_EXCEPT_HANDLER seh_except_handler (void);
   static ACE_SEH_EXCEPT_HANDLER seh_except_handler (ACE_SEH_EXCEPT_HANDLER);
-#endif /* ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS */
+#endif /* ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS */
 
 public:
   // = Applications shouldn't use these so they're hidden here.
@@ -220,12 +222,12 @@ public:
   /// For at_exit support.
   ACE_OS_Exit_Info exit_info_;
 
-#if defined (ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS)
+#if defined (ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS)
   /// These handlers determine how a thread handles win32 structured
   /// exception.
   ACE_SEH_EXCEPT_HANDLER seh_except_selector_;
   ACE_SEH_EXCEPT_HANDLER seh_except_handler_;
-#endif /* ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS */
+#endif /* ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS */
 
   /// For use by init () and fini (), to consolidate error reporting.
   static void print_error_message (unsigned int line_number, const ACE_TCHAR *message);

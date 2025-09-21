@@ -12,6 +12,8 @@
 #include "ace/SPIPE_Connector.inl"
 #endif /* __ACE_INLINE__ */
 
+
+
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_ALLOC_HOOK_DEFINE(ACE_SPIPE_Connector)
@@ -67,7 +69,8 @@ ACE_SPIPE_Connector::connect (ACE_SPIPE_Stream &new_io,
   ACE_HANDLE handle;
 
   ACE_UNUSED_ARG (pipe_mode);
-#if defined (ACE_WIN32)
+#if defined (ACE_WIN32) && \
+   !defined (ACE_HAS_PHARLAP) && !defined (ACE_HAS_WINCE)
   // We need to allow for more than one attempt to connect,
   // calculate the absolute time at which we give up.
   ACE_Time_Value absolute_time;
@@ -113,6 +116,7 @@ ACE_SPIPE_Connector::connect (ACE_SPIPE_Stream &new_io,
             }
           // Get the amount of time remaining for ::WaitNamedPipe.
           time_out_value = relative_time.msec ();
+
         }
 
       // Wait for the named pipe to become available.
@@ -143,11 +147,11 @@ ACE_SPIPE_Connector::connect (ACE_SPIPE_Stream &new_io,
             }
         }
     }
-#else /* ACE_WIN32 */
+#else /* ACE_WIN32 && !ACE_HAS_PHARLAP */
   handle = ACE::handle_timed_open (timeout,
                                               remote_sap.get_path_name (),
                                               flags, perms, sa);
-#endif /* !ACE_WIN32 */
+#endif /* !ACE_WIN32 || ACE_HAS_PHARLAP || ACE_HAS_WINCE */
 
   new_io.set_handle (handle);
   new_io.remote_addr_ = remote_sap; // class copy.

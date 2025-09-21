@@ -172,7 +172,7 @@ public:
                      ) const;
 
   /// Initialize internal state.
-  void reset ();
+  void reset (void);
 
   /// Utility division function, for ACE_UINT64 dividend.
   static void quotient (const ACE_UINT64 dividend,

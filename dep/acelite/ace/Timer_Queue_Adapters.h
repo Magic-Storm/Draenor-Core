@@ -79,14 +79,14 @@ public:
 
   /// Dispatch all timers with expiry time at or before the current time.
   /// Returns the number of timers expired.
-  int expire ();
+  int expire (void);
 
   /// Return a reference to the underlying timer queue.
-  TQ &timer_queue ();
+  TQ &timer_queue (void);
 
 private:
   /// Perform the logic to compute the new ualarm(2) setting.
-  virtual int schedule_ualarm ();
+  virtual int schedule_ualarm (void);
 
   /// Called back by @c SIGALRM handler.
   virtual int handle_signal (int signum, siginfo_t *, ucontext_t *);
@@ -138,7 +138,7 @@ public:
                                   TQ* timer_queue = 0);
 
   /// Destructor.
-  virtual ~ACE_Thread_Timer_Queue_Adapter ();
+  virtual ~ACE_Thread_Timer_Queue_Adapter (void);
 
   /// Schedule the timer according to the semantics of the <TQ>; wakes
   /// up the dispatching thread.
@@ -152,22 +152,22 @@ public:
   int cancel (long timer_id, const void **act = 0);
 
   /// Runs the dispatching thread.
-  virtual int svc ();
+  virtual int svc (void);
 
   /// Inform the dispatching thread that it should terminate.
-  virtual void deactivate ();
+  virtual void deactivate (void);
 
   /// Access the locking mechanism, useful for iteration.
-  ACE_SYNCH_RECURSIVE_MUTEX &mutex ();
+  ACE_SYNCH_RECURSIVE_MUTEX &mutex (void);
 
   /// Set a user-specified timer queue.
   int timer_queue (TQ *tq);
 
   /// Return the current <TQ>.
-  TQ *timer_queue () const;
+  TQ *timer_queue (void) const;
 
   /// Return the thread id of our active object.
-  ACE_thread_t thr_id () const;
+  ACE_thread_t thr_id (void) const;
 
   /**
    * We override the default activate() method so that we can ensure
@@ -201,10 +201,11 @@ public:
 # endif /* ACE_HAS_DEFERRED_TIMER_COMMANDS */
 
 private:
+
 # if defined (ACE_HAS_DEFERRED_TIMER_COMMANDS)
   /// Dispatches all command objects enqueued in the most
   /// recent event handler context.
-  int dispatch_commands ();
+  int dispatch_commands (void);
 
   /// Queue of commands for deferred execution.
   ACE_Unbounded_Queue<ACE_Command_Base *> command_queue_;
@@ -251,7 +252,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 # include "ace/Timer_Queue_Adapters.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 # include "ace/Timer_Queue_Adapters.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+# pragma implementation ("Timer_Queue_Adapters.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_TIMER_QUEUE_ADAPTERS_H */

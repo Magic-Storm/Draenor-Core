@@ -59,9 +59,9 @@ public:
                  size_t size = DEFAULT_SIZE,
                  bool restart = false,
                  ACE_Sig_Handler * = 0);
-  virtual ~ACE_XtReactor ();
+  virtual ~ACE_XtReactor (void);
 
-  XtAppContext context () const;
+  XtAppContext context (void) const;
   void context (XtAppContext);
 
   // = Timer operations.
@@ -126,7 +126,7 @@ protected:
 private:
   /// This method ensures there's an Xt timeout for the first timeout
   /// in the Reactor's Timer_Queue.
-  void reset_timeout ();
+  void reset_timeout (void);
 
   // = Integrate with the X callback function mechanism.
   static void TimerCallbackProc (XtPointer closure, XtIntervalId *id);

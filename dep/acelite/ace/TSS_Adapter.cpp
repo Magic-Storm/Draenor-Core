@@ -1,6 +1,8 @@
 /**
  * @file TSS_Adapter.cpp
  *
+ * Originally in Synch.cpp
+ *
  * @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 

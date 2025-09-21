@@ -57,12 +57,14 @@ namespace XML
 
     operator const XMLCh* () const { return _wstr; };
 
-    XMLCh * release ();
+    XMLCh * release (void);
 
     /// Release the held string and free its memory.
-    void reset ();
+    void reset (void);
   private:
+
     XMLCh* _wstr; // Internal representation
+
   };
 
   XML_Utils_Export bool operator== (const XStr& lhs, const XStr& rhs);
@@ -70,6 +72,7 @@ namespace XML
 
   XML_Utils_Export std::ostream&
   operator<< (std::ostream& o, XStr const& str);
+
 }
 
 #include /**/ "ace/post.h"

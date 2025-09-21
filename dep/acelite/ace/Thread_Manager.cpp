@@ -3,11 +3,11 @@
 #include "ace/Dynamic.h"
 #include "ace/Object_Manager.h"
 #include "ace/Singleton.h"
+#include "ace/Auto_Ptr.h"
 #include "ace/Guard_T.h"
 #include "ace/Time_Value.h"
 #include "ace/OS_NS_sys_time.h"
 #include "ace/Truncate.h"
-#include <memory>
 
 #if !defined (__ACE_INLINE__)
 #include "ace/Thread_Manager.inl"
@@ -594,7 +594,7 @@ ACE_Thread_Manager::spawn_i (ACE_THR_FUNC func,
   new_thr_desc->reset (this);
 
   ACE_Thread_Adapter *thread_args = 0;
-# if defined (ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS)
+# if defined (ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS)
   ACE_NEW_RETURN (thread_args,
                   ACE_Thread_Adapter (func,
                                       args,
@@ -614,7 +614,7 @@ ACE_Thread_Manager::spawn_i (ACE_THR_FUNC func,
                                       new_thr_desc.get (),
                                       flags),
                   -1);
-# endif /* ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS */
+# endif /* ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS */
   std::unique_ptr <ACE_Base_Thread_Adapter> auto_thread_args (static_cast<ACE_Base_Thread_Adapter *> (thread_args));
 
   ACE_TRACE ("ACE_Thread_Manager::spawn_i");
@@ -653,6 +653,8 @@ ACE_Thread_Manager::spawn_i (ACE_THR_FUNC func,
 
 #if defined (ACE_HAS_WTHREADS)
   // Have to duplicate handle if client asks for it.
+  // @@ How are thread handles implemented on AIX?  Do they
+  // also need to be duplicated?
   if (t_handle != 0)
 # if defined (ACE_LACKS_DUPLICATEHANDLE)
     *t_handle = thr_handle;
@@ -1705,6 +1707,7 @@ ACE_Thread_Manager::exit (ACE_THR_FUNC_RETURN status, bool do_thread_exit)
 }
 
 // Wait for all the threads to exit.
+
 int
 ACE_Thread_Manager::wait (const ACE_Time_Value *timeout,
                           bool abandon_detached_threads,
@@ -1712,7 +1715,7 @@ ACE_Thread_Manager::wait (const ACE_Time_Value *timeout,
 {
   ACE_TRACE ("ACE_Thread_Manager::wait");
 
-  std::unique_ptr<ACE_Time_Value> local_timeout;
+  ACE_Auto_Ptr<ACE_Time_Value> local_timeout;
   // Check to see if we're using absolute time or not.
   if (!use_absolute_time && timeout != 0)
     {
@@ -1782,7 +1785,7 @@ ACE_Thread_Manager::wait (const ACE_Time_Value *timeout,
 
 #if !defined (ACE_HAS_VXTHREADS)
     // @@ VxWorks doesn't support thr_join (yet.)  We are working
-    // on our implementation.
+    // on our implementation.   Chorus'es thr_join seems broken.
     ACE_Thread_Descriptor_Base *item = 0;
 
     while ((item = term_thr_list_copy.delete_head ()) != 0)

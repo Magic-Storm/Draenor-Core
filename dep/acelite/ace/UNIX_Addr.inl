@@ -2,6 +2,7 @@
 
 #include "ace/OS_NS_string.h"
 
+
 #if !defined (ACE_LACKS_UNIX_DOMAIN_SOCKETS)
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -43,7 +44,7 @@ ACE_UNIX_Addr::operator != (const ACE_UNIX_Addr &sap) const
 // Return the path name used for the rendezvous point.
 
 ACE_INLINE const char *
-ACE_UNIX_Addr::get_path_name () const
+ACE_UNIX_Addr::get_path_name (void) const
 {
   return this->unix_addr_.sun_path;
 }

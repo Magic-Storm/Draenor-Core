@@ -44,7 +44,7 @@ class ACE_Export ACE_SOCK_SEQPACK_Acceptor : public ACE_SOCK
 {
 public:
   /// Default constructor.
-  ACE_SOCK_SEQPACK_Acceptor ();
+  ACE_SOCK_SEQPACK_Acceptor (void);
 
   /**
    * Initialize a passive-mode BSD-style acceptor socket (no QoS).
@@ -111,10 +111,10 @@ public:
             int protocol = 132);
 
   /// Close the socket.  Returns 0 on success and -1 on failure.
-  int close ();
+  int close (void);
 
   /// Default dtor.
-  ~ACE_SOCK_SEQPACK_Acceptor ();
+  ~ACE_SOCK_SEQPACK_Acceptor (void);
 
   // = Passive connection <accept> methods.
   /**

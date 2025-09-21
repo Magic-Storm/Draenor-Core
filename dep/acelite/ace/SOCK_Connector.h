@@ -90,6 +90,7 @@ public:
                       int perms = 0,
                       int protocol = 0);
 
+#if !defined (ACE_HAS_WINCE)
   /**
    * Actively connect to a peer, producing a connected @c ACE_SOCK_Stream
    * object if the connection succeeds.
@@ -138,6 +139,7 @@ public:
                       u_long flags = 0,
                       int reuse_addr = 0,
                       int perms = 0);
+#endif  // ACE_HAS_WINCE
 
   /**
    * Actively connect to a peer, producing a connected @c ACE_SOCK_Stream
@@ -189,6 +191,7 @@ public:
                int perms = 0,
                int protocol = 0);
 
+#if !defined (ACE_HAS_WINCE)
   /**
    * Actively connect to a peer, producing a connected @c ACE_SOCK_Stream
    * object if the connection succeeds.
@@ -241,6 +244,7 @@ public:
                u_long flags = 0,
                int reuse_addr = 0,
                int perms = 0);
+#endif  // ACE_HAS_WINCE
 
   /// Default destructor.
   ~ACE_SOCK_Connector ();

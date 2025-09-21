@@ -34,20 +34,17 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-// We need a cpu_set_t - most platforms have it natively (ACE_HAS_CPU_SET_T).
-// At least one has a similar cpuset_t (ACE_HAS_CPUSET_T)
-// All others get it defined here.
-#if !defined (ACE_HAS_CPU_SET_T)
-#  if defined (ACE_HAS_CPUSET_T)
+#if !defined (__cpu_set_t_defined) || !defined (ACE_HAS_CPU_SET_T)
+#if defined (ACE_HAS_CPUSET_T)
    typedef cpuset_t cpu_set_t;
-#  else
-#    define ACE_CPU_SETSIZE 1024
+#elif !defined (ACE_HAS_CPU_SET_T)
+#  define ACE_CPU_SETSIZE 1024
    typedef struct
    {
      ACE_UINT32 bit_array_[ACE_CPU_SETSIZE / (8 * sizeof (ACE_UINT32))];
    } cpu_set_t;
-#endif /* ACE_HAS_CPUSET_T */
-#endif /* ACE_HAS_CPU_SET_T */
+#endif
+#endif /* !ACE_HAS_CPU_SET_T || !__cpu_set_t_defined */
 
 #ifdef __cplusplus
 }

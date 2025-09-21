@@ -36,7 +36,7 @@ class ACE_Export ACE_LSOCK_Connector : public ACE_SOCK_Connector
 {
 public:
   /// Default constructor.
-  ACE_LSOCK_Connector ();
+  ACE_LSOCK_Connector (void);
 
   /**
    * Actively connect and produce a @a new_stream if things go well.

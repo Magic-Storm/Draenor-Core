@@ -36,8 +36,8 @@
 
 #define ACE_HAS_USER_MODE_MASKS
 
-#if (!defined (__MINGW64_VERSION_MAJOR) || (__MINGW64_VERSION_MAJOR < 3))
-# error You need a newer version (>= 3.0) of mingw32/w32api
+#if (!defined (__MINGW64_VERSION_MAJOR) || (__MINGW64_VERSION_MAJOR < 2))
+# error You need a newer version (>= 2.0) of mingw32/w32api
 #endif
 
 #include <stdio.h>
@@ -45,39 +45,51 @@
 #if defined (fileno)
 # undef fileno
 #endif
+#if (__MINGW64_VERSION_MAJOR >= 3)
 # define ACE_FILENO_EQUIVALENT ::_fileno
 
 // Latest version of MingW64 (GCC 4.8.2) with Win32 threading
 // defines a 'pthread_sigmask' macro when including signal.h.
 // We have to remove that one since ACE declares a (non-functional)
 // pthread_sigmask method in ACE_OS.
-#include <signal.h>
-#if defined (pthread_sigmask)
-#  undef pthread_sigmask
+# include <signal.h>
+# if defined (pthread_sigmask)
+#   undef pthread_sigmask
+# endif
 #endif
 
-#define ACE_HAS_SSIZE_T
-#undef ACE_LACKS_TELLDIR
-#undef ACE_LACKS_SEEKDIR
-#undef ACE_LACKS_REWINDDIR
-#undef ACE_LACKS_USECONDS_T
+#if (__MINGW64_VERSION_MAJOR >= 2)
 
-#define ACE_HAS_POSIX_TIME 1
-#define ACE_LACKS_TIMESPEC_T 1
-#define ACE_HAS_NONCONST_SELECT_TIMEVAL 1
+# define ACE_HAS_SSIZE_T
+# undef ACE_LACKS_STRUCT_DIR
+# undef ACE_LACKS_OPENDIR
+# undef ACE_LACKS_CLOSEDIR
+# undef ACE_LACKS_READDIR
+# undef ACE_LACKS_TELLDIR
+# undef ACE_LACKS_SEEKDIR
+# undef ACE_LACKS_REWINDDIR
+# undef ACE_LACKS_USECONDS_T
 
-#if defined (ACE_HAS_QOS) && !defined (ACE_HAS_WINSOCK2_GQOS)
-#  define ACE_HAS_WINSOCK2_GQOS
-#endif
+# define ACE_HAS_POSIX_TIME 1
+# define ACE_LACKS_TIMESPEC_T 1
+# define ACE_HAS_NONCONST_SELECT_TIMEVAL 1
 
-#if defined (WIN64) || defined (__WIN64__)
-#  define ACE_LACKS_INLINE_ASSEMBLY
-#endif
+# if defined (ACE_HAS_QOS) && !defined (ACE_HAS_WINSOCK2_GQOS)
+#   define ACE_HAS_WINSOCK2_GQOS
+# endif
 
-#include <stdlib.h>
-#if defined (strtod)
-# undef strtod
-#endif
+# if defined (WIN64) || defined (__WIN64__)
+#   define ACE_LACKS_INLINE_ASSEMBLY
+# endif
+
+# include <stdlib.h>
+# if defined (strtod)
+#  undef strtod
+# endif
+
+#else
+#  define ACE_LACKS_DIRENT_H
+#endif // __MINGW64_VERSION_MAJOR >= 3
 
 #undef ACE_HAS_WTOF
 
@@ -114,10 +126,6 @@
 #define ACE_LACKS_ASCTIME_R
 #define ACE_HAS_NONCONST_WCSDUP
 #define ACE_ISCTYPE_EQUIVALENT ::_isctype
-#define ACE_LACKS_SET_ABORT_BEHAVIOR
-#define ACE_LACKS_NLINK_T
-#define ACE_LACKS_UID_T
-#define ACE_LACKS_GID_T
 
 #define ACE_HAS_PTHREAD_SIGMASK_PROTOTYPE
 
@@ -127,11 +135,6 @@
 #define ACE_ENDTHREADEX(STATUS)  ::_endthreadex ((DWORD) (STATUS))
 
 #define ACE_DLL_PREFIX ACE_TEXT ("lib")
-
-#if defined(_UCRT)
-# define ACE_HAS_3_PARAM_WCSTOK
-#endif
-
 
 #include /**/ "ace/post.h"
 #endif /* ACE_CONFIG_WIN32_MINGW64_H */

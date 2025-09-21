@@ -13,6 +13,7 @@
  */
 
 #include "ace/Timer_Queuefwd.h"
+#include "ace/Copy_Disabled.h"
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -27,12 +28,14 @@ class ACE_Time_Value;
  * Queue to call <handle_timeout> on ACE_Event_Handlers.
  */
 class ACE_Export ACE_Event_Handler_Handle_Timeout_Upcall
+  : private ACE_Copy_Disabled
 {
 public:
-  ACE_Event_Handler_Handle_Timeout_Upcall () = default;
+  /// Constructor.
+  ACE_Event_Handler_Handle_Timeout_Upcall ();
 
   /// Destructor.
-  ~ACE_Event_Handler_Handle_Timeout_Upcall () = default;
+  ~ACE_Event_Handler_Handle_Timeout_Upcall ();
 
   /// This method is called when a timer is registered.
   int registration (ACE_Timer_Queue &timer_queue,
@@ -84,14 +87,10 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 private:
-  ACE_Event_Handler_Handle_Timeout_Upcall (const ACE_Event_Handler_Handle_Timeout_Upcall &) = delete;
-  ACE_Event_Handler_Handle_Timeout_Upcall (ACE_Event_Handler_Handle_Timeout_Upcall &&) = delete;
-  ACE_Event_Handler_Handle_Timeout_Upcall &operator= (const ACE_Event_Handler_Handle_Timeout_Upcall &) = delete;
-  ACE_Event_Handler_Handle_Timeout_Upcall &operator= (ACE_Event_Handler_Handle_Timeout_Upcall &&) = delete;
 
   /// Flag indicating that reference counting is required for this
   /// event handler upcall.
-  int requires_reference_counting_ {0};
+  int requires_reference_counting_;
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

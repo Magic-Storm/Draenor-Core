@@ -34,6 +34,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 namespace ACE_OS {
+
   // these are non-standard names...
 
   /** @name Functions from <cctype>

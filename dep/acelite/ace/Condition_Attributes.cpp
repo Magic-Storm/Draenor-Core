@@ -2,6 +2,8 @@
 /**
  * @file Condition_Attributes.cpp
  *
+ * Originally in Synch.cpp
+ *
  * @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 

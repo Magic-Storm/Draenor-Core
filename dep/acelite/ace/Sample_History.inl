@@ -21,13 +21,13 @@ ACE_Sample_History::get_sample (size_t i) const
 }
 
 ACE_INLINE size_t
-ACE_Sample_History::max_samples () const
+ACE_Sample_History::max_samples (void) const
 {
   return this->max_samples_;
 }
 
 ACE_INLINE size_t
-ACE_Sample_History::sample_count () const
+ACE_Sample_History::sample_count (void) const
 {
   return this->sample_count_;
 }

@@ -13,7 +13,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 template <class Concrete>
-ACE_Dumpable_Adapter<Concrete>::~ACE_Dumpable_Adapter ()
+ACE_Dumpable_Adapter<Concrete>::~ACE_Dumpable_Adapter (void)
 {
   ACE_TRACE ("ACE_Dumpable_Adapter<Concrete>::~ACE_Dumpable_Adapter");
 }
@@ -32,7 +32,7 @@ ACE_Dumpable_Adapter<Concrete>::operator->() const
 }
 
 template <class Concrete> void
-ACE_Dumpable_Adapter<Concrete>::dump () const
+ACE_Dumpable_Adapter<Concrete>::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_Dumpable_Adapter<Concrete>::dump");

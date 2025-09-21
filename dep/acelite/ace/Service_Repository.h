@@ -138,6 +138,7 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 protected:
+
   friend class ACE_Service_Type_Dynamic_Guard;
 
   /// Remove an existing service record. It requires @a sr != 0, which

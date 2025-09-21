@@ -33,6 +33,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::ACE_Timeprobe_Ex (u_long size)
                         this->max_size_);
   //FUZZ: enable check_for_lack_ACE_OS
   this->timeprobes_ = temp;
+
 }
 
 template <class ACE_LOCK, class ALLOCATOR>
@@ -55,6 +56,7 @@ ACE_Timeprobe_Ex (ALLOCATOR *allocator,
                         this->max_size_);
   //FUZZ: enable check_for_lack_ACE_OS
   this->timeprobes_ = temp;
+
 }
 
 template <class ACE_LOCK, class ALLOCATOR>
@@ -70,7 +72,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::ACE_Timeprobe_Ex (const ACE_Timeprobe_Ex<
 }
 
 template <class ACE_LOCK, class ALLOCATOR>
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::~ACE_Timeprobe_Ex ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::~ACE_Timeprobe_Ex (void)
 {
   ACE_DES_ARRAY_FREE ((ACE_timeprobe_t *) (this->timeprobes_),
                       this->max_size_,
@@ -127,7 +129,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::timeprobe (const char *event)
 }
 
 template <class ACE_LOCK, class ALLOCATOR> void
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::reset ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::reset (void)
 {
   ACE_GUARD (ACE_LOCK, ace_mon, this->lock_);
 
@@ -172,37 +174,37 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::increase_size (u_long size)
 }
 
 template <class ACE_LOCK, class ALLOCATOR> ACE_Unbounded_Set<ACE_Event_Descriptions> &
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::event_descriptions ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::event_descriptions (void)
 {
   return this->event_descriptions_;
 }
 
 template <class ACE_LOCK, class ALLOCATOR> ACE_Unbounded_Set<ACE_Event_Descriptions> &
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::sorted_event_descriptions ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::sorted_event_descriptions (void)
 {
   return this->sorted_event_descriptions_;
 }
 
 template <class ACE_LOCK, class ALLOCATOR> ACE_timeprobe_t *
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::timeprobes ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::timeprobes (void)
 {
   return this->timeprobes_;
 }
 
 template <class ACE_LOCK, class ALLOCATOR> ACE_LOCK &
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::lock ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::lock (void)
 {
   return this->lock_;
 }
 
 template <class ACE_LOCK, class ALLOCATOR> u_long
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::max_size ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::max_size (void)
 {
   return this->max_size_;
 }
 
 template <class ACE_LOCK, class ALLOCATOR> u_long
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::current_size ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::current_size (void)
 {
   return this->current_size_;
 }
@@ -223,7 +225,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::event_descriptions (const char **descript
 }
 
 template <class ACE_LOCK, class ALLOCATOR> void
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::print_times ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::print_times (void)
 {
   ACE_GUARD (ACE_LOCK, ace_mon, this->lock_);
 
@@ -309,7 +311,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::print_times ()
 }
 
 template <class ACE_LOCK, class ALLOCATOR> void
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::print_absolute_times ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::print_absolute_times (void)
 {
   ACE_GUARD (ACE_LOCK, ace_mon, this->lock_);
 
@@ -375,7 +377,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::find_description_i (u_long i)
 }
 
 template <class ACE_LOCK, class ALLOCATOR> void
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::sort_event_descriptions_i ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::sort_event_descriptions_i (void)
 {
   size_t total_elements = this->event_descriptions_.size ();
 
@@ -398,7 +400,7 @@ ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::sort_event_descriptions_i ()
 }
 
 template <class ACE_LOCK, class ALLOCATOR> ALLOCATOR *
-ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::allocator ()
+ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>::allocator (void)
 {
   return allocator_ ? allocator_ : ACE_Singleton<ALLOCATOR, ACE_LOCK>::instance ();
 }
@@ -413,7 +415,7 @@ ACE_Function_Timeprobe<Timeprobe>::ACE_Function_Timeprobe (Timeprobe &timeprobe,
 }
 
 template <class Timeprobe>
-ACE_Function_Timeprobe<Timeprobe>::~ACE_Function_Timeprobe ()
+ACE_Function_Timeprobe<Timeprobe>::~ACE_Function_Timeprobe (void)
 {
   this->timeprobe_.timeprobe (this->event_ + 1);
 }

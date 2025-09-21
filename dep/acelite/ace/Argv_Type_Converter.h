@@ -64,18 +64,18 @@ private:
 #if defined (ACE_USES_WCHAR)
 
   /// Perform common initialization for two Ctor's.
-  void initialize ();
+  void initialize (void);
 
   /// Align all entries in the char type argv list with wchar_t type
   /// argv list.
-  void align_char_with_wchar ();
+  void align_char_with_wchar (void);
 
   /// Align all entries in the wchar_t type argv list with char type
   /// argv list.
-  void align_wchar_with_char ();
+  void align_wchar_with_char (void);
 
   /// Clean up removed (consumed) argv entries and reset the pass flags.
-  void cleanup ();
+  void cleanup (void);
 #endif  // ACE_USES_WCHAR
 
 private:

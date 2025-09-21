@@ -1,6 +1,8 @@
 #ifndef ACE_METRICS_CACHE_CPP
 #define ACE_METRICS_CACHE_CPP
 
+//#define ACE_BUILD_DLL
+
 #include "ace/Metrics_Cache_T.h"
 
 #if defined (ACE_COMPILE_TIMEPROBES)
@@ -105,7 +107,7 @@ ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::is_event (const ACE_Metrics_Timeprob
 
 template <class ACE_LOCK, class ALLOCATOR>
 const char *
-ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::probe_name ()
+ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::probe_name (void)
 {
    return name_;
 }
@@ -131,7 +133,7 @@ ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::probe_name (char * name)
 
 template <class ACE_LOCK, class ALLOCATOR>
 u_int
-ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::probe_id ()
+ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::probe_id (void)
 {
   return id_;
 }
@@ -206,7 +208,7 @@ ACE_Metrics_Cache<ACE_LOCK, ALLOCATOR>::~ACE_Metrics_Cache ()
 // the singleton allocator in the current process is used.
 
 template <class ACE_LOCK, class ALLOCATOR> ALLOCATOR *
-ACE_Metrics_Cache<ACE_LOCK, ALLOCATOR>::allocator ()
+ACE_Metrics_Cache<ACE_LOCK, ALLOCATOR>::allocator (void)
 {
   ALLOCATOR * alloc = allocator_;
   return alloc

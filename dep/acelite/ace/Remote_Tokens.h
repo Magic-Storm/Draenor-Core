@@ -47,10 +47,10 @@ class ACE_Export ACE_Remote_Token_Proxy : public ACE_Token_Proxy
 {
 public:
   /// Null construction.
-  ACE_Remote_Token_Proxy ();
+  ACE_Remote_Token_Proxy (void);
 
   /// Death.
-  virtual ~ACE_Remote_Token_Proxy ();
+  virtual ~ACE_Remote_Token_Proxy (void);
 
   /**
    * Same as Token_Proxy. @a name is the string uniquely identifying
@@ -70,7 +70,7 @@ public:
    * is, every thread has only one connection that is used for all
    * remote tokens.
    */
-  int initiate_connection ();
+  int initiate_connection (void);
 
   /**
    * Acquire the distributed token.  If notify is specified and the
@@ -126,7 +126,7 @@ public:
   virtual void token_acquired (ACE_TPQ_Entry *);
 
   /// The client id of the current token holder
-  virtual const ACE_TCHAR* owner_id ();
+  virtual const ACE_TCHAR* owner_id (void);
 
   /**
    * Sets the server address for all instances of ACE_Remote_Token_Proxy
@@ -140,6 +140,7 @@ public:
   void dump () const;
 
 protected:
+
   /// If shadows report deadlock, go remote anyway
   int ignore_shadow_deadlock_;
 
@@ -166,7 +167,7 @@ class ACE_Export ACE_Remote_Mutex : public ACE_Remote_Token_Proxy
 {
 public:
   /// Null creation.  Remote_Token_Proxy::open must be called.
-  ACE_Remote_Mutex ();
+  ACE_Remote_Mutex (void);
 
   /// Calls Remote_Token_Proxy::open for you.
   ACE_Remote_Mutex (const ACE_TCHAR *token_name,
@@ -177,7 +178,7 @@ public:
   void dump () const;
 
   /// Return deep copy.
-  virtual ACE_Token_Proxy *clone () const;
+  virtual ACE_Token_Proxy *clone (void) const;
 
 protected:
   /// Make the correct type of ACE_Tokens.
@@ -201,7 +202,7 @@ protected:
 class ACE_Export ACE_Remote_RLock : public ACE_Remote_Token_Proxy
 {
 public:
-  ACE_Remote_RLock ();
+  ACE_Remote_RLock (void);
 
   ACE_Remote_RLock (const ACE_TCHAR *token_name,
                     int ignore_deadlock = 0,
@@ -213,10 +214,10 @@ public:
   void dump () const;
 
   /// Returns ACE_RW_Token::RLOCK;
-  virtual int type () const;
+  virtual int type (void) const;
 
   /// Return deep copy.
-  virtual ACE_Token_Proxy *clone () const;
+  virtual ACE_Token_Proxy *clone (void) const;
 
 protected:
   /// Make the correct type of ACE_Tokens.  This is called by the Token
@@ -239,7 +240,7 @@ protected:
 class ACE_Export ACE_Remote_WLock : public ACE_Remote_Token_Proxy
 {
 public:
-  ACE_Remote_WLock ();
+  ACE_Remote_WLock (void);
 
   ACE_Remote_WLock (const ACE_TCHAR *token_name,
                     int ignore_deadlock = 0,
@@ -251,10 +252,10 @@ public:
   void dump () const;
 
   /// Returns ACE_RW_Token::WLOCK;
-  virtual int type () const;
+  virtual int type (void) const;
 
   /// Return deep copy.
-  virtual ACE_Token_Proxy *clone () const;
+  virtual ACE_Token_Proxy *clone (void) const;
 
 protected:
   /// Make the correct type of ACE_Tokens.  This is called by the Token
@@ -275,18 +276,18 @@ class ACE_Export ACE_TSS_Connection : public ACE_TSS<ACE_SOCK_Stream>
 {
 public:
   // Necessary to make some compilers work...
-  ACE_TSS_Connection ();
-  ~ACE_TSS_Connection ();
+  ACE_TSS_Connection (void);
+  ~ACE_TSS_Connection (void);
 
   /// Retrieve the thread's connection
-  ACE_SOCK_Stream *get_connection ();
+  ACE_SOCK_Stream *get_connection (void);
 
   /// Factory Method that creates a new SOCK Stream.
-  virtual ACE_SOCK_Stream *make_TSS_TYPE () const;
+  virtual ACE_SOCK_Stream *make_TSS_TYPE (void) const;
 
   /// Inheritance and operator overloading don't mix.  Redefine this
   /// from ACE_TSS so that we can use it.
-  operator ACE_SOCK_Stream *();
+  operator ACE_SOCK_Stream *(void);
 
   /// Set the server address.
   static void set_server_address (const ACE_INET_Addr &server_address);
@@ -300,8 +301,9 @@ protected:
   static ACE_INET_Addr server_address_;
 
 private:
-  ACE_TSS_Connection (const ACE_TSS_Connection &) = delete;
-  void operator= (const ACE_TSS_Connection &) = delete;
+  /// Private: should not be used
+  ACE_TSS_Connection (const ACE_TSS_Connection &);
+  void operator= (const ACE_TSS_Connection &);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

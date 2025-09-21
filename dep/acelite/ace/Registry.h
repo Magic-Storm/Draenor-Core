@@ -19,7 +19,8 @@
 # pragma once
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
-#if defined (ACE_WIN32)
+#if defined (ACE_WIN32) && !defined (ACE_LACKS_WIN32_REGISTRY)
+// This only works on registry-capable Win32 platforms.
 
 #include "ace/Containers.h"
 #include "ace/SString.h"
@@ -41,6 +42,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 class ACE_Export ACE_Registry
 {
 public:
+
   /// International string
   struct ACE_Export Name_Component
   {
@@ -72,7 +74,7 @@ public:
   struct ACE_Export Binding
   {
     /// Empty (default) constructor
-    Binding ();
+    Binding (void);
 
     /// Constructor
     /// (Name version)
@@ -96,10 +98,10 @@ public:
     void name (ACE_TString &name);
 
     /// Get Name (String version)
-    ACE_TString name ();
+    ACE_TString name (void);
 
     /// Type accessor
-    Binding_Type type ();
+    Binding_Type type (void);
 
   private:
     /// A binding has a name
@@ -138,19 +140,19 @@ public:
     void data (void *data);
 
     /// Get data
-    void *data () const;
+    void *data (void) const;
 
     /// Set size
     void size (u_long size);
 
     /// Get size
-    u_long size () const;
+    u_long size (void) const;
 
     /// Set type
     void type (u_long type);
 
     /// Get type
-    u_long type () const;
+    u_long type (void) const;
 
   private:
     /// Pointer to data
@@ -187,13 +189,13 @@ public:
     };
 
     /// Empty constructor: keys will be NULL
-    Naming_Context ();
+    Naming_Context (void);
 
     /// Constructor: key_ will be set to @a key
     Naming_Context (const HKEY &key);
 
     /// Destructor will call <Naming_Context::close>.
-    ~Naming_Context ();
+    ~Naming_Context (void);
 
     // The following interfaces are for objects
 
@@ -326,7 +328,7 @@ public:
     int unbind_context (const ACE_TString &name);
 
     /// Same as <unbind_context> with @c this as naming_context
-    int destroy ();
+    int destroy (void);
 
     /**
      * listing function: iterator creator
@@ -346,20 +348,20 @@ public:
     // not part of the CORBA interface
 
     /// Sync content of context to disk
-    int flush ();
+    int flush (void);
 
     /// Close the handle of the context
     /// @note <close> does not call <flush>
-    int close ();
+    int close (void);
 
     // Accessors
 
     /// Get key
-    HKEY key ();
+    HKEY key (void);
 
     // void parent (HKEY parent);
     /// Get parent
-    HKEY parent ();
+    HKEY parent (void);
 
     /// Get name
     /// (Name version)
@@ -369,7 +371,7 @@ public:
     void name (ACE_TString &name);
 
     /// Get name (String version)
-    ACE_TString name ();
+    ACE_TString name (void);
 
   protected:
     /// Set key
@@ -417,7 +419,7 @@ public:
     friend class Naming_Context;
 
     /// Default constructor
-    Binding_Iterator ();
+    Binding_Iterator (void);
 
     /// Next entry
     int next_one (Binding &binding);
@@ -427,15 +429,16 @@ public:
                 Binding_List &list);
 
     /// Cleanup
-    int destroy ();
+    int destroy (void);
 
     /// Reset the internal state of the iterator
-    void reset ();
+    void reset (void);
 
     /// Get naming_context that the iterator is iterating over
-    Naming_Context &naming_context ();
+    Naming_Context &naming_context (void);
 
   private:
+
     /// Set naming_context that the iterator is iterating over
     void naming_context (Naming_Context& naming_context);
 
@@ -455,10 +458,10 @@ public:
       {
       public:
         /// Constructor
-        Iteration_State ();
+        Iteration_State (void);
 
         /// Destructor
-        virtual ~Iteration_State ();
+        virtual ~Iteration_State (void);
 
         /// Set the iterator reference.
         void iterator (Binding_Iterator *iterator);
@@ -468,7 +471,7 @@ public:
                             Binding_List &list) = 0;
 
         /// Reset state
-        void reset ();
+        void reset (void);
 
       protected:
         /// Pointer to parent iterator
@@ -486,20 +489,20 @@ public:
       };
 
     class ACE_Export Context_Iteration : public Iteration_State
-    {
-    public:
-      /// Next @a how_many entries
-      int next_n (u_long how_many,
-                  Binding_List &list);
-    };
+      {
+      public:
+        /// Next @a how_many entries
+        int next_n (u_long how_many,
+                    Binding_List &list);
+      };
 
     class ACE_Export Iteration_Complete : public Iteration_State
-    {
-    public:
-      /// Next @a how_many entries
-      int next_n (u_long how_many,
-                  Binding_List &list);
-    };
+      {
+      public:
+        /// Next @a how_many entries
+        int next_n (u_long how_many,
+                    Binding_List &list);
+      };
 
     /// Friend states
     friend class Iteration_State;
@@ -519,7 +522,7 @@ public:
     void current_enumeration (Iteration_State& current_enumeration);
 
     /// Get current_enumeration
-    Iteration_State &current_enumeration ();
+    Iteration_State &current_enumeration (void);
   };
 };
 
@@ -552,6 +555,6 @@ private:
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-#endif /* ACE_WIN32 */
+#endif /* ACE_WIN32 && !ACE_LACKS_WIN32_REGISTRY */
 #include /**/ "ace/post.h"
 #endif /* ACE_REGISTRY_H */

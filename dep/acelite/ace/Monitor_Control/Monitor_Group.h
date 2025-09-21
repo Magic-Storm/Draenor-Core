@@ -41,14 +41,14 @@ namespace ACE
 
       void add_member (Monitor_Base* member);
 
-      virtual void update ();
+      virtual void update (void);
 
       /// These are overridden to be no-ops.
       virtual void receive (double data);
       virtual void receive (size_t data);
       virtual void receive (const Monitor_Control_Types::NameList& data);
 
-      virtual void clear ();
+      virtual void clear (void);
 
     private:
       typedef ACE_Unbounded_Queue<Monitor_Base *>

@@ -27,7 +27,7 @@ ACE_OS::inet_ntoa (const struct in_addr addr)
   ACE_UNUSED_ARG (addr);
   ACE_NOTSUP_RETURN (0);
 #else
-  return ::inet_ntoa (addr);
+  ACE_OSCALL_RETURN (::inet_ntoa (addr), char *, 0);
 #endif
 }
 
@@ -38,9 +38,9 @@ ACE_OS::inet_ntop (int family, const void *addrptr, char *strptr, size_t len)
 
 #if defined ACE_HAS_IPV6 && !defined ACE_LACKS_INET_NTOP
 #  if defined (ACE_HAS_NONCONST_INET_NTOP)
-  return ::inet_ntop (family, const_cast<void *> (addrptr), strptr, len);
+  ACE_OSCALL_RETURN (::inet_ntop (family, const_cast<void *> (addrptr), strptr, len), const char *, 0);
 #  else
-  return ::inet_ntop (family, addrptr, strptr, len);
+  ACE_OSCALL_RETURN (::inet_ntop (family, addrptr, strptr, len), const char *, 0);
 #  endif
 #else
 
@@ -67,8 +67,9 @@ ACE_OS::inet_pton (int family, const char *strptr, void *addrptr)
   ACE_OS_TRACE ("ACE_OS::inet_pton");
 
 #if defined ACE_HAS_IPV6 && !defined ACE_LACKS_INET_PTON
-  return ::inet_pton (family, strptr, addrptr);
+  ACE_OSCALL_RETURN (::inet_pton (family, strptr, addrptr), int, -1);
 #else
+
   if (family == AF_INET)
     {
       if (ACE_OS::inet_aton (strptr, static_cast<in_addr *> (addrptr)))

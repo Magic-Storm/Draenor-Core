@@ -11,6 +11,8 @@
 #include "ace/OS_Memory.h"
 #include "ace/OS_NS_Thread.h"
 #include "ace/Object_Manager_Base.h"
+#include "ace/Auto_Ptr.h"
+#include "ace/os_include/sys/os_pstat.h"
 #if defined (ACE_HAS_SYSCTL)
 # include "ace/os_include/sys/os_sysctl.h"
 #endif /* ACE_HAS_SYSCTL */
@@ -19,8 +21,6 @@
 # include "vxCpuLib.h"
 # include "cpuset.h"
 #endif /* ACE_HAS_VXCPULIB */
-
-#include <memory>
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -51,6 +51,10 @@ ACE_OS::argv_to_string (int argc,
                         bool substitute_env_args,
                         bool quote_args)
 {
+#if defined (ACE_LACKS_STRENVDUP)
+  ACE_UNUSED_ARG (substitute_env_args);
+#endif /* ACE_LACKS_STRENVDUP */
+
   if (argc <= 0 || argv == 0 || argv[0] == 0)
     return 0;
 
@@ -62,6 +66,7 @@ ACE_OS::argv_to_string (int argc,
 
   for (int i = 0; i < argc; ++i)
     {
+#if !defined (ACE_LACKS_STRENVDUP)
       // Account for environment variables.
       if (substitute_env_args
           && ACE_OS::strchr (argv[i], ACE_TEXT ('$')) != 0)
@@ -92,6 +97,7 @@ ACE_OS::argv_to_string (int argc,
               return 0;
             }
         }
+#endif /* ACE_LACKS_STRENVDUP */
       // If must quote, we only do it if the arg contains spaces, or
       // is empty. Perhaps a check for other c | ord(c) <= 32 is in
       // order?
@@ -225,7 +231,7 @@ ACE_OS::execl (const char * /* path */, const char * /* arg0 */, ...)
   ACE_OS_TRACE ("ACE_OS::execl");
   ACE_NOTSUP_RETURN (-1);
   // Need to write this code.
-  // return ::execv (path, argv);
+  // ACE_OSCALL_RETURN (::execv (path, argv), int, -1);
 }
 
 int
@@ -234,7 +240,7 @@ ACE_OS::execle (const char * /* path */, const char * /* arg0 */, ...)
   ACE_OS_TRACE ("ACE_OS::execle");
   ACE_NOTSUP_RETURN (-1);
   // Need to write this code.
-  //  return ::execve (path, argv, envp);
+  //  ACE_OSCALL_RETURN (::execve (path, argv, envp), int, -1);
 }
 
 int
@@ -243,7 +249,7 @@ ACE_OS::execlp (const char * /* file */, const char * /* arg0 */, ...)
   ACE_OS_TRACE ("ACE_OS::execlp");
   ACE_NOTSUP_RETURN (-1);
   // Need to write this code.
-  //  return ::execvp (file, argv);
+  //  ACE_OSCALL_RETURN (::execvp (file, argv), int, -1);
 }
 
 pid_t
@@ -254,7 +260,12 @@ ACE_OS::fork (const ACE_TCHAR *program_name)
   ACE_UNUSED_ARG (program_name);
   ACE_NOTSUP_RETURN (pid_t (-1));
 # else
-  pid_t const pid = ::fork ();
+  pid_t const pid =
+# if defined (ACE_HAS_STHREADS)
+    ::fork1 ();
+#else
+    ::fork ();
+#endif /* ACE_HAS_STHREADS */
 
 #if !defined (ACE_HAS_MINIMAL_ACE_OS) && !defined (ACE_HAS_THREADS)
 
@@ -292,10 +303,11 @@ ACE_OS::fork_exec (ACE_TCHAR *argv[])
 # if defined (ACE_WIN32)
 
   ACE_TCHAR *buf = 0;
-  std::unique_ptr<ACE_TCHAR[]> safe_ptr (buf);
+  ACE_Auto_Basic_Array_Ptr<ACE_TCHAR> safe_ptr (buf);
   if (ACE_OS::argv_to_string (argv, buf) != -1)
     {
       PROCESS_INFORMATION process_info;
+#   if !defined (ACE_HAS_WINCE)
       ACE_TEXT_STARTUPINFO startup_info;
       ACE_OS::memset ((void *) &startup_info,
                       0,
@@ -312,6 +324,18 @@ ACE_OS::fork_exec (ACE_TCHAR *argv[])
                                   0, // No current directory.
                                   &startup_info,
                                   &process_info))
+#   else
+      if (ACE_TEXT_CreateProcess (0,
+                                  buf,
+                                  0, // No process attributes.
+                                  0,  // No thread attributes.
+                                  FALSE, // Can's inherit handles on CE
+                                  0, // Don't create a new console window.
+                                  0, // No environment.
+                                  0, // No current directory.
+                                  0, // Can't use startup info on CE
+                                  &process_info))
+#   endif /* ! ACE_HAS_WINCE */
         {
           // Free resources allocated in kernel.
           ACE_OS::close (process_info.hThread);
@@ -379,7 +403,9 @@ ACE_OS::num_processors ()
 {
   ACE_OS_TRACE ("ACE_OS::num_processors");
 
-#if defined (ACE_WIN32)
+#if defined (ACE_HAS_PHARLAP)
+  return 1;
+#elif defined (ACE_WIN32)
   SYSTEM_INFO sys_info;
   ::GetSystemInfo (&sys_info);
   return sys_info.dwNumberOfProcessors;
@@ -395,6 +421,12 @@ ACE_OS::num_processors ()
     return num_processors;
   else
     return -1;
+#elif defined (__hpux)
+  struct pst_dynamic psd;
+  if (::pstat_getdynamic (&psd, sizeof (psd), (size_t) 1, 0) != -1)
+    return psd.psd_max_proc_cnt;
+  else
+    return -1;
 #else
   ACE_NOTSUP_RETURN (-1);
 #endif
@@ -405,7 +437,9 @@ ACE_OS::num_processors_online ()
 {
   ACE_OS_TRACE ("ACE_OS::num_processors_online");
 
-#if defined (ACE_WIN32)
+#if defined (ACE_HAS_PHARLAP)
+  return 1;
+#elif defined (ACE_WIN32)
   SYSTEM_INFO sys_info;
   ::GetSystemInfo (&sys_info);
   long active_processors = 0;
@@ -439,6 +473,12 @@ ACE_OS::num_processors_online ()
   size_t len = sizeof (num_processors);
   if (::sysctl (mib, 2, &num_processors, &len, 0, 0) != -1)
     return num_processors;
+  else
+    return -1;
+#elif defined (__hpux)
+  struct pst_dynamic psd;
+  if (::pstat_getdynamic (&psd, sizeof (psd), (size_t) 1, 0) != -1)
+    return psd.psd_proc_cnt;
   else
     return -1;
 #else
@@ -751,6 +791,10 @@ ACE_OS::string_to_argv (ACE_TCHAR *buf,
                         ACE_TCHAR **&argv,
                         bool substitute_env_args)
 {
+#if defined (ACE_LACKS_STRENVDUP)
+  ACE_UNUSED_ARG (substitute_env_args);
+#endif /* ACE_LACKS_STRENVDUP */
+
   // Reset the number of arguments
   argc = 0;
 
@@ -856,6 +900,7 @@ ACE_OS::string_to_argv (ACE_TCHAR *buf,
 
       *cp = ACE_TEXT ('\0');
 
+#if !defined (ACE_LACKS_STRENVDUP)
       // Check for environment variable substitution here.
       if (substitute_env_args) {
           argv[i] = ACE_OS::strenvdup (argp);
@@ -873,6 +918,7 @@ ACE_OS::string_to_argv (ACE_TCHAR *buf,
             }
       }
       else
+#endif /* ACE_LACKS_STRENVDUP */
         {
           argv[i] = ACE_OS::strdup (argp);
 

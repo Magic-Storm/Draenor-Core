@@ -4,6 +4,8 @@
 /**
  *  @file    TSS_T.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -196,7 +198,7 @@ protected:
 
   /// Obtains a plain value stored in the thread-specific storage.
 # if defined (ACE_HAS_THR_C_DEST)
-  ACE_TSS_Adapter *ts_value () const;
+  ACE_TSS_Adapter *ts_value (void) const;
 # else
   TYPE *ts_value () const;
 # endif /* ACE_HAS_THR_C_DEST */
@@ -235,11 +237,11 @@ public:
 
   /// TYPE conversion.  Inlined here so that it should _always_ be
   /// inlined.
-  operator TYPE () const { return value_; }
+  operator TYPE () const { return value_; };
 
   /// TYPE & conversion.  Inlined here so that it should _always_ be
   /// inlined.
-  operator TYPE &() { return value_; }
+  operator TYPE &() { return value_; };
 
 private:
   /// The wrapped value.
@@ -252,7 +254,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/TSS_T.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/TSS_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("TSS_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_TSS_T_H */

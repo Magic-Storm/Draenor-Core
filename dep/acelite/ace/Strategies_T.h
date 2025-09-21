@@ -173,6 +173,7 @@ template <class SVC_HANDLER>
 class ACE_DLL_Strategy : public ACE_Creation_Strategy<SVC_HANDLER>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Creation_Strategy<SVC_HANDLER> base_type;
 
@@ -242,6 +243,7 @@ template <class SVC_HANDLER>
 class ACE_Concurrency_Strategy
 {
 public:
+
   // Useful STL-style traits.
   typedef typename SVC_HANDLER::addr_type    addr_type;
   typedef SVC_HANDLER                        handler_type;
@@ -269,6 +271,7 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 protected:
+
   /// Flags that are parsed to set options for the connected
   /// SVC_HANDLER.
   int flags_;
@@ -288,6 +291,7 @@ template <class SVC_HANDLER>
 class ACE_Reactive_Strategy : public ACE_Concurrency_Strategy <SVC_HANDLER>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Concurrency_Strategy<SVC_HANDLER> base_type;
 
@@ -347,6 +351,7 @@ template <class SVC_HANDLER>
 class ACE_Thread_Strategy : public ACE_Concurrency_Strategy<SVC_HANDLER>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Concurrency_Strategy<SVC_HANDLER> base_type;
 
@@ -413,6 +418,7 @@ template <class SVC_HANDLER>
 class ACE_Process_Strategy : public ACE_Concurrency_Strategy<SVC_HANDLER>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Concurrency_Strategy<SVC_HANDLER> base_type;
 
@@ -668,6 +674,7 @@ public:
   virtual void dump () const;
 
 protected:
+
   /// Reactor
   ACE_Reactor *reactor_;
 };
@@ -704,6 +711,7 @@ public:
   virtual void dump () const;
 
 protected:
+
   /// Thread Manager
   ACE_Thread_Manager *thr_mgr_;
 };
@@ -723,6 +731,7 @@ template <class SVC_HANDLER>
 class ACE_NOOP_Creation_Strategy : public ACE_Creation_Strategy<SVC_HANDLER>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Creation_Strategy<SVC_HANDLER> base_type;
 
@@ -746,6 +755,7 @@ class ACE_NOOP_Concurrency_Strategy
   : public ACE_Concurrency_Strategy<SVC_HANDLER>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Concurrency_Strategy<SVC_HANDLER> base_type;
 
@@ -802,6 +812,7 @@ class ACE_Cached_Connect_Strategy
     public ACE_Connect_Strategy<SVC_HANDLER, ACE_PEER_CONNECTOR_2>
 {
 public:
+
   // Useful STL-style traits.
   typedef ACE_Creation_Strategy<SVC_HANDLER>
           creation_strategy_type;
@@ -929,6 +940,7 @@ public:
   virtual ACE_Concurrency_Strategy<SVC_HANDLER> *concurrency_strategy () const;
 
 protected:
+
   /// Creates a new connection.
   virtual int new_connection (SVC_HANDLER *&sh,
                               const ACE_PEER_CONNECTOR_ADDR &remote_addr,
@@ -1032,7 +1044,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/Strategies_T.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Strategies_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Strategies_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 

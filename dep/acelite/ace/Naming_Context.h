@@ -64,7 +64,7 @@ public:
     };
 
   /// "Do-nothing" constructor.
-  ACE_Naming_Context ();
+  ACE_Naming_Context (void);
 
   /**
    * Specifies the scope of this namespace, opens and memory-maps the
@@ -87,14 +87,14 @@ public:
 
   /// Deletes the instance of Name Space. Must be called before
   /// switching name spaces.
-  int close ();
+  int close (void);
 
   /// Release all resources. Gets called by destructor and fini.
-  int close_down ();
+  int close_down (void);
 
   /// destructor, do some cleanup :TBD: last dtor should "compress"
   /// file
-  ~ACE_Naming_Context ();
+  ~ACE_Naming_Context (void);
 
   // = Dynamic initialization hooks.
   /// Initialize name options and naming context when dynamically
@@ -102,13 +102,13 @@ public:
   virtual int init (int argc, ACE_TCHAR *argv[]);
 
   /// Close down the test when dynamically unlinked.
-  virtual int fini ();
+  virtual int fini (void);
 
   /// Returns information about this context.
   virtual int info (ACE_TCHAR **strp, size_t length) const;
 
   /// Returns the ACE_Name_Options associated with the Naming_Context
-  ACE_Name_Options *name_options ();
+  ACE_Name_Options *name_options (void);
 
   /// Bind a new name to a naming context (Wide character strings).
   int bind (const ACE_NS_WString &name_in,
@@ -246,7 +246,7 @@ public:
                                  const char *pattern_in);
 
   /// Dump the state of the object.
-  void dump ();
+  void dump (void);
 
 private:
   /// Keep track of the options such as database name etc per Naming Context
@@ -265,7 +265,7 @@ private:
   int netnameserver_port_;
 
   /// 1 if we're on the same local machine as the name server, else 0.
-  int local ();
+  int local (void);
 };
 
 /**
@@ -276,8 +276,8 @@ private:
 class ACE_Export ACE_Name_Options
 {
 public:
-  ACE_Name_Options ();
-  ~ACE_Name_Options ();
+  ACE_Name_Options (void);
+  ~ACE_Name_Options (void);
 
   /// Parse arguments.
   void parse_args (int argc,
@@ -287,10 +287,10 @@ public:
   void nameserver_port (int port);
 
   /// Get the port number
-  int nameserver_port ();
+  int nameserver_port (void);
 
   /// Get the context
-  ACE_Naming_Context::Context_Scope_Type context ();
+  ACE_Naming_Context::Context_Scope_Type context (void);
 
   /// Set the context
   void context (ACE_Naming_Context::Context_Scope_Type);
@@ -299,43 +299,43 @@ public:
   void nameserver_host (const ACE_TCHAR *host);
 
   /// Get the host name
-  const ACE_TCHAR *nameserver_host ();
+  const ACE_TCHAR *nameserver_host (void);
 
   /// Set name space directory
   void namespace_dir (const ACE_TCHAR *dir);
 
   /// Get name space directory
-  const ACE_TCHAR *namespace_dir ();
+  const ACE_TCHAR *namespace_dir (void);
 
   /// Set process name
   void process_name (const ACE_TCHAR *dir);
 
   /// Get process name
-  const ACE_TCHAR *process_name ();
+  const ACE_TCHAR *process_name (void);
 
   /// Set database name
   void database (const ACE_TCHAR *);
 
   /// Get database name
-  const ACE_TCHAR *database ();
+  const ACE_TCHAR *database (void);
 
   /// Set base address of the underlying allocator
   void base_address (char *address);
 
   /// Get base address of the underlying allocator
-  char *base_address ();
+  char *base_address (void);
 
   /// Get use of registry in naming
-  bool use_registry () const;
+  bool use_registry (void) const;
 
   /// Set use of registry in naming
   void use_registry (bool x);
 
   /// Return debug status
-  bool debug ();
+  bool debug (void);
 
   /// Return verbose status
-  bool verbose ();
+  bool verbose (void);
 
   ACE_ALLOC_HOOK_DECLARE;
 

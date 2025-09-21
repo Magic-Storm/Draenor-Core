@@ -35,19 +35,19 @@ class ACE_Export ACE_Dirent_Selector
 {
 public:
   /// Constructor
-  ACE_Dirent_Selector () = default;
+  ACE_Dirent_Selector (void);
 
   /// Destructor.
-  virtual ~ACE_Dirent_Selector ();
+  virtual ~ACE_Dirent_Selector (void);
 
   /// Return the length of the list of matching directory entries.
-  int length () const;
+  int length (void) const;
 
   /// Return the entry at @a index.
   ACE_DIRENT *operator[] (const int index) const;
 
   /// Free up resources.
-  int close ();
+  int close (void);
 
   /// Open the directory @a dir and populate the current list of names with
   /// directory entries that match the @a selector and @a comparator.
@@ -57,10 +57,10 @@ public:
 
 protected:
   /// Ptr to the namelist array.
-  ACE_DIRENT **namelist_ {};
+  ACE_DIRENT **namelist_;
 
   /// Number of entries in the array.
-  int n_ {};
+  int n_;
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

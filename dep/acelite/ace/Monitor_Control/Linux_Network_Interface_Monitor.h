@@ -21,7 +21,7 @@
 
 #include "ace/Monitor_Control/Monitor_Control_export.h"
 
-#if defined (ACE_LINUX)
+#if defined (ACE_LINUX) || defined (AIX)
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -44,17 +44,17 @@ namespace ACE
       Linux_Network_Interface_Monitor (const char *scan_format);
 
       /// Platform-specific implementation.
-      void update_i ();
+      void update_i (void);
 
       /// Platform-specific reset.
-      void clear_impl ();
+      void clear_impl (void);
 
     protected:
       ACE_UINT64 value_;
 
     private:
       /// Common code.
-      void init ();
+      void init (void);
 
     private:
       static const unsigned long MAX_INTERFACES = 10UL;
@@ -67,7 +67,7 @@ namespace ACE
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-#endif /* defined (ACE_LINUX) */
+#endif /* defined (ACE_LINUX) || defined (AIX) */
 
 #include /**/ "ace/post.h"
 

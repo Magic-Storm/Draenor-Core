@@ -45,6 +45,7 @@ class ACE_Metrics_Timeprobe :
   public ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>
   {
 public:
+
   typedef ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>
           ACE_METRICS_TIMEPROBE_TYPE;
 
@@ -80,11 +81,11 @@ public:
                 ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR>::event_id id);
 
   /// Accessor and mutator for probe name.
-  const char * probe_name ();
+  const char * probe_name (void);
   void probe_name (char * name);
 
   /// Accessor for probe id.
-  u_int probe_id ();
+  u_int probe_id (void);
 
   /// Mutator for probe id.
   void probe_id (u_int id);
@@ -93,6 +94,7 @@ public:
   void flush_ACE_Metrics_Timeprobe ();
 
 protected:
+
   /// Identifier for the timeprobe.
   u_int id_;
 
@@ -100,6 +102,7 @@ protected:
   char* name_;
 
 private:
+
   // Declare but do not define.
   ACE_Metrics_Timeprobe (const ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR> &);
   void operator =(const ACE_Metrics_Timeprobe<ACE_LOCK, ALLOCATOR> &);
@@ -117,6 +120,7 @@ template <class ACE_LOCK, class ALLOCATOR>
 class ACE_Metrics_Cache
 {
 public:
+
   typedef ACE_Metrics_Cache <ACE_LOCK, ALLOCATOR> ACE_METRICS_CACHE_TYPE;
 
   /// Default constructor.
@@ -158,13 +162,14 @@ public:
   void metrics_enabled(int enabled);
 
   /// Return the enable state for metrics collection.
-  int metrics_enabled() const;
+  int metrics_enabled(void) const;
 
 protected:
+
   /// Obtain an allocator pointer correctly thunked for the current
   /// address space.  If there is no allocator stored in the instance,
   /// the singleton allocator in the current process is used.
-  ALLOCATOR * allocator ();
+  ALLOCATOR * allocator (void);
 
   // = Implementation members.
 
@@ -208,6 +213,7 @@ protected:
   int metrics_enabled_;
 
 private:
+
   /// Allocation strategy object.
   ALLOCATOR* allocator_;
 
@@ -222,7 +228,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/Metrics_Cache_T.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Metrics_Cache_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Metrics_Cache_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #endif /* defined (ACE_COMPILE_TIMEPROBES) */
 

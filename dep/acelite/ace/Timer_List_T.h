@@ -40,19 +40,19 @@ public:
   ACE_Timer_List_Iterator_T (List& lst);
 
   /// Destructor.
-  virtual ~ACE_Timer_List_Iterator_T ();
+  virtual ~ACE_Timer_List_Iterator_T (void);
 
   /// Positions the iterator at the earliest node in the Timer Queue
-  virtual void first ();
+  virtual void first (void);
 
   /// Positions the iterator at the next node in the Timer Queue
-  virtual void next ();
+  virtual void next (void);
 
   /// Returns true when there are no more nodes in the sequence
-  virtual bool isdone () const;
+  virtual bool isdone (void) const;
 
   /// Returns the node at the current position in the sequence
-  virtual ACE_Timer_Node_T<TYPE> *item ();
+  virtual ACE_Timer_Node_T<TYPE> *item (void);
 
 protected:
   /// Pointer to the ACE_Timer_List that we are iterating over.
@@ -104,14 +104,14 @@ public:
                     TIME_POLICY const & time_policy = TIME_POLICY());
 
   /// Destructor
-  virtual ~ACE_Timer_List_T ();
+  virtual ~ACE_Timer_List_T (void);
 
   /// True if queue is empty, else false.
-  virtual bool is_empty () const;
+  virtual bool is_empty (void) const;
 
   /// Returns the time of the earlier node in the ACE_Timer_List.
   /// Must be called on a non-empty queue.
-  virtual const ACE_Time_Value& earliest_time () const;
+  virtual const ACE_Time_Value& earliest_time (void) const;
 
   /**
    * Resets the interval of the timer represented by @a timer_id to
@@ -147,13 +147,13 @@ public:
   /**
    * Destroy timer queue. Cancels all timers.
    */
-  virtual int close ();
+  virtual int close (void);
 
   /// Returns a pointer to this ACE_Timer_Queue's iterator.
-  virtual ACE_Timer_Queue_Iterator_T<TYPE>& iter ();
+  virtual ACE_Timer_Queue_Iterator_T<TYPE>& iter (void);
 
   /// Removes the earliest node from the queue and returns it
-  virtual ACE_Timer_Node_T<TYPE>* remove_first ();
+  virtual ACE_Timer_Node_T<TYPE>* remove_first (void);
 
   /// Dump the state of an object.
   virtual void dump () const;
@@ -163,7 +163,7 @@ public:
   virtual void reschedule (ACE_Timer_Node_T<TYPE> *);
 
   /// Reads the earliest node from the queue and returns it.
-  virtual ACE_Timer_Node_T<TYPE>* get_first ();
+  virtual ACE_Timer_Node_T<TYPE>* get_first (void);
 
 private:
   /**
@@ -194,7 +194,7 @@ private:
 
   void unlink (ACE_Timer_Node_T<TYPE>* n);
 
-  ACE_Timer_Node_T<TYPE>* get_first_i() const;
+  ACE_Timer_Node_T<TYPE>* get_first_i(void) const;
 
 private:
   /// Pointer to linked list of <ACE_Timer_Handles>.
@@ -215,7 +215,13 @@ private:
   void operator= (const ACE_Timer_List_T<TYPE, FUNCTOR, ACE_LOCK> &) = delete;
 };
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Timer_List_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Timer_List_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_TIMER_LIST_T_H */

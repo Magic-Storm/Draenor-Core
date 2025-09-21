@@ -32,16 +32,26 @@ ACE_Singleton<TYPE, ACE_LOCK>::dump ()
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_Singleton<TYPE, ACE_LOCK>::dump");
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
   ACELIB_DEBUG ((LM_DEBUG,  ACE_TEXT ("instance_ = %x"),
               ACE_Singleton<TYPE, ACE_LOCK>::instance_i ()));
   ACELIB_DEBUG ((LM_DEBUG, ACE_END_DUMP));
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 #endif /* ACE_HAS_DUMP */
 }
 
 template <class TYPE, class ACE_LOCK> ACE_Singleton<TYPE, ACE_LOCK> *&
 ACE_Singleton<TYPE, ACE_LOCK>::instance_i ()
 {
+#if defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
+  // Pointer to the Singleton instance.  This works around a bug with
+  // G++ and it's (mis-)handling of templates and statics...
+  static ACE_Singleton<TYPE, ACE_LOCK> *singleton_ = 0;
+
+  return singleton_;
+#else
   return ACE_Singleton<TYPE, ACE_LOCK>::singleton_;
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 }
 
 template <class TYPE, class ACE_LOCK> TYPE *
@@ -135,12 +145,14 @@ ACE_Singleton<TYPE, ACE_LOCK>::close ()
     }
 }
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
 // Pointer to the Singleton instance.
 template <class TYPE, class ACE_LOCK> ACE_Singleton<TYPE, ACE_LOCK> *
 ACE_Singleton<TYPE, ACE_LOCK>::singleton_ = 0;
 
 template <class TYPE, class ACE_LOCK> ACE_Unmanaged_Singleton<TYPE, ACE_LOCK> *
 ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::singleton_ = 0;
+#endif /* !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES) */
 
 template <class TYPE, class ACE_LOCK> void
 ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::dump ()
@@ -148,9 +160,11 @@ ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::dump ()
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::dump");
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
   ACELIB_DEBUG ((LM_DEBUG,  ACE_TEXT ("instance_ = %x"),
               ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::instance_i ()));
   ACELIB_DEBUG ((LM_DEBUG, ACE_END_DUMP));
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 #endif /* ACE_HAS_DUMP */
 }
 
@@ -158,7 +172,15 @@ template <class TYPE, class ACE_LOCK>
 ACE_Unmanaged_Singleton<TYPE, ACE_LOCK> *&
 ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::instance_i ()
 {
+#if defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
+  // Pointer to the Singleton instance.  This works around a bug with
+  // G++ and it's (mis-)handling of templates and statics...
+  static ACE_Unmanaged_Singleton<TYPE, ACE_LOCK> *singleton_ = 0;
+
+  return singleton_;
+#else
   return ACE_Unmanaged_Singleton<TYPE, ACE_LOCK>::singleton_;
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 }
 
 template <class TYPE, class ACE_LOCK> TYPE *
@@ -233,16 +255,26 @@ ACE_TSS_Singleton<TYPE, ACE_LOCK>::dump ()
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_TSS_Singleton<TYPE, ACE_LOCK>::dump");
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
   ACELIB_DEBUG ((LM_DEBUG,  ACE_TEXT ("instance_ = %x"),
               ACE_TSS_Singleton<TYPE, ACE_LOCK>::instance_i ()));
   ACELIB_DEBUG ((LM_DEBUG, ACE_END_DUMP));
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 #endif /* ACE_HAS_DUMP */
 }
 
 template <class TYPE, class ACE_LOCK> ACE_TSS_Singleton<TYPE, ACE_LOCK> *&
 ACE_TSS_Singleton<TYPE, ACE_LOCK>::instance_i ()
 {
+#if defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
+  // Pointer to the Singleton instance.  This works around a bug with
+  // G++ and it's (mis-)handling of templates and statics...
+  static ACE_TSS_Singleton<TYPE, ACE_LOCK> *singleton_ = 0;
+
+  return singleton_;
+#else
   return ACE_TSS_Singleton<TYPE, ACE_LOCK>::singleton_;
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 }
 
 template <class TYPE, class ACE_LOCK> TYPE *
@@ -316,9 +348,11 @@ ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::dump ()
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::dump");
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
   ACELIB_DEBUG ((LM_DEBUG,  ACE_TEXT ("instance_ = %x"),
               ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::instance_i ()));
   ACELIB_DEBUG ((LM_DEBUG, ACE_END_DUMP));
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 #endif /* ACE_HAS_DUMP */
 }
 
@@ -326,7 +360,15 @@ template <class TYPE, class ACE_LOCK>
 ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK> *&
 ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::instance_i ()
 {
+#if defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
+  // Pointer to the Singleton instance.  This works around a bug with
+  // G++ and it's (mis-)handling of templates and statics...
+  static ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK> *singleton_ = 0;
+
+  return singleton_;
+#else
   return ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::singleton_;
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 }
 
 template <class TYPE, class ACE_LOCK> TYPE *
@@ -393,6 +435,7 @@ ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::close ()
     singleton->cleanup ();
 }
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
 // Pointer to the Singleton instance.
 template <class TYPE, class ACE_LOCK> ACE_TSS_Singleton <TYPE, ACE_LOCK> *
 ACE_TSS_Singleton<TYPE, ACE_LOCK>::singleton_ = 0;
@@ -400,12 +443,15 @@ ACE_TSS_Singleton<TYPE, ACE_LOCK>::singleton_ = 0;
 template <class TYPE, class ACE_LOCK>
 ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK> *
 ACE_Unmanaged_TSS_Singleton<TYPE, ACE_LOCK>::singleton_ = 0;
+#endif /* !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES) */
 
 /*************************************************************************/
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
 // Pointer to the Singleton instance.
 template <class TYPE, class ACE_LOCK> ACE_DLL_Singleton_T<TYPE, ACE_LOCK> *
 ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::singleton_ = 0;
+#endif /* !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES) */
 
 template <class TYPE, class ACE_LOCK> void
 ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::dump ()
@@ -413,9 +459,11 @@ ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::dump ()
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::dump");
 
+#if !defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
   ACELIB_DEBUG ((LM_DEBUG,  ACE_TEXT ("instance_ = %x"),
               ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::instance_i ()));
   ACELIB_DEBUG ((LM_DEBUG, ACE_END_DUMP));
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 #endif /* ACE_HAS_DUMP */
 }
 
@@ -425,7 +473,15 @@ ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::instance_i ()
 {
   ACE_TRACE ("ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::instance_i");
 
+#if defined (ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES)
+  // Pointer to the Singleton instance.  This works around a bug with
+  // G++ and it's (mis-)handling of templates and statics...
+  static ACE_DLL_Singleton_T<TYPE, ACE_LOCK> *singleton_ = 0;
+
+  return singleton_;
+#else
   return ACE_DLL_Singleton_T<TYPE, ACE_LOCK>::singleton_;
+#endif /* ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES */
 }
 
 template <class TYPE, class ACE_LOCK> TYPE *

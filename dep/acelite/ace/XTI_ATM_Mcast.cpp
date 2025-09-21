@@ -1,5 +1,7 @@
 #include "ace/XTI_ATM_Mcast.h"
 
+
+
 #if defined (ACE_HAS_XTI_ATM)
 
 #if !defined (__ACE_INLINE__)
@@ -11,14 +13,14 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 ACE_ALLOC_HOOK_DEFINE(ACE_XTI_ATM_Mcast)
 
 void
-ACE_XTI_ATM_Mcast::dump () const
+ACE_XTI_ATM_Mcast::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_XTI_ATM_Mcast::dump");
 #endif /* ACE_HAS_DUMP */
 }
 
-ACE_XTI_ATM_Mcast::ACE_XTI_ATM_Mcast ()
+ACE_XTI_ATM_Mcast::ACE_XTI_ATM_Mcast (void)
 {
   ACE_TRACE ("ACE_XTI_ATM_Mcast::ACE_XTI_ATM_Mcast");
 }

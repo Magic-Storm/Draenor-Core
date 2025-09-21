@@ -61,15 +61,9 @@ include $(ACE_ROOT)/include/makeinclude/wrapper_macros.GNU
 
 GNUACE_PROJECT_VERSION ?= $(ACE_VERSION)
 
-ifneq (,$(RC))
-RESOURCES += \
-  ACE_SSL.rc
-
-RC_INCLUDE_FLAG ?= --include-dir=
-RCFLAGS = \
-        $(RC_INCLUDE_FLAG)../..
-endif
-
+# To build multiple targets in the same directory on AIX, it works
+# best to have a template directory per project.
+# The compiler/linker isn't too smart about instantiating templates...
 ifdef TEMPINCDIR
 TEMPINCDIR := $(TEMPINCDIR)/SSL
 all: $(TEMPINCDIR)
@@ -273,35 +267,32 @@ endif
 endif
 
 #BEGIN MPC-Generated Install Info
-#resource_files:
-#ACE_SSL.rc
-#
-#header_files:
-#SSL_SOCK_Stream.h
-#SSL_SOCK_Connector.h
-#SSL_Asynch_BIO.h
-#SSL_Initializer.h
-#SSL_Context.h
-#SSL_SOCK_Acceptor.h
-#SSL_Asynch_Stream.h
-#SSL_SOCK.h
-#SSL_Export.h
-#sslconf.h
+#pkgconfig_files:
+#ACE_SSL.pc.in
 #
 #inline_files:
 #SSL_SOCK_Stream.inl
-#SSL_SOCK_Connector.inl
-#SSL_Context.inl
-#SSL_SOCK_Acceptor.inl
 #SSL_Asynch_Stream.inl
 #SSL_SOCK.inl
-#
-#pkgconfig_files:
-#ACE_SSL.pc.in
+#SSL_SOCK_Connector.inl
+#SSL_SOCK_Acceptor.inl
+#SSL_Context.inl
 #
 #build_files:
 #ssl.mpc
 #ssl_for_tao.mpc
+#
+#header_files:
+#SSL_Initializer.h
+#SSL_SOCK_Stream.h
+#SSL_Asynch_Stream.h
+#SSL_SOCK.h
+#SSL_Asynch_BIO.h
+#SSL_SOCK_Connector.h
+#SSL_SOCK_Acceptor.h
+#SSL_Context.h
+#SSL_Export.h
+#sslconf.h
 #
 #source_files:
 #SSL_Asynch_BIO.cpp

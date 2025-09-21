@@ -187,7 +187,7 @@ typedef ACE_Atomic_Op<ACE_PROCESS_MUTEX, int> ACE_INT;
 /// This keeps stats on the usage of the memory manager.
 struct ACE_Export ACE_Malloc_Stats
 {
-  ACE_Malloc_Stats ();
+  ACE_Malloc_Stats (void);
   void dump () const;
 
   /// Coarse-grained unit of allocation.
@@ -254,6 +254,7 @@ union ACE_max_align_info
 class ACE_Export ACE_Control_Block
 {
 public:
+
   /**
    * @class ACE_Malloc_Header
    *

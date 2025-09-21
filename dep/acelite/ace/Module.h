@@ -59,8 +59,6 @@ public:
     /// Indicates that close() should not delete any Tasks.
     M_DELETE_NONE = 4
   };
-
-  virtual ~ACE_Module_Base () = default;
 };
 
 /**
@@ -160,7 +158,7 @@ public:
   void link (ACE_Module<ACE_SYNCH_USE, TIME_POLICY> *m);
 
   /// Get the next pointer to the module above in the stream.
-  virtual ACE_Module<ACE_SYNCH_USE, TIME_POLICY> *next ();
+  ACE_Module<ACE_SYNCH_USE, TIME_POLICY> *next ();
 
   /// Set the next pointer to the module above in the stream.
   virtual void next (ACE_Module<ACE_SYNCH_USE, TIME_POLICY> *m);
@@ -201,7 +199,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/Module.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Module.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Module.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 

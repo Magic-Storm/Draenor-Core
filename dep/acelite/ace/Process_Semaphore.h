@@ -51,11 +51,11 @@ public:
    * should call this method since it doesn't protect against race
    * conditions.
    */
-  int remove ();
+  int remove (void);
 
   /// Block the thread until the semaphore count becomes greater than
   /// 0, then decrement it.
-  int acquire ();
+  int acquire (void);
 
   /**
    * Conditionally decrement the semaphore if count is greater than 0
@@ -63,24 +63,24 @@ public:
    * because someone else already had the lock, @c errno is set to
    * @c EBUSY.
    */
-  int tryacquire ();
+  int tryacquire (void);
 
   /// Increment the semaphore, potentially unblocking a waiting thread.
-  int release ();
+  int release (void);
 
   /**
    * Acquire semaphore ownership.  This calls acquire() and is only
    * here to make the ACE_Process_Semaphore interface consistent
    * with the other synchronization APIs.
    */
-  int acquire_read ();
+  int acquire_read (void);
 
   /**
    * Acquire semaphore ownership.  This calls acquire() and is only
    * here to make the ACE_Process_Semaphore interface consistent
    * with the other synchronization APIs.
    */
-  int acquire_write ();
+  int acquire_write (void);
 
   /**
    * Conditionally acquire semaphore (i.e., won't block).  This calls
@@ -89,7 +89,7 @@ public:
    * Returns -1 on failure.  If we "failed" because someone else
    * already had the lock, @c errno is set to @c EBUSY.
    */
-  int tryacquire_read ();
+  int tryacquire_read (void);
 
   /**
    * Conditionally acquire semaphore (i.e., won't block).  This calls
@@ -98,7 +98,7 @@ public:
    * Returns -1 on failure.  If we "failed" because someone else
    * already had the lock, @c errno is set to @c EBUSY.
    */
-  int tryacquire_write ();
+  int tryacquire_write (void);
 
   /**
    * This is only here to make the ACE_Process_Semaphore
@@ -106,11 +106,11 @@ public:
    * Assumes the caller has already acquired the semaphore using one of
    * the above calls, and returns 0 (success) always.
    */
-  int tryacquire_write_upgrade ();
+  int tryacquire_write_upgrade (void);
 
 #if defined (ACE_WIN32) || defined (ACE_HAS_POSIX_SEM)
   /// Return the underlying lock.
-  const ACE_sema_t &lock () const;
+  const ACE_sema_t &lock (void) const;
 #endif /* ACE_WIN32 || ACE_HAS_POSIX_SEM */
 
   /// Dump the state of an object.
@@ -147,6 +147,7 @@ public:
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL
+
 
 #if defined (__ACE_INLINE__)
 #include "ace/Process_Semaphore.inl"

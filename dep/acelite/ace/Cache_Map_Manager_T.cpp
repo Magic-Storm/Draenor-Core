@@ -30,10 +30,11 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
     ACELIB_ERROR ((LM_ERROR,
                 ACE_TEXT ("%p\n"),
                 ACE_TEXT ("ACE_Cache_Map_Manager::ACE_Cache_Map_Manager")));
+
 }
 
 template <class KEY, class VALUE, class CMAP_TYPE, class ITERATOR_IMPL, class REVERSE_ITERATOR_IMPL, class CACHING_STRATEGY, class ATTRIBUTES>
-ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMPL, CACHING_STRATEGY, ATTRIBUTES>::~ACE_Cache_Map_Manager ()
+ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMPL, CACHING_STRATEGY, ATTRIBUTES>::~ACE_Cache_Map_Manager (void)
 {
   this->close ();
 }
@@ -47,7 +48,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 }
 
 template <class KEY, class VALUE, class CMAP_TYPE, class ITERATOR_IMPL, class REVERSE_ITERATOR_IMPL, class CACHING_STRATEGY, class ATTRIBUTES> int
-ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMPL, CACHING_STRATEGY, ATTRIBUTES>::close ()
+ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMPL, CACHING_STRATEGY, ATTRIBUTES>::close (void)
 {
   return this->map_.close ();
 }
@@ -67,16 +68,19 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (bind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_bind (bind_result,
                                                         cache_value.second);
 
       if (result == -1)
         {
+
           this->map_.unbind (key);
 
           // Unless the notification goes thru the bind operation is
           // not complete.
           bind_result = -1;
+
         }
 
     }
@@ -97,11 +101,13 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (rebind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_rebind (rebind_result,
                                                           cache_value.second ());
 
       if (result == -1)
         {
+
           // Make sure the unbind operation is done only when the
           // notification fails after a bind which is denoted by
           // rebind_result = 0
@@ -111,6 +117,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
           // Unless the notification goes thru the rebind operation is
           // not complete.
           rebind_result = -1;
+
         }
 
     }
@@ -136,11 +143,13 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (rebind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_rebind (rebind_result,
                                                           cache_value.second ());
 
       if (result == -1)
         {
+
           // Make sure the unbind operation is done only when the
           // notification fails after a bind which is denoted by
           // rebind_result = 0
@@ -150,10 +159,13 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
           // Unless the notification goes thru the rebind operation is
           // not complete.
           rebind_result = -1;
+
         }
       else
         {
+
           old_value = old_cache_value.first ();
+
         }
 
     }
@@ -180,11 +192,13 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (rebind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_rebind (rebind_result,
                                                           cache_value.second ());
 
       if (result == -1)
         {
+
           // Make sure the unbind operation is done only when the
           // notification fails after a bind which is denoted by
           // rebind_result = 0
@@ -194,10 +208,13 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
           // Unless the notification goes thru the rebind operation is
           // not complete.
           rebind_result = -1;
+
         }
       else
         {
+
           old_value = old_cache_value.first ();
+
         }
 
     }
@@ -217,24 +234,29 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (trybind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_trybind (trybind_result,
                                                            cache_value.second ());
 
       if (result == -1)
         {
+
           // If the entry has got inserted into the map, it is removed
           // due to failure.
           if (trybind_result == 0)
             this->map_.unbind (key);
 
           trybind_result = -1;
+
         }
       else
         {
+
           // If an attempt is made to bind an existing entry the value
           // is overwritten with the value from the map.
           if (trybind_result == 1)
             value = cache_value.first ();
+
         }
 
     }
@@ -254,6 +276,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (find_result != -1)
     {
+
       int result = this->caching_strategy_.notify_find (find_result,
                                                         cache_value.second);
 
@@ -263,6 +286,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
         find_result = -1;
       else
         {
+
           // Since the <cache_value> has now changed after the
           // notification, we need to bind to the map again.
           int rebind_result = this->map_.rebind (key,
@@ -271,6 +295,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
             find_result = -1;
           else
             value = cache_value.first;
+
         }
 
     }
@@ -289,6 +314,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (find_result != -1)
     {
+
       int result = this->caching_strategy_.notify_find (find_result,
                                                         cache_value.second);
 
@@ -298,6 +324,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
         find_result = -1;
       else
         {
+
           // Since the <cache_value> has now changed after the
           // notification, we need to bind to the map again.
           int rebind_result = this->map_.rebind (key,
@@ -305,6 +332,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
           if (rebind_result == -1)
             find_result = -1;
+
         }
 
     }
@@ -324,11 +352,13 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (unbind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_unbind (unbind_result,
                                                           cache_value.second);
 
       if (result == -1)
         unbind_result = -1;
+
     }
 
   return unbind_result;
@@ -346,6 +376,7 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
 
   if (unbind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_unbind (unbind_result,
                                                           cache_value.second ());
 
@@ -353,19 +384,25 @@ ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMP
         unbind_result = -1;
       else
         value = cache_value.first ();
+
     }
 
   return unbind_result;
 }
 
 template <class KEY, class VALUE, class CMAP_TYPE, class ITERATOR_IMPL, class REVERSE_ITERATOR_IMPL, class CACHING_STRATEGY, class ATTRIBUTES> void
-ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMPL, CACHING_STRATEGY, ATTRIBUTES>::dump () const
+ACE_Cache_Map_Manager<KEY, VALUE, CMAP_TYPE, ITERATOR_IMPL, REVERSE_ITERATOR_IMPL, CACHING_STRATEGY, ATTRIBUTES>::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   this->map_.dump ();
 
   this->caching_strategy_.dump ();
 #endif /* ACE_HAS_DUMP */
+}
+
+template <class KEY, class VALUE, class IMPLEMENTATION, class CACHING_STRATEGY, class ATTRIBUTES>
+ACE_Cache_Map_Iterator<KEY, VALUE, IMPLEMENTATION, CACHING_STRATEGY, ATTRIBUTES>::~ACE_Cache_Map_Iterator (void)
+{
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL

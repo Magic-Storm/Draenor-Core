@@ -52,11 +52,11 @@ public:
             LPSECURITY_ATTRIBUTES sa = 0);
 
   /// Close down the ACE_FIFO without removing the rendezvous point.
-  int close ();
+  int close (void);
 
   /// Close down the ACE_FIFO and remove the rendezvous point from the
   /// file system.
-  int remove ();
+  int remove (void);
 
   /// Return the local address of this endpoint.
   int get_local_addr (const ACE_TCHAR *&rendezvous) const;
@@ -74,7 +74,7 @@ protected:
    */
   //@{
   /// Default constructor.
-  ACE_FIFO ();
+  ACE_FIFO (void);
 
   /// Open up the named pipe on the @a rendezvous in accordance with the
   /// flags.

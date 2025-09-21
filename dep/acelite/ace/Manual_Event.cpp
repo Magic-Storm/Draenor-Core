@@ -3,6 +3,10 @@
 
 #include "ace/Manual_Event.h"
 
+#if !defined (__ACE_INLINE__)
+#include "ace/Manual_Event.inl"
+#endif /* __ACE_INLINE__ */
+
 #if defined (ACE_HAS_ALLOC_HOOKS)
 # include "ace/Malloc_Base.h"
 #endif /* ACE_HAS_ALLOC_HOOKS */
@@ -52,4 +56,4 @@ ACE_Manual_Event_T<TIME_POLICY>::dump () const
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-#endif
+#endif /* ACE_MANUAL_EVENT_CPP */

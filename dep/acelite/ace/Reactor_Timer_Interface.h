@@ -66,6 +66,7 @@ public:
 
   virtual int cancel_timer (ACE_Event_Handler *event_handler,
                             int dont_call_handle_close = 1) = 0;
+
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

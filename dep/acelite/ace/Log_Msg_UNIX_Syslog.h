@@ -35,10 +35,10 @@ class ACE_Export ACE_Log_Msg_UNIX_Syslog : public ACE_Log_Msg_Backend
 {
 public:
   /// Constructor
-  ACE_Log_Msg_UNIX_Syslog () = default;
+  ACE_Log_Msg_UNIX_Syslog (void);
 
   /// Destructor
-  virtual ~ACE_Log_Msg_UNIX_Syslog ();
+  virtual ~ACE_Log_Msg_UNIX_Syslog (void);
 
   /// Open a new event log.
   /**
@@ -51,10 +51,10 @@ public:
   virtual int open (const ACE_TCHAR *logger_key);
 
   /// Reset the backend.
-  virtual int reset ();
+  virtual int reset (void);
 
   /// Close the backend completely.
-  virtual int close ();
+  virtual int close (void);
 
   /// This is called when we want to log a message.
   virtual ssize_t log (ACE_Log_Record &log_record);

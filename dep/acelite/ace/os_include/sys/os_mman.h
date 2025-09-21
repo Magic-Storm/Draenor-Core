@@ -49,25 +49,22 @@ extern "C"
 #  define MAP_FIXED 0
 #elif defined (ACE_WIN32)
    // These two may be used for internal flags soon:
-#  if !defined (MAP_PRIVATE)
-#    define MAP_PRIVATE 1
-#  endif
-#  if !defined (MAP_SHARED)
-#    define MAP_SHARED  2
-#  endif
-#  if !defined (MAP_FIXED)
-#    define MAP_FIXED   4
-#  endif
+#  define MAP_PRIVATE 1
+#  define MAP_SHARED  2
+#  define MAP_FIXED   4
    // MMAP flags
-#  if !defined (PROT_READ)
-#    define PROT_READ PAGE_READONLY
-#  endif
-#  if !defined (PROT_WRITE)
-#    define PROT_WRITE PAGE_READWRITE
-#  endif
-#  if !defined (PROT_RDWR)
-#    define PROT_RDWR PAGE_READWRITE
-#  endif
+#  define PROT_READ PAGE_READONLY
+#  define PROT_WRITE PAGE_READWRITE
+#  define PROT_RDWR PAGE_READWRITE
+/* If we can find suitable use for these flags, here they are:
+PAGE_WRITECOPY
+PAGE_EXECUTE
+PAGE_EXECUTE_READ
+PAGE_EXECUTE_READWRITE
+PAGE_EXECUTE_WRITECOPY
+PAGE_GUARD
+PAGE_NOACCESS
+PAGE_NOCACHE  */
 #endif /* !ACE_LACKS_SYS_MMAN_H && !ACE_WIN32*/
 
 # if !defined (ACE_MAP_PRIVATE)
@@ -84,6 +81,9 @@ extern "C"
 
 # if !defined (MAP_FAILED)
 #   define MAP_FAILED ((void *) -1)
+# elif defined (ACE_HAS_LONG_MAP_FAILED)
+#   undef MAP_FAILED
+#   define MAP_FAILED ((void *) -1L)
 # endif /* !MAP_FAILED */
 
 #if !defined (PROT_RDWR)
@@ -99,6 +99,10 @@ extern "C"
 # if !defined (MS_SYNC)
 #   define MS_SYNC 0x0
 # endif /* !MS_SYNC */
+
+#if !defined (ACE_LACKS_MADVISE) && defined (ACE_LACKS_MADVISE_PROTOTYPE)
+  extern "C" int madvise(caddr_t, size_t, int);
+#endif /* !ACE_LACKS_MADVISE && ACE_LACKS_MADVISE_PROTOTYPE */
 
 #ifdef __cplusplus
 }

@@ -21,7 +21,7 @@ namespace ACE
     }
 
     void
-    Windows_Monitor::update_i ()
+    Windows_Monitor::update_i (void)
     {
       PdhCollectQueryData (this->query_);
       PDH_FMT_COUNTERVALUE pdh_value;
@@ -35,13 +35,13 @@ namespace ACE
     }
 
     void
-    Windows_Monitor::clear_impl ()
+    Windows_Monitor::clear_impl (void)
     {
       this->init ();
     }
 
     void
-    Windows_Monitor::init ()
+    Windows_Monitor::init (void)
     {
       /// Create a query and a counter here so it doesn't have
       /// to be done with each update.

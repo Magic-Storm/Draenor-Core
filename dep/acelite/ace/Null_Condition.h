@@ -4,6 +4,8 @@
 /**
  *  @file    Null_Condition.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -47,7 +49,7 @@ public:
                  void * = 0)
   : mutex_ ((ACE_Null_Mutex &) m) {}
 
-  ~ACE_Condition () = default;
+  ~ACE_Condition () {}
 
   /// Returns 0.
   int remove () {return 0;}
@@ -64,7 +66,7 @@ public:
 
   /// Returns 0.
   int broadcast () {return 0;}
-  ACE_Null_Mutex &mutex () {return this->mutex_;}
+  ACE_Null_Mutex &mutex () {return this->mutex_;};
 
   /// Dump the state of an object.
   void dump () const {}
@@ -76,8 +78,9 @@ protected:
   ACE_Null_Mutex &mutex_; // Reference to mutex lock.
 
 private:
-  void operator= (const ACE_Condition<ACE_Null_Mutex> &) = delete;
-  ACE_Condition (const ACE_Condition<ACE_Null_Mutex> &) = delete;
+  // = Prevent assignment and initialization.
+  void operator= (const ACE_Condition<ACE_Null_Mutex> &);
+  ACE_Condition (const ACE_Condition<ACE_Null_Mutex> &);
 };
 
 typedef ACE_Condition<ACE_Null_Mutex> ACE_Null_Condition;

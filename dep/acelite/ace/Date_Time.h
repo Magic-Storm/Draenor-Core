@@ -31,7 +31,7 @@ class ACE_Export ACE_Date_Time
 {
 public:
   /// Constructor initializes current time/date info.
-  ACE_Date_Time ();
+  ACE_Date_Time (void);
 
   /// Constructor initializes with the given ACE_Time_Value
   explicit ACE_Date_Time (const ACE_Time_Value& timevalue);
@@ -48,55 +48,55 @@ public:
                  long wday = 0);
 
   /// Update to the current time/date.
-  void update ();
+  void update (void);
 
   /// Update to the given ACE_Time_Value
   void update (const ACE_Time_Value& timevalue);
 
   /// Get day.
-  long day () const;
+  long day (void) const;
 
   /// Set day.
   void day (long day);
 
   /// Get month.
-  long month () const;
+  long month (void) const;
 
   /// Set month.
   void month (long month);
 
   /// Get year.
-  long year () const;
+  long year (void) const;
 
   /// Set year.
   void year (long year);
 
   /// Get hour.
-  long hour () const;
+  long hour (void) const;
 
   /// Set hour.
   void hour (long hour);
 
   /// Get minute.
-  long minute () const;
+  long minute (void) const;
 
   /// Set minute.
   void minute (long minute);
 
   /// Get second.
-  long second () const;
+  long second (void) const;
 
   /// Set second.
   void second (long second);
 
   /// Get microsec.
-  long microsec () const;
+  long microsec (void) const;
 
   /// Set microsec.
   void microsec (long microsec);
 
   /// Get weekday.
-  long weekday () const;
+  long weekday (void) const;
 
   /// Set weekday.
   void weekday (long wday);

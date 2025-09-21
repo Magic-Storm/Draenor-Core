@@ -20,9 +20,8 @@
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
 #include "ace/os_include/os_time.h"
-#include "ace/Truncate.h"
 #include <chrono>
-#include <ostream>
+#include "ace/Truncate.h"
 
 // Define some helpful constants.
 // Not type-safe, and signed.  For backward compatibility.
@@ -32,6 +31,9 @@ suseconds_t const ACE_ONE_SECOND_IN_USECS = 1000000;
 
 // needed for ACE_UINT64
 #include "ace/Basic_Types.h"
+
+// needed to determine if iostreams are present
+#include "ace/iosfwd.h"
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -86,7 +88,7 @@ public:
   }
 
   /// Destructor
-  virtual ~ACE_Time_Value () = default;
+  virtual ~ACE_Time_Value ();
 
   /// Declare the dynamic allocation hooks.
   ACE_ALLOC_HOOK_DECLARE;
@@ -124,7 +126,7 @@ public:
     std::chrono::microseconds const usec {
       std::chrono::duration_cast<std::chrono::microseconds>(
         duration % std::chrono::seconds (1))};
-    this->set (ACE_Utils::truncate_cast<time_t>(s.count ()), ACE_Utils::truncate_cast<suseconds_t>(usec.count ()));
+    this->set (s.count (), ACE_Utils::truncate_cast<suseconds_t>(usec.count ()));
   }
 
   /// Converts from ACE_Time_Value format into milliseconds format.
@@ -458,7 +460,9 @@ private:
 #endif /* ACE_HAS_TIME_T_LONG_MISMATCH */
 };
 
-extern ACE_Export std::ostream &operator<<(std::ostream &o, const ACE_Time_Value &v );
+#ifdef ACE_HAS_CPP98_IOSTREAMS
+extern ACE_Export ostream &operator<<( ostream &o, const ACE_Time_Value &v );
+#endif
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 

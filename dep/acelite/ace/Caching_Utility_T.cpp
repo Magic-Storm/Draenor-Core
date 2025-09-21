@@ -31,7 +31,7 @@ ACE_Pair_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::ACE_Pair_
 }
 
 template <class KEY, class VALUE, class CONTAINER, class ITERATOR, class ATTRIBUTES>
-ACE_Pair_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Pair_Caching_Utility ()
+ACE_Pair_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Pair_Caching_Utility (void)
 {
   if (this->delete_cleanup_strategy_)
     delete this->cleanup_strategy_;
@@ -79,6 +79,7 @@ ACE_Pair_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::clear_cac
                                             key_to_remove,
                                             value_to_remove) == -1)
         return -1;
+
     }
 
   return 0;
@@ -129,7 +130,7 @@ ACE_Recyclable_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUT
 }
 
 template <class KEY, class VALUE, class CONTAINER, class ITERATOR, class ATTRIBUTES>
-ACE_Recyclable_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Recyclable_Handler_Caching_Utility ()
+ACE_Recyclable_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Recyclable_Handler_Caching_Utility (void)
 {
   if (this->delete_cleanup_strategy_)
     delete this->cleanup_strategy_;
@@ -249,7 +250,7 @@ ACE_Refcounted_Recyclable_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATO
 }
 
 template <class KEY, class VALUE, class CONTAINER, class ITERATOR, class ATTRIBUTES>
-ACE_Refcounted_Recyclable_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Refcounted_Recyclable_Handler_Caching_Utility ()
+ACE_Refcounted_Recyclable_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Refcounted_Recyclable_Handler_Caching_Utility (void)
 {
   if (this->delete_cleanup_strategy_)
     delete this->cleanup_strategy_;
@@ -373,7 +374,7 @@ ACE_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::ACE_Ha
 }
 
 template <class KEY, class VALUE, class CONTAINER, class ITERATOR, class ATTRIBUTES>
-ACE_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Handler_Caching_Utility ()
+ACE_Handler_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Handler_Caching_Utility (void)
 {
   if (this->delete_cleanup_strategy_)
     delete this->cleanup_strategy_;
@@ -466,7 +467,7 @@ ACE_Null_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::ACE_Null_
 }
 
 template <class KEY, class VALUE, class CONTAINER, class ITERATOR, class ATTRIBUTES>
-ACE_Null_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Null_Caching_Utility ()
+ACE_Null_Caching_Utility<KEY, VALUE, CONTAINER, ITERATOR, ATTRIBUTES>::~ACE_Null_Caching_Utility (void)
 {
   if (this->delete_cleanup_strategy_)
     delete this->cleanup_strategy_;

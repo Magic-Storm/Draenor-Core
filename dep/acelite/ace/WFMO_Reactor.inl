@@ -10,7 +10,9 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 /************************************************************/
 
 ACE_INLINE int
-ACE_Wakeup_All_Threads_Handler::handle_signal (int /* signum */, siginfo_t * /* siginfo */, ucontext_t *)
+ACE_Wakeup_All_Threads_Handler::handle_signal (int /* signum */,
+                                               siginfo_t * /* siginfo */,
+                                               ucontext_t *)
 {
   // This will get called when <WFMO_Reactor->wakeup_all_threads_> event
   // is signaled. There is nothing to be done here.
@@ -23,7 +25,7 @@ ACE_Wakeup_All_Threads_Handler::handle_signal (int /* signum */, siginfo_t * /* 
 /************************************************************/
 
 ACE_INLINE
-ACE_WFMO_Reactor_Handler_Repository::Common_Info::Common_Info ()
+ACE_WFMO_Reactor_Handler_Repository::Common_Info::Common_Info (void)
   : io_entry_ (false),
     event_handler_ (0),
     io_handle_ (ACE_INVALID_HANDLE),
@@ -35,7 +37,7 @@ ACE_WFMO_Reactor_Handler_Repository::Common_Info::Common_Info ()
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::Common_Info::reset ()
+ACE_WFMO_Reactor_Handler_Repository::Common_Info::reset (void)
 {
   this->event_handler_ = 0;
   this->io_entry_ = false;
@@ -71,7 +73,7 @@ ACE_WFMO_Reactor_Handler_Repository::Common_Info::set (Common_Info &common_info)
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::Common_Info::dump () const
+ACE_WFMO_Reactor_Handler_Repository::Common_Info::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_WFMO_Reactor_Handler_Repository::Common_Info::dump");
@@ -113,7 +115,7 @@ ACE_WFMO_Reactor_Handler_Repository::Common_Info::dump () const
 /************************************************************/
 
 ACE_INLINE
-ACE_WFMO_Reactor_Handler_Repository::Current_Info::Current_Info ()
+ACE_WFMO_Reactor_Handler_Repository::Current_Info::Current_Info (void)
   : suspend_entry_ (false)
 {
 }
@@ -147,7 +149,7 @@ ACE_WFMO_Reactor_Handler_Repository::Current_Info::set (Common_Info &common_info
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::Current_Info::reset ()
+ACE_WFMO_Reactor_Handler_Repository::Current_Info::reset (void)
 {
   this->suspend_entry_ = false;
   Common_Info::reset ();
@@ -180,7 +182,7 @@ ACE_WFMO_Reactor_Handler_Repository::Current_Info::dump (ACE_HANDLE event_handle
 /************************************************************/
 
 ACE_INLINE
-ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::To_Be_Added_Info ()
+ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::To_Be_Added_Info (void)
   : event_handle_ (ACE_INVALID_HANDLE),
     suspend_entry_ (false)
 {
@@ -219,7 +221,7 @@ ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::set (ACE_HANDLE event_han
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::reset ()
+ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::reset (void)
 {
   this->event_handle_ = ACE_INVALID_HANDLE;
   this->suspend_entry_ = false;
@@ -227,7 +229,7 @@ ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::reset ()
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::dump () const
+ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::dump");
@@ -251,14 +253,14 @@ ACE_WFMO_Reactor_Handler_Repository::To_Be_Added_Info::dump () const
 /************************************************************/
 
 ACE_INLINE
-ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::Suspended_Info ()
+ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::Suspended_Info (void)
   : event_handle_ (ACE_INVALID_HANDLE),
     resume_entry_ (false)
 {
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::reset ()
+ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::reset (void)
 {
   this->event_handle_ = ACE_INVALID_HANDLE;
   this->resume_entry_ = false;
@@ -298,7 +300,7 @@ ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::set (ACE_HANDLE event_handl
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::dump () const
+ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::dump");
@@ -322,7 +324,7 @@ ACE_WFMO_Reactor_Handler_Repository::Suspended_Info::dump () const
 /************************************************************/
 
 ACE_INLINE int
-ACE_WFMO_Reactor_Handler_Repository::close ()
+ACE_WFMO_Reactor_Handler_Repository::close (void)
 {
   // Let all the handlers know that the <WFMO_Reactor> is closing down
   this->unbind_all ();
@@ -331,7 +333,7 @@ ACE_WFMO_Reactor_Handler_Repository::close ()
 }
 
 ACE_INLINE ACE_HANDLE *
-ACE_WFMO_Reactor_Handler_Repository::handles () const
+ACE_WFMO_Reactor_Handler_Repository::handles (void) const
 {
   // This code is probably too subtle to be useful in the long run...
   // The basic idea is that all threads wait on all user handles plus
@@ -346,7 +348,7 @@ ACE_WFMO_Reactor_Handler_Repository::handles () const
 }
 
 ACE_INLINE ACE_WFMO_Reactor_Handler_Repository::Current_Info *
-ACE_WFMO_Reactor_Handler_Repository::current_info () const
+ACE_WFMO_Reactor_Handler_Repository::current_info (void) const
 {
   if (ACE_Thread::self () == this->wfmo_reactor_.owner_i ())
     return this->current_info_;
@@ -355,7 +357,7 @@ ACE_WFMO_Reactor_Handler_Repository::current_info () const
 }
 
 ACE_INLINE DWORD
-ACE_WFMO_Reactor_Handler_Repository::max_handlep1 () const
+ACE_WFMO_Reactor_Handler_Repository::max_handlep1 (void) const
 {
   if (ACE_Thread::self () == this->wfmo_reactor_.owner_i ())
     return this->max_handlep1_;
@@ -388,7 +390,7 @@ ACE_WFMO_Reactor_Handler_Repository::invalid_handle (ACE_HANDLE handle) const
 }
 
 ACE_INLINE bool
-ACE_WFMO_Reactor_Handler_Repository::changes_required ()
+ACE_WFMO_Reactor_Handler_Repository::changes_required (void)
 {
   // Check if handles have be scheduled for additions or removal
   return this->handles_to_be_added_ > 0
@@ -398,7 +400,7 @@ ACE_WFMO_Reactor_Handler_Repository::changes_required ()
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor_Handler_Repository::make_changes ()
+ACE_WFMO_Reactor_Handler_Repository::make_changes (void)
 {
   // This method must ONLY be called by the
   // <WFMO_Reactor->change_state_thread_>. We therefore assume that
@@ -721,7 +723,7 @@ ACE_WFMO_Reactor::suspend_handler (const ACE_Handle_Set &handles)
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::suspend_handlers ()
+ACE_WFMO_Reactor::suspend_handlers (void)
 {
   bool error = false;
   int result = 0;
@@ -816,7 +818,7 @@ ACE_WFMO_Reactor::resume_handler (const ACE_Handle_Set &handles)
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::resume_handlers ()
+ACE_WFMO_Reactor::resume_handlers (void)
 {
   bool error = false;
   int result = 0;
@@ -863,7 +865,7 @@ ACE_WFMO_Reactor::resume_handlers ()
 }
 
 ACE_INLINE bool
-ACE_WFMO_Reactor::uses_event_associations ()
+ACE_WFMO_Reactor::uses_event_associations (void)
 {
   // Since the WFMO_Reactor does use event associations, this function
   // always return 1.
@@ -895,7 +897,7 @@ ACE_WFMO_Reactor::alertable_handle_events (ACE_Time_Value *how_long)
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::deactivated ()
+ACE_WFMO_Reactor::deactivated (void)
 {
   return this->deactivated_;
 }
@@ -916,7 +918,7 @@ ACE_WFMO_Reactor::owner (ACE_thread_t *t)
 }
 
 ACE_INLINE ACE_thread_t
-ACE_WFMO_Reactor::owner_i ()
+ACE_WFMO_Reactor::owner_i (void)
 {
   return this->owner_;
 }
@@ -938,13 +940,13 @@ ACE_WFMO_Reactor::owner (ACE_thread_t new_owner, ACE_thread_t *old_owner)
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::new_owner ()
+ACE_WFMO_Reactor::new_owner (void)
 {
   return this->new_owner_ != ACE_thread_t (0);
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::change_owner ()
+ACE_WFMO_Reactor::change_owner (void)
 {
   this->owner_ = this->new_owner_;
   this->new_owner_ = ACE_thread_t (0);
@@ -968,13 +970,13 @@ ACE_WFMO_Reactor::safe_dispatch (DWORD wait_status)
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::dispatch_window_messages ()
+ACE_WFMO_Reactor::dispatch_window_messages (void)
 {
   return 0;
 }
 
 ACE_INLINE void
-ACE_WFMO_Reactor::wakeup_all_threads ()
+ACE_WFMO_Reactor::wakeup_all_threads (void)
 {
   this->wakeup_all_threads_.signal ();
 }
@@ -1095,14 +1097,14 @@ ACE_WFMO_Reactor::requeue_position (int)
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor::requeue_position ()
+ACE_WFMO_Reactor::requeue_position (void)
 {
   // Don't have an implementation for this yet...
   ACE_NOTSUP_RETURN (-1);
 }
 
 ACE_INLINE bool
-ACE_WFMO_Reactor::restart ()
+ACE_WFMO_Reactor::restart (void)
 {
   return false;
 }
@@ -1151,42 +1153,44 @@ ACE_WFMO_Reactor::handler (ACE_HANDLE handle,
 {
   ACE_GUARD_RETURN (ACE_Process_Mutex, ace_mon, this->lock_, -1);
 
-  return this->handler_rep_.handler (handle, mask, event_handler);
+  return this->handler_rep_.handler (handle,
+                                     mask,
+                                     event_handler);
 }
 
 ACE_INLINE bool
-ACE_WFMO_Reactor::initialized ()
+ACE_WFMO_Reactor::initialized (void)
 {
   return this->open_for_business_;
 }
 
 ACE_INLINE ACE_Lock &
-ACE_WFMO_Reactor::lock ()
+ACE_WFMO_Reactor::lock (void)
 {
   return this->lock_adapter_;
 }
 
 ACE_INLINE size_t
-ACE_WFMO_Reactor::size () const
+ACE_WFMO_Reactor::size (void) const
 {
   // Size of repository minus the 2 used for internal purposes
   return this->handler_rep_.max_size_ - 2;
 }
 #else
 ACE_INLINE bool
-ACE_WFMO_Reactor_Handler_Repository::changes_required ()
+ACE_WFMO_Reactor_Handler_Repository::changes_required (void)
 {
   return false;
 }
 
 ACE_INLINE int
-ACE_WFMO_Reactor_Handler_Repository::make_changes ()
+ACE_WFMO_Reactor_Handler_Repository::make_changes (void)
 {
   return 0;
 }
 
 ACE_INLINE
-ACE_WFMO_Reactor_Handler_Repository::~ACE_WFMO_Reactor_Handler_Repository ()
+ACE_WFMO_Reactor_Handler_Repository::~ACE_WFMO_Reactor_Handler_Repository (void)
 {
 }
 

@@ -161,7 +161,7 @@ public:
 # define ACE_MUTEX_PROCESS_LOCK_IS_SEMA
   ACE_sema_t process_sema_;
   typedef ACE_sema_t Process_Lock;
-#elif defined ACE_HAS_PTHREADS
+#elif defined ACE_HAS_PTHREADS || defined ACE_HAS_STHREADS
 # define ACE_MUTEX_USE_PROCESS_LOCK
 # define ACE_MUTEX_PROCESS_LOCK_IS_MUTEX
   typedef ACE_mutex_t Process_Lock;
@@ -190,8 +190,9 @@ public:
   bool removed_;
 
 private:
-  ACE_Mutex &operator= (const ACE_Mutex &) = delete;
-  ACE_Mutex (const ACE_Mutex &) = delete;
+  // Prevent assignment and initialization.
+  ACE_Mutex &operator= (const ACE_Mutex &);
+  ACE_Mutex (const ACE_Mutex &);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

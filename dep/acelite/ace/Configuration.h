@@ -67,19 +67,19 @@ class ACE_Export ACE_Section_Key_Internal
 {
 public:
   /// Virtual destructor, make sure descendants are virtual!
-  virtual ~ACE_Section_Key_Internal () = default;
+  virtual ~ACE_Section_Key_Internal (void);
 
   /// Increment reference count
-  virtual int add_ref ();
+  virtual int add_ref (void);
 
   /// Decrement reference count.  Will delete this if count gets to 0
-  virtual int dec_ref ();
+  virtual int dec_ref (void);
 protected:
-  ACE_Section_Key_Internal () = default;
+  ACE_Section_Key_Internal (void);
   ACE_Section_Key_Internal (const ACE_Section_Key_Internal& rhs);
   ACE_Section_Key_Internal& operator= (ACE_Section_Key_Internal& rhs);
 
-  u_int ref_count_ {};
+  u_int ref_count_;
 };
 
 /**
@@ -96,7 +96,7 @@ class ACE_Export ACE_Configuration_Section_Key
   friend class ACE_Configuration;
 public:
   /// Default constructor.
-  ACE_Configuration_Section_Key () = default;
+  ACE_Configuration_Section_Key (void);
 
   /// Constructor that initializes to a pointer to a concrete internal key.
   /**
@@ -108,13 +108,14 @@ public:
   ACE_Configuration_Section_Key (const ACE_Configuration_Section_Key &rhs);
 
   /// Destructor, decrements reference count on the referenced key.
-  ~ACE_Configuration_Section_Key ();
+  ~ACE_Configuration_Section_Key (void);
 
   /// Assignment operator, increments reference count for this object
   /// and decrements it on @a rhs.
-  ACE_Configuration_Section_Key &operator= (const ACE_Configuration_Section_Key &rhs);
+  ACE_Configuration_Section_Key &
+    operator= (const ACE_Configuration_Section_Key &rhs);
 private:
-  ACE_Section_Key_Internal *key_ {};
+  ACE_Section_Key_Internal *key_;
 };
 
 /**
@@ -143,14 +144,14 @@ public:
   };
 
   /// Destructor
-  virtual ~ACE_Configuration () = default;
+  virtual ~ACE_Configuration (void);
 
   /// Obtain a reference to the root section of this configuration.
   /*
    * @return Reference to the configuration's root section. Note that
    *         it is a const reference.
    */
-  virtual const ACE_Configuration_Section_Key& root_section () const;
+  virtual const ACE_Configuration_Section_Key& root_section (void) const;
 
   /**
    * Opens a named section in an existing section.
@@ -377,7 +378,7 @@ public:
 
 protected:
   /// Default ctor
-  ACE_Configuration ();
+  ACE_Configuration (void);
 
   /// Resolves the internal key from a section key
   ACE_Section_Key_Internal* get_internal_key
@@ -404,10 +405,11 @@ protected:
   ACE_Configuration (const ACE_Configuration& rhs);
   ACE_Configuration& operator= (const ACE_Configuration& rhs);
 
+
   ACE_Configuration_Section_Key root_;
 };
 
-#if defined (ACE_WIN32)
+#if defined (ACE_WIN32) && !defined (ACE_LACKS_WIN32_REGISTRY)
 
 /**
  * @class ACE_Section_Key_Win32
@@ -426,7 +428,7 @@ public:
 
 protected:
   /// Destructor - invokes <RegCloseKey>
-  virtual ~ACE_Section_Key_Win32 ();
+  virtual ~ACE_Section_Key_Win32 (void);
 
   // Not used
   ACE_Section_Key_Win32 (const ACE_Section_Key_Win32& rhs);
@@ -454,7 +456,7 @@ public:
                                             u_long security_access = KEY_ALL_ACCESS);
 
   /// Destructor
-  virtual ~ACE_Configuration_Win32Registry ();
+  virtual ~ACE_Configuration_Win32Registry (void);
 
   virtual int open_section (const ACE_Configuration_Section_Key& base,
                             const ACE_TCHAR* sub_section,
@@ -524,17 +526,18 @@ public:
   virtual bool operator!= (const ACE_Configuration_Win32Registry &rhs) const;
 
 protected:
+
   /// Gets the HKEY for a configuration section
   int load_key (const ACE_Configuration_Section_Key& key, HKEY& hKey);
 
   // Not used
-  ACE_Configuration_Win32Registry ();
+  ACE_Configuration_Win32Registry (void);
   ACE_Configuration_Win32Registry (const ACE_Configuration_Win32Registry& rhs);
   ACE_Configuration_Win32Registry& operator= (const ACE_Configuration_Win32Registry& rhs);
 
   const u_long security_access_;
 };
-#endif /* ACE_WIN32 */
+#endif /* ACE_WIN32 && !ACE_LACKS_WIN32_REGISTRY */
 
 // ACE_Allocator version
 
@@ -556,7 +559,7 @@ class ACE_Export ACE_Configuration_ExtId
 {
 public:
   /// Defeault ctor
-  ACE_Configuration_ExtId () = default;
+  ACE_Configuration_ExtId (void);
 
   /// Named constructor
   explicit ACE_Configuration_ExtId (const ACE_TCHAR* name);
@@ -565,7 +568,7 @@ public:
   ACE_Configuration_ExtId (const ACE_Configuration_ExtId& rhs);
 
   /// destructor
-  ~ACE_Configuration_ExtId () = default;
+  ~ACE_Configuration_ExtId (void);
 
   /// Assignment operator
   ACE_Configuration_ExtId& operator= (const ACE_Configuration_ExtId& rhs);
@@ -582,13 +585,14 @@ public:
 
   /// hash function is required in order for this class to be usable by
   /// ACE_Hash_Map_Manager.
-  u_long hash  () const;
+  u_long hash  (void) const;
 
   // = Data members.
-  const ACE_TCHAR * name_ {};
+
+  const ACE_TCHAR * name_;
 
   // Accessors
-  const ACE_TCHAR *name ();
+  const ACE_TCHAR *name (void);
 };
 
 typedef ACE_Hash_Map_With_Allocator<ACE_Configuration_ExtId, int>
@@ -612,7 +616,7 @@ class ACE_Export ACE_Configuration_Value_IntId
 {
 public:
   /// Default constructor
-  ACE_Configuration_Value_IntId ();
+  ACE_Configuration_Value_IntId (void);
 
   /// String constructor, takes ownership of string
   explicit ACE_Configuration_Value_IntId (ACE_TCHAR* string);
@@ -627,7 +631,7 @@ public:
   ACE_Configuration_Value_IntId (const ACE_Configuration_Value_IntId& rhs);
 
   /// Destructor
-  ~ACE_Configuration_Value_IntId ();
+  ~ACE_Configuration_Value_IntId (void);
 
   /// Assignment operator
   ACE_Configuration_Value_IntId& operator= (
@@ -673,7 +677,7 @@ class ACE_Export ACE_Configuration_Section_IntId
 {
 public:
   /// Default ctor
-  ACE_Configuration_Section_IntId ();
+  ACE_Configuration_Section_IntId (void);
 
   /// Named ctor
   ACE_Configuration_Section_IntId (VALUE_MAP* value_hash_map,
@@ -683,7 +687,7 @@ public:
   ACE_Configuration_Section_IntId (const ACE_Configuration_Section_IntId& rhs);
 
   /// Destructor
-  ~ACE_Configuration_Section_IntId ();
+  ~ACE_Configuration_Section_IntId (void);
 
   /// Assignment operator
   ACE_Configuration_Section_IntId& operator= (
@@ -739,7 +743,7 @@ public:
 
 protected:
   /// Destructor - will delete the iterators
-  virtual ~ACE_Configuration_Section_Key_Heap ();
+  virtual ~ACE_Configuration_Section_Key_Heap (void);
 
   // Not used
   ACE_Configuration_Section_Key_Heap (const ACE_Configuration_Section_Key_Heap& rhs);
@@ -766,10 +770,10 @@ class ACE_Export ACE_Configuration_Heap : public ACE_Configuration
 {
 public:
   /// Default ctor
-  ACE_Configuration_Heap ();
+  ACE_Configuration_Heap (void);
 
   /// Destructor
-  virtual ~ACE_Configuration_Heap ();
+  virtual ~ACE_Configuration_Heap (void);
 
   /**
    * Opens a configuration that allocates its memory from a memory-mapped file.
@@ -866,7 +870,7 @@ private:
                    ACE_Configuration_Section_Key &result);
 
   /// Helper for the <open> method.
-  int create_index ();
+  int create_index (void);
 
   /// Helper for create_index() method: places hash table into an
   /// allocated space.

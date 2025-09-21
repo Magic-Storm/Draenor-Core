@@ -38,13 +38,13 @@ namespace ACE
     class MONITOR_CONTROL_Export Null_Network_Interface_Monitor
     {
     protected:
-      Null_Network_Interface_Monitor ();
+      Null_Network_Interface_Monitor (void);
 
       /// Platform-specific implementation.
-      void update_i ();
+      void update_i (void);
 
       /// Platform-specific reset.
-      void clear_impl ();
+      void clear_impl (void);
 
     protected:
       ACE_UINT64 value_;

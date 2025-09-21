@@ -43,17 +43,18 @@ class ACE_Mutex_Token;
  */
 class ACE_Export ACE_Token_Manager : public ACE_Cleanup
 {
+
   //   To add a new type of token (e.g. semaphore), do the following
   //   steps: 1. Create a new derivation of ACE_Token.  This class
   //   defines the semantics of the new Token.  2.  Create a
   //   derivation of ACE_Token_Manager.  You will only need to
   //   redefine make_mutex.
 public:
-  ACE_Token_Manager ();
-  virtual ~ACE_Token_Manager ();
+  ACE_Token_Manager (void);
+  virtual ~ACE_Token_Manager (void);
 
   /// Get the pointer to token manager singleton.
-  static ACE_Token_Manager *instance ();
+  static ACE_Token_Manager *instance (void);
 
   /// Set the pointer to token manager singleton.
   void instance (ACE_Token_Manager *);
@@ -89,7 +90,7 @@ public:
    * This is necessary since safe_acquire is implemented in terms of
    * the Token queues.
    */
-  ACE_TOKEN_CONST::MUTEX &mutex ();
+  ACE_TOKEN_CONST::MUTEX &mutex (void);
 
   /// Dump the state of the class.
   void dump () const;

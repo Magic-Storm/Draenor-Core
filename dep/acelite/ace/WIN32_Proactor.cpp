@@ -21,6 +21,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
  */
 class ACE_WIN32_Wakeup_Completion : public ACE_WIN32_Asynch_Result
 {
+
 public:
   /// Constructor.
   ACE_WIN32_Wakeup_Completion (ACE_Handler::Proxy_Ptr &handler_proxy,
@@ -30,7 +31,7 @@ public:
                                int signal_number = ACE_SIGRTMIN);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Wakeup_Completion ();
+  virtual ~ACE_WIN32_Wakeup_Completion (void);
 
   /// This method calls the <handler>'s <handle_wakeup> method.
   virtual void complete (size_t bytes_transferred = 0,
@@ -59,7 +60,7 @@ ACE_WIN32_Proactor::ACE_WIN32_Proactor (size_t number_of_threads,
   this->get_asynch_pseudo_task ().start ();
 }
 
-ACE_WIN32_Proactor::~ACE_WIN32_Proactor ()
+ACE_WIN32_Proactor::~ACE_WIN32_Proactor (void)
 {
   this->get_asynch_pseudo_task ().stop ();
 
@@ -73,7 +74,7 @@ ACE_WIN32_Proactor::get_asynch_pseudo_task ()
 }
 
 int
-ACE_WIN32_Proactor::close ()
+ACE_WIN32_Proactor::close (void)
 {
   // Close the completion port
   if (this->completion_port_ != 0)
@@ -142,7 +143,7 @@ ACE_WIN32_Proactor::register_handle (ACE_HANDLE handle,
 }
 
 ACE_Asynch_Read_Stream_Impl *
-ACE_WIN32_Proactor::create_asynch_read_stream ()
+ACE_WIN32_Proactor::create_asynch_read_stream (void)
 {
   ACE_Asynch_Read_Stream_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -152,7 +153,7 @@ ACE_WIN32_Proactor::create_asynch_read_stream ()
 }
 
 ACE_Asynch_Write_Stream_Impl *
-ACE_WIN32_Proactor::create_asynch_write_stream ()
+ACE_WIN32_Proactor::create_asynch_write_stream (void)
 {
   ACE_Asynch_Write_Stream_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -162,7 +163,7 @@ ACE_WIN32_Proactor::create_asynch_write_stream ()
 }
 
 ACE_Asynch_Read_Dgram_Impl *
-ACE_WIN32_Proactor::create_asynch_read_dgram ()
+ACE_WIN32_Proactor::create_asynch_read_dgram (void)
 {
   ACE_Asynch_Read_Dgram_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -172,7 +173,7 @@ ACE_WIN32_Proactor::create_asynch_read_dgram ()
 }
 
 ACE_Asynch_Write_Dgram_Impl *
-ACE_WIN32_Proactor::create_asynch_write_dgram ()
+ACE_WIN32_Proactor::create_asynch_write_dgram (void)
 {
   ACE_Asynch_Write_Dgram_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -182,7 +183,7 @@ ACE_WIN32_Proactor::create_asynch_write_dgram ()
 }
 
 ACE_Asynch_Read_File_Impl *
-ACE_WIN32_Proactor::create_asynch_read_file ()
+ACE_WIN32_Proactor::create_asynch_read_file (void)
 {
   ACE_Asynch_Read_File_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -192,7 +193,7 @@ ACE_WIN32_Proactor::create_asynch_read_file ()
 }
 
 ACE_Asynch_Write_File_Impl *
-ACE_WIN32_Proactor::create_asynch_write_file ()
+ACE_WIN32_Proactor::create_asynch_write_file (void)
 {
   ACE_Asynch_Write_File_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -202,7 +203,7 @@ ACE_WIN32_Proactor::create_asynch_write_file ()
 }
 
 ACE_Asynch_Accept_Impl *
-ACE_WIN32_Proactor::create_asynch_accept ()
+ACE_WIN32_Proactor::create_asynch_accept (void)
 {
   ACE_Asynch_Accept_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -212,7 +213,7 @@ ACE_WIN32_Proactor::create_asynch_accept ()
 }
 
 ACE_Asynch_Connect_Impl *
-ACE_WIN32_Proactor::create_asynch_connect ()
+ACE_WIN32_Proactor::create_asynch_connect (void)
 {
   ACE_Asynch_Connect_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -222,7 +223,7 @@ ACE_WIN32_Proactor::create_asynch_connect ()
 }
 
 ACE_Asynch_Transmit_File_Impl *
-ACE_WIN32_Proactor::create_asynch_transmit_file ()
+ACE_WIN32_Proactor::create_asynch_transmit_file (void)
 {
   ACE_Asynch_Transmit_File_Impl *implementation = 0;
   ACE_NEW_RETURN (implementation,
@@ -532,7 +533,7 @@ ACE_WIN32_Proactor::handle_close (ACE_HANDLE handle,
 }
 
 ACE_HANDLE
-ACE_WIN32_Proactor::get_handle () const
+ACE_WIN32_Proactor::get_handle (void) const
 {
   if (this->used_with_reactor_event_loop_)
     return this->event_.handle ();
@@ -549,7 +550,7 @@ ACE_WIN32_Proactor::handle_events (ACE_Time_Value &wait_time)
 }
 
 int
-ACE_WIN32_Proactor::handle_events ()
+ACE_WIN32_Proactor::handle_events (void)
 {
   return this->handle_events (ACE_INFINITE);
 }
@@ -721,7 +722,7 @@ ACE_WIN32_Proactor::post_wakeup_completions (int how_many)
 }
 
 int
-ACE_WIN32_Proactor::wake_up_dispatch_threads ()
+ACE_WIN32_Proactor::wake_up_dispatch_threads (void)
 {
   return 0;
 }
@@ -733,7 +734,7 @@ ACE_WIN32_Proactor::close_dispatch_threads (int)
 }
 
 size_t
-ACE_WIN32_Proactor::number_of_threads () const
+ACE_WIN32_Proactor::number_of_threads (void) const
 {
   return static_cast<size_t> (this->number_of_threads_);
 }
@@ -781,7 +782,7 @@ ACE_WIN32_Wakeup_Completion::ACE_WIN32_Wakeup_Completion
 {
 }
 
-ACE_WIN32_Wakeup_Completion::~ACE_WIN32_Wakeup_Completion ()
+ACE_WIN32_Wakeup_Completion::~ACE_WIN32_Wakeup_Completion (void)
 {
 }
 

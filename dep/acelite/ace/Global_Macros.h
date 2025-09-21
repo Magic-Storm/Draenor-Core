@@ -57,9 +57,9 @@
 # define ACE_SET_BITS(WORD, BITS) (WORD |= (BITS))
 # define ACE_CLR_BITS(WORD, BITS) (WORD &= ~(BITS))
 
-#if !defined (ACE_HAS_CPP14)
-# error ACE/TAO require C++14 compliance, please upgrade your compiler and/or fix the platform configuration for your environment
-#endif
+#if !defined (ACE_HAS_CPP11)
+# error ACE/TAO require C++11 compliance, please upgrade your compiler and/or fix the platform configuration for your environment
+#endif /* !ACE_HAS_CPP11 */
 
 #define ACE_UNIMPLEMENTED_FUNC(f) f = delete;
 
@@ -559,7 +559,27 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
  */
 # define ACE_Local_Service_Export
 
-#define ACE_FACTORY_DEFINE(CLS,SERVICE_CLASS) \
+#if defined (ACE_OPENVMS)
+# define ACE_PREPROC_STRINGIFY(A) #A
+# define ACE_MAKE_SVC_REGISTRAR_ARG(A) ACE_PREPROC_STRINGIFY(A), (void*)&A
+# define ACE_FACTORY_DEFINE(CLS,SERVICE_CLASS) \
+void ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (void *p) { \
+  ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object * _p = \
+    static_cast< ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object *> (p); \
+  ACE_ASSERT (_p != 0); \
+  delete _p; } \
+extern "C" CLS##_Export ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object *\
+ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (ACE_Service_Object_Exterminator *gobbler) \
+{ \
+  ACE_TRACE (#SERVICE_CLASS); \
+  if (gobbler != 0) \
+    *gobbler = (ACE_Service_Object_Exterminator) ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS); \
+  return new SERVICE_CLASS; \
+} \
+ACE_Dynamic_Svc_Registrar ace_svc_reg_##SERVICE_CLASS \
+  (ACE_MAKE_SVC_REGISTRAR_ARG(ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS)));
+#else
+# define ACE_FACTORY_DEFINE(CLS,SERVICE_CLASS) \
 void ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (void *p) { \
   ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object * _p = \
     static_cast< ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object *> (p); \
@@ -573,6 +593,7 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
     *gobbler = (ACE_Service_Object_Exterminator) ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS); \
   return new SERVICE_CLASS; \
 }
+#endif
 
 /**
  * For service classes scoped within namespaces, use this macro in
@@ -600,7 +621,27 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
  * this will ensure unique generated signatures for the various C
  * style functions.
  */
-#define ACE_FACTORY_NAMESPACE_DEFINE(CLS,SERVICE_CLASS,NAMESPACE_CLASS) \
+#if defined (ACE_OPENVMS)
+# define ACE_PREPROC_STRINGIFY(A) #A
+# define ACE_MAKE_SVC_REGISTRAR_ARG(A) ACE_PREPROC_STRINGIFY(A), (void*)&A
+# define ACE_FACTORY_NAMESPACE_DEFINE(CLS,SERVICE_CLASS,NAMESPACE_CLASS) \
+void ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (void *p) { \
+  ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object * _p = \
+    static_cast< ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object *> (p); \
+  ACE_ASSERT (_p != 0); \
+  delete _p; } \
+extern "C" CLS##_Export ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object *\
+ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (ACE_Service_Object_Exterminator *gobbler) \
+{ \
+  ACE_TRACE (#SERVICE_CLASS); \
+  if (gobbler != 0) \
+    *gobbler = (ACE_Service_Object_Exterminator) ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS); \
+  return new NAMESPACE_CLASS; \
+} \
+ACE_Dynamic_Svc_Registrar ace_svc_reg_##SERVICE_CLASS \
+  (ACE_MAKE_SVC_REGISTRAR_ARG(ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS)));
+#else
+# define ACE_FACTORY_NAMESPACE_DEFINE(CLS,SERVICE_CLASS,NAMESPACE_CLASS) \
 void ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (void *p) { \
   ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object * _p = \
     static_cast< ACE_VERSIONED_NAMESPACE_NAME::ACE_Service_Object *> (p); \
@@ -614,6 +655,7 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
     *gobbler = (ACE_Service_Object_Exterminator) ACE_MAKE_SVC_CONFIG_GOBBLER_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS); \
   return new NAMESPACE_CLASS; \
 }
+#endif
 
 /// The canonical name for a service factory method
 # define ACE_SVC_NAME(SERVICE_CLASS) ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS)
@@ -634,7 +676,20 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
 # define ACE_SVC_FACTORY_DEFINE(X) ACE_FACTORY_DEFINE (ACE_Svc, X)
 //@}
 
-#if !defined (ACE_WIN32)
+#if defined (ACE_WIN32)
+// These are used in SPIPE_Acceptor/Connector, but are ignored at runtime.
+#   if defined (ACE_HAS_WINCE)
+#     if !defined (PIPE_TYPE_MESSAGE)
+#       define PIPE_TYPE_MESSAGE  0
+#     endif
+#     if !defined (PIPE_READMODE_MESSAGE)
+#       define PIPE_READMODE_MESSAGE  0
+#     endif
+#     if !defined (PIPE_WAIT)
+#       define PIPE_WAIT  0
+#     endif
+#   endif /* ACE_HAS_WINCE */
+#else /* !ACE_WIN32 */
 // Add some typedefs and macros to enhance Win32 conformance...
 #   if !defined (LPSECURITY_ATTRIBUTES)
 #     define LPSECURITY_ATTRIBUTES int
@@ -681,7 +736,8 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
 #   if !defined(PIPE_TYPE_MESSAGE)
 #     define PIPE_TYPE_MESSAGE 0
 #   endif /* !defined PIPE_TYPE_MESSAGE */
-#endif /* !ACE_WIN32 */
+#endif /* ACE_WIN32 */
+
 
 // Some useful abstractions for expressions involving
 // ACE_Allocator.malloc ().  The difference between ACE_NEW_MALLOC*
@@ -750,20 +806,24 @@ ACE_MAKE_SVC_CONFIG_FACTORY_NAME(ACE_VERSIONED_NAMESPACE_NAME,SERVICE_CLASS) (AC
 // This is being placed here temporarily to help stabilize the builds, but will
 // be moved out along with the above macros as part of the subsetting.  dhinton
 #if !defined (ACE_LACKS_NEW_H)
-#  include /**/ <new>
+#  if defined (ACE_USES_STD_NAMESPACE_FOR_STDCPP_LIB)
+#    include /**/ <new>
+#  else
+#    include /**/ <new.h>
+#  endif /* ACE_USES_STD_NAMESPACE_FOR_STDCPP_LIB */
 #endif /* ! ACE_LACKS_NEW_H */
 
 # define ACE_NOOP(x)
 
-#if defined (ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS)
+#if defined (ACE_WIN32) && defined (ACE_HAS_WIN32_STRUCTURAL_EXCEPTIONS)
 # define ACE_SEH_TRY __try
 # define ACE_SEH_EXCEPT(X) __except(X)
 # define ACE_SEH_FINALLY __finally
-#else /* !ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS */
+#else /* !ACE_WIN32 */
 # define ACE_SEH_TRY if (1)
 # define ACE_SEH_EXCEPT(X) while (0)
 # define ACE_SEH_FINALLY if (1)
-#endif /* ACE_HAS_WIN32_STRUCTURED_EXCEPTIONS */
+#endif /* ACE_WIN32 */
 
 // Handle ACE_Message_Queue.
 #   define ACE_SYNCH_DECL typename _ACE_SYNCH

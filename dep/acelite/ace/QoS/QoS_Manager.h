@@ -40,12 +40,13 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
  */
 class ACE_QoS_Export ACE_QoS_Manager
 {
+
 public:
   /// Default constructor.
-  ACE_QoS_Manager ();
+  ACE_QoS_Manager (void);
 
   /// Default destructor.
-  ~ACE_QoS_Manager ();
+  ~ACE_QoS_Manager (void);
 
   /**
    * Join the given QoS session. A socket can join multiple QoS
@@ -57,9 +58,10 @@ public:
   typedef ACE_Unbounded_Set <ACE_QoS_Session *> ACE_QOS_SESSION_SET;
 
   /// Get the QoS session set.
-  ACE_QOS_SESSION_SET qos_session_set ();
+  ACE_QOS_SESSION_SET qos_session_set (void);
 
 private:
+
   /// Set of QoS sessions that this socket has joined.
   ACE_QOS_SESSION_SET qos_session_set_;
 };

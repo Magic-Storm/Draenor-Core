@@ -126,7 +126,7 @@ public:
    * @note The destructor will not release an acquired mutex except
    * on Windows.
    */
-  ~ACE_Process_Mutex ();
+  ~ACE_Process_Mutex (void);
 
   /**
    * Explicitly destroy the mutex.  Note that only one thread should
@@ -135,14 +135,14 @@ public:
    *
    * @return 0 on success; -1 on failure.
    */
-  int remove ();
+  int remove (void);
 
   /**
    * Acquire lock ownership (wait on queue if necessary).
    *
    * @return 0 on success; -1 on failure.
    */
-  int acquire ();
+  int acquire (void);
 
   /**
    * Acquire lock ownership, but timeout if lock if hasn't been
@@ -161,41 +161,41 @@ public:
    * @return 0 on success; -1 on failure.  If the lock could not be acquired
    * because someone else already had the lock, @c errno is set to @c EBUSY.
    */
-  int tryacquire ();
+  int tryacquire (void);
 
   /// Release lock and unblock a thread at head of queue.
-  int release ();
+  int release (void);
 
   /// Acquire lock ownership (wait on queue if necessary).
-  int acquire_read ();
+  int acquire_read (void);
 
   /// Acquire lock ownership (wait on queue if necessary).
-  int acquire_write ();
+  int acquire_write (void);
 
   /**
    * Conditionally acquire a lock (i.e., won't block).  Returns -1 on
    * failure.  If we "failed" because someone else already had the
    * lock, @c errno is set to @c EBUSY.
    */
-  int tryacquire_read ();
+  int tryacquire_read (void);
 
   /**
    * Conditionally acquire a lock (i.e., won't block).  Returns -1 on
    * failure.  If we "failed" because someone else already had the
    * lock, @c errno is set to @c EBUSY.
    */
-  int tryacquire_write ();
+  int tryacquire_write (void);
 
   /**
    * This is only here for consistency with the other synchronization
    * APIs and usability with Lock adapters. Assumes the caller already has
    * acquired the mutex and returns 0 in all cases.
    */
-  int tryacquire_write_upgrade ();
+  int tryacquire_write_upgrade (void);
 
 #if !defined (_ACE_USE_SV_SEM)
   /// Return the underlying mutex.
-  const ACE_mutex_t &lock () const;
+  const ACE_mutex_t &lock (void) const;
 #endif /* !_ACE_USE_SV_SEM */
 
   /// Get the name used for the lock, or null if no name is used.
@@ -217,7 +217,7 @@ private:
   ACE_TCHAR name_[ACE_UNIQUE_NAME_LEN];
 
   /// Create and return the unique name.
-  const ACE_TCHAR *unique_name ();
+  const ACE_TCHAR *unique_name (void);
 
 #if defined (_ACE_USE_SV_SEM)
   /// We need this to get the right semantics...

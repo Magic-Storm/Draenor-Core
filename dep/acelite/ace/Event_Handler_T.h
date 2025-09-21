@@ -63,7 +63,7 @@ public:
   // = Typedefs to simplify pointer-to-member-function registration.
 
   // Get/set the underlying handle.
-  typedef ACE_HANDLE (T::*GET_HANDLE) () const;
+  typedef ACE_HANDLE (T::*GET_HANDLE) (void) const;
   typedef void (T::*SET_HANDLE) (ACE_HANDLE);
 
   /// Handle I/O events.
@@ -90,12 +90,12 @@ public:
                        IO_HANDLER except = 0);
 
   /// Close down and delete the <op_handler>
-  ~ACE_Event_Handler_T ();
+  ~ACE_Event_Handler_T (void);
 
   // = Override all the ACE_Event_Handler methods.
 
   // These methods all delegate down to the <T> operations handler.
-  virtual ACE_HANDLE get_handle () const;
+  virtual ACE_HANDLE get_handle (void) const;
   virtual void set_handle (ACE_HANDLE);
   virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
   virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
@@ -105,33 +105,33 @@ public:
   virtual int handle_signal (int signum, siginfo_t * = 0, ucontext_t * = 0);
 
   // = Get/set the operations handler.
-  T *op_handler ();
+  T *op_handler (void);
   void op_handler (T *);
 
   // = Get/set the target pointer-to-method used for dispatching.
 
-  GET_HANDLE handle_get ();
+  GET_HANDLE handle_get (void);
   void handle_get (GET_HANDLE);
 
-  SET_HANDLE handle_set ();
+  SET_HANDLE handle_set (void);
   void handle_set (SET_HANDLE);
 
-  IO_HANDLER input_handler ();
+  IO_HANDLER input_handler (void);
   void input_handler (IO_HANDLER);
 
-  IO_HANDLER output_handler ();
+  IO_HANDLER output_handler (void);
   void output_handler (IO_HANDLER);
 
-  IO_HANDLER except_handler ();
+  IO_HANDLER except_handler (void);
   void except_handler (IO_HANDLER);
 
-  TO_HANDLER to_handler ();
+  TO_HANDLER to_handler (void);
   void to_handler (TO_HANDLER);
 
-  CL_HANDLER cl_handler ();
+  CL_HANDLER cl_handler (void);
   void cl_handler (CL_HANDLER);
 
-  SIG_HANDLER sig_handler ();
+  SIG_HANDLER sig_handler (void);
   void sig_handler (SIG_HANDLER);
 
   /// Dump the state of an object.
@@ -173,7 +173,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/Event_Handler_T.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Event_Handler_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Event_Handler_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_EVENT_HANDLER_H */

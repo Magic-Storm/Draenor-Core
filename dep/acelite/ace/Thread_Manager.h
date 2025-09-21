@@ -164,6 +164,7 @@ protected:
  */
 class ACE_Export ACE_Thread_Descriptor_Base : public ACE_OS_Thread_Descriptor
 {
+
   friend class ACE_Thread_Manager;
   friend class ACE_Double_Linked_List<ACE_Thread_Descriptor_Base>;
   friend class ACE_Double_Linked_List_Iterator_Base<ACE_Thread_Descriptor_Base>;
@@ -202,7 +203,7 @@ protected:
   /// Unique thread ID.
   ACE_thread_t thr_id_;
 
-  /// Unique handle to thread (used by Win32).
+  /// Unique handle to thread (used by Win32 and AIX).
   ACE_hthread_t thr_handle_;
 
   /// Group ID.
@@ -240,7 +241,7 @@ public:
   /// Unique thread id.
   ACE_thread_t self () const;
 
-  /// Unique handle to thread (used by Win32).
+  /// Unique handle to thread (used by Win32 and AIX).
   void self (ACE_hthread_t &);
 
   /// Dump the state of an object.
@@ -781,6 +782,7 @@ public:
    * does not support these functions.
    */
   //@{
+
   /// Suspend all threads
   int suspend_all ();
 

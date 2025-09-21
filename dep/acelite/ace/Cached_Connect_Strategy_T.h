@@ -57,10 +57,10 @@ public:
     int delete_lock = 0);
 
   /// Destructor
-  virtual ~ACE_Cached_Connect_Strategy_Ex ();
+  virtual ~ACE_Cached_Connect_Strategy_Ex (void);
 
   /// Explicit purging of connection entries from the connection cache.
-  virtual int purge_connections ();
+  virtual int purge_connections (void);
 
   /// Mark as closed (non-locking version). This is used during the cleanup of the
   /// connections purged.
@@ -71,7 +71,7 @@ public:
    * method had to be devised to avoid memory leaks and perform
    * cleanup of the <connection_cache_>.
    */
-  void cleanup ();
+  void cleanup (void);
 
   // = Typedefs for managing the map
   typedef ACE_Refcounted_Hash_Recyclable<ACE_PEER_CONNECTOR_ADDR>
@@ -100,7 +100,7 @@ public:
           CCSBASE;
 
   // = Accessor.
-  CACHING_STRATEGY &caching_strategy ();
+  CACHING_STRATEGY &caching_strategy (void);
 
   /// Declare the dynamic allocation hooks.
   ACE_ALLOC_HOOK_DECLARE;
@@ -223,7 +223,7 @@ public:
                                        int delete_lock = 0);
 
   /// Destructor
-  virtual ~ACE_Bounded_Cached_Connect_Strategy () = default;
+  virtual ~ACE_Bounded_Cached_Connect_Strategy (void);
 
   /// Declare the dynamic allocation hooks.
   ACE_ALLOC_HOOK_DECLARE;
@@ -247,7 +247,13 @@ protected:
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Cached_Connect_Strategy_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Cached_Connect_Strategy_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* CACHED_CONNECT_STRATEGY_T_H */

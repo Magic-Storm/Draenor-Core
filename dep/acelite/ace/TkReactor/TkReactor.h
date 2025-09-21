@@ -63,7 +63,7 @@ public:
                  bool restart = false,
                  ACE_Sig_Handler * = 0);
 
-  virtual ~ACE_TkReactor ();
+  virtual ~ACE_TkReactor (void);
 
   // = Timer operations.
   virtual long schedule_timer (ACE_Event_Handler *event_handler,
@@ -116,7 +116,7 @@ protected:
 private:
   /// This method ensures there's a Tk timeout for the first timeout in
   /// the Reactor's Timer_Queue.
-  void reset_timeout ();
+  void reset_timeout (void);
 
   // = Integrate with the X callback function mechanism.
   static void TimerCallbackProc (ClientData cd);

@@ -54,17 +54,17 @@ public:
   typedef ACE_Rusage Rusage;
 
   /// Default constructor. Clears all time values to 0.
-  ACE_Profile_Timer ();
+  ACE_Profile_Timer (void);
 
   /// Shutdown the timer.
-  ~ACE_Profile_Timer ();
+  ~ACE_Profile_Timer (void);
 
   // = Timer methods.
   /// Activate the timer.
-  int start ();
+  int start (void);
 
   /// Stop the timer.
-  int stop ();
+  int stop (void);
 
   // = Resource utilization methods.
   /// Compute the time elapsed between calls to @c start() and @c stop().
@@ -96,7 +96,14 @@ private:
   /// Keep track of the last rusage for incremental timing.
   ACE_Profile_Timer::Rusage last_usage_;
 
-#if defined (ACE_HAS_GETRUSAGE)
+#if defined (ACE_HAS_PRUSAGE_T)
+  /// Subtract two timestructs and store their difference.
+  void subtract (timespec_t &tdiff, timespec_t &t0, timespec_t &t1);
+
+  /// I/O handle for /proc file system.
+  ACE_HANDLE proc_handle_;
+
+#elif defined (ACE_HAS_GETRUSAGE)
   /// Subtract two timestructs and store their difference.
   void subtract (timeval &tdiff,
                  timeval &t0,
@@ -110,12 +117,12 @@ private:
 
   /// Keep track of the last time for incremental timing.
   timeval last_time_;
-#endif /* ACE_HAS_GETRUSAGE */
+#endif /* ACE_HAS_PRUSAGE_T */
 
-#if defined (ACE_WIN32) || !defined (ACE_HAS_GETRUSAGE)
+#if defined (ACE_WIN32) || (!defined (ACE_HAS_PRUSAGE_T) && !defined (ACE_HAS_GETRUSAGE))
   /// The high resolution timer
   ACE_High_Res_Timer timer_;
-#endif /* ACE_WIN32 || !ACE_HAS_GETRUSAGE */
+#endif /* ACE_WIN32 || !ACE_HAS_PRUSAGE_T && !ACE_HAS_GETRUSAGE */
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

@@ -162,7 +162,7 @@ public:
   const char *value () const;
 
   // = The Constraint methods.
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   /// The value
@@ -183,7 +183,7 @@ public:
   ETCL_Literal_Constraint *integer () const;
   ETCL_Literal_Constraint *string () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   int sign_;
@@ -201,7 +201,7 @@ public:
   ETCL_Union_Value *union_value () const;
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Union_Value *union_value_;
@@ -218,7 +218,7 @@ public:
   ETCL_Literal_Constraint *integer () const;
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Literal_Constraint *integer_;
@@ -235,7 +235,7 @@ public:
   ETCL_Identifier *identifier () const;
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Identifier *identifier_;
@@ -252,7 +252,7 @@ public:
   ETCL_Literal_Constraint *integer () const;
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Literal_Constraint *integer_;
@@ -262,16 +262,16 @@ private:
 class ACE_ETCL_Export ETCL_Special : public ETCL_Constraint
 {
 public:
-  ETCL_Special () = default;
+  ETCL_Special ();
   ETCL_Special (int type);
-  ~ETCL_Special () override = default;
+  virtual ~ETCL_Special ();
 
   int type () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
-  int type_ {};
+  int type_;
 };
 
 class ACE_ETCL_Export ETCL_Component : public ETCL_Constraint
@@ -284,7 +284,7 @@ public:
   ETCL_Identifier *identifier () const;
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Identifier *identifier_;
@@ -299,7 +299,7 @@ public:
 
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Constraint *component_;
@@ -313,7 +313,7 @@ public:
 
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Constraint *component_;
@@ -327,7 +327,7 @@ public:
 
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Constraint *component_;
@@ -341,7 +341,7 @@ public:
 
   ETCL_Constraint *component () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   ETCL_Constraint *component_;
@@ -357,7 +357,7 @@ public:
   int type () const;
   ETCL_Constraint *subexpr () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   int type_;
@@ -376,7 +376,7 @@ public:
   ETCL_Constraint *rhs () const;
   ETCL_Constraint *lhs () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
   int type_;
@@ -387,7 +387,7 @@ private:
 class ACE_ETCL_Export ETCL_Preference : public ETCL_Constraint
 {
 public:
-  ETCL_Preference () = default;
+  ETCL_Preference ();
   ETCL_Preference (int type,
                    ETCL_Constraint *subexpr = 0);
   virtual ~ETCL_Preference ();
@@ -395,11 +395,11 @@ public:
   int type () const;
   ETCL_Constraint *subexpr () const;
 
-  int accept (ETCL_Constraint_Visitor *visitor) override;
+  virtual int accept (ETCL_Constraint_Visitor *visitor);
 
 private:
-  int type_ {};
-  ETCL_Constraint *subexpr_ {};
+  int type_;
+  ETCL_Constraint *subexpr_;
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

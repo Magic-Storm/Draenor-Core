@@ -9,6 +9,22 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 ACE_INLINE void
 ACE_Date_Time::update (const ACE_Time_Value& timevalue)
 {
+#if defined (ACE_HAS_WINCE)
+  // CE doesn't do localtime().
+  FILETIME file_time = timevalue;
+  FILETIME local_file_time;
+  SYSTEMTIME sys_time;
+  ::FileTimeToLocalFileTime (&file_time, &local_file_time);
+  ::FileTimeToSystemTime (&local_file_time, &sys_time);
+  this->day_ = sys_time.wDay;
+  this->month_ = sys_time.wMonth;
+  this->year_ = sys_time.wYear;
+  this->hour_ = sys_time.wHour;
+  this->minute_ = sys_time.wMinute;
+  this->second_ = sys_time.wSecond;
+  this->microsec_ = sys_time.wMilliseconds * 1000;
+  this->wday_ = sys_time.wDayOfWeek;
+#else
   time_t time = timevalue.sec ();
   struct tm tm_time;
   ACE_OS::localtime_r (&time, &tm_time);
@@ -20,10 +36,11 @@ ACE_Date_Time::update (const ACE_Time_Value& timevalue)
   this->second_ = tm_time.tm_sec;
   this->microsec_ = timevalue.usec ();
   this->wday_ = tm_time.tm_wday;
+#endif /* ACE_HAS_WINCE */
 }
 
 ACE_INLINE void
-ACE_Date_Time::update ()
+ACE_Date_Time::update (void)
 {
   ACE_TRACE ("ACE_Date_Time::update");
 
@@ -31,7 +48,7 @@ ACE_Date_Time::update ()
 }
 
 ACE_INLINE
-ACE_Date_Time::ACE_Date_Time ()
+ACE_Date_Time::ACE_Date_Time (void)
 {
   ACE_TRACE ("ACE_Date_Time::ACE_Date_Time");
   this->update ();
@@ -70,7 +87,7 @@ ACE_Date_Time::ACE_Date_Time (long day,
 
 // get day
 ACE_INLINE long
-ACE_Date_Time::day () const
+ACE_Date_Time::day (void) const
 {
   ACE_TRACE ("ACE_Date_Time::day");
   return day_;
@@ -86,7 +103,7 @@ ACE_Date_Time::day (long day)
 
 // get month
 ACE_INLINE long
-ACE_Date_Time::month () const
+ACE_Date_Time::month (void) const
 {
   ACE_TRACE ("ACE_Date_Time::month");
   return month_;
@@ -102,7 +119,7 @@ ACE_Date_Time::month (long month)
 
 // get year
 ACE_INLINE long
-ACE_Date_Time::year () const
+ACE_Date_Time::year (void) const
 {
   ACE_TRACE ("ACE_Date_Time::year");
   return year_;
@@ -118,7 +135,7 @@ ACE_Date_Time::year (long year)
 
 // get hour
 ACE_INLINE long
-ACE_Date_Time::hour () const
+ACE_Date_Time::hour (void) const
 {
   ACE_TRACE ("ACE_Date_Time::hour");
   return hour_;
@@ -134,7 +151,7 @@ ACE_Date_Time::hour (long hour)
 
 // get minute
 ACE_INLINE long
-ACE_Date_Time::minute () const
+ACE_Date_Time::minute (void) const
 {
   ACE_TRACE ("ACE_Date_Time::minute");
   return minute_;
@@ -150,7 +167,7 @@ ACE_Date_Time::minute (long minute)
 
 // get second
 ACE_INLINE long
-ACE_Date_Time::second () const
+ACE_Date_Time::second (void) const
 {
   ACE_TRACE ("ACE_Date_Time::second");
   return second_;
@@ -166,7 +183,7 @@ ACE_Date_Time::second (long second)
 
 // get microsec
 ACE_INLINE long
-ACE_Date_Time::microsec () const
+ACE_Date_Time::microsec (void) const
 {
   ACE_TRACE ("ACE_Date_Time::microsec");
   return microsec_;
@@ -182,7 +199,7 @@ ACE_Date_Time::microsec (long microsec)
 
 // get wday
 ACE_INLINE long
-ACE_Date_Time::weekday () const
+ACE_Date_Time::weekday (void) const
 {
   ACE_TRACE ("ACE_Date_Time::weekday");
   return wday_;

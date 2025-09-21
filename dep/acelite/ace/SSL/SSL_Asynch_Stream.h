@@ -18,7 +18,7 @@
 #pragma once
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
-#if OPENSSL_VERSION_NUMBER > 0x0090581fL && (defined (ACE_WIN32) || (defined (ACE_HAS_AIO_CALLS)))
+#if OPENSSL_VERSION_NUMBER > 0x0090581fL && ((defined (ACE_WIN32) && !defined (ACE_HAS_WINCE)) || (defined (ACE_HAS_AIO_CALLS)))
 
 #include "SSL_Asynch_BIO.h"
 
@@ -144,6 +144,7 @@ class ACE_SSL_Export ACE_SSL_Asynch_Stream
     public ACE_Handler
 {
 public:
+
   // Use a class/struct to work around scoping
   // problems for extern "C" free functions with some compilers.  For
   // example, some can't handle
@@ -176,14 +177,14 @@ public:
                          ACE_SSL_Context * context = 0);
 
   /// Destructor
-  virtual ~ACE_SSL_Asynch_Stream ();
+  virtual ~ACE_SSL_Asynch_Stream (void);
 
-  int cancel ();
+  int cancel (void);
 
-  int close ();
+  int close (void);
 
   /// Return a pointer to the underlying SSL structure.
-  SSL *ssl () const;
+  SSL *ssl (void) const;
 
   /**
    * Initializes the factory with information which will be used with
@@ -276,7 +277,7 @@ public:
 protected:
   /// Virtual from ACE_Asynch_Operation. Since this class is essentially an
   /// implementation class, simply return 0.
-  virtual ACE_Asynch_Operation_Impl *implementation () const { return 0; }
+  virtual ACE_Asynch_Operation_Impl *implementation (void) const { return 0; }
 
   /// virtual from ACE_Handler
 
@@ -292,7 +293,7 @@ protected:
 
   /// This method is called when all SSL sessions are closed and no
   /// more pending AIOs exist.  It also calls users handle_wakeup().
-  virtual void handle_wakeup ();
+  virtual void handle_wakeup (void);
 
   /**
    * This method will be called after a successful SSL handshake indicating
@@ -326,23 +327,23 @@ protected:
    *
    * true  - Proceed with connection.  The default implementation returns true.
    */
-  virtual bool post_handshake_check ();
+  virtual bool post_handshake_check (void);
 
   /**
    * @name SSL State Machine
    */
   //@{
-  int do_SSL_state_machine ();
-  int do_SSL_handshake ();
-  int do_SSL_read ();
-  int do_SSL_write();
-  int do_SSL_shutdown();
+  int do_SSL_state_machine (void);
+  int do_SSL_handshake (void);
+  int do_SSL_read (void);
+  int do_SSL_write(void);
+  int do_SSL_shutdown(void);
   //@}
 
   void print_error (int err_ssl,
                     const ACE_TCHAR *pText);
 
-  int pending_BIO_count ();
+  int pending_BIO_count (void);
 
   /// This method is called to notify user handler when user's read in
   /// done.
@@ -355,7 +356,7 @@ protected:
   /// This method is called to notify ourself that SSL session is
   /// shutdown and that there is no more I/O activity now and in the
   /// future.
-  int notify_close();
+  int notify_close(void);
 
   /**
    * @name BIO Helpers
@@ -366,8 +367,10 @@ protected:
   //@}
 
 private:
-  ACE_SSL_Asynch_Stream (ACE_SSL_Asynch_Stream const &) = delete;
-  ACE_SSL_Asynch_Stream & operator= (ACE_SSL_Asynch_Stream const &) = delete;
+
+  // Preventing copying through construction or assignment.
+  ACE_SSL_Asynch_Stream (ACE_SSL_Asynch_Stream const &);
+  ACE_SSL_Asynch_Stream & operator= (ACE_SSL_Asynch_Stream const &);
 
 protected:
   /// Stream Type ST_CLIENT/ST_SERVER

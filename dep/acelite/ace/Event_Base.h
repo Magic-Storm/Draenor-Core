@@ -4,6 +4,8 @@
 /**
  *  @file    Event_Base.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Martin Corino <mcorino@remedy.nl>
  */
 //==========================================================================
@@ -122,8 +124,9 @@ protected:
   bool removed_;
 
 private:
-  ACE_Event_Base (const ACE_Event_Base& event) = delete;
-  const ACE_Event_Base &operator= (const ACE_Event_Base &rhs) = delete;
+  // = Prevent copying.
+  ACE_Event_Base (const ACE_Event_Base& event);
+  const ACE_Event_Base &operator= (const ACE_Event_Base &rhs);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

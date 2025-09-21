@@ -10,6 +10,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 /////////////////////////////////////////////////////
 
 // Key accessor.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE EXT_ID &
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::key ()
@@ -18,7 +19,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::key ()
   return k_;
 }
 
+
 // Item accessor.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE INT_ID &
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::item ()
@@ -27,7 +30,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::item ()
   return t_;
 }
 
+
 // Set color of the node.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE void
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::color (ACE_RB_Tree_Node_Base::RB_Tree_Node_Color c)
@@ -36,7 +41,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::color (ACE_RB_Tree_Node_Base::RB_Tree_Node_Col
   color_ = c;
 }
 
+
 // Get color of the node.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE ACE_RB_Tree_Node_Base::RB_Tree_Node_Color
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::color ()
@@ -45,7 +52,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::color ()
   return color_;
 }
 
+
 // Accessor for node's parent pointer.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE ACE_RB_Tree_Node<EXT_ID, INT_ID> *
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::parent ()
@@ -54,7 +63,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::parent ()
   return parent_;
 }
 
+
 // Mutator for node's parent pointer.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE void
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::parent (ACE_RB_Tree_Node<EXT_ID, INT_ID> * p)
@@ -63,7 +74,10 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::parent (ACE_RB_Tree_Node<EXT_ID, INT_ID> * p)
   parent_ = p;
 }
 
+
+
 // Accessor for node's left child pointer.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE ACE_RB_Tree_Node<EXT_ID, INT_ID> *
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::left ()
@@ -72,7 +86,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::left ()
   return left_;
 }
 
+
 // Mutator for node's left child pointer.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE void
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::left (ACE_RB_Tree_Node<EXT_ID, INT_ID> * l)
@@ -81,7 +97,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::left (ACE_RB_Tree_Node<EXT_ID, INT_ID> * l)
   left_ = l;
 }
 
+
 // Accessor for node's right child pointer.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE ACE_RB_Tree_Node<EXT_ID, INT_ID> *
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::right ()
@@ -90,7 +108,9 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::right ()
   return right_;
 }
 
+
 // Mutator for node's right child pointer.
+
 template <class EXT_ID, class INT_ID>
 ACE_INLINE void
 ACE_RB_Tree_Node<EXT_ID, INT_ID>::right (ACE_RB_Tree_Node<EXT_ID, INT_ID> * r)
@@ -98,6 +118,7 @@ ACE_RB_Tree_Node<EXT_ID, INT_ID>::right (ACE_RB_Tree_Node<EXT_ID, INT_ID> * r)
   ACE_TRACE ("ACE_RB_Tree_Node<EXT_ID, INT_ID>::right mutator");
   right_ = r;
 }
+
 
 ////////////////////////////////////////////////////////////////////////
 // template class ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> //
@@ -130,6 +151,7 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::open (ACE_Allocator *alloc)
 
 // Close down an RB_Tree and release dynamically allocated
 // resources.
+
 template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE int
 ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::close ()
@@ -140,10 +162,12 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::close ()
   return this->close_i ();
 }
 
+
 // Associate <ext_id> with <int_id>.  If <ext_id> is already in the
 // tree then the <ACE_RB_Tree_Node> is not changed.  Returns 0 if a
 // new entry is bound successfully, returns 1 if an attempt is made
 // to bind an existing entry, and returns -1 if failures occur.
+
 template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE int
 ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::bind (const EXT_ID &ext_id,
@@ -156,9 +180,11 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::bind (const EXT_ID &ext_id,
   return this->insert_i (ext_id, int_id, entry);
 }
 
+
 // Same as a normal bind, except the tree entry is also passed back
 // to the caller.  The entry in this case will either be the newly
 // created entry, or the existing one.
+
 template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE int
 ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::bind (const EXT_ID &ext_id,
@@ -171,11 +197,13 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::bind (const EXT_ID &ext_id,
   return this->insert_i (ext_id, int_id, entry);
 }
 
+
 // Associate <ext_id> with <int_id> if and only if <ext_id> is not
 // in the tree.  If <ext_id> is already in the tree then the <int_id>
 // parameter is assigned the existing value in the tree.  Returns 0
 // if a new entry is bound successfully, returns 1 if an attempt is
 // made to bind an existing entry, and returns -1 if failures occur.
+
 template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE int
 ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::trybind (const EXT_ID &ext_id,
@@ -195,9 +223,11 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::trybind (const EXT_ID &ext_
   return result;
 }
 
+
 // Same as a normal trybind, except the tree entry is also passed
 // back to the caller.  The entry in this case will either be the
 // newly created entry, or the existing one.
+
 template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE int
 ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::trybind (const EXT_ID &ext_id,
@@ -207,7 +237,7 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::trybind (const EXT_ID &ext_
   ACE_TRACE ("ACE_RB_Tree::trybind (const EXT_ID &ext_id, INT_ID &int_id, ACE_RB_Tree_Node<EXT_ID, INT_ID> *&entry)");
   ACE_WRITE_GUARD_RETURN (ACE_LOCK, ace_mon, this->lock_, -1);
 
-  int const result = this->insert_i (ext_id, int_id, entry);
+  int result = this->insert_i (ext_id, int_id, entry);
 
   if (result == 1)
     {
@@ -217,6 +247,7 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::trybind (const EXT_ID &ext_
 
   return result;
 }
+
 
 // Reassociate <ext_id> with <int_id>.  If <ext_id> is not in the
 // tree then behaves just like <bind>.  Returns 0 if a new entry is
@@ -243,9 +274,11 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::rebind (const EXT_ID &ext_i
   return result;
 }
 
+
 // Same as a normal rebind, except the tree entry is also passed back
 // to the caller.  The entry in this case will either be the newly
 // created entry, or the existing one.
+
 template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE int
 ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::rebind (const EXT_ID &ext_id,
@@ -255,7 +288,7 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::rebind (const EXT_ID &ext_i
   ACE_TRACE ("ACE_RB_Tree::rebind (const EXT_ID &ext_id, const INT_ID &int_id, ACE_RB_Tree_Node<EXT_ID, INT_ID> *&entry)");
   ACE_WRITE_GUARD_RETURN (ACE_LOCK, ace_mon, this->lock_, -1);
 
-  int const result = this->insert_i (ext_id, int_id, entry);
+  int result = this->insert_i (ext_id, int_id, entry);
 
   if (result == 1)
     {
@@ -265,6 +298,7 @@ ACE_RB_Tree<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::rebind (const EXT_ID &ext_i
 
   return result;
 }
+
 
 // Associate <ext_id> with <int_id>.  If <ext_id> is not in the tree
 // then behaves just like <bind>.  Otherwise, store the old value of
@@ -688,7 +722,7 @@ ACE_INLINE
 ACE_RB_Tree_Iterator_Base<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Iterator_Base ()
   : tree_ (0), node_ (0)
 {
-  ACE_TRACE ("ACE_RB_Tree_Iterator_Base<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Iterator_Base ()");
+  ACE_TRACE ("ACE_RB_Tree_Iterator_Base<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Iterator_Base (void)");
 }
 
 // Returns 1 when the iteration has completed, otherwise 0.
@@ -807,7 +841,7 @@ ACE_INLINE
 ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Iterator ()
   : ACE_RB_Tree_Iterator_Base<EXT_ID,INT_ID,COMPARE_KEYS,ACE_LOCK> ()
 {
-  ACE_TRACE ("ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Iterator ()");
+  ACE_TRACE ("ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Iterator (void)");
 }
 
 // Move forward by one element in the tree.  Returns
@@ -843,7 +877,7 @@ template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> &
 ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator++ ()
 {
-  ACE_TRACE ("ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> operator++ ()");
+  ACE_TRACE ("ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> operator++ (void)");
 
   this->forward_i ();
   return *this;
@@ -870,7 +904,7 @@ template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> &
 ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator-- ()
 {
-  ACE_TRACE ("ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> operator-- ()");
+  ACE_TRACE ("ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> operator-- (void)");
 
   this->reverse_i ();
   return *this;
@@ -896,7 +930,7 @@ ACE_RB_Tree_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator-- (int)
 // be declared and defined in both the derived forward and
 // reverse iterator classes rather than in the base iterator
 // class because of a method signature resolution problem
-// caused by the existence of the deprecated next ()
+// caused by the existence of the deprecated next (void)
 // method in the derived forward iterator class.  When that
 // deprecated method is removed, this method should be removed
 // from the derived classes and placed in the base class.
@@ -1012,7 +1046,7 @@ ACE_INLINE
 ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Reverse_Iterator ()
   : ACE_RB_Tree_Iterator_Base<EXT_ID,INT_ID,COMPARE_KEYS,ACE_LOCK> ()
 {
-  ACE_TRACE ("ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Reverse_Iterator ()");
+  ACE_TRACE ("ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::ACE_RB_Tree_Reverse_Iterator (void)");
 }
 
 // Move forward by one element in the tree.  Returns
@@ -1048,7 +1082,7 @@ template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> &
 ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator++ ()
 {
-  ACE_TRACE ("ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator++ ()");
+  ACE_TRACE ("ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator++ (void)");
 
   this->reverse_i ();
   return *this;
@@ -1075,7 +1109,7 @@ template <class EXT_ID, class INT_ID, class COMPARE_KEYS, class ACE_LOCK>
 ACE_INLINE ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK> &
 ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator-- ()
 {
-  ACE_TRACE ("ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator-- ()");
+  ACE_TRACE ("ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator-- (void)");
 
   this->forward_i ();
   return *this;
@@ -1101,7 +1135,7 @@ ACE_RB_Tree_Reverse_Iterator<EXT_ID, INT_ID, COMPARE_KEYS, ACE_LOCK>::operator--
 // be declared and defined in both the derived forward and
 // reverse iterator classes rather than in the base iterator
 // class because of a method signature resolution problem
-// caused by the existence of the deprecated next ()
+// caused by the existence of the deprecated next (void)
 // method in the derived forward iterator class.  When that
 // deprecated method is removed, this method should be removed
 // from the derived classes and placed in the base class.

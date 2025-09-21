@@ -22,11 +22,14 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 #if defined (NONNATIVE_LONGDOUBLE)
-static constexpr ACE_INT16 max_eleven_bit = 0x3ff;
-static constexpr ACE_INT16 max_fifteen_bit = 0x3fff;
+static const ACE_INT16 max_eleven_bit = 0x3ff;
+static const ACE_INT16 max_fifteen_bit = 0x3fff;
 #endif /* NONNATIVE_LONGDOUBLE */
 
+//
 // See comments in CDR_Base.inl about optimization cases for swap_XX_array.
+//
+
 void
 ACE_CDR::swap_2_array (char const * orig, char* target, size_t n)
 {
@@ -239,12 +242,12 @@ ACE_CDR::swap_2_array (char const * orig, char* target, size_t n)
     ACE_CDR::swap_2 (orig, target);
     orig += 2;
     target += 2;
-    ACE_FALLTHROUGH;
+    // fallthrough
   case 2:
     ACE_CDR::swap_2 (orig, target);
     orig += 2;
     target += 2;
-    ACE_FALLTHROUGH;
+    // fallthrough
   case 1:
     ACE_CDR::swap_2 (orig, target);
   }
@@ -433,12 +436,12 @@ ACE_CDR::swap_4_array (char const * orig, char* target, size_t n)
     ACE_CDR::swap_4 (orig, target);
     orig += 4;
     target += 4;
-    ACE_FALLTHROUGH;
+    // fallthrough
   case 2:
     ACE_CDR::swap_4 (orig, target);
     orig += 4;
     target += 4;
-    ACE_FALLTHROUGH;
+    // fallthrough
   case 1:
     ACE_CDR::swap_4 (orig, target);
   }
@@ -811,7 +814,7 @@ ACE_CDR::Fixed ACE_CDR::Fixed::from_integer (ACE_CDR::ULongLong val)
 
 ACE_CDR::Fixed ACE_CDR::Fixed::from_floating (LongDouble val)
 {
-#if defined ACE_VXWORKS && !defined __RTP__
+#if defined ACE_OPENVMS || (defined ACE_VXWORKS && !defined __RTP__)
   typedef double BigFloat;
 #elif defined NONNATIVE_LONGDOUBLE
   typedef LongDouble::NativeImpl BigFloat;

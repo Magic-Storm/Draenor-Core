@@ -6,7 +6,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 /************************************************************************/
 
 ACE_INLINE
-ACE_EH_Dispatch_Info::ACE_EH_Dispatch_Info () :
+ACE_EH_Dispatch_Info::ACE_EH_Dispatch_Info (void) :
   handle_ (ACE_INVALID_HANDLE),
   event_handler_ (0),
   mask_ (ACE_Event_Handler::NULL_MASK),
@@ -41,7 +41,7 @@ ACE_EH_Dispatch_Info::set (ACE_HANDLE handle,
 }
 
 ACE_INLINE bool
-ACE_EH_Dispatch_Info::dispatch () const
+ACE_EH_Dispatch_Info::dispatch (void) const
 {
   return this->dispatch_;
 }
@@ -52,13 +52,14 @@ ACE_EH_Dispatch_Info::dispatch () const
 
 ACE_INLINE
 ACE_TP_Token_Guard::ACE_TP_Token_Guard (ACE_Select_Reactor_Token &token)
+
   : token_ (token),
     owner_ (false)
 {
 }
 
 ACE_INLINE
-ACE_TP_Token_Guard::~ACE_TP_Token_Guard ()
+ACE_TP_Token_Guard::~ACE_TP_Token_Guard (void)
 {
   if (this->owner_)
     {
@@ -68,7 +69,7 @@ ACE_TP_Token_Guard::~ACE_TP_Token_Guard ()
 }
 
 ACE_INLINE void
-ACE_TP_Token_Guard::release_token ()
+ACE_TP_Token_Guard::release_token (void)
 {
   if (this->owner_)
     {
@@ -80,7 +81,7 @@ ACE_TP_Token_Guard::release_token ()
 }
 
 ACE_INLINE bool
-ACE_TP_Token_Guard::is_owner ()
+ACE_TP_Token_Guard::is_owner (void)
 {
   return this->owner_;
 }

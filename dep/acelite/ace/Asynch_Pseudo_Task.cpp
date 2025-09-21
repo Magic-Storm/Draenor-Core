@@ -66,6 +66,7 @@ ACE_Asynch_Pseudo_Task::svc ()
 }
 
 
+
 int
 ACE_Asynch_Pseudo_Task::register_io_handler (ACE_HANDLE handle,
                                              ACE_Event_Handler *handler,

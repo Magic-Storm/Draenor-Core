@@ -35,7 +35,7 @@ int ace_yyparse ();
 #endif
 #else /* ! YYPARSE_PARAM */
 #if defined __STDC__ || defined __cplusplus
-int ace_yyparse ();
+int ace_yyparse (void);
 #else
 int ace_yyparse ();
 #endif

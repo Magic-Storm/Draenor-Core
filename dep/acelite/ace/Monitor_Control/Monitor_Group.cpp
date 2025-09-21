@@ -19,7 +19,7 @@ namespace ACE
     }
 
     void
-    Monitor_Group::update ()
+    Monitor_Group::update (void)
     {
       for (MEMBERS_ITERATOR i (this->members_); !i.done (); i.advance ())
         {
@@ -48,7 +48,7 @@ namespace ACE
     }
 
     void
-    Monitor_Group::clear ()
+    Monitor_Group::clear (void)
     {
       for (MEMBERS_ITERATOR i (this->members_); !i.done (); i.advance ())
         {

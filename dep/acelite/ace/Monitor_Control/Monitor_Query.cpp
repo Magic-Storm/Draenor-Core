@@ -48,7 +48,7 @@ namespace ACE
     }
 
     void
-    Monitor_Query::query ()
+    Monitor_Query::query (void)
     {
       if (this->monitor_ == 0)
         {

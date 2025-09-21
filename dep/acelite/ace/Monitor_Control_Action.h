@@ -44,12 +44,12 @@ namespace ACE
       virtual void execute (const char* command = 0) = 0;
 
       /// Refcounting methods.
-      void add_ref ();
-      void remove_ref ();
+      void add_ref (void);
+      void remove_ref (void);
 
     protected:
-      Control_Action ();
-      ~Control_Action () override = default;
+      Control_Action (void);
+      virtual ~Control_Action (void);
     };
   }
 }

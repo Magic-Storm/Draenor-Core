@@ -65,8 +65,8 @@ namespace ACE
     class ACE_Export Monitor_Admin
     {
     public:
-      Monitor_Admin ();
-      ~Monitor_Admin ();
+      Monitor_Admin (void);
+      ~Monitor_Admin (void);
 
       /// Add or access monitor points in a global registry
       /// If the ACE_Time_Value arg is non-zero,
@@ -88,7 +88,7 @@ namespace ACE
       /// This mutator allows the application to create its own reactor
       /// and substitute it for the default reactor.
       void reactor (ACE_Reactor* new_reactor);
-      ACE_Reactor* reactor () const;
+      ACE_Reactor* reactor (void) const;
 
     private:
       Monitor_Point_Auto_Updater auto_updater_;

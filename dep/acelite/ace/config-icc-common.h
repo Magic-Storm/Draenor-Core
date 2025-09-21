@@ -3,6 +3,10 @@
 #define ACE_LINUX_ICC_COMMON_H
 #include /**/ "ace/pre.h"
 
+# define ACE_HAS_STANDARD_CPP_LIBRARY 1
+# define ACE_USES_STD_NAMESPACE_FOR_STDCPP_LIB 1
+# define ACE_HAS_STRING_CLASS
+
 #if defined (ACE_HAS_CUSTOM_EXPORT_MACROS) && ACE_HAS_CUSTOM_EXPORT_MACROS == 0
 #  undef ACE_HAS_CUSTOM_EXPORT_MACROS
 #  if defined (ACE_GCC_HAS_TEMPLATE_INSTANTIATION_VISIBILITY_ATTRS)
@@ -40,6 +44,8 @@
 # define ACE_IMPORT_SINGLETON_DECLARE(SINGLETON_TYPE, CLASS, LOCK) __extension__ extern template class SINGLETON_TYPE<CLASS, LOCK>;
 #endif  /* ACE_HAS_CUSTOM_EXPORT_MACROS == 0 */
 
+#define ACE_NEW_THROWS_EXCEPTIONS
+
 #if (defined (i386) || defined (__i386__)) && !defined (ACE_SIZEOF_LONG_DOUBLE)
 # define ACE_SIZEOF_LONG_DOUBLE 12
 #endif /* i386 */
@@ -56,6 +62,8 @@
 #if (defined (ACE_HAS_PENTIUM) || defined (__amd64__) || defined (__x86_64__))
 # define ACE_HAS_INTEL_ASSEMBLY
 #endif
+
+#define ACE_TEMPLATES_REQUIRE_SOURCE
 
 #if (__INTEL_COMPILER >= 910)
 # define ACE_EXPLICIT_TEMPLATE_DESTRUCTOR_TAKES_ARGS

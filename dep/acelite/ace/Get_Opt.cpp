@@ -571,7 +571,7 @@ ACE_Get_Opt::long_option (const ACE_TCHAR *name,
 const ACE_TCHAR*
 ACE_Get_Opt::long_option () const
 {
-  ACE_TRACE ("ACE_Get_Opt::long_option ()");
+  ACE_TRACE ("ACE_Get_Opt::long_option (void)");
   if (this->long_option_)
     return this->long_option_->name_;
   return 0;

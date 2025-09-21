@@ -3,6 +3,12 @@
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
+ACE_INLINE
+ACE_SOCK::~ACE_SOCK ()
+{
+  // ACE_TRACE ("ACE_SOCK::~ACE_SOCK");
+}
+
 ACE_INLINE int
 ACE_SOCK::set_option (int level,
                       int option,

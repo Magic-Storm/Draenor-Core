@@ -47,11 +47,11 @@ public:
   ACE_Method_Request (unsigned long priority = 0);
 
   /// Destructor.
-  virtual ~ACE_Method_Request () = default;
+  virtual ~ACE_Method_Request (void);
 
   // = Accessors.
   /// Get priority.
-  unsigned long priority () const;
+  unsigned long priority (void) const;
 
   /// Set priority.
   /**
@@ -76,7 +76,7 @@ public:
    *         decide the meaning of this return value and act on it
    *         if needed.
    */
-  virtual int call () = 0;
+  virtual int call (void) = 0;
 
 private:
   ACE_Method_Request (const ACE_Method_Request &) = delete;
@@ -87,6 +87,7 @@ private:
 protected:
   /// The priority of the request.
   unsigned long priority_;
+
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

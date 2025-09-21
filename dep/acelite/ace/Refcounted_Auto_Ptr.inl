@@ -37,8 +37,12 @@ ACE_Refcounted_Auto_Ptr_Rep<X, ACE_LOCK>::create (X *p)
 {
   // Yes set ref count to zero.
   ACE_Refcounted_Auto_Ptr_Rep<X, ACE_LOCK> *temp = internal_create (p);
-  if (!temp)
-    throw std::bad_alloc ();
+#if defined (ACE_NEW_THROWS_EXCEPTIONS)
+  if (temp == 0)
+    ACE_throw_bad_alloc;
+#else
+  ACE_ASSERT (temp != 0);
+#endif /* ACE_NEW_THROWS_EXCEPTIONS */
    return temp;
 }
 

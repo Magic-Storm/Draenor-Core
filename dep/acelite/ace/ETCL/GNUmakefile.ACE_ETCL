@@ -55,15 +55,9 @@ include $(ACE_ROOT)/include/makeinclude/wrapper_macros.GNU
 
 GNUACE_PROJECT_VERSION ?= $(ACE_VERSION)
 
-ifneq (,$(RC))
-RESOURCES += \
-  ACE_ETCL.rc
-
-RC_INCLUDE_FLAG ?= --include-dir=
-RCFLAGS = \
-        $(RC_INCLUDE_FLAG)../..
-endif
-
+# To build multiple targets in the same directory on AIX, it works
+# best to have a template directory per project.
+# The compiler/linker isn't too smart about instantiating templates...
 ifdef TEMPINCDIR
 TEMPINCDIR := $(TEMPINCDIR)/ACE_ETCL
 all: $(TEMPINCDIR)
@@ -220,26 +214,23 @@ endif
 endif
 
 #BEGIN MPC-Generated Install Info
+#source_files:
+#ETCL_Constraint.cpp
+#ETCL_Constraint_Visitor.cpp
+#
 #header_files:
 #ETCL_Constraint.h
 #ETCL_Constraint_Visitor.h
 #ace_etcl_export.h
 #
-#resource_files:
-#ACE_ETCL.rc
+#build_files:
+#ETCL.mpc
 #
 #inline_files:
 #ETCL_Constraint.inl
 #
-#source_files:
-#ETCL_Constraint.cpp
-#ETCL_Constraint_Visitor.cpp
-#
 #pkgconfig_files:
 #ACE_ETCL.pc.in
-#
-#build_files:
-#ETCL.mpc
 #
 #lib_output:
 #../../lib ACE_ETCL

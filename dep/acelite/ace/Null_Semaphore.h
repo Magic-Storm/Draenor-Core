@@ -4,6 +4,8 @@
 /**
  *  @file    Null_Semaphore.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -49,7 +51,7 @@ public:
                        const ACE_TCHAR * = 0,
                        void * = 0,
                        int = 0x7fffffff) {}
-  ~ACE_Null_Semaphore () = default;
+  ~ACE_Null_Semaphore () {}
   /// Return 0.
   int remove () {return 0;}
 

@@ -1,5 +1,7 @@
 #include "ace/TLI_Connector.h"
 
+
+
 #if defined (ACE_HAS_TLI)
 
 #if !defined (__ACE_INLINE__)
@@ -16,14 +18,14 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 ACE_ALLOC_HOOK_DEFINE(ACE_TLI_Connector)
 
 void
-ACE_TLI_Connector::dump () const
+ACE_TLI_Connector::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_TLI_Connector::dump");
 #endif /* ACE_HAS_DUMP */
 }
 
-ACE_TLI_Connector::ACE_TLI_Connector ()
+ACE_TLI_Connector::ACE_TLI_Connector (void)
 {
   ACE_TRACE ("ACE_TLI_Connector::ACE_TLI_Connector");
 }
@@ -221,7 +223,7 @@ ACE_TLI_Connector::complete (ACE_TLI_Stream &new_stream,
     {
       if (remote_sap != 0)
         {
-#if defined (ACE_HAS_XTI)
+#if defined (ACE_HAS_XTI) || defined (ACE_HAS_SVR4_TLI)
           struct netbuf name;
 
           name.maxlen = remote_sap->get_size ();
@@ -230,9 +232,9 @@ ACE_TLI_Connector::complete (ACE_TLI_Stream &new_stream,
           if (ACE_OS::t_getname (new_stream.get_handle (),
                                  &name,
                                  REMOTENAME) == -1)
-#else /* ACE_HAS_XTI */
+#else /* SunOS4 */
           if (0)
-#endif /* ACE_HAS_XTI */
+#endif /* ACE_HAS_XTI || ACE_HAS_SVR4_TLI */
             {
               new_stream.close ();
               return -1;

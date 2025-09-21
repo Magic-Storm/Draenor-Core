@@ -41,15 +41,15 @@ public:
 
   typedef ACE_Stream<ACE_SYNCH> MT_Stream;
 
-  ACE_UPIPE_Stream ();
+  ACE_UPIPE_Stream (void);
 
-  virtual ~ACE_UPIPE_Stream ();
+  virtual ~ACE_UPIPE_Stream (void);
 
   /// Shut down the UPIPE and release resources.
-  int close ();
+  int close (void);
 
   /// Return the underlying I/O handle.
-  ACE_HANDLE get_handle () const;
+  ACE_HANDLE get_handle (void) const;
 
   // = Send/recv ACE Message_Blocks.
   /// Send a message through the message queue.  Returns -1 on error,

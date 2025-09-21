@@ -23,18 +23,18 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 template <class HANDLER>
-ACE_Asynch_Acceptor<HANDLER>::ACE_Asynch_Acceptor ()
-  : addr_family_ (0),
-    listen_handle_ (ACE_INVALID_HANDLE),
+ACE_Asynch_Acceptor<HANDLER>::ACE_Asynch_Acceptor (void)
+  : listen_handle_ (ACE_INVALID_HANDLE),
     pass_addresses_ (false),
     validate_new_connection_ (false),
     reissue_accept_ (1),
-    bytes_to_read_ (0)
+    bytes_to_read_ (0),
+    addr_family_ (0)
 {
 }
 
 template <class HANDLER>
-ACE_Asynch_Acceptor<HANDLER>::~ACE_Asynch_Acceptor ()
+ACE_Asynch_Acceptor<HANDLER>::~ACE_Asynch_Acceptor (void)
 {
   // Close down the listen socket
   if (this->listen_handle_ != ACE_INVALID_HANDLE)
@@ -192,7 +192,7 @@ ACE_Asynch_Acceptor<HANDLER>::set_handle (ACE_HANDLE listen_handle)
 }
 
 template <class HANDLER> ACE_HANDLE
-ACE_Asynch_Acceptor<HANDLER>::get_handle () const
+ACE_Asynch_Acceptor<HANDLER>::get_handle (void) const
 {
   return this->listen_handle_;
 }
@@ -239,12 +239,12 @@ ACE_Asynch_Acceptor<HANDLER>::handle_accept (const ACE_Asynch_Accept::Result &re
   ACE_TRACE ("ACE_Asynch_Acceptor<>::handle_accept");
 
   // Variable for error tracking
-  bool error = false;
+  int error = 0;
 
   // If the asynchronous accept fails.
   if (!result.success () || result.accept_handle () == ACE_INVALID_HANDLE)
     {
-      error = true;
+      error = 1;
     }
 
 #if defined (ACE_WIN32)
@@ -260,7 +260,7 @@ ACE_Asynch_Acceptor<HANDLER>::handle_accept (const ACE_Asynch_Accept::Result &re
                           (char *) &this->listen_handle_,
                           sizeof (this->listen_handle_)) == -1)
     {
-      error = true;
+      error = 1;
     }
 #endif /* ACE_WIN32 */
 
@@ -279,7 +279,7 @@ ACE_Asynch_Acceptor<HANDLER>::handle_accept (const ACE_Asynch_Accept::Result &re
       this->validate_new_connection_ &&
       (this->validate_connection (result, remote_address, local_address) == -1))
     {
-      error = true;
+      error = 1;
     }
 
   HANDLER *new_handler = 0;
@@ -289,7 +289,7 @@ ACE_Asynch_Acceptor<HANDLER>::handle_accept (const ACE_Asynch_Accept::Result &re
       new_handler = this->make_handler ();
       if (new_handler == 0)
         {
-          error = true;
+          error = 1;
         }
     }
 
@@ -351,7 +351,7 @@ ACE_Asynch_Acceptor<HANDLER>::validate_connection
 }
 
 template <class HANDLER> int
-ACE_Asynch_Acceptor<HANDLER>::cancel ()
+ACE_Asynch_Acceptor<HANDLER>::cancel (void)
 {
   ACE_TRACE ("ACE_Asynch_Acceptor<>::cancel");
 
@@ -418,7 +418,7 @@ ACE_Asynch_Acceptor<HANDLER>::parse_address (const
 }
 
 template <class HANDLER> ACE_HANDLE
-ACE_Asynch_Acceptor<HANDLER>::handle () const
+ACE_Asynch_Acceptor<HANDLER>::handle (void) const
 {
   return this->listen_handle_;
 }
@@ -430,13 +430,13 @@ ACE_Asynch_Acceptor<HANDLER>::handle (ACE_HANDLE h)
 }
 
 template <class HANDLER> ACE_Asynch_Accept &
-ACE_Asynch_Acceptor<HANDLER>::asynch_accept ()
+ACE_Asynch_Acceptor<HANDLER>::asynch_accept (void)
 {
   return this->asynch_accept_;
 }
 
 template <class HANDLER> HANDLER *
-ACE_Asynch_Acceptor<HANDLER>::make_handler ()
+ACE_Asynch_Acceptor<HANDLER>::make_handler (void)
 {
   // Default behavior
   HANDLER *handler = 0;
@@ -447,7 +447,7 @@ ACE_Asynch_Acceptor<HANDLER>::make_handler ()
 }
 
 template <class HANDLER> bool
-ACE_Asynch_Acceptor<HANDLER>::pass_addresses () const
+ACE_Asynch_Acceptor<HANDLER>::pass_addresses (void) const
 {
   return this->pass_addresses_;
 }
@@ -459,7 +459,7 @@ ACE_Asynch_Acceptor<HANDLER>::pass_addresses (bool new_value)
 }
 
 template <class HANDLER> bool
-ACE_Asynch_Acceptor<HANDLER>::validate_new_connection () const
+ACE_Asynch_Acceptor<HANDLER>::validate_new_connection (void) const
 {
   return this->validate_new_connection_;
 }
@@ -471,7 +471,7 @@ ACE_Asynch_Acceptor<HANDLER>::validate_new_connection (bool new_value)
 }
 
 template <class HANDLER> int
-ACE_Asynch_Acceptor<HANDLER>::reissue_accept () const
+ACE_Asynch_Acceptor<HANDLER>::reissue_accept (void) const
 {
   return this->reissue_accept_;
 }
@@ -483,7 +483,7 @@ ACE_Asynch_Acceptor<HANDLER>::reissue_accept (int new_value)
 }
 
 template <class HANDLER> size_t
-ACE_Asynch_Acceptor<HANDLER>::bytes_to_read () const
+ACE_Asynch_Acceptor<HANDLER>::bytes_to_read (void) const
 {
   return this->bytes_to_read_;
 }
@@ -495,7 +495,7 @@ ACE_Asynch_Acceptor<HANDLER>::bytes_to_read (size_t new_value)
 }
 
 template <class HANDLER> int
-ACE_Asynch_Acceptor<HANDLER>::should_reissue_accept ()
+ACE_Asynch_Acceptor<HANDLER>::should_reissue_accept (void)
 {
   return this->reissue_accept_;
 }

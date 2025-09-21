@@ -25,6 +25,11 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
 {
 }
 
+template <class KEY, class VALUE, class HASH_KEY, class COMPARE_KEYS, class CACHING_STRATEGY, class ATTRIBUTES>
+ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY, ATTRIBUTES>::~ACE_Hash_Cache_Map_Manager (void)
+{
+}
+
 template <class KEY, class VALUE, class HASH_KEY, class COMPARE_KEYS, class CACHING_STRATEGY, class ATTRIBUTES> int
 ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY, ATTRIBUTES>::bind (const KEY &key,
                                           const VALUE &value,
@@ -42,16 +47,19 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
 
   if (bind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_bind (bind_result,
                                                         cache_value.second);
 
       if (result == -1)
         {
+
           this->map_.unbind (key);
 
           // Unless the notification goes thru the bind operation is
           // not complete.
           bind_result = -1;
+
         }
     }
 
@@ -72,11 +80,13 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
 
   if (rebind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_rebind (rebind_result,
                                                           cache_value.second ());
 
       if (result == -1)
         {
+
           // Make sure the unbind operation is done only when the
           // notification fails after a bind which is denoted by
           // rebind_result = 0
@@ -86,6 +96,7 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
           // Unless the notification goes thru the rebind operation is
           // not complete.
           rebind_result = -1;
+
         }
 
     }
@@ -112,19 +123,23 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
 
       if (result == -1)
         {
+
           // If the entry has got inserted into the map, it is removed
           // due to failure.
           if (trybind_result == 0)
             this->map_.unbind (key);
 
           trybind_result = -1;
+
         }
       else
         {
+
           // If an attempt is made to bind an existing entry the value
           // is overwritten with the value from the map.
           if (trybind_result == 1)
             value = cache_value.first ();
+
         }
 
     }
@@ -142,6 +157,7 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
 
   if (find_result != -1)
     {
+
       int result = this->caching_strategy_.notify_find (find_result,
                                                         entry->int_id_.second);
 
@@ -151,6 +167,7 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
         find_result = -1;
       else
         find_result = 0;
+
     }
 
   return find_result;
@@ -190,11 +207,13 @@ ACE_Hash_Cache_Map_Manager<KEY, VALUE,  HASH_KEY, COMPARE_KEYS, CACHING_STRATEGY
 
   if (unbind_result != -1)
     {
+
       int result = this->caching_strategy_.notify_unbind (unbind_result,
                                                           entry->int_id_.second);
 
       if (result == -1)
         unbind_result = -1;
+
     }
 
   return unbind_result;

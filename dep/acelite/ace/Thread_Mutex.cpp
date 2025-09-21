@@ -1,6 +1,8 @@
 /**
  * @file Thread_Mutex.cpp
  *
+ * Originally in Synch.cpp
+ *
  * @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 
@@ -14,6 +16,8 @@
 
 #include "ace/Log_Category.h"
 #include "ace/Malloc_T.h"
+
+
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 

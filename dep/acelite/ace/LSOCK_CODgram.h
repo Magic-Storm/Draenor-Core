@@ -48,7 +48,7 @@ class ACE_Export ACE_LSOCK_CODgram : public ACE_SOCK_CODgram, public ACE_LSOCK
 {
 public:
   /// Default constructor; requires a call to open() prior to communication.
-  ACE_LSOCK_CODgram ();
+  ACE_LSOCK_CODgram (void);
 
   /**
    * @name Initialization methods
@@ -84,7 +84,7 @@ public:
   //@}
 
   /// Get underlying handle.
-  ACE_HANDLE get_handle () const;
+  ACE_HANDLE get_handle (void) const;
 
   /// Set underlying handle.
   void set_handle (ACE_HANDLE);

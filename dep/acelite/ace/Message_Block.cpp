@@ -392,16 +392,16 @@ ACE_Message_Block::ACE_Message_Block (const char *data,
 
   if (this->init_i (size,    // size
                     MB_DATA, // type
-                    nullptr, // cont
+                    0,       // cont
                     data,    // data
-                    nullptr, // allocator
+                    0,       // allocator
                     0,       // locking strategy
                     ACE_Message_Block::DONT_DELETE, // flags
                     priority, // priority
                     ACE_Time_Value::zero,     // execution time
                     ACE_Time_Value::max_time, // absolute time of deadline
-                    nullptr,  // data block
-                    nullptr,  // data_block allocator
+                    0,  // data block
+                    0,  // data_block allocator
                     0) == -1) // message_block allocator
     ACELIB_ERROR ((LM_ERROR,
                 ACE_TEXT ("ACE_Message_Block")));
@@ -415,16 +415,16 @@ ACE_Message_Block::ACE_Message_Block (ACE_Allocator *message_block_allocator)
 
   if (this->init_i (0,       // size
                     MB_DATA, // type
-                    nullptr, // cont
-                    nullptr, // data
-                    nullptr, // allocator
+                    0,       // cont
+                    0,       // data
+                    0,       // allocator
                     0,       // locking strategy
                     ACE_Message_Block::DONT_DELETE, // flags
                     0, // priority
                     ACE_Time_Value::zero,     // execution time
                     ACE_Time_Value::max_time, // absolute time of deadline
-                    nullptr, // data block
-                    nullptr, // data_block allocator
+                    0, // data block
+                    0, // data_block allocator
                     message_block_allocator) == -1) // message_block allocator
     ACELIB_ERROR ((LM_ERROR,
                 ACE_TEXT ("ACE_Message_Block")));
@@ -494,24 +494,25 @@ ACE_Message_Block::init (size_t size,
 }
 
 int
-ACE_Message_Block::init (const char *data, size_t size)
+ACE_Message_Block::init (const char *data,
+                         size_t size)
 {
   ACE_TRACE ("ACE_Message_Block::init");
   // Should we also initialize all the other fields, as well?
 
   return this->init_i (size,    // size
                        MB_DATA, // type
-                       nullptr, // cont
+                       0,       // cont
                        data,    // data
-                       nullptr, // allocator
+                       0,       // allocator
                        0,       // locking strategy
                        ACE_Message_Block::DONT_DELETE,  // flags
                        0,  // priority
                        ACE_Time_Value::zero,     // execution time
                        ACE_Time_Value::max_time, // absolute time of deadline
-                       nullptr,  // data block
-                       nullptr,  // data_block allocator
-                       nullptr); // message_block allocator
+                       0,  // data block
+                       0,  // data_block allocator
+                       0); // message_block allocator
 }
 
 ACE_Message_Block::ACE_Message_Block (size_t size,
@@ -528,7 +529,7 @@ ACE_Message_Block::ACE_Message_Block (size_t size,
                                       ACE_Allocator *data_block_allocator,
                                       ACE_Allocator *message_block_allocator)
   : flags_ (0),
-    data_block_ (nullptr)
+    data_block_ (0)
 {
   ACE_TRACE ("ACE_Message_Block::ACE_Message_Block");
 
@@ -553,7 +554,7 @@ ACE_Message_Block::ACE_Message_Block (ACE_Data_Block *data_block,
                                       ACE_Message_Block::Message_Flags flags,
                                       ACE_Allocator *message_block_allocator)
   : flags_ (flags),
-    data_block_ (nullptr)
+    data_block_ (0)
 {
   ACE_TRACE ("ACE_Message_Block::ACE_Message_Block");
 
@@ -577,7 +578,7 @@ ACE_Message_Block::ACE_Message_Block (ACE_Data_Block *data_block,
 ACE_Message_Block::ACE_Message_Block (const ACE_Message_Block &mb,
                                       size_t align)
   :flags_ (0),
-   data_block_ (nullptr)
+   data_block_ (0)
 {
   ACE_TRACE ("ACE_Message_Block::ACE_Message_Block");
 
@@ -586,10 +587,10 @@ ACE_Message_Block::ACE_Message_Block (const ACE_Message_Block &mb,
     {
       if (this->init_i (0,         // size
                         MB_NORMAL, // type
-                        nullptr,   // cont
-                        nullptr,   // data
-                        nullptr,   // allocator
-                        nullptr,   // locking strategy
+                        0,         // cont
+                        0,         // data
+                        0,         // allocator
+                        0,         // locking strategy
                         0,         // flags
                         0,         // priority
                         ACE_Time_Value::zero,     // execution time
@@ -610,15 +611,16 @@ ACE_Message_Block::ACE_Message_Block (const ACE_Message_Block &mb,
       // Set our rd & wr pointers
       this->rd_ptr (start);
       this->wr_ptr (start);
+
     }
   else
     {
       if (this->init_i (0,         // size
                         MB_NORMAL, // type
-                        nullptr,   // cont
-                        nullptr,   // data
-                        nullptr,   // allocator
-                        nullptr,   // locking strategy
+                        0,         // cont
+                        0,         // data
+                        0,         // allocator
+                        0,         // locking strategy
                         0,         // flags
                         0,         // priority
                         ACE_Time_Value::zero,     // execution time
@@ -643,7 +645,8 @@ ACE_Message_Block::ACE_Message_Block (const ACE_Message_Block &mb,
 
 #if !defined (ACE_LACKS_CDR_ALIGNMENT)
       // Get the alignment offset of the incoming ACE_Message_Block
-      start = ACE_ptr_align_binary (mb.base (), align);
+      start = ACE_ptr_align_binary (mb.base (),
+                                    align);
 #else
       start = mb.base ();
 #endif /* ACE_LACKS_CDR_ALIGNMENT */
@@ -657,8 +660,9 @@ ACE_Message_Block::ACE_Message_Block (const ACE_Message_Block &mb,
                              start,
                              wr_offset);
 
-      // Don't move the write pointer, just leave it to the application
+      // Dont move the write pointer, just leave it to the application
       // to do what it wants
+
     }
 #if defined (ACE_LACKS_CDR_ALIGNMENT)
   ACE_UNUSED_ARG (align);
@@ -694,8 +698,8 @@ ACE_Message_Block::init_i (size_t size,
   ACE_UNUSED_ARG (deadline_time);
 #endif /* ACE_HAS_TIMED_MESSAGE_BLOCKS */
   this->cont_ = msg_cont;
-  this->next_ = nullptr;
-  this->prev_ = nullptr;
+  this->next_ = 0;
+  this->prev_ = 0;
 
   this->message_block_allocator_ = message_block_allocator;
 
@@ -730,7 +734,7 @@ ACE_Message_Block::init_i (size_t size,
       ACE_TIMEPROBE (ACE_MESSAGE_BLOCK_INIT_I_DB_CTOR);
 
       // Message block initialization may fail, while the construction
-      // succeeds.  Since ACE may throw no exceptions, we have to do a
+      // succeds.  Since ACE may throw no exceptions, we have to do a
       // separate check and clean up, like this:
       if (db != 0 && db->size () < size)
         {
@@ -759,7 +763,7 @@ ACE_Data_Block::~ACE_Data_Block ()
                         ACE_Message_Block::DONT_DELETE))
     {
       this->allocator_strategy_->free ((void *) this->base_);
-      this->base_ = nullptr;
+      this->base_ = 0;
     }
 }
 
@@ -770,14 +774,14 @@ ACE_Data_Block::release_i ()
 
   ACE_ASSERT (this->reference_count_ > 0);
 
-  ACE_Data_Block *result = nullptr;
+  ACE_Data_Block *result = 0;
 
   // decrement reference count
   --this->reference_count_;
 
   if (this->reference_count_ == 0)
     // this will cause deletion of this
-    result = nullptr;
+    result = 0;
   else
     result = this;
 
@@ -789,8 +793,8 @@ ACE_Data_Block::release_no_delete (ACE_Lock *lock)
 {
   ACE_TRACE ("ACE_Data_Block::release_no_delete");
 
-  ACE_Data_Block *result = nullptr;
-  ACE_Lock *lock_to_be_used = nullptr;
+  ACE_Data_Block *result = 0;
+  ACE_Lock *lock_to_be_used = 0;
 
   // Check if we were passed in a lock
   if (lock != 0)
@@ -840,7 +844,7 @@ ACE_Data_Block::release (ACE_Lock *lock)
   // We must delete this outside the scope of the locking_strategy_
   // since otherwise we'd be trying to "release" through a deleted
   // pointer!
-  if (result == nullptr)
+  if (result == 0)
     ACE_DES_FREE_THIS (allocator->free,
                        ACE_Data_Block);
   return result;
@@ -905,7 +909,7 @@ ACE_Message_Block::release_i (ACE_Lock *lock)
   if (this->cont_)
     {
       ACE_Message_Block *mb = this->cont_;
-      ACE_Message_Block *tmp = nullptr;
+      ACE_Message_Block *tmp = 0;
 
       do
         {
@@ -935,12 +939,12 @@ ACE_Message_Block::release_i (ACE_Lock *lock)
     {
       if (this->data_block ()->release_no_delete (lock) == 0)
         result = 1;
-      this->data_block_ = nullptr;
+      this->data_block_ = 0;
     }
 
   // We will now commit suicide: this object *must* have come from the
   // allocator given.
-  if (this->message_block_allocator_ == nullptr)
+  if (this->message_block_allocator_ == 0)
     delete this;
   else
     {
@@ -957,25 +961,24 @@ ACE_Message_Block::release (ACE_Message_Block *mb)
 {
   ACE_TRACE ("ACE_Message_Block::release");
 
-  if (mb != nullptr)
+  if (mb != 0)
     return mb->release ();
   else
-    return nullptr;
+    return 0;
 }
 
 ACE_Message_Block::~ACE_Message_Block ()
 {
   ACE_TRACE ("ACE_Message_Block::~ACE_Message_Block");
 
-  if (ACE_BIT_DISABLED (this->flags_, ACE_Message_Block::DONT_DELETE) &&
+  if (ACE_BIT_DISABLED (this->flags_,
+                        ACE_Message_Block::DONT_DELETE)&&
       this->data_block ())
-    {
-      this->data_block ()->release ();
-    }
+    this->data_block ()->release ();
 
-  this->prev_ = nullptr;
-  this->next_ = nullptr;
-  this->cont_ = nullptr;
+  this->prev_ = 0;
+  this->next_ = 0;
+  this->cont_ = 0;
 }
 
 ACE_Data_Block *
@@ -1010,8 +1013,9 @@ ACE_Message_Block::duplicate () const
 {
   ACE_TRACE ("ACE_Message_Block::duplicate");
 
-  ACE_Message_Block *nb_top = nullptr;
-  ACE_Message_Block *nb = nullptr;
+  ACE_Message_Block *nb_top = 0;
+  ACE_Message_Block *nb = 0;
+
   const ACE_Message_Block *current = this;
 
   // Increment the reference counts of all the continuation messages.
@@ -1028,10 +1032,10 @@ ACE_Message_Block::duplicate () const
         ACE_NEW_NORETURN (cur_dup,
                           ACE_Message_Block (0, // size
                                              ACE_Message_Type (0), // type
-                                             nullptr, // cont
-                                             nullptr, // data
-                                             nullptr, // allocator
-                                             nullptr, // locking strategy
+                                             0, // cont
+                                             0, // data
+                                             0, // allocator
+                                             0, // locking strategy
                                              0, // flags
                                              current->priority_, // priority
                                              ACE_EXECUTION_TIME,
@@ -1049,10 +1053,10 @@ ACE_Message_Block::duplicate () const
                                       current->message_block_allocator_->malloc (sizeof (ACE_Message_Block))),
                                  ACE_Message_Block (0, // size
                                                     ACE_Message_Type (0), // type
-                                                    nullptr, // cont
-                                                    nullptr, // data
-                                                    nullptr, // allocator
-                                                    nullptr, // locking strategy
+                                                    0, // cont
+                                                    0, // data
+                                                    0, // allocator
+                                                    0, // locking strategy
                                                     0, // flags
                                                     current->priority_, // priority
                                                     ACE_EXECUTION_TIME,
@@ -1105,8 +1109,8 @@ ACE_Message_Block *
 ACE_Message_Block::duplicate (const ACE_Message_Block *mb)
 {
   ACE_TRACE ("ACE_Message_Block::duplicate");
-  if (mb == nullptr)
-    return nullptr;
+  if (mb == 0)
+    return 0;
   else
     return mb->duplicate ();
 }
@@ -1122,7 +1126,7 @@ ACE_Data_Block::clone (ACE_Message_Block::Message_Flags mask) const
   // was allocated with max_size_ (and, thus, it's cur_size_ is the same
   // as max_size_). Maintain the same "has been written" boundary in the
   // new block by only copying cur_size_ bytes.
-  if (nb != nullptr)
+  if (nb != 0)
     {
       ACE_OS::memcpy (nb->base_,
                       this->base_,
@@ -1142,9 +1146,13 @@ ACE_Data_Block::clone_nocopy (ACE_Message_Block::Message_Flags mask,
 
   // You always want to clear this one to prevent memory leaks but you
   // might add some others later.
-  const ACE_Message_Block::Message_Flags always_clear = ACE_Message_Block::DONT_DELETE;
-  const size_t newsize = max_size == 0 ? this->max_size_ : max_size;
-  ACE_Data_Block *nb = nullptr;
+  const ACE_Message_Block::Message_Flags always_clear =
+    ACE_Message_Block::DONT_DELETE;
+
+  const size_t newsize =
+    max_size == 0 ? this->max_size_ : max_size;
+
+  ACE_Data_Block *nb = 0;
 
   ACE_NEW_MALLOC_RETURN (nb,
                          static_cast<ACE_Data_Block*> (
@@ -1159,7 +1167,7 @@ ACE_Data_Block::clone_nocopy (ACE_Message_Block::Message_Flags mask,
                          0);
 
   // Message block initialization may fail while the construction
-  // succeeds.  Since as a matter of policy, ACE may throw no
+  // succeds.  Since as a matter of policy, ACE may throw no
   // exceptions, we have to do a separate check like this.
   if (nb != 0 && nb->size () < newsize)
     {
@@ -1168,6 +1176,7 @@ ACE_Data_Block::clone_nocopy (ACE_Message_Block::Message_Flags mask,
       errno = ENOMEM;
       return 0;
     }
+
 
   // Set new flags minus the mask...
   nb->clr_flags (mask | always_clear);
@@ -1180,39 +1189,40 @@ ACE_Message_Block::clone (Message_Flags mask) const
   ACE_TRACE ("ACE_Message_Block::clone");
 
   const ACE_Message_Block *old_message_block = this;
-  ACE_Message_Block *new_message_block {};
-  ACE_Message_Block *new_previous_message_block {};
-  ACE_Message_Block *new_root_message_block {};
+  ACE_Message_Block *new_message_block = 0;
+  ACE_Message_Block *new_previous_message_block = 0;
+  ACE_Message_Block *new_root_message_block = 0;
 
   do
     {
-      // Get a pointer to a "cloned" ACE_Data_Block (will copy the
+      // Get a pointer to a "cloned"<ACE_Data_Block> (will copy the
       // values rather than increment the reference count).
       ACE_Data_Block *db = old_message_block->data_block ()->clone (mask);
 
-      if (!db)
-        return nullptr;
+      if (db == 0)
+        return 0;
 
-      if(old_message_block->message_block_allocator_ == nullptr)
+      if(old_message_block->message_block_allocator_ == 0)
         {
-          ACE_NEW_NORETURN (new_message_block,
-                            ACE_Message_Block (0, // size
-                                               ACE_Message_Type (0), // type
-                                               nullptr, // cont
-                                               nullptr, // data
-                                               nullptr, // allocator
-                                               nullptr, // locking strategy
-                                               0, // flags
-                                               old_message_block->priority_, // priority
-                                               ACE_EXECUTION_TIME, // execution time
-                                               ACE_DEADLINE_TIME, // absolute time to deadline
-                                               // Get a pointer to a
-                                               // "duplicated"<ACE_Data_Block>
-                                               // (will simply increment the
-                                               // reference count).
-                                               db,
-                                               db->data_block_allocator (),
-                                               old_message_block->message_block_allocator_));
+          ACE_NEW_RETURN (new_message_block,
+                          ACE_Message_Block (0, // size
+                                             ACE_Message_Type (0), // type
+                                             0, // cont
+                                             0, // data
+                                             0, // allocator
+                                             0, // locking strategy
+                                             0, // flags
+                                             old_message_block->priority_, // priority
+                                             ACE_EXECUTION_TIME, // execution time
+                                             ACE_DEADLINE_TIME, // absolute time to deadline
+                                             // Get a pointer to a
+                                             // "duplicated"<ACE_Data_Block>
+                                             // (will simply increment the
+                                             // reference count).
+                                             db,
+                                             db->data_block_allocator (),
+                                             old_message_block->message_block_allocator_),
+                          0);
         }
       else
         {
@@ -1222,13 +1232,13 @@ ACE_Message_Block::clone (Message_Flags mask) const
           // ACE_NEW_MALLOC_RETURN, there would be a memory leak because the
           // above db pointer would be left dangling.
           new_message_block = static_cast<ACE_Message_Block*> (old_message_block->message_block_allocator_->malloc (sizeof (ACE_Message_Block)));
-          if (new_message_block != nullptr)
+          if (new_message_block != 0)
             new (new_message_block) ACE_Message_Block (0, // size
                                                        ACE_Message_Type (0), // type
-                                                       nullptr, // cont
-                                                       nullptr, // data
-                                                       nullptr, // allocator
-                                                       nullptr, // locking strategy
+                                                       0, // cont
+                                                       0, // data
+                                                       0, // allocator
+                                                       0, // locking strategy
                                                        0, // flags
                                                        old_message_block->priority_, // priority
                                                        ACE_EXECUTION_TIME, // execution time
@@ -1238,10 +1248,10 @@ ACE_Message_Block::clone (Message_Flags mask) const
                                                        old_message_block->message_block_allocator_);
         }
 
-      if (new_message_block == nullptr)
+      if (new_message_block == 0)
         {
           db->release ();
-          return nullptr;
+          return 0;
         }
 
       // Set the read and write pointers in the new <Message_Block> to the
@@ -1249,15 +1259,15 @@ ACE_Message_Block::clone (Message_Flags mask) const
       new_message_block->rd_ptr (old_message_block->rd_ptr_);
       new_message_block->wr_ptr (old_message_block->wr_ptr_);
       // save the root message block to return
-      if (new_root_message_block == nullptr)
+      if (new_root_message_block == 0)
         new_root_message_block = new_message_block;
-      if (new_previous_message_block != nullptr)
+      if (new_previous_message_block != 0)
         // we're a continuation of the previous block, add ourself to its chain
         new_previous_message_block->cont_ = new_message_block;
       new_previous_message_block = new_message_block;
       old_message_block = old_message_block->cont ();
     }
-  while (old_message_block != nullptr);
+  while (old_message_block != 0);
 
   return new_root_message_block;
 }

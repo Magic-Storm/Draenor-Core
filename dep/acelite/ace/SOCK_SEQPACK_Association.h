@@ -77,13 +77,13 @@ class ACE_Export ACE_SOCK_SEQPACK_Association : public ACE_SOCK_IO
 public:
   // Initialization and termination methods.
   /// Constructor.
-  ACE_SOCK_SEQPACK_Association ();
+  ACE_SOCK_SEQPACK_Association (void);
 
   /// Constructor (sets the underlying ACE_HANDLE with <h>).
   ACE_SOCK_SEQPACK_Association (ACE_HANDLE h);
 
   /// Destructor.
-  ~ACE_SOCK_SEQPACK_Association ();
+  ~ACE_SOCK_SEQPACK_Association (void);
 
   /**
    * Return local endpoint addresses in the referenced array of
@@ -161,22 +161,22 @@ public:
 
   // = Selectively close endpoints.
   /// Close down the reader.
-  int close_reader ();
+  int close_reader (void);
 
   /// Close down the writer.
-  int close_writer ();
+  int close_writer (void);
 
   /**
    * Close down the socket (we need this to make things work correctly
    * on Win32, which requires use to do a <close_writer> before doing
    * the close to avoid losing data).  */
-  int close ();
+  int close (void);
 
   /**
    * Abort the association according to RFC 2960 9.1 through the API
    * in draft-ietf-tsvwg-sctpsocket-09 7.1.4.
    */
-  int abort ();
+  int abort (void);
 
   // = Meta-type info
   typedef ACE_Multihomed_INET_Addr PEER_ADDR;

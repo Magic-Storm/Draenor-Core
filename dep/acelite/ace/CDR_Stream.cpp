@@ -1,7 +1,7 @@
 #include "ace/CDR_Stream.h"
 #include "ace/SString.h"
+#include "ace/Auto_Ptr.h"
 #include "ace/Truncate.h"
-#include <memory>
 
 #if !defined (__ACE_INLINE__)
 # include "ace/CDR_Stream.inl"
@@ -1053,7 +1053,7 @@ ACE_OutputCDR::register_monitor (const char *id)
 }
 
 void
-ACE_OutputCDR::unregister_monitor ()
+ACE_OutputCDR::unregister_monitor (void)
 {
   this->monitor_->remove_from_registry ();
 }
@@ -1530,7 +1530,7 @@ ACE_InputCDR::read_string (ACE_CDR::Char *&x)
                       0);
 #endif /* ACE_HAS_ALLOC_HOOKS */
 
-      std::unique_ptr<ACE_CDR::Char[]> safe_data (x);
+      ACE_Auto_Basic_Array_Ptr<ACE_CDR::Char> safe_data (x);
 
       if (this->read_char_array (x, len))
         {
@@ -1563,10 +1563,10 @@ ACE_InputCDR::read_string (ACE_CDR::Char *&x)
 ACE_CDR::Boolean
 ACE_InputCDR::read_string (ACE_CString &x)
 {
-  ACE_CDR::Char * data = nullptr;
+  ACE_CDR::Char * data = 0;
   if (this->read_string (data))
     {
-      std::unique_ptr<ACE_CDR::Char[]> safe_data (data);
+      ACE_Auto_Basic_Array_Ptr<ACE_CDR::Char> safe_data (data);
       x = data;
       return true;
     }
@@ -1604,7 +1604,7 @@ ACE_InputCDR::read_wstring (ACE_CDR::WChar*& x)
   // the memory is allocated.
   if (len > 0 && len <= this->length ())
     {
-      std::unique_ptr<ACE_CDR::WChar[]> safe_data;
+      ACE_Auto_Basic_Array_Ptr<ACE_CDR::WChar> safe_data;
 
       if (static_cast<ACE_CDR::Short> (this->major_version_) == 1
           && static_cast<ACE_CDR::Short> (this->minor_version_) == 2)
@@ -1624,10 +1624,11 @@ ACE_InputCDR::read_wstring (ACE_CDR::WChar*& x)
                           false);
 #endif /* ACE_HAS_ALLOC_HOOKS */
 
-          safe_data.reset (x);
+          ACE_auto_ptr_reset (safe_data, x);
 
           if (this->read_wchar_array (x, len))
             {
+
               //Null character used by applications to find the end of
               //the wstring
               //Is this okay with the GIOP 1.2 spec??
@@ -1650,7 +1651,7 @@ ACE_InputCDR::read_wstring (ACE_CDR::WChar*& x)
                           false);
 #endif /* ACE_HAS_ALLOC_HOOKS */
 
-          safe_data.reset (x);
+          ACE_auto_ptr_reset (safe_data, x);
 
           if (this->read_wchar_array (x, len))
             {
@@ -2337,7 +2338,7 @@ ACE_InputCDR::register_monitor (const char *id)
 }
 
 void
-ACE_InputCDR::unregister_monitor ()
+ACE_InputCDR::unregister_monitor (void)
 {
   this->monitor_->remove_from_registry ();
 }
@@ -2345,6 +2346,10 @@ ACE_InputCDR::unregister_monitor ()
 #endif /* ACE_HAS_MONITOR_POINTS==1 */
 
 // --------------------------------------------------------------
+
+ACE_Char_Codeset_Translator::~ACE_Char_Codeset_Translator ()
+{
+}
 
 ACE_CDR::Boolean
 ACE_Char_Codeset_Translator::read_string (ACE_InputCDR &cdr,
@@ -2358,6 +2363,10 @@ ACE_Char_Codeset_Translator::read_string (ACE_InputCDR &cdr,
 }
 
 // --------------------------------------------------------------
+
+ACE_WChar_Codeset_Translator::~ACE_WChar_Codeset_Translator ()
+{
+}
 
 #if !defined(ACE_LACKS_STD_WSTRING)
 ACE_CDR::Boolean

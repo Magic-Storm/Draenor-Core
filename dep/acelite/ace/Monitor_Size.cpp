@@ -20,6 +20,10 @@ namespace ACE
     {
     }
 
+    Size_Monitor::~Size_Monitor ()
+    {
+    }
+
     void
     Size_Monitor::update ()
     {

@@ -4,6 +4,8 @@
 /**
  *  @file    Condition_Thread_Mutex.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -123,8 +125,9 @@ protected:
   bool removed_;
 
 private:
-  void operator= (const ACE_Condition<ACE_Thread_Mutex> &) = delete;
-  ACE_Condition (const ACE_Condition<ACE_Thread_Mutex> &) = delete;
+  // = Prevent assignment and initialization.
+  void operator= (const ACE_Condition<ACE_Thread_Mutex> &);
+  ACE_Condition (const ACE_Condition<ACE_Thread_Mutex> &);
 };
 
 typedef ACE_Condition<ACE_Thread_Mutex> ACE_Condition_Thread_Mutex;

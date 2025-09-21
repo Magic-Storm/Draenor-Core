@@ -46,23 +46,23 @@ class ACE_Export ACE_ATM_Stream
 {
 public:
   /// Default constructor.
-  ACE_ATM_Stream ();
+  ACE_ATM_Stream (void);
 
   // = ATM-specific open and shutdown operations.
   /// open the stream.
   int open (ACE_ATM_Params params = ACE_ATM_Params());
 
   /// Close down and release resources.
-  int close ();
+  int close (void);
 
   /// Get the underlying handle.
-  ACE_HANDLE get_handle () const;
+  ACE_HANDLE get_handle (void) const;
 
   /// Get the underlying stream.
-  ATM_Stream& get_stream ();
+  ATM_Stream& get_stream (void);
 
   /// Get the name of the connected host.
-  char* get_peer_name () const;
+  char* get_peer_name (void) const;
 
   /// Get the VPI and VCI of the stream.
   int get_vpi_vci (ACE_UINT16 &vpi,

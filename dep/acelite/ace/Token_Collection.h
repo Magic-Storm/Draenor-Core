@@ -183,16 +183,17 @@ public:
                        ACE_Synch_Options &options =
                        ACE_Synch_Options::defaults);
 
-  ~ACE_Token_Collection ();
+  ~ACE_Token_Collection (void);
 
   /// Dump the state of the class.
   void dump () const;
 
   /// Return the name of the collection.  Not very functionally
   /// important, but sometimes a useful debugging tool.
-  virtual const ACE_TCHAR *name () const;
+  virtual const ACE_TCHAR *name (void) const;
 
 protected:
+
   typedef ACE_Token_Name TOKEN_NAME;
 
   /// COLLECTION maintains a mapping from token names to ACE_Tokens*
@@ -210,7 +211,7 @@ protected:
 
   // = I'm not sure what these mean, but they have to be defined since they're
   //   pure virtual in ACE_Token_Proxy.
-  virtual ACE_Token_Proxy *clone () const;
+  virtual ACE_Token_Proxy *clone (void) const;
   virtual ACE_Tokens *create_token (const ACE_TCHAR *name);
 };
 

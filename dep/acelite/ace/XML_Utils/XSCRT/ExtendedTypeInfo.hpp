@@ -46,9 +46,17 @@ namespace XSCRT
     std::type_info const* tid_;
   };
 
+
+  //
+  //
+  //
   class ExtendedTypeInfo
   {
   public:
+
+    //
+    //
+    //
     struct Access
     {
       enum Value
@@ -59,6 +67,10 @@ namespace XSCRT
       };
     };
 
+
+    //
+    //
+    //
     class BaseInfo
     {
     public:
@@ -140,6 +152,7 @@ namespace XSCRT
   //@@ Had to use function template specialization because VC6
   //   cannot handle simply overloaded functions.
   //
+
   template <>
   inline
   ExtendedTypeInfo const&

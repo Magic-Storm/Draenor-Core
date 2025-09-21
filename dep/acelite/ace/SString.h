@@ -59,40 +59,39 @@ public:
   using ACE_WString::size_type;
 
   /// Default constructor.
-  ACE_NS_WString (ACE_Allocator *alloc = nullptr);
+  ACE_NS_WString (ACE_Allocator *alloc = 0);
 
   /// Constructor that copies @a s into dynamically allocated memory.
   ACE_NS_WString (const char *s,
-                  ACE_Allocator *alloc = nullptr);
+                  ACE_Allocator *alloc = 0);
 
   /// Constructor that copies @a s into dynamically allocated memory.
   ACE_NS_WString (const ACE_WSTRING_TYPE *s,
-                  ACE_Allocator *alloc = nullptr);
+                  ACE_Allocator *alloc = 0);
 
 #if defined (ACE_WSTRING_HAS_USHORT_SUPPORT)
   /// Constructor that takes in a ushort16 string (mainly used by the
   /// ACE Name_Space classes)
   ACE_NS_WString (const ACE_UINT16 *s,
                   size_type len,
-                  ACE_Allocator *alloc = nullptr);
+                  ACE_Allocator *alloc = 0);
 #endif /* ACE_WSTRING_HAS_USHORT_SUPPORT */
 
   /// Constructor that copies @a len ACE_WSTRING_TYPE's of @a s into dynamically
   /// allocated memory (will NUL terminate the result).
   ACE_NS_WString (const ACE_WSTRING_TYPE *s,
                   size_type len,
-                  ACE_Allocator *alloc = nullptr);
+                  ACE_Allocator *alloc = 0);
 
   /// Constructor that dynamically allocates memory for @a len + 1
   /// ACE_WSTRING_TYPE characters. The newly created memory is set memset to 0.
-  ACE_NS_WString (size_type len, ACE_Allocator *alloc = nullptr);
+  ACE_NS_WString (size_type len, ACE_Allocator *alloc = 0);
 
   /// Copy constructor.
-  ACE_NS_WString (const ACE_NS_WString &) = default;
-  ACE_NS_WString &operator= (const ACE_NS_WString&) = default;
+  ACE_NS_WString (const ACE_NS_WString &s);
 
   /// Constructor that copies @a c into dynamically allocated memory.
-  ACE_NS_WString (ACE_WSTRING_TYPE c, ACE_Allocator *alloc = nullptr);
+  ACE_NS_WString (ACE_WSTRING_TYPE c, ACE_Allocator *alloc = 0);
 
   /// Transform into a copy of the ASCII character representation.
   /// (caller must delete)
@@ -137,20 +136,20 @@ public:
   static const size_type npos;
 
   /// Default constructor.
-  ACE_SString (ACE_Allocator *alloc = nullptr);
+  ACE_SString (ACE_Allocator *alloc = 0);
 
   /// Constructor that copies @a s into dynamically allocated memory.
-  ACE_SString (const char *s, ACE_Allocator *alloc = nullptr);
+  ACE_SString (const char *s, ACE_Allocator *alloc = 0);
 
   /// Constructor that copies @a len chars of @a s into dynamically
   /// allocated memory (will NUL terminate the result).
-  ACE_SString (const char *s, size_type len, ACE_Allocator *alloc = nullptr);
+  ACE_SString (const char *s, size_type len, ACE_Allocator *alloc = 0);
 
   /// Copy constructor.
   ACE_SString (const ACE_SString &);
 
   /// Constructor that copies @a c into dynamically allocated memory.
-  ACE_SString (char c, ACE_Allocator *alloc = nullptr);
+  ACE_SString (char c, ACE_Allocator *alloc = 0);
 
   /// Default destructor.
   ~ACE_SString ();
@@ -269,8 +268,8 @@ typedef ACE_CString ACE_TString;
  * Keeps a pointer to a string and deallocates it (using
  * <ACE_OS::free>) on its destructor.
  * If you need to delete using "delete[]" the
- * std::unique_ptr<char[]> is your choice.
- * The class plays the same role as unique_ptr<>
+ * ACE_Auto_Array_Ptr<char> is your choice.
+ * The class plays the same role as auto_ptr<>
  */
 class ACE_Export ACE_Auto_String_Free
 {

@@ -9,6 +9,12 @@ ACE_Member_Function_Command (RECEIVER &recvr, PTMF ptmf)
 {
 }
 
+template<class RECEIVER> ACE_INLINE
+ACE_Member_Function_Command<RECEIVER>::
+~ACE_Member_Function_Command ()
+{
+}
+
 template<class RECEIVER> ACE_INLINE int
 ACE_Member_Function_Command<RECEIVER>::execute (void *)
 {

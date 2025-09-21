@@ -22,7 +22,9 @@
 # pragma once
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
-#include /**/ <errno.h>
+#if !defined (ACE_LACKS_ERRNO_H)
+# include /**/ <errno.h>
+#endif /* !ACE_LACKS_ERRNO_H */
 
 #if defined (ACE_VXWORKS)
 // Needed for VxWorks to pickup errnoSet()
@@ -283,7 +285,7 @@ extern "C"
 void herror (const char *str);
 #endif /* ACE_HAS_H_ERRNO */
 
-#if defined (ACE_DEFINE_MISSING_ERRNOS)
+#if defined (ACE_LACKS_ERRNO_H) || defined (ACE_DEFINE_MISSING_ERRNOS)
 # if !defined (EPERM)
 #   define EPERM           1
 # endif /* EPERM */

@@ -6,7 +6,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 ACE_ALLOC_HOOK_DEFINE(ACE_QOS_DECORATOR)
 
 // Constructor.
-ACE_QoS_Decorator_Base::ACE_QoS_Decorator_Base ()
+ACE_QoS_Decorator_Base::ACE_QoS_Decorator_Base (void)
 {}
 
 // Constructor.
@@ -17,13 +17,13 @@ ACE_QoS_Decorator_Base::ACE_QoS_Decorator_Base (ACE_Event_Handler
 }
 
 // Destructor.
-ACE_QoS_Decorator_Base::~ACE_QoS_Decorator_Base ()
+ACE_QoS_Decorator_Base::~ACE_QoS_Decorator_Base (void)
 {
 }
 
 // Forward the call to ACE_Event_Handler component.
 ACE_HANDLE
-ACE_QoS_Decorator_Base::get_handle () const
+ACE_QoS_Decorator_Base::get_handle (void) const
 {
  return this->event_handler_->get_handle ();
 }
@@ -43,7 +43,7 @@ ACE_QoS_Decorator_Base::handle_qos (ACE_HANDLE fd)
 }
 
 // Constructor.
-ACE_QoS_Decorator::ACE_QoS_Decorator ()
+ACE_QoS_Decorator::ACE_QoS_Decorator (void)
 {}
 
 // Constructor.
@@ -61,7 +61,7 @@ ACE_QoS_Decorator::ACE_QoS_Decorator (ACE_Event_Handler *event_handler,
 }
 
 // Destructor.
-ACE_QoS_Decorator::~ACE_QoS_Decorator ()
+ACE_QoS_Decorator::~ACE_QoS_Decorator (void)
 {
   delete this->decorator_base_;
   delete this->qos_event_handler_;
@@ -71,7 +71,7 @@ ACE_QoS_Decorator::~ACE_QoS_Decorator ()
 // GQoS. RAPI needs additional QoS decoration. This is done by the
 // ACE_QoS_Event_Handler class.
 ACE_HANDLE
-ACE_QoS_Decorator::get_handle () const
+ACE_QoS_Decorator::get_handle (void) const
 {
   return this->decorator_base_->get_handle ();
 }
@@ -98,7 +98,7 @@ ACE_QoS_Decorator::handle_qos (ACE_HANDLE fd)
 // if the application is using RAPI. Note that it is a no-op for GQoS
 // because an extra socket for handling QoS events is not required.
 int
-ACE_QoS_Decorator::init ()
+ACE_QoS_Decorator::init (void)
 {
 #if defined (ACE_HAS_RAPI)
 
@@ -110,10 +110,11 @@ ACE_QoS_Decorator::init ()
                                            ACE_Event_Handler::READ_MASK);
 #endif
   return 0;
+
 }
 
 // Constructor.
-ACE_QoS_Event_Handler::ACE_QoS_Event_Handler ()
+ACE_QoS_Event_Handler::ACE_QoS_Event_Handler (void)
 {
 }
 
@@ -125,7 +126,7 @@ ACE_QoS_Event_Handler::ACE_QoS_Event_Handler (ACE_QoS_Decorator_Base
 }
 
 // Destructor.
-ACE_QoS_Event_Handler::~ACE_QoS_Event_Handler ()
+ACE_QoS_Event_Handler::~ACE_QoS_Event_Handler (void)
 {
 }
 
@@ -138,7 +139,7 @@ ACE_QoS_Event_Handler::qos_session (ACE_QoS_Session *qos_session)
 
 // Returns the RAPI file descriptor for listening to RAPI evnets.
 ACE_HANDLE
-ACE_QoS_Event_Handler::get_handle () const
+ACE_QoS_Event_Handler::get_handle (void) const
 {
   return this->qos_session_->rsvp_events_handle ();
 }

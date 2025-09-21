@@ -12,7 +12,7 @@ ACE_OS::wait (int *status)
   ACE_UNUSED_ARG (status);
   ACE_NOTSUP_RETURN (-1);
 #else
-  return ::wait (status);
+  ACE_OSCALL_RETURN (::wait (status), pid_t, -1);
 #endif /* ACE_LACKS_WAIT */
 }
 
@@ -75,7 +75,8 @@ ACE_OS::waitpid (pid_t pid,
   return result;
 #else
   ACE_UNUSED_ARG (handle);
-  return ::waitpid (pid, status, wait_options);
+  ACE_OSCALL_RETURN (::waitpid (pid, status, wait_options),
+                     pid_t, -1);
 #endif /* ACE_LACKS_WAITPID */
 }
 

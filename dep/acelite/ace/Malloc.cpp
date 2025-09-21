@@ -8,6 +8,7 @@
 #include "ace/Malloc_Base.h"
 #include "ace/OS_NS_string.h"
 
+
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 // Process-wide ACE_Allocator.
@@ -145,7 +146,7 @@ ACE_Control_Block::ACE_Name_Node::dump () const
 
 
 #if defined (ACE_HAS_MALLOC_STATS)
-ACE_Malloc_Stats::ACE_Malloc_Stats ()
+ACE_Malloc_Stats::ACE_Malloc_Stats (void)
   : nchunks_ (0),
     nblocks_ (0),
     ninuse_ (0)
@@ -154,7 +155,7 @@ ACE_Malloc_Stats::ACE_Malloc_Stats ()
 }
 
 void
-ACE_Malloc_Stats::dump () const
+ACE_Malloc_Stats::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_Malloc_Stats::dump");

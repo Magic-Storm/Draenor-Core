@@ -13,13 +13,13 @@ ACE_TSS<TYPE>::ACE_TSS (TYPE *type)
 }
 
 template <class TYPE> ACE_INLINE int
-ACE_TSS<TYPE>::ts_init ()
+ACE_TSS<TYPE>::ts_init (void)
 {
   return 0;
 }
 
 template <class TYPE> ACE_INLINE TYPE *
-ACE_TSS<TYPE>::ts_object () const
+ACE_TSS<TYPE>::ts_object (void) const
 {
   return this->type_;
 }
@@ -32,7 +32,7 @@ ACE_TSS<TYPE>::ts_object (TYPE *type)
 }
 
 template <class TYPE> ACE_INLINE TYPE *
-ACE_TSS<TYPE>::ts_get () const
+ACE_TSS<TYPE>::ts_get (void) const
 {
   return this->type_;
 }
@@ -41,7 +41,7 @@ ACE_TSS<TYPE>::ts_get () const
 
 # if defined (ACE_HAS_THR_C_DEST)
 template <class TYPE> ACE_INLINE ACE_TSS_Adapter *
-ACE_TSS<TYPE>::ts_value () const
+ACE_TSS<TYPE>::ts_value (void) const
 {
   // Get the tss adapter from thread-specific storage
   void *temp = 0;

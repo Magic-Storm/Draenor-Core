@@ -1,6 +1,8 @@
 /**
  * @file Recursive_Thread_Mutex.cpp
  *
+ * Originally in Synch.cpp
+ *
  * @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 
@@ -79,7 +81,7 @@ int
 ACE_Recursive_Thread_Mutex::get_nesting_level ()
 {
   // ACE_TRACE ("ACE_Recursive_Thread_Mutex::get_nesting_level");
-#if defined (ACE_HAS_VXTHREADS)
+#if defined (ACE_HAS_VXTHREADS) || defined (ACE_HAS_PHARLAP) || defined (ACE_HAS_WINCE)
   ACE_NOTSUP_RETURN (-1);
 #elif defined (ACE_HAS_RECURSIVE_MUTEXES)
 # if defined (ACE_WIN32)
@@ -99,7 +101,7 @@ ACE_Recursive_Thread_Mutex::get_nesting_level ()
   nesting_level = this->lock_.nesting_level_;
   ACE_OS::mutex_unlock (&this->lock_.nesting_mutex_);
   return nesting_level;
-#endif /* ACE_HAS_VXTHREADS */
+#endif /* !ACE_HAS_WINCE */
 }
 
 void

@@ -59,6 +59,7 @@
 #endif /* __GLIBC__ */
 
 #define ACE_HAS_LSEEK64
+//#define ACE_LACKS_LSEEK64_PROTOTYPE
 
 #define ACE_HAS_P_READ_WRITE
 // Use ACE's alternate cuserid() implementation since the use of the
@@ -78,6 +79,9 @@
 // Then the compiler specific parts
 
 #if defined (__GNUG__)
+  // config-g++-common.h undef's ACE_HAS_STRING_CLASS with -frepo, so
+  // this must appear before its #include.
+# define ACE_HAS_STRING_CLASS
 # include "ace/config-g++-common.h"
 #elif defined (__GNUC__)
 /**
@@ -232,6 +236,7 @@
 
 #define ACE_HAS_SVR4_DYNAMIC_LINKING
 #define ACE_HAS_AUTOMATIC_INIT_FINI
+#define ACE_HAS_DLSYM_SEGFAULT_ON_INVALID_HANDLE
 #define ACE_HAS_RECURSIVE_MUTEXES
 #define ACE_HAS_THREAD_SPECIFIC_STORAGE
 #define ACE_HAS_RECURSIVE_THR_EXIT_SEMANTICS

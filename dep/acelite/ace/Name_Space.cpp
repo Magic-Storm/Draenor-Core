@@ -4,6 +4,7 @@
 #include "ace/OS_NS_stdlib.h"
 
 
+
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_Name_Binding::ACE_Name_Binding ()

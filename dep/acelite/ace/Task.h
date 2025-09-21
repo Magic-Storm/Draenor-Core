@@ -282,8 +282,10 @@ protected:
   /// Holds the thread ID of the last thread to exit svc() in this object.
   ACE_thread_t  last_thread_id_;
 private:
-  ACE_Task_Base &operator= (const ACE_Task_Base &) = delete;
-  ACE_Task_Base (const ACE_Task_Base &) = delete;
+
+  // = Disallow these operations.
+  ACE_Task_Base &operator= (const ACE_Task_Base &);
+  ACE_Task_Base (const ACE_Task_Base &);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

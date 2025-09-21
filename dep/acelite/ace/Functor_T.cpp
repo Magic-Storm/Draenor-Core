@@ -24,6 +24,7 @@ ACE_ALLOC_HOOK_DEFINE_Tcc(ACE_Command_Callback)
 ///////////////////////////////////
 
 // Constructor.
+
 template <class RECEIVER, class ACTION>
 ACE_Command_Callback<RECEIVER, ACTION>::ACE_Command_Callback (RECEIVER &recvr,
                                     ACTION action)
@@ -32,7 +33,13 @@ ACE_Command_Callback<RECEIVER, ACTION>::ACE_Command_Callback (RECEIVER &recvr,
 {
 }
 
+template <class RECEIVER, class ACTION>
+ACE_Command_Callback<RECEIVER, ACTION>::~ACE_Command_Callback ()
+{
+}
+
 // Invokes an operation.
+
 template <class RECEIVER, class ACTION> int
 ACE_Command_Callback<RECEIVER, ACTION>::execute (void *arg)
 {

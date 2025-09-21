@@ -3,7 +3,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_INLINE void
-ACE_ATM_Acceptor::dump () const
+ACE_ATM_Acceptor::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACE_TRACE ("ACE_ATM_Acceptor::dump");
@@ -27,7 +27,7 @@ ACE_ATM_Acceptor::ACE_ATM_Acceptor (const ACE_Addr &remote_sap,
 
 ACE_INLINE
 int
-ACE_ATM_Acceptor::close ()
+ACE_ATM_Acceptor::close (void)
 {
 #if defined (ACE_HAS_FORE_ATM_XTI) || defined (ACE_HAS_FORE_ATM_WS2) || defined (ACE_HAS_LINUX_ATM)
   return (acceptor_.close());

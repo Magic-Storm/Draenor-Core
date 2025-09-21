@@ -22,9 +22,10 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 typedef ACE_Reactor_Token_T<ACE_SELECT_TOKEN> ACE_Select_Reactor_Token;
-#if defined ACE_HAS_EXPLICIT_TEMPLATE_INSTANTIATION_EXPORT
+
+#if defined (_MSC_VER) && (_MSC_VER >= 1600)
 template class ACE_Export ACE_Select_Reactor_T<ACE_Select_Reactor_Token>;
-#endif /* ACE_HAS_EXPLICIT_TEMPLATE_INSTANTIATION_EXPORT */
+#endif /* _MSC_VER */
 
 typedef ACE_Select_Reactor_T<ACE_Select_Reactor_Token> ACE_Select_Reactor;
 
@@ -45,14 +46,14 @@ class ACE_Export ACE_Guard< ACE_Reactor_Token_T<ACE_Noop_Token> >
 public:
   ACE_Guard (ACE_Reactor_Token_T<ACE_Noop_Token> &) {}
   ACE_Guard (ACE_Reactor_Token_T<ACE_Noop_Token> &, int) {}
-  ~ACE_Guard () = default;
+  ~ACE_Guard (void) {}
 
-  int acquire () { return 0; }
-  int tryacquire () { return 0; }
-  int release () { return 0; }
-  int locked () { return 1; }
-  int remove () { return 0; }
-  void dump () const {}
+  int acquire (void) { return 0; }
+  int tryacquire (void) { return 0; }
+  int release (void) { return 0; }
+  int locked (void) { return 1; }
+  int remove (void) { return 0; }
+  void dump (void) const {}
 
 private:
   ACE_Guard (const ACE_Guard< ACE_Reactor_Token_T<ACE_Noop_Token> > &) = delete;

@@ -1,6 +1,8 @@
 /**
  * @file Thread_Semaphore.cpp
  *
+ * Originally in Synch.cpp
+ *
  * @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 
@@ -17,6 +19,9 @@
 #endif /* __ACE_INLINE__ */
 
 #include "ace/ACE.h"
+
+
+
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 

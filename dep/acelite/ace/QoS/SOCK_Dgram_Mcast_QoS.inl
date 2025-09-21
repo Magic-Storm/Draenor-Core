@@ -2,7 +2,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_INLINE
-ACE_SOCK_Dgram_Mcast_QoS::~ACE_SOCK_Dgram_Mcast_QoS ()
+ACE_SOCK_Dgram_Mcast_QoS::~ACE_SOCK_Dgram_Mcast_QoS (void)
 {
 }
 
@@ -46,7 +46,7 @@ ACE_SOCK_Dgram_Mcast_QoS::send (const void *buf,
 }
 
 ACE_INLINE ACE_QoS_Manager
-ACE_SOCK_Dgram_Mcast_QoS::qos_manager ()
+ACE_SOCK_Dgram_Mcast_QoS::qos_manager (void)
 {
   return this->qos_manager_;
 }

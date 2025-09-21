@@ -34,10 +34,10 @@ public:
   ACE_SV_Message (long type = 0);
 
   /// Destructor
-  ~ACE_SV_Message ();
+  ~ACE_SV_Message (void);
 
   /// Get the message type.
-  long type () const;
+  long type (void) const;
 
   /// Set the message type.
   void type (long);

@@ -22,7 +22,9 @@
 # pragma once
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
-#include /**/ <stdbool.h>
+#if !defined (ACE_LACKS_STDBOOL_H)
+# include /**/ <stdbool.h>
+#endif /* !ACE_LACKS_STDBOOL_H */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OS_INCLUDE_OS_STDBOOL_H */

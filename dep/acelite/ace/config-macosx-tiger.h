@@ -9,7 +9,7 @@
 #endif /* ! __ACE_INLINE__ */
 
 #if !defined (ACE_SIZEOF_LONG_DOUBLE)
-#  define ACE_SIZEOF_LONG_DOUBLE __SIZEOF_LONG_DOUBLE__
+#  define ACE_SIZEOF_LONG_DOUBLE 16
 #endif // ACE_SIZEOF_LONG_DOUBLE
 
 #if defined (__GNUG__)
@@ -75,6 +75,8 @@
 #define ACE_HAS_NONCONST_SELECT_TIMEVAL
 
 #define ACE_NEEDS_SCHED_H
+
+#define ACE_LACKS_MALLOC_H
 
 #define ACE_HAS_ALT_CUSERID
 
@@ -170,6 +172,7 @@
 #define ACE_LACKS_SIGINFO_H
 #define ACE_HAS_UCONTEXT_T
 #define ACE_HAS_GETIFADDRS
+#define ACE_LACKS_STATIC_DATA_MEMBER_TEMPLATES
 #define ACE_LACKS_UNNAMED_SEMAPHORE
 
 // dlcompat package (not part of base Darwin) is needed for dlopen().

@@ -35,7 +35,7 @@ class ACE_Handle_Gobbler
 {
 public:
   /// Destructor.  Cleans up any remaining handles.
-  inline ~ACE_Handle_Gobbler ();
+  inline ~ACE_Handle_Gobbler (void);
 
   /**
    * Handles are opened continuously until the process runs out of
@@ -48,7 +48,7 @@ public:
   inline int free_handles (size_t n_handles);
 
   /// All remaining handles are closed.
-  inline void close_remaining_handles ();
+  inline void close_remaining_handles (void);
 
 private:
   typedef ACE_Handle_Set HANDLE_SET;

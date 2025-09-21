@@ -23,7 +23,10 @@
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
 #include "ace/os_include/os_stddef.h"
-#include /**/ <string.h>
+
+#if !defined (ACE_LACKS_STRING_H)
+# include /**/ <string.h>
+#endif /* !ACE_LACKS_STRING_H */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OS_INCLUDE_OS_STRING_H */

@@ -51,6 +51,11 @@ ACE_Timer_Node_T<TYPE>::~ACE_Timer_Node_T ()
 }
 
 template <class TYPE>
+ACE_Timer_Queue_Iterator_T<TYPE>::ACE_Timer_Queue_Iterator_T ()
+{
+}
+
+template <class TYPE>
 ACE_Timer_Queue_Iterator_T<TYPE>::~ACE_Timer_Queue_Iterator_T ()
 {
 }

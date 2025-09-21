@@ -2,7 +2,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_INLINE ACE_Reactor *
-ACE_Reactor_Notification_Strategy::reactor ()
+ACE_Reactor_Notification_Strategy::reactor (void)
 {
   return this->reactor_;
 }

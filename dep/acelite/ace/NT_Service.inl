@@ -45,7 +45,7 @@ ACE_NT_Service::ACE_NT_Service (const ACE_TCHAR *name,
 
 
 ACE_INLINE int
-ACE_NT_Service::svc ()
+ACE_NT_Service::svc (void)
 {
   return -1;
 }
@@ -53,21 +53,21 @@ ACE_NT_Service::svc ()
 
 ACE_INLINE
 const ACE_TCHAR *
-ACE_NT_Service::name () const
+ACE_NT_Service::name (void) const
 {
   return name_;
 }
 
 ACE_INLINE
 const ACE_TCHAR *
-ACE_NT_Service::desc () const
+ACE_NT_Service::desc (void) const
 {
   return desc_;
 }
 
 ACE_INLINE
 const ACE_TCHAR *
-ACE_NT_Service::host () const
+ACE_NT_Service::host (void) const
 {
   return host_;
 }

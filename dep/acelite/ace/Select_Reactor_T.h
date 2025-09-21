@@ -120,13 +120,13 @@ public:
   virtual int timer_queue (ACE_Timer_Queue *tq);
 
   /// Return the current ACE_Timer_Queue.
-  virtual ACE_Timer_Queue *timer_queue () const;
+  virtual ACE_Timer_Queue *timer_queue (void) const;
 
   /// Close down the select_reactor and release all of its resources.
-  virtual int close ();
+  virtual int close (void);
 
   /// Close down the select_reactor and release all of its resources.
-  virtual ~ACE_Select_Reactor_T ();
+  virtual ~ACE_Select_Reactor_T (void);
 
   // = Event loop drivers.
 
@@ -182,7 +182,7 @@ public:
    * actively handling events.  If it returns non-zero, <handling_events> and
    * <handle_alertable_events> return -1 immediately.
    */
-  virtual int deactivated ();
+  virtual int deactivated (void);
 
   /**
    * Control whether the Reactor will handle any more incoming events or not.
@@ -304,7 +304,7 @@ public:
   virtual int suspend_handler (const ACE_Handle_Set &handles);
 
   /// Suspend all the <Event_Handlers> in the Select_Reactor.
-  virtual int suspend_handlers ();
+  virtual int suspend_handlers (void);
 
   /// Resume a temporarily suspend Event_Handler associated with
   /// @a eh.
@@ -318,7 +318,7 @@ public:
   virtual int resume_handler (const ACE_Handle_Set &handles);
 
   /// Resume all the <Event_Handlers> in the Select_Reactor.
-  virtual int resume_handlers ();
+  virtual int resume_handlers (void);
 
   /**
    * Return true if we any event associations were made by the reactor
@@ -326,7 +326,7 @@ public:
    * Select_Reactor does not do any event associations, this function
    * always return false.
    */
-  virtual bool uses_event_associations ();
+  virtual bool uses_event_associations (void);
 
   // = Timer management.
   /**
@@ -437,10 +437,10 @@ public:
    * dispatch the ACE_Event_Handlers that are passed in via the
    * notify pipe before breaking out of its recv loop.
    */
-  virtual int max_notify_iterations ();
+  virtual int max_notify_iterations (void);
 
   /// Get the existing restart value.
-  virtual bool restart ();
+  virtual bool restart (void);
 
   /// Set a new value for restart and return the original value.
   virtual bool restart (bool r);
@@ -451,7 +451,7 @@ public:
 
   /// Get position that the main ACE_Select_Reactor thread is requeued in the
   /// list of waiters during a <notify> callback.
-  virtual int requeue_position ();
+  virtual int requeue_position (void);
 
   // = Low-level wait_set mask manipulation methods.
   /// GET/SET/ADD/CLR the dispatch mask "bit" bound with the @a eh and
@@ -478,7 +478,7 @@ public:
                          int ops);
 
   /// Wake up all threads in waiting in the event loop
-  virtual void wakeup_all_threads ();
+  virtual void wakeup_all_threads (void);
 
   // = Only the owner thread can perform a <handle_events>.
 
@@ -514,11 +514,11 @@ public:
                        ACE_Event_Handler ** = 0);
 
   /// Returns true if we've been successfully initialized, else false.
-  virtual bool initialized ();
+  virtual bool initialized (void);
 
   /// Returns the current size of the Reactor's internal descriptor
   /// table.
-  virtual size_t size () const;
+  virtual size_t size (void) const;
 
   /**
    * Returns a reference to the ACE_Reactor_Token that is
@@ -527,7 +527,7 @@ public:
    * deadlock efficiently when ACE_Event_Handlers are used in
    * multiple threads.
    */
-  virtual ACE_Lock &lock ();
+  virtual ACE_Lock &lock (void);
 
   /// Dump the state of an object.
   virtual void dump () const;
@@ -594,10 +594,10 @@ protected:
   virtual int any_ready_i (ACE_Select_Reactor_Handle_Set &handle_set);
 
   /// Take corrective action when errors occur.
-  virtual int handle_error ();
+  virtual int handle_error (void);
 
   /// Make sure the handles are all valid.
-  virtual int check_handles ();
+  virtual int check_handles (void);
 
   /// Wait for events to occur.
   virtual int wait_for_multiple_events (ACE_Select_Reactor_Handle_Set &,
@@ -667,7 +667,7 @@ protected:
 
   /// Enqueue ourselves into the list of waiting threads at the
   /// appropriate point specified by <requeue_position_>.
-  virtual void renew ();
+  virtual void renew (void);
 
   /// Synchronization token for the MT_SAFE ACE_Select_Reactor.
   ACE_SELECT_REACTOR_TOKEN token_;
@@ -676,7 +676,7 @@ protected:
   ACE_Lock_Adapter<ACE_SELECT_REACTOR_TOKEN> lock_adapter_;
 
   /// Release the token lock when a Win32 structured exception occurs.
-  int release_token ();
+  int release_token (void);
 
   /// Stops the VC++ compiler from bitching about exceptions and destructors
   int handle_events_i (ACE_Time_Value *max_wait_time = 0);
@@ -686,6 +686,7 @@ protected:
   sig_atomic_t deactivated_;
 
 private:
+  /// Deny access since member-wise won't work...
   ACE_Select_Reactor_T (const ACE_Select_Reactor_T<ACE_SELECT_REACTOR_TOKEN> &) = delete;
   ACE_Select_Reactor_T<ACE_SELECT_REACTOR_TOKEN> &operator=  (const ACE_Select_Reactor_T<ACE_SELECT_REACTOR_TOKEN> &) = delete;
 };
@@ -696,7 +697,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include "ace/Select_Reactor_T.inl"
 #endif /* __ACE_INLINE__ */
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Select_Reactor_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Select_Reactor_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_SELECT_REACTOR_T_H */

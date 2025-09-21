@@ -50,14 +50,14 @@ namespace ACE
       Memory_Usage_Monitor (const char* name);
 
       /// Implementation of the pure virtual method.
-      virtual void update ();
+      virtual void update (void);
 
       /// Stores the default name, used if none is supplied by the user.
-      static const char* default_name ();
+      static const char* default_name (void);
 
     private:
       /// Overridden reset, calls platform-specific reset.
-      virtual void clear_i ();
+      virtual void clear_i (void);
 
     private:
       static const char* default_name_;

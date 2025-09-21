@@ -47,19 +47,19 @@ public:
                         int flags = O_CREAT|O_RDWR,
                         mode_t mode =  ACE_DEFAULT_RW_PROCESS_MUTEX_PERMS);
 
-  ~ACE_RW_Process_Mutex ();
+  ~ACE_RW_Process_Mutex (void);
 
   /**
    * Explicitly destroy the mutex.  Note that only one thread should
    * call this method since it doesn't protect against race
    * conditions.
    */
-  int remove ();
+  int remove (void);
 
   /// Same as acquire_write().
   /// Acquire lock ownership; blocks until the lock is acquired or the
   /// operation fails.
-  int acquire ();
+  int acquire (void);
 
   /**
    * Same as tryacquire_write().
@@ -69,18 +69,18 @@ public:
    * @retval -1 on failure. If the lock is already held, @c errno is set
    *         to @c EBUSY.
    */
-  int tryacquire ();
+  int tryacquire (void);
 
   /// Release lock.
-  int release ();
+  int release (void);
 
   /// Acquire read lock; blocks until the lock is acquired or the
   /// operation fails.
-  int acquire_read ();
+  int acquire_read (void);
 
   /// Acquire write lock; blocks until the lock is acquired or the
   /// operation fails.
-  int acquire_write ();
+  int acquire_write (void);
 
   /**
    * Try to acquire the read lock, but do not block if the lock is not
@@ -89,7 +89,7 @@ public:
    * @retval -1 on failure. If the lock is already held, @c errno is set
    *         to @c EBUSY.
    */
-  int tryacquire_read ();
+  int tryacquire_read (void);
 
   /**
    * Try to acquire the write lock, but do not block if the lock is not
@@ -98,14 +98,14 @@ public:
    * @retval -1 on failure. If the lock is already held, @c errno is set
    *         to @c EBUSY.
    */
-  int tryacquire_write ();
+  int tryacquire_write (void);
 
   /// Attempt to upgrade a read lock to a write lock. Returns 0 on
   /// success, -1 on failure.
-  int tryacquire_write_upgrade ();
+  int tryacquire_write_upgrade (void);
 
   /// Return the underlying lock.
-  const ACE_File_Lock &lock () const;
+  const ACE_File_Lock &lock (void) const;
 
   /// Dump the state of an object.
   void dump () const;
@@ -119,7 +119,7 @@ private:
   ACE_TCHAR name_[ACE_UNIQUE_NAME_LEN];
 
   /// Create and return the unique name.
-  const ACE_TCHAR *unique_name ();
+  const ACE_TCHAR *unique_name (void);
 
   /// We need this to get the readers/writer semantics...
   ACE_File_Lock lock_;

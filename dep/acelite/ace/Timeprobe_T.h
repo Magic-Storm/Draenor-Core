@@ -59,6 +59,7 @@ template <class ACE_LOCK, class ALLOCATOR>
 class ACE_Timeprobe_Ex
 {
 public:
+
   /// Self
   typedef ACE_Timeprobe_Ex<ACE_LOCK, ALLOCATOR>
           SELF;
@@ -80,7 +81,7 @@ public:
   ACE_Timeprobe_Ex (ALLOCATOR *allocator,
                  u_long size = ACE_DEFAULT_TIMEPROBE_TABLE_SIZE);
   /// Destructor.
-  ~ACE_Timeprobe_Ex ();
+  ~ACE_Timeprobe_Ex (void);
 
   /// Record a time. @a event is used to describe this time probe.
   void timeprobe (u_long event);
@@ -93,13 +94,13 @@ public:
                           u_long minimum_id);
 
   /// Print the time probes.
-  void print_times ();
+  void print_times (void);
 
   /// Print the time probes.
-  void print_absolute_times ();
+  void print_absolute_times (void);
 
   /// Reset the slots.  All old time probes will be lost.
-  void reset ();
+  void reset (void);
 
   void increase_size (u_long size);
 
@@ -109,33 +110,34 @@ public:
   // = (Somewhat private) Accessors
 
   /// Event Descriptions
-  ACE_Unbounded_Set<ACE_Event_Descriptions> &event_descriptions ();
+  ACE_Unbounded_Set<ACE_Event_Descriptions> &event_descriptions (void);
 
   /// Sorted Event Descriptions.
-  ACE_Unbounded_Set<ACE_Event_Descriptions> &sorted_event_descriptions ();
+  ACE_Unbounded_Set<ACE_Event_Descriptions> &sorted_event_descriptions (void);
 
   /// Find description of event @a i
   const char *find_description_i (u_long i);
 
   /// Sort event descriptions
-  void sort_event_descriptions_i ();
+  void sort_event_descriptions_i (void);
 
   /// Time probe slots
-  ACE_timeprobe_t *timeprobes ();
+  ACE_timeprobe_t *timeprobes (void);
 
   /// Synchronization variable.
-  ACE_LOCK &lock ();
+  ACE_LOCK &lock (void);
 
   /// Max size of timestamp table
-  u_long max_size ();
+  u_long max_size (void);
 
   /// Current size of timestamp table
-  u_long current_size ();
+  u_long current_size (void);
 
 protected:
+
   /// Obtain an allocator pointer.  If there is no allocator stored in
   /// the instance, the singleton allocator in the current process is used.
-  ALLOCATOR * allocator ();
+  ALLOCATOR * allocator (void);
 
   /// Event Descriptions
   EVENT_DESCRIPTIONS event_descriptions_;
@@ -191,7 +193,7 @@ public:
   ACE_Function_Timeprobe (Timeprobe &timeprobe, u_long event);
 
   /// Destructor.
-  ~ACE_Function_Timeprobe ();
+  ~ACE_Function_Timeprobe (void);
 
 protected:
   /// Reference to timeprobe.
@@ -203,7 +205,13 @@ protected:
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Timeprobe_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Timeprobe_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #endif /* ACE_COMPILE_TIMEPROBES */
 #include /**/ "ace/post.h"

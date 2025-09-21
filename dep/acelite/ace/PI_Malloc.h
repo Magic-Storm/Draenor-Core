@@ -59,7 +59,7 @@ public:
   class ACE_Export ACE_Malloc_Header
   {
   public:
-    ACE_Malloc_Header ();
+    ACE_Malloc_Header (void);
 
     /// Points to next block if on free list.
     MALLOC_HEADER_PTR next_block_;
@@ -109,10 +109,10 @@ public:
     ACE_Name_Node (const ACE_Name_Node &);
 
     /// Constructor.
-    ACE_Name_Node ();
+    ACE_Name_Node (void);
 
     /// Constructor.
-    ~ACE_Name_Node ();
+    ~ACE_Name_Node (void);
 
     /// Initialize a name node pointer.
     static void init_ptr (NAME_NODE_PTR *ptr,
@@ -120,7 +120,7 @@ public:
                           void *base_addr);
 
     /// Return a pointer to the name of this node.
-    const char *name () const;
+    const char *name (void) const;
 
     /// Assign a name;
     void name (const char *);
@@ -146,7 +146,7 @@ public:
   };
 
   /// Print out a bunch of size info for debugging.
-  static void print_alignment_info ();
+  static void print_alignment_info (void);
 
   /// Reference counter.
   int ref_counter_;
@@ -189,7 +189,8 @@ public:
   void dump () const;
 
 private:
-  void operator= (const ACE_Control_Block &) = delete;
+  // Disallow assignment.
+  void operator= (const ACE_Control_Block &);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

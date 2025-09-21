@@ -14,25 +14,24 @@
 #define ACE_CC_MINOR_VERSION __GNUC_MINOR__
 #define ACE_CC_BETA_VERSION (0)
 
-#if __cplusplus >= 202002L
-# define ACE_HAS_CPP20
-#endif
-#if __cplusplus >= 201703L
-# define ACE_HAS_CPP17
-# define ACE_FALLTHROUGH [[fallthrough]]
+#define ACE_HAS_STANDARD_CPP_LIBRARY 1
+#define ACE_USES_STD_NAMESPACE_FOR_STDCPP_LIB 1
+#define ACE_TEMPLATES_REQUIRE_SOURCE
+#define ACE_EXPLICIT_TEMPLATE_DESTRUCTOR_TAKES_ARGS
+#define ACE_NEW_THROWS_EXCEPTIONS
+#define ACE_HAS_NEW_NOTHROW
+
+#if __cplusplus >= 201103L
+# define ACE_HAS_CPP11
 #endif
 #if __cplusplus >= 201402L
 # define ACE_HAS_CPP14
 #endif
-#if __cplusplus >= 201103L
-# define ACE_HAS_CPP11
-# if !defined (ACE_FALLTHROUGH)
-#  if __GNUC__ >= 7
-#   define ACE_FALLTHROUGH [[gnu::fallthrough]]
-#  else
-#   define ACE_FALLTHROUGH
-#  endif
-# endif
+#if __cplusplus >= 201703L
+# define ACE_HAS_CPP17
+#endif
+#if __cplusplus >= 202002L
+# define ACE_HAS_CPP20
 #endif
 
 #if (defined (i386) || defined (__i386__)) && !defined (ACE_SIZEOF_LONG_DOUBLE)

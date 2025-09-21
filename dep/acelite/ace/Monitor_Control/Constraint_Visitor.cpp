@@ -18,6 +18,9 @@ namespace ACE
       : data_ (data)
     {}
 
+    Constraint_Visitor::~Constraint_Visitor (void)
+    {}
+
     ACE_CDR::Boolean
     Constraint_Visitor::evaluate_constraint (ETCL_Constraint *root)
     {

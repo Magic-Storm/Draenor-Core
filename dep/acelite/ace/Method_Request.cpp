@@ -7,6 +7,10 @@ ACE_Method_Request::ACE_Method_Request (unsigned long prio)
 {
 }
 
+ACE_Method_Request::~ACE_Method_Request ()
+{
+}
+
 unsigned long
 ACE_Method_Request::priority () const
 {

@@ -23,9 +23,9 @@ kill (pid_t pid, int signum)
    * This only becomes an issue when using the 64bit compiler
    * as the TASK_ID is no longer defined as an int.
    */
-  return ::kill ((ACE_VX_TASK_ID)pid, signum);
+  ACE_OSCALL_RETURN (::kill ((ACE_VX_TASK_ID)pid, signum), int, -1);
 #else
-  return ::kill (pid, signum);
+  ACE_OSCALL_RETURN (::kill (pid, signum), int, -1);
 #endif /* ACE_LACKS_KILL */
 }
 
@@ -35,12 +35,19 @@ pthread_sigmask (int how, const sigset_t *nsp, sigset_t *osp)
 #if defined (ACE_HAS_PTHREADS) && !defined (ACE_LACKS_PTHREAD_SIGMASK)
   int result;
 # ifdef ACE_PTHREAD_SIGMASK_MACRO
-  ACE_OSCALL_RETURN (ACE_ADAPT_RETVAL (ACE_PTHREAD_SIGMASK_MACRO (how, nsp, osp), result), int);
+  ACE_OSCALL_RETURN (ACE_ADAPT_RETVAL (ACE_PTHREAD_SIGMASK_MACRO (how, nsp, osp)
+                                      , result), int, -1);
 # elif defined (ACE_HAS_NONCONST_PTHREAD_SIGMASK)
   sigset_t *ncnsp = const_cast<sigset_t *>(nsp);
-  ACE_OSCALL_RETURN (ACE_ADAPT_RETVAL (::pthread_sigmask (how, ncnsp, osp), result), int);
+  ACE_OSCALL_RETURN (ACE_ADAPT_RETVAL (::pthread_sigmask (how, ncnsp, osp),
+                                       result),
+                     int,
+                     -1);
 # else
-  ACE_OSCALL_RETURN (ACE_ADAPT_RETVAL (::pthread_sigmask (how, nsp, osp), result), int);
+  ACE_OSCALL_RETURN (ACE_ADAPT_RETVAL (::pthread_sigmask (how, nsp, osp),
+                                       result),
+                     int,
+                     -1);
 # endif /* ACE_HAS_NONCONST__PTHREAD_SIGMASK */
 #else /* !ACE_HAS_PTHREADS && !ACE_LACKS_PTHREAD_SIGMASK */
   ACE_UNUSED_ARG (how);
@@ -56,7 +63,7 @@ sigaction (int signum, const ACE_SIGACTION *nsa, ACE_SIGACTION *osa)
   ACE_OS_TRACE ("ACE_OS::sigaction");
   if (signum == 0)
     return 0;
-#if defined (ACE_WIN32)
+#if defined (ACE_WIN32) && !defined (ACE_HAS_WINCE)
   struct sigaction sa;
 
   if (osa == 0)
@@ -75,10 +82,13 @@ sigaction (int signum, const ACE_SIGACTION *nsa, ACE_SIGACTION *osa)
   ACE_UNUSED_ARG (osa);
   ACE_NOTSUP_RETURN (-1);
 #elif !defined (ACE_HAS_SIGACTION_CONSTP2)
-  return ::sigaction (signum, const_cast<ACE_SIGACTION*> (nsa), osa);
+  ACE_OSCALL_RETURN (::sigaction (signum,
+                                  const_cast<ACE_SIGACTION*> (nsa),
+                                  osa),
+                     int, -1);
 #else
-  return ::sigaction (signum, nsa, osa);
-#endif /* ACE_WIN32 */
+  ACE_OSCALL_RETURN (::sigaction (signum, nsa, osa), int, -1);
+#endif /* ACE_WIN32 !ACE_HAS_WINCE */
 }
 
 ACE_INLINE int
@@ -189,16 +199,19 @@ signal (int signum, ACE_SignalHandler func)
   if (signum == 0)
     return 0;
   else
-    {
-#if (defined ACE_WIN32) || \
+#if (defined ACE_WIN32 && !defined ACE_HAS_WINCE) || \
     (!defined ACE_LACKS_UNIX_SIGNALS && !defined ACE_LACKS_SIGNAL)
-      return ::signal (signum, func);
+#  if !defined (ACE_HAS_TANDEM_SIGNALS) && !defined (ACE_HAS_LYNXOS4_SIGNALS)
+    return ::signal (signum, func);
+#  else
+    return (ACE_SignalHandler) ::signal (signum, (void (*)(int)) func);
+#  endif /* !ACE_HAS_TANDEM_SIGNALS && !ACE_HAS_LYNXOS4_SIGNALS */
 #else
-      ACE_UNUSED_ARG (signum);
-      ACE_UNUSED_ARG (func);
-      ACE_NOTSUP_RETURN (0);     // Should return SIG_ERR but maybe not defined on all platforms
-#endif /* defined (ACE_WIN32) || !defined (ACE_LACKS_UNIX_SIGNALS) */
-    }
+    // @@ WINCE: Don't know how to implement signal on WinCE (yet.)
+    ACE_UNUSED_ARG (signum);
+    ACE_UNUSED_ARG (func);
+    ACE_NOTSUP_RETURN (0);     // Should return SIG_ERR but it is not defined on WinCE.
+#endif /* defined (ACE_WIN32) && !defined (ACE_HAS_WINCE) || !defined (ACE_LACKS_UNIX_SIGNALS) */
 }
 
 ACE_INLINE int
@@ -210,7 +223,7 @@ sigprocmask (int how, const sigset_t *nsp, sigset_t *osp)
   ACE_UNUSED_ARG (osp);
   ACE_NOTSUP_RETURN (-1);
 #else
-  return ::sigprocmask (how, nsp, osp);
+  ACE_OSCALL_RETURN (::sigprocmask (how, nsp, osp), int, -1);
 #endif /* ACE_LACKS_SIGSET || ACE_LACKS_SIGSET_DEFINITIONS || ACE_LACKS_SIGPROCMASK */
 }
 
@@ -239,7 +252,7 @@ raise (const int signum)
   ACE_UNUSED_ARG (signum);
   ACE_NOTSUP_RETURN (-1);
 #else
-  return ::raise (signum);
+  ACE_OSCALL_RETURN (::raise (signum), int, -1);
 #endif /* ACE_LACKS_RAISE */
 }
 

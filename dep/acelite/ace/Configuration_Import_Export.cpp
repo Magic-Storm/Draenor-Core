@@ -11,8 +11,16 @@ ACE_Config_ImpExp_Base::ACE_Config_ImpExp_Base (ACE_Configuration& config)
 {
 }
 
+ACE_Config_ImpExp_Base::~ACE_Config_ImpExp_Base ()
+{
+}
+
 ACE_Registry_ImpExp::ACE_Registry_ImpExp (ACE_Configuration& config)
     : ACE_Config_ImpExp_Base (config)
+{
+}
+
+ACE_Registry_ImpExp::~ACE_Registry_ImpExp ()
 {
 }
 
@@ -460,6 +468,10 @@ ACE_Ini_ImpExp::ACE_Ini_ImpExp (ACE_Configuration& config)
 {
 }
 
+ACE_Ini_ImpExp::~ACE_Ini_ImpExp ()
+{
+}
+
 // Method to read file and populate object.
 int
 ACE_Ini_ImpExp::import_config (const ACE_TCHAR* filename)
@@ -673,6 +685,7 @@ ACE_Ini_ImpExp::export_section (const ACE_Configuration_Section_Key& section,
               }
             default:
               return -3;
+
             }// end switch on type
 
           line += ACE_TEXT ("\n");
@@ -698,6 +711,7 @@ ACE_Ini_ImpExp::export_section (const ACE_Configuration_Section_Key& section,
       ++index;
     }
   return 0;
+
 }
 
 // Method to squish leading and trailing whitespaces from a string.

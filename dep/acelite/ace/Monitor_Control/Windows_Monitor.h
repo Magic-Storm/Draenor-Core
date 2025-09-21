@@ -44,17 +44,17 @@ namespace ACE
       Windows_Monitor (const ACE_TCHAR *path);
 
       /// Platform-specific implementation.
-      void update_i ();
+      void update_i (void);
 
       /// Platform-specific reset.
-      void clear_impl ();
+      void clear_impl (void);
 
     protected:
       double value_;
 
     private:
       /// Code common to constructor and clear_impl().
-      void init ();
+      void init (void);
 
     /// Make these persistent as members so they don't have to be
     /// created & destroyed with each update.

@@ -40,10 +40,10 @@ class ACE_QoS_Export ACE_QoS_Session_Factory
 {
 public :
   /// Default constructor.
-  ACE_QoS_Session_Factory ();
+  ACE_QoS_Session_Factory (void);
 
   /// Default destructor.
-  ~ACE_QoS_Session_Factory ();
+  ~ACE_QoS_Session_Factory (void);
 
   /// Types of sessions for this factory to manage.
   enum ACE_QoS_Session_Type
@@ -69,6 +69,7 @@ public :
   int destroy_session (ACE_QoS_Session *qos_session);
 
 private:
+
   /// Used by the create_session () to add new sessions to the
   /// set of sessions created by this factory.
   int add_session (ACE_QoS_Session *qos_session);
@@ -80,6 +81,7 @@ private:
   /// Unordered set of QoS Sessions.
   typedef ACE_Unbounded_Set <ACE_QoS_Session *> QOS_SESSION_SET;
   QOS_SESSION_SET qos_session_set_;
+
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

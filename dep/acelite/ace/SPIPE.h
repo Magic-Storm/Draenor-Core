@@ -51,7 +51,7 @@ public:
    * @return 0 for success; -1 for failure. If a failure occurs, further
    * error information is available from ACE_OS::last_error().
    */
-  int close ();
+  int close (void);
 
   /// Close down the SPIPE and remove the rendezvous point from
   /// the file system.
@@ -59,7 +59,7 @@ public:
    * @return 0 for success; -1 for failure. If a failure occurs, further
    * error information is available from ACE_OS::last_error().
    */
-  int remove ();
+  int remove (void);
 
   /// Return the local address of this endpoint.
   /**
@@ -98,7 +98,7 @@ private:
 
 protected:
   /// Ensure that this class is an abstract base class
-  ACE_SPIPE ();
+  ACE_SPIPE (void);
 
   /// Our local address.
   ACE_SPIPE_Addr local_addr_;

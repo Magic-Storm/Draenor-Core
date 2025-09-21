@@ -36,7 +36,7 @@ public:
   ACE_Obchunk (size_t size);
 
   /// Dtor.
-  ~ACE_Obchunk () = default;
+  ~ACE_Obchunk ();
 
   /// Dump the state of an object.
   void dump () const;
@@ -65,6 +65,10 @@ public:
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL
+
+#if defined (__ACE_INLINE__)
+#include "ace/Obchunk.inl"
+#endif /* __ACE_INLINE__ */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OBCHUNK_H */

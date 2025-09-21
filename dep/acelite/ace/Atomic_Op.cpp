@@ -7,7 +7,12 @@
 
 #if defined (ACE_HAS_BUILTIN_ATOMIC_OP)
 
+#if defined (ACE_INCLUDE_ATOMIC_OP_SPARC)
+# include "ace/Atomic_Op_Sparc.h"
+#endif /* ACE_INCLUDE_ATOMIC_OP_SPARC */
+
 namespace {
+
 #if defined (_MSC_VER)
 // Disable "no return value" warning, as we will be putting
 // the return values directly into the EAX register.
@@ -23,6 +28,10 @@ single_cpu_increment (volatile long *value)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "xadd %0, (%1)" : "+r"(tmp) : "r"(addr) );
   return tmp + 1;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_add_long (
+           reinterpret_cast<volatile unsigned long*> (value), 1);
 #elif defined(__GNUC__) && defined(__PPC__)
   long tmp;
   asm("lwz %0,%1" : "=r" (tmp) : "m" (*value) );
@@ -43,6 +52,10 @@ single_cpu_decrement (volatile long *value)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "xadd %0, (%1)" : "+r"(tmp) : "r"(addr) );
   return tmp - 1;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_add_long (
+            reinterpret_cast<volatile unsigned long*> (value), -1);
 #elif defined(__GNUC__) && defined(__PPC__)
   long tmp;
   asm("lwz %0,%1" : "=r" (tmp) : "m" (*value) );
@@ -62,6 +75,10 @@ single_cpu_exchange (volatile long *value, long rhs)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "xchg %0, (%1)" : "+r"(rhs) : "r"(addr) );
   return rhs;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_swap_long (
+           reinterpret_cast<volatile unsigned long*> (value), rhs);
 #elif defined(__GNUC__) && defined(__PPC__)
   long tmp;
   asm("lwz %0,%1" : "=r" (tmp) : "m" (rhs) );
@@ -81,6 +98,10 @@ single_cpu_exchange_add (volatile long *value, long rhs)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "xadd %0, (%1)" : "+r"(rhs) : "r"(addr) );
   return rhs;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_swap_add_long (
+           reinterpret_cast<volatile unsigned long*> (value), rhs);
 #elif defined(__GNUC__) && defined(__PPC__)
   long tmp;
   asm("add %0,%1,%2" : "=r" (tmp) : "r" (*value), "r" (rhs) );
@@ -120,6 +141,10 @@ multi_cpu_increment (volatile long *value)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "lock ; xadd %0, (%1)" : "+r"(tmp) : "r"(addr) );
   return tmp + 1;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_add_long (
+           reinterpret_cast<volatile unsigned long*> (value), 1);
 #else /* ACE_HAS_INTEL_ASSEMBLY*/
   ACE_UNUSED_ARG (value);
   ACE_NOTSUP_RETURN (-1);
@@ -134,6 +159,10 @@ multi_cpu_decrement (volatile long *value)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "lock ; xadd %0, (%1)" : "+r"(tmp) : "r"(addr) );
   return tmp - 1;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_add_long (
+           reinterpret_cast<volatile unsigned long*> (value), -1);
 #else /* ACE_HAS_INTEL_ASSEMBLY*/
   ACE_UNUSED_ARG (value);
   ACE_NOTSUP_RETURN (-1);
@@ -148,6 +177,10 @@ multi_cpu_exchange (volatile long *value, long rhs)
   // The XCHG instruction automatically follows LOCK semantics
   asm( "xchg %0, (%1)" : "+r"(rhs) : "r"(addr) );
   return rhs;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_swap_long (
+           reinterpret_cast<volatile unsigned long*> (value), rhs);
 #else /* ACE_HAS_INTEL_ASSEMBLY*/
   ACE_UNUSED_ARG (value);
   ACE_UNUSED_ARG (rhs);
@@ -162,6 +195,10 @@ multi_cpu_exchange_add (volatile long *value, long rhs)
   unsigned long addr = reinterpret_cast<unsigned long> (value);
   asm( "lock ; xadd %0, (%1)" : "+r"(rhs) : "r"(addr) );
   return rhs;
+#elif !defined (ACE_HAS_SOLARIS_ATOMIC_LIB) && (defined (sun) || \
+     (defined (__SUNPRO_CC) && (defined (__i386) || defined (__x86_64))))
+  return ace_atomic_swap_add_long (
+           reinterpret_cast<volatile unsigned long*> (value), rhs);
 #elif defined (WIN32) && !defined (ACE_HAS_INTERLOCKED_EXCHANGEADD)
 # if defined (_MSC_VER)
   __asm
@@ -202,7 +239,7 @@ long (*ACE_Atomic_Op<ACE_Thread_Mutex, long>::exchange_fn_) (volatile long *, lo
 long (*ACE_Atomic_Op<ACE_Thread_Mutex, long>::exchange_add_fn_) (volatile long *, long) = multi_cpu_exchange_add;
 
 void
-ACE_Atomic_Op<ACE_Thread_Mutex, long>::init_functions ()
+ACE_Atomic_Op<ACE_Thread_Mutex, long>::init_functions (void)
 {
   if (ACE_OS::num_processors () == 1)
     {
@@ -221,7 +258,7 @@ ACE_Atomic_Op<ACE_Thread_Mutex, long>::init_functions ()
 }
 
 void
-ACE_Atomic_Op<ACE_Thread_Mutex, long>::dump () const
+ACE_Atomic_Op<ACE_Thread_Mutex, long>::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACELIB_DEBUG ((LM_DEBUG, ACE_BEGIN_DUMP, this));
@@ -235,7 +272,7 @@ long (*ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::exchange_fn_) (volatile l
 long (*ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::exchange_add_fn_) (volatile long *, long) = multi_cpu_exchange_add;
 
 void
-ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::init_functions ()
+ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::init_functions (void)
 {
   if (ACE_OS::num_processors () == 1)
     {
@@ -254,7 +291,7 @@ ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::init_functions ()
 }
 
 void
-ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::dump () const
+ACE_Atomic_Op<ACE_Thread_Mutex, unsigned long>::dump (void) const
 {
 #if defined (ACE_HAS_DUMP)
   ACELIB_DEBUG ((LM_DEBUG, ACE_BEGIN_DUMP, this));

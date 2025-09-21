@@ -1,4 +1,6 @@
 #include "XML_Error_Handler.h"
+#include "ace/Log_Category.h"
+#include "ace/Auto_Ptr.h"
 #include "ace/ACE.h"
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOMLocator.hpp>
@@ -6,9 +8,11 @@
 #include "XercesString.h"
 #include <iostream>
 
+using xercesc::SAXParseException;
+
 namespace XML
 {
-  void XML_Error_Handler::warning(const xercesc::SAXParseException& toCatch)
+  void XML_Error_Handler::warning(const SAXParseException& toCatch)
   {
     if (ACE::debug ())
       {
@@ -21,7 +25,7 @@ namespace XML
       }
   }
 
-  void XML_Error_Handler::error(const xercesc::SAXParseException& toCatch)
+  void XML_Error_Handler::error(const SAXParseException& toCatch)
   {
     if (ACE::debug ())
       {
@@ -35,7 +39,7 @@ namespace XML
     this->errors_ = true;
   }
 
-  void XML_Error_Handler::fatalError(const xercesc::SAXParseException& toCatch)
+  void XML_Error_Handler::fatalError(const SAXParseException& toCatch)
   {
     if (ACE::debug ())
       {

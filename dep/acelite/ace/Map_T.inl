@@ -7,6 +7,12 @@ ACE_Noop_Key_Generator<T>::operator() (T &)
   return -1;
 }
 
+template <class T> ACE_INLINE
+ACE_Incremental_Key_Generator<T>::ACE_Incremental_Key_Generator ()
+  : t_ (0)
+{
+}
+
 template <class T> ACE_INLINE int
 ACE_Incremental_Key_Generator<T>::operator() (T &t)
 {
@@ -178,6 +184,11 @@ template <class T> ACE_INLINE ACE_Reverse_Iterator_Impl<T> &
 ACE_Reverse_Iterator<T>::impl ()
 {
   return *this->implementation_;
+}
+
+template <class KEY, class VALUE> ACE_INLINE
+ACE_Map<KEY, VALUE>::ACE_Map ()
+{
 }
 
 template <class KEY, class VALUE> ACE_INLINE ACE_Iterator<ACE_Reference_Pair<const KEY, VALUE> >

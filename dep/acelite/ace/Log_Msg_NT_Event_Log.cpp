@@ -8,9 +8,16 @@
 #include "ace/OS_NS_stdio.h"
 #include "ace/OS_NS_string.h"
 
+
+
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
-ACE_Log_Msg_NT_Event_Log::~ACE_Log_Msg_NT_Event_Log ()
+ACE_Log_Msg_NT_Event_Log::ACE_Log_Msg_NT_Event_Log (void)
+  : evlog_handle_(0)
+{
+}
+
+ACE_Log_Msg_NT_Event_Log::~ACE_Log_Msg_NT_Event_Log (void)
 {
   this->close ();
 }
@@ -72,13 +79,13 @@ ACE_Log_Msg_NT_Event_Log::open (const ACE_TCHAR *logger_key)
 }
 
 int
-ACE_Log_Msg_NT_Event_Log::reset ()
+ACE_Log_Msg_NT_Event_Log::reset (void)
 {
   return this->close ();
 }
 
 int
-ACE_Log_Msg_NT_Event_Log::close ()
+ACE_Log_Msg_NT_Event_Log::close (void)
 {
   if (this->evlog_handle_ == 0
       || DeregisterEventSource (this->evlog_handle_))

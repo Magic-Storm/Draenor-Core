@@ -4,6 +4,8 @@
 /**
  *  @file    Semaphore.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -60,6 +62,13 @@ public:
    * is assumed to be in "absolute" rather than "relative" time.  The
    * value of @a tv is updated upon return to show the actual
    * (absolute) acquisition time.
+   *
+   * @note Solaris threads do not support timed semaphores.
+   * Therefore, if you're running on Solaris you might want to
+   * consider using the ACE POSIX pthreads implementation instead,
+   * which can be enabled by compiling ACE with
+   * -DACE_HAS_PTHREADS, rather than -DACE_HAS_STHREADS or
+   * -DACE_HAS_POSIX_SEM.
    */
   int acquire (ACE_Time_Value &tv);
 
@@ -71,7 +80,13 @@ public:
    * <*tv> is assumed to be in "absolute" rather than "relative" time.
    * The value of <*tv> is updated upon return to show the actual
    * (absolute) acquisition time.
-   */
+   *
+   * @note Solaris threads do not support timed semaphores.
+   * Therefore, if you're running on Solaris you might want to
+   * consider using the ACE POSIX pthreads implementation instead,
+   * which can be enabled by compiling ACE with
+   * -DACE_HAS_PTHREADS, rather than -DACE_HAS_STHREADS or
+   * -DACE_HAS_POSIX_SEM.  */
   int acquire (ACE_Time_Value *tv);
 
   /**
@@ -150,8 +165,9 @@ protected:
   bool removed_;
 
 private:
-  void operator= (const ACE_Semaphore &) = delete;
-  ACE_Semaphore (const ACE_Semaphore &) = delete;
+  // = Prevent assignment and initialization.
+  void operator= (const ACE_Semaphore &);
+  ACE_Semaphore (const ACE_Semaphore &);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

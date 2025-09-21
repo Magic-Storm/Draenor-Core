@@ -22,6 +22,11 @@ ACE_Event_Handler::ACE_Event_Handler (ACE_Reactor *r,
   // ACE_TRACE ("ACE_Event_Handler::ACE_Event_Handler");
 }
 
+ACE_Event_Handler::~ACE_Event_Handler ()
+{
+  // ACE_TRACE ("ACE_Event_Handler::~ACE_Event_Handler");
+}
+
 // Gets the file descriptor associated with this I/O device.
 ACE_HANDLE
 ACE_Event_Handler::get_handle () const
@@ -362,6 +367,7 @@ bool
 ACE_Event_Handler_var::operator !=(std::nullptr_t) const
 {
   return this->ptr_ != nullptr;
+
 }
 
 // ---------------------------------------------------------------------

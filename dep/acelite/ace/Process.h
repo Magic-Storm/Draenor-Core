@@ -35,6 +35,11 @@ class ACE_Time_Value;
  *
  * This class controls the options passed to <CreateProcess> (or <fork>
  * and <exec>).
+ * Notice that on Windows CE, creating a process merely means
+ * instantiating a new process.  You can't set the handles (since
+ * there's no stdin, stdout and stderr,) specify process/thread
+ * options, set environment,...  So, basically, this class only
+ * set the command line and nothing else.
  * Notice that on UNIX platforms, if the <setenv> is used, the
  * <spawn> is using the <execve> system call. It means that the
  * <command_line> should include a full path to the program file
@@ -164,10 +169,10 @@ public:
 #endif /* !ACE_USES_WCHAR */
     ;
 
-#if defined (ACE_HAS_WCHAR)
+#if defined (ACE_HAS_WCHAR) && !defined (ACE_HAS_WINCE)
   /// Anti-TChar version of command_line ()
   int command_line (const ACE_ANTI_TCHAR *format, ...);
-#endif /* ACE_HAS_WCHAR */
+#endif /* ACE_HAS_WCHAR && !ACE_HAS_WINCE */
 #endif // ACE_LACKS_VA_FUNCTIONS
 
   /// Same as above in argv format.  @a argv must be null terminated.
@@ -302,26 +307,26 @@ public:
   // = Non-portable accessors for when you "just have to use them."
 
   /// Used for setting and getting.
-  ACE_TEXT_STARTUPINFO *startup_info ();
+  ACE_TEXT_STARTUPINFO *startup_info (void);
 
   /// Get the process_attributes.  Returns NULL if
   /// set_process_attributes has not been set.
-  LPSECURITY_ATTRIBUTES get_process_attributes () const;
+  LPSECURITY_ATTRIBUTES get_process_attributes (void) const;
 
   /// If this is called, a non-null process attributes is sent to
   /// CreateProcess.
-  LPSECURITY_ATTRIBUTES set_process_attributes ();
+  LPSECURITY_ATTRIBUTES set_process_attributes (void);
 
   /// Get the thread_attributes.  Returns NULL if set_thread_attributes
   /// has not been set.
-  LPSECURITY_ATTRIBUTES get_thread_attributes () const;
+  LPSECURITY_ATTRIBUTES get_thread_attributes (void) const;
 
   /// If this is called, a non-null thread attributes is sent to
   /// CreateProcess.
-  LPSECURITY_ATTRIBUTES set_thread_attributes ();
+  LPSECURITY_ATTRIBUTES set_thread_attributes (void);
 
   /// Get user token. Return ACE_INVALID_HANDLE if it has not been set.
-  HANDLE get_user_token () const;
+  HANDLE get_user_token (void) const;
 
   /// Set user token for creating process as user.
   /// @param token the user token is passed to \c ::CreateProcessAsUser.
@@ -342,12 +347,12 @@ public:
   int setreugid (const ACE_TCHAR* user);
   void setruid (uid_t id);
   void seteuid (uid_t id);
-  void setrgid (gid_t id);
-  void setegid (gid_t id);
+  void setrgid (uid_t id);
+  void setegid (uid_t id);
   uid_t getruid () const;
   uid_t geteuid () const;
-  gid_t getrgid () const;
-  gid_t getegid () const;
+  uid_t getrgid () const;
+  uid_t getegid () const;
 
   /**
    * Get the inherit_environment flag.
@@ -360,6 +365,8 @@ public:
   void inherit_environment (bool nv);
 #endif /* ACE_WIN32 */
 protected:
+
+#if !defined (ACE_HAS_WINCE)
   /// Add @a assignment to environment_buf_ and adjust
   /// environment_argv_.  @a len is the strlen of @a assignment.
   int setenv_i (ACE_TCHAR *assignment, size_t len);
@@ -367,6 +374,7 @@ protected:
   /// Whether the child process inherits the current process
   /// environment.
   bool inherit_environment_;
+#endif /* !ACE_HAS_WINCE */
 
   /// Default 0.
   u_long creation_flags_;
@@ -374,10 +382,10 @@ protected:
   /// Avoid zombies for spawned processes.
   int avoid_zombies_;
 
-#if defined (ACE_WIN32)
+#if defined (ACE_WIN32) && !defined (ACE_HAS_WINCE)
   /// Helper function to grab win32 environment and stick it in
   /// environment_buf_ using this->setenv_i.
-  void inherit_environment ();
+  void inherit_environment (void);
 
   /// Ensures once only call to inherit environment.
   int environment_inherited_;
@@ -410,13 +418,14 @@ protected:
   //   These should be set to -1 to leave unchanged (default).
   uid_t ruid_;
   uid_t euid_;
-  gid_t rgid_;
-  gid_t egid_;
+  uid_t rgid_;
+  uid_t egid_;
 #endif /* ACE_WIN32 */
 
   /// Default true.
   bool handle_inheritance_;
 
+#if !defined (ACE_HAS_WINCE)
   /// Is 1 if stdhandles was called.
   int set_handles_called_;
 
@@ -444,6 +453,7 @@ protected:
 
   /// The current working directory.
   ACE_TCHAR working_directory_[MAXPATHLEN + 1];
+#endif /* !ACE_HAS_WINCE */
 
   /// Ensures command_line_argv is only calculated once.
   bool command_line_argv_calculated_;
@@ -628,7 +638,7 @@ public:
   void close_passed_handles ();
 
 #if defined (ACE_WIN32)
-  PROCESS_INFORMATION process_info ();
+  PROCESS_INFORMATION process_info (void);
 #endif /* ACE_WIN32 */
 
 private:
@@ -658,7 +668,9 @@ protected:
   ACE_Handle_Set dup_handles_;
 
 private:
-#if defined (ACE_WIN32) && defined (ACE_HAS_WCHAR) && !defined (ACE_USES_WCHAR)
+#if defined (ACE_WIN32) && \
+    defined (ACE_HAS_WCHAR) && !defined (ACE_USES_WCHAR) && \
+    !defined (ACE_HAS_WINCE)
   wchar_t* convert_env_buffer (const char* env) const;
 #endif
 };
@@ -675,13 +687,16 @@ private:
 class ACE_Export ACE_Managed_Process : public ACE_Process
 {
 public:
+
   /// Cleanup by deleting @c this.
-  void unmanage () override;
+  virtual void unmanage ();
 
   ACE_ALLOC_HOOK_DECLARE;
 
 protected:
-  ~ACE_Managed_Process () override = default;
+
+  /// Make sure that we're allocated dynamically!
+  virtual ~ACE_Managed_Process ();
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

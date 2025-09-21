@@ -13,6 +13,14 @@
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
+// Construction/Destruction
+
+ACE_Dirent_Selector::ACE_Dirent_Selector ()
+  : namelist_ (0),
+    n_ (0)
+{
+}
+
 ACE_Dirent_Selector::~ACE_Dirent_Selector ()
 {
   // Free up any allocated resources.

@@ -37,7 +37,7 @@ class ACE_Export ACE_UPIPE_Acceptor : public ACE_SPIPE_Acceptor
 {
 public:
   /// Default constructor.
-  ACE_UPIPE_Acceptor ();
+  ACE_UPIPE_Acceptor (void);
 
   /// Initialize passive endpoint.
   ACE_UPIPE_Acceptor (const ACE_UPIPE_Addr &local_sap,
@@ -48,14 +48,14 @@ public:
             int reuse_addr = 0);
 
   /// Close down and release resources.
-  ~ACE_UPIPE_Acceptor ();
+  ~ACE_UPIPE_Acceptor (void);
 
   /// Close down and release resources.
-  int close ();
+  int close (void);
 
   /// Close down and release resources and remove the underlying SPIPE
   /// rendezvous point.
-  int remove ();
+  int remove (void);
 
   // = Passive connection acceptance method.
   /**

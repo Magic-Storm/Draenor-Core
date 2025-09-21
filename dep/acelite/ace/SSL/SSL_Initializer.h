@@ -29,13 +29,13 @@ class ACE_SSL_Export ACE_SSL_Initializer
 {
 public:
   /// Used to force the initialization of ACE_SSL.
-  static int static_init ();
+  static int static_init (void);
 
   /// Create ACE_SSL_Context singleton.
   virtual int init (int argc, ACE_TCHAR *argv[]);
 
   /// Do cleanup of SSL library.
-  virtual int fini ();
+  virtual int fini (void);
 };
 
 static int ACE_Force_ACE_SSL_Initializer = ACE_SSL_Initializer::static_init ();

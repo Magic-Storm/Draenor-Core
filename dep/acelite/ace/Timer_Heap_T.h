@@ -45,19 +45,19 @@ public:
   ACE_Timer_Heap_Iterator_T (Heap &);
 
   /// Destructor.
-  ~ACE_Timer_Heap_Iterator_T () override = default;
+  virtual ~ACE_Timer_Heap_Iterator_T ();
 
   /// Positions the iterator at the earliest node in the Timer Queue
-  void first () override;
+  virtual void first ();
 
   /// Positions the iterator at the next node in the Timer Queue
-  void next () override;
+  virtual void next ();
 
   /// Returns true when there are no more nodes in the sequence
-  bool isdone () const override;
+  virtual bool isdone () const;
 
   /// Returns the node at the current position in the sequence
-  ACE_Timer_Node_T<TYPE> *item () override;
+  virtual ACE_Timer_Node_T<TYPE> *item ();
 
   /// Declare the dynamic allocation hooks.
   ACE_ALLOC_HOOK_DECLARE;
@@ -193,6 +193,7 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 protected:
+
   /**
    * Schedule a timer that may optionally auto-reset.
    * Schedule @a type that will expire at @a future_time,
@@ -332,7 +333,13 @@ private:
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
 #include "ace/Timer_Heap_T.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Timer_Heap_T.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 #endif /* ACE_TIMER_HEAP_T_H */

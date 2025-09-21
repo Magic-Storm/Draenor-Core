@@ -4,6 +4,8 @@
 /**
  *  @file    RW_Mutex.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -119,8 +121,9 @@ protected:
   bool removed_;
 
 private:
-  void operator= (const ACE_RW_Mutex &) = delete;
-  ACE_RW_Mutex (const ACE_RW_Mutex &) = delete;
+  // = Prevent assignment and initialization.
+  void operator= (const ACE_RW_Mutex &);
+  ACE_RW_Mutex (const ACE_RW_Mutex &);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

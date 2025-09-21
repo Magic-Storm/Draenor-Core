@@ -78,7 +78,7 @@ ACE_Argv_Type_Converter::~ACE_Argv_Type_Converter ()
 
 #if defined (ACE_USES_WCHAR)
 void
-ACE_Argv_Type_Converter::initialize ()
+ACE_Argv_Type_Converter::initialize (void)
 {
   if (this->original_type_)
     {
@@ -100,7 +100,7 @@ ACE_Argv_Type_Converter::initialize ()
 
 
 void
-ACE_Argv_Type_Converter::align_char_with_wchar ()
+ACE_Argv_Type_Converter::align_char_with_wchar (void)
 {
   for (int wchar_argv_index = 0; wchar_argv_index < this->saved_argc_;
        ++wchar_argv_index)
@@ -131,7 +131,7 @@ ACE_Argv_Type_Converter::align_char_with_wchar ()
 }
 
 void
-ACE_Argv_Type_Converter::align_wchar_with_char ()
+ACE_Argv_Type_Converter::align_wchar_with_char (void)
 {
   for (int char_argv_index = 0; char_argv_index < saved_argc_;
        ++char_argv_index)
@@ -163,7 +163,7 @@ ACE_Argv_Type_Converter::align_wchar_with_char ()
 }
 
 void
-ACE_Argv_Type_Converter::cleanup ()
+ACE_Argv_Type_Converter::cleanup (void)
 {
   for (int i = this->saved_argc_; i < this->before_pass_argc_; ++i)
     {

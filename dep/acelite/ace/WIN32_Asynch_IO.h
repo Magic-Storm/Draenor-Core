@@ -67,45 +67,45 @@ class ACE_Export ACE_WIN32_Asynch_Result : public virtual ACE_Asynch_Result_Impl
 
 public:
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Result ();
+  virtual ~ACE_WIN32_Asynch_Result (void);
 
   /// Simulate error value to use in the post_completion()
   void set_error (u_long errcode);
@@ -167,19 +167,19 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   // = Access methods.
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 protected:
   /// Constructor.
   ACE_WIN32_Asynch_Operation (ACE_WIN32_Proactor *win32_proactor);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Operation ();
+  virtual ~ACE_WIN32_Asynch_Operation (void);
 
   /// Win32 Proactor.
   ACE_WIN32_Proactor *win32_proactor_;
@@ -212,57 +212,57 @@ class ACE_Export ACE_WIN32_Asynch_Read_Stream_Result : public virtual ACE_Asynch
 public:
   /// The number of bytes which were requested at the start of the
   /// asynchronous read.
-  size_t bytes_to_read () const;
+  size_t bytes_to_read (void) const;
 
   /// Message block which contains the read data.
-  ACE_Message_Block &message_block () const;
+  ACE_Message_Block &message_block (void) const;
 
   /// I/O handle used for reading.
-  ACE_HANDLE handle () const;
+  ACE_HANDLE handle (void) const;
 
   // Base class operations. These operations are here to kill
   // dominance warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
 
   /// Accessor for the scatter read flag
-  int scatter_enabled () const;
+  int scatter_enabled (void) const;
 
 protected:
   /// Constructor is protected since creation is limited to
@@ -284,7 +284,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Read_Stream_Result ();
+  virtual ~ACE_WIN32_Asynch_Read_Stream_Result (void);
 
   /// Bytes requested when the asynchronous read was initiated.
   size_t bytes_to_read_;
@@ -314,6 +314,7 @@ protected:
 class ACE_Export ACE_WIN32_Asynch_Read_Stream : public virtual ACE_Asynch_Read_Stream_Impl,
                                                 public ACE_WIN32_Asynch_Operation
 {
+
 public:
   /// Constructor.
   ACE_WIN32_Asynch_Read_Stream (ACE_WIN32_Proactor *win32_proactor);
@@ -337,7 +338,7 @@ public:
              int signal_number = 0);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Read_Stream ();
+  virtual ~ACE_WIN32_Asynch_Read_Stream (void);
 
   // Methods belong to ACE_WIN32_Asynch_Operation base class. These
   // methods are defined here to avoid VC++ warnings. They route the
@@ -359,10 +360,10 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 protected:
   /// This is the method which does the real work and is there so that
@@ -388,57 +389,57 @@ class ACE_Export ACE_WIN32_Asynch_Write_Stream_Result : public virtual ACE_Async
 public:
   /// The number of bytes which were requested at the start of the
   /// asynchronous write.
-  size_t bytes_to_write () const;
+  size_t bytes_to_write (void) const;
 
   /// Message block that contains the data to be written.
-  ACE_Message_Block &message_block () const;
+  ACE_Message_Block &message_block (void) const;
 
   /// I/O handle used for writing.
-  ACE_HANDLE handle () const;
+  ACE_HANDLE handle (void) const;
 
   // = Base class operations. These operations are here to kill some
   //   warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
 
   /// Accessor for the gather write flag
-  int gather_enabled () const;
+  int gather_enabled (void) const;
 
 protected:
   /// Constructor is protected since creation is limited to
@@ -460,7 +461,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Write_Stream_Result ();
+  virtual ~ACE_WIN32_Asynch_Write_Stream_Result (void);
 
   /// The number of bytes which were requested at the start of the
   /// asynchronous write.
@@ -514,7 +515,7 @@ public:
               int signal_number = 0);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Write_Stream ();
+  virtual ~ACE_WIN32_Asynch_Write_Stream (void);
 
   // = Methods belonging to <ACE_WIN32_Asynch_Operation> base class.
 
@@ -537,10 +538,10 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 };
 
 /**
@@ -564,39 +565,39 @@ public:
   //   methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   // The following methods belong to
   // ACE_WIN32_Asynch_Read_Stream_Result. They are here to avoid VC++
@@ -605,13 +606,13 @@ public:
 
   /// The number of bytes which were requested at the start of the
   /// asynchronous read.
-  size_t bytes_to_read () const;
+  size_t bytes_to_read (void) const;
 
   /// Message block which contains the read data.
-  ACE_Message_Block &message_block () const;
+  ACE_Message_Block &message_block (void) const;
 
   /// I/O handle used for reading.
-  ACE_HANDLE handle () const;
+  ACE_HANDLE handle (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -638,7 +639,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Read_File_Result ();
+  virtual ~ACE_WIN32_Asynch_Read_File_Result (void);
 };
 
 /**
@@ -659,6 +660,7 @@ protected:
 class ACE_Export ACE_WIN32_Asynch_Read_File : public virtual ACE_Asynch_Read_File_Impl,
                                               public ACE_WIN32_Asynch_Read_Stream
 {
+
 public:
   /// Constructor.
   ACE_WIN32_Asynch_Read_File (ACE_WIN32_Proactor *win32_proactor);
@@ -693,7 +695,7 @@ public:
 
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Read_File ();
+  virtual ~ACE_WIN32_Asynch_Read_File (void);
 
   // = Methods belong to ACE_WIN32_Asynch_Operation base class. These
   //   methods are defined here to avoid VC++ warnings. They route the
@@ -715,10 +717,10 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 private:
   /**
@@ -774,39 +776,39 @@ public:
   //   warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   // The following methods belong to
   // ACE_WIN32_Asynch_Read_Stream_Result. They are here to avoid VC++
@@ -815,13 +817,13 @@ public:
 
   /// The number of bytes which were requested at the start of the
   /// asynchronous write.
-  size_t bytes_to_write () const;
+  size_t bytes_to_write (void) const;
 
   /// Message block that contains the data to be written.
-  ACE_Message_Block &message_block () const;
+  ACE_Message_Block &message_block (void) const;
 
   /// I/O handle used for writing.
-  ACE_HANDLE handle () const;
+  ACE_HANDLE handle (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -848,7 +850,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Write_File_Result ();
+  virtual ~ACE_WIN32_Asynch_Write_File_Result (void);
 };
 
 /**
@@ -899,7 +901,7 @@ public:
               int signal_number = 0);
 
   /// Destrcutor.
-  virtual ~ACE_WIN32_Asynch_Write_File ();
+  virtual ~ACE_WIN32_Asynch_Write_File (void);
 
   // = Methods belong to ACE_WIN32_Asynch_Operation base class. These
   //   methods are defined here to avoid VC++ warnings. They route the
@@ -921,10 +923,10 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 private:
   /**
@@ -971,54 +973,54 @@ class ACE_Export ACE_WIN32_Asynch_Accept_Result : public virtual ACE_Asynch_Acce
 public:
   /// The number of bytes which were requested at the start of the
   /// asynchronous accept.
-  size_t bytes_to_read () const;
+  size_t bytes_to_read (void) const;
 
   /// Message block which contains the read data.
-  ACE_Message_Block &message_block () const;
+  ACE_Message_Block &message_block (void) const;
 
   /// I/O handle used for accepting new connections.
-  ACE_HANDLE listen_handle () const;
+  ACE_HANDLE listen_handle (void) const;
 
   /// I/O handle for the new connection.
-  ACE_HANDLE accept_handle () const;
+  ACE_HANDLE accept_handle (void) const;
 
   // = Base class operations. These operations are here to kill some
   //   warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -1043,7 +1045,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Accept_Result ();
+  virtual ~ACE_WIN32_Asynch_Accept_Result (void);
 
   /// Bytes requested when the asynchronous read was initiated.
   size_t bytes_to_read_;
@@ -1097,7 +1099,7 @@ public:
               int addr_family = AF_INET);
 
   /// Destructor.
-  ~ACE_WIN32_Asynch_Accept ();
+  ~ACE_WIN32_Asynch_Accept (void);
 
   // Methods belong to ACE_WIN32_Asynch_Operation base class. These
   // methods are defined here to avoid VC++ warnings. They route the
@@ -1119,10 +1121,10 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 };
 
 /**
@@ -1145,46 +1147,47 @@ class ACE_Export ACE_WIN32_Asynch_Connect_Result : public virtual ACE_Asynch_Con
   friend class ACE_WIN32_Proactor;
 
 public:
+
   /// I/O handle for the  connection.
-  ACE_HANDLE connect_handle () const;
+  ACE_HANDLE connect_handle (void) const;
 
   // = Base class operations. These operations are here to kill some
   //   warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * Returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post this object to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -1206,7 +1209,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Connect_Result ();
+  virtual ~ACE_WIN32_Asynch_Connect_Result (void);
 
   /// Set the I/O handle for the new connection.
   void  connect_handle (ACE_HANDLE handle);
@@ -1224,11 +1227,12 @@ class ACE_Export ACE_WIN32_Asynch_Connect :
   public ACE_Event_Handler
 {
 public:
+
   /// Constructor.
   ACE_WIN32_Asynch_Connect (ACE_WIN32_Proactor * win32_proactor);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Connect ();
+  virtual ~ACE_WIN32_Asynch_Connect (void);
 
  /**
    * This open belongs to ACE_WIN32_Asynch_Operation. We forward
@@ -1261,16 +1265,16 @@ public:
    *  Cancel all pending pseudo-asynchronus requests
    *  Behavior as usual AIO request
    */
-  int cancel ();
+  int cancel (void);
 
   /**
    *  Close performs cancellation of all pending requests
    *  and close the connect handle
    */
-  int close ();
+  int close (void);
 
   /// Virtual from ACE_Event_Handler
-  ACE_HANDLE get_handle () const;
+  ACE_HANDLE get_handle (void) const;
 
   /// Virtual from ACE_Event_Handler
   void set_handle (ACE_HANDLE handle);
@@ -1287,7 +1291,7 @@ public:
   //   methods are defined here to avoid dominace warnings. They route
   //   the call to the ACE_WIN32_Asynch_Operation base class.
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 private:
   int connect_i (ACE_WIN32_Asynch_Connect_Result *result,
@@ -1351,62 +1355,62 @@ class ACE_Export ACE_WIN32_Asynch_Transmit_File_Result : public virtual ACE_Asyn
 
 public:
   /// Socket used for transmitting the file.
-  ACE_HANDLE socket () const;
+  ACE_HANDLE socket (void) const;
 
   /// File from which the data is read.
-  ACE_HANDLE file () const;
+  ACE_HANDLE file (void) const;
 
   /// Header and trailer data associated with this transmit file.
-  ACE_Asynch_Transmit_File::Header_And_Trailer *header_and_trailer () const;
+  ACE_Asynch_Transmit_File::Header_And_Trailer *header_and_trailer (void) const;
 
   /// The number of bytes which were requested at the start of the
   /// asynchronous transmit file.
-  size_t bytes_to_write () const;
+  size_t bytes_to_write (void) const;
 
   /// Number of bytes per send requested at the start of the transmit
   /// file.
-  size_t bytes_per_send () const;
+  size_t bytes_per_send (void) const;
 
   /// Flags which were passed into transmit file.
-  u_long flags () const;
+  u_long flags (void) const;
 
   // Base class operations. These operations are here to kill some
   // warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -1435,7 +1439,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Transmit_File_Result ();
+  virtual ~ACE_WIN32_Asynch_Transmit_File_Result (void);
 
   /// Network I/O handle.
   ACE_HANDLE socket_;
@@ -1507,7 +1511,7 @@ public:
                      int signal_number = 0);
 
   /// Destructor.
-  ~ACE_WIN32_Asynch_Transmit_File ();
+  ~ACE_WIN32_Asynch_Transmit_File (void);
 
   // Methods belong to ACE_WIN32_Asynch_Operation base class. These
   // methods are defined here to avoid VC++ warnings. They route the
@@ -1529,10 +1533,10 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 };
 
 /**
@@ -1553,10 +1557,10 @@ class ACE_Export ACE_WIN32_Asynch_Read_Dgram_Result : public virtual ACE_Asynch_
 public:
   /// The number of bytes which were requested at the start of the
   /// asynchronous read.
-  size_t bytes_to_read () const;
+  size_t bytes_to_read (void) const;
 
   /// Message block which contains the read data
-  ACE_Message_Block *message_block () const;
+  ACE_Message_Block *message_block (void) const;
 
   /// The address of where the packet came from
   int remote_address (ACE_Addr& addr) const;
@@ -1564,48 +1568,48 @@ public:
   sockaddr *saddr () const;
 
   /// The flags used in the read
-  int flags () const;
+  int flags (void) const;
 
   /// I/O handle used for reading.
-  ACE_HANDLE handle () const;
+  ACE_HANDLE handle (void) const;
 
   // Base class operations. These operations are here to kill
   // dominance warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -1631,7 +1635,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Read_Dgram_Result ();
+  virtual ~ACE_WIN32_Asynch_Read_Dgram_Result (void);
 
   /// Bytes requested when the asynchronous read was initiated.
   size_t bytes_to_read_;
@@ -1671,7 +1675,7 @@ public:
   ACE_WIN32_Asynch_Read_Dgram (ACE_WIN32_Proactor *win32_proactor);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Read_Dgram ();
+  virtual ~ACE_WIN32_Asynch_Read_Dgram (void);
 
    /** This starts off an asynchronous read.  Upto
    * <message_block->total_size()> will be read and stored in the
@@ -1718,14 +1722,14 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 protected:
   /// Do-nothing constructor.
-  ACE_WIN32_Asynch_Read_Dgram ();
+  ACE_WIN32_Asynch_Read_Dgram (void);
 };
 
 /**
@@ -1746,54 +1750,54 @@ class ACE_Export ACE_WIN32_Asynch_Write_Dgram_Result : public virtual ACE_Asynch
 public:
   /// The number of bytes which were requested at the start of the
   /// asynchronous write.
-  size_t bytes_to_write () const;
+  size_t bytes_to_write (void) const;
 
   /// Message block which contains the sent data
-  ACE_Message_Block *message_block () const;
+  ACE_Message_Block *message_block (void) const;
 
   /// The flags using in the write
-  int flags () const;
+  int flags (void) const;
 
   /// I/O handle used for writing.
-  ACE_HANDLE handle () const;
+  ACE_HANDLE handle (void) const;
 
   // = Base class operations. These operations are here to kill some
   //   warnings. These methods call the base class methods.
 
   /// Number of bytes transferred by the operation.
-  size_t bytes_transferred () const;
+  size_t bytes_transferred (void) const;
 
   /// ACT associated with the operation.
-  const void *act () const;
+  const void *act (void) const;
 
   /// Did the operation succeed?
-  int success () const;
+  int success (void) const;
 
   /**
    * This returns the ACT associated with the handle when it was
    * registered with the I/O completion port.  This ACT is not the
    * same as the ACT associated with the asynchronous operation.
    */
-  const void *completion_key () const;
+  const void *completion_key (void) const;
 
   /// Error value if the operation fail.
-  u_long error () const;
+  u_long error (void) const;
 
   /// Event associated with the OVERLAPPED structure.
-  ACE_HANDLE event () const;
+  ACE_HANDLE event (void) const;
 
   /// This really make sense only when doing file I/O.
-  u_long offset () const;
+  u_long offset (void) const;
 
   /// Offset_high associated with the OVERLAPPED structure.
-  u_long offset_high () const;
+  u_long offset_high (void) const;
 
   /// The priority of the asynchronous operation. Currently, this is
   /// not supported on Win32.
-  int priority () const;
+  int priority (void) const;
 
   /// No-op. Returns 0.
-  int signal_number () const;
+  int signal_number (void) const;
 
   /// Post @c this to the Proactor's completion port.
   int post_completion (ACE_Proactor_Impl *proactor);
@@ -1818,7 +1822,7 @@ protected:
                          u_long error);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Write_Dgram_Result ();
+  virtual ~ACE_WIN32_Asynch_Write_Dgram_Result (void);
 
   /// The number of bytes which were requested at the start of the
   /// asynchronous write.
@@ -1854,7 +1858,7 @@ public:
   ACE_WIN32_Asynch_Write_Dgram (ACE_WIN32_Proactor *win32_proactor);
 
   /// Destructor.
-  virtual ~ACE_WIN32_Asynch_Write_Dgram ();
+  virtual ~ACE_WIN32_Asynch_Write_Dgram (void);
 
   /** This starts off an asynchronous send.  Upto
    * <message_block->total_length()> will be sent.  @a message_block's
@@ -1902,14 +1906,14 @@ public:
    * the calling thread.  The function does not cancel asynchronous
    * operations issued by other threads.
    */
-  int cancel ();
+  int cancel (void);
 
   /// Return the underlying proactor.
-  ACE_Proactor* proactor () const;
+  ACE_Proactor* proactor (void) const;
 
 protected:
   /// Do-nothing constructor.
-  ACE_WIN32_Asynch_Write_Dgram ();
+  ACE_WIN32_Asynch_Write_Dgram (void);
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

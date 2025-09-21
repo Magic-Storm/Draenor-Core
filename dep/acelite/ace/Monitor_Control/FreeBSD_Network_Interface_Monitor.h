@@ -41,16 +41,16 @@ namespace ACE
       FreeBSD_Network_Interface_Monitor (const ACE_TCHAR *lookup_str);
 
       /// Platform-specific implementation.
-      void update_i ();
+      void update_i (void);
 
       /// Platform-specific reset.
-      void clear_impl ();
+      void clear_impl (void);
 
     protected:
       ACE_UINT64 value_;
 
     private:
-      void init ();
+      void init (void);
       void fetch (ACE_UINT64& value) const;
 
       ACE_UINT64 start_;

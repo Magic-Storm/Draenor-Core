@@ -8,22 +8,30 @@ ACE_Dirent::open (const ACE_TCHAR *dirname)
 {
   // If the directory stream is already open, close it to prevent
   // possible resource leaks.
-  if (this->dirp_)
+
+  if (this->dirp_ != 0)
     {
       ACE_OS::closedir (this->dirp_);
-      this->dirp_ = nullptr;
+      this->dirp_ = 0;
     }
 
   this->dirp_ = ACE_OS::opendir (dirname);
 
-  if (!this->dirp_)
+  if (this->dirp_ == 0)
     return -1;
   else
     return 0;
 }
 
 ACE_INLINE
+ACE_Dirent::ACE_Dirent ()
+  : dirp_ (0)
+{
+}
+
+ACE_INLINE
 ACE_Dirent::ACE_Dirent (const ACE_TCHAR *dirname)
+  : dirp_ (0)
 {
   if (this->open (dirname) == -1)
     ACELIB_ERROR ((LM_ERROR,
@@ -34,25 +42,25 @@ ACE_Dirent::ACE_Dirent (const ACE_TCHAR *dirname)
 ACE_INLINE
 ACE_Dirent::~ACE_Dirent ()
 {
-  if (this->dirp_)
+  if (this->dirp_ != 0)
     ACE_OS::closedir (this->dirp_);
 }
 
 ACE_INLINE ACE_DIRENT *
 ACE_Dirent::read ()
 {
-  return this->dirp_ ? ACE_OS::readdir (this->dirp_) : nullptr;
+  return this->dirp_ ? ACE_OS::readdir (this->dirp_) : 0;
 }
 
 ACE_INLINE void
 ACE_Dirent::close ()
 {
-  if (this->dirp_)
+  if (this->dirp_ != 0)
     {
       ACE_OS::closedir (this->dirp_);
 
       // Prevent double closure
-      this->dirp_ = nullptr;
+      this->dirp_ = 0;
     }
 }
 

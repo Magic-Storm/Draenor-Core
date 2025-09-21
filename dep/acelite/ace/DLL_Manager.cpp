@@ -1,5 +1,6 @@
 #include "ace/DLL_Manager.h"
 
+#include "ace/Auto_Ptr.h"
 #include "ace/Log_Category.h"
 #include "ace/ACE.h"
 #include "ace/Framework_Component.h"
@@ -11,7 +12,6 @@
 #include "ace/Guard_T.h"
 #include "ace/OS_NS_dlfcn.h"
 #include "ace/OS_NS_string.h"
-#include <memory>
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -123,6 +123,44 @@ ACE_DLL_Handle::open (const ACE_TCHAR *dll_name,
             {
               if (this->open_i (name->c_str (), open_mode, errors))
                 break;
+
+#if defined (AIX)
+# define SHR_O ACE_TEXT("(shr.o)")
+# define SHR_O_LEN (sizeof (SHR_O) / sizeof(ACE_TCHAR) - 1)
+              // AIX often puts the shared library file (most often named
+              // shr.o) inside an archive library. If this is an archive
+              // library name, then try appending [shr.o] and retry.
+              if (ACE_TString::npos != name->strstr (ACE_TEXT (".a")))
+                {
+                  ACE_TCHAR aix_pathname[MAXPATHLEN + 1];
+                  if (name->length () + SHR_O_LEN <= MAXPATHLEN)
+                    {
+                      ACE_OS::strcpy (aix_pathname, name->c_str());
+                      ACE_OS::strcat (aix_pathname, SHR_O);
+                    }
+                  else
+                    {
+                      if (errors)
+                        {
+                          errors->push ("path is too long");
+                        }
+
+                      if (ACE::debug ())
+                        {
+                          ACELIB_ERROR ((LM_ERROR,
+                                ACE_TEXT ("ACE (%P|%t) DLL_Handle::open: ")
+                                ACE_TEXT ("('%s(shr.o)') is too long\n"),
+                                name->c_str()));
+                        }
+
+                      return -1;
+                    }
+                  open_mode |= RTLD_MEMBER;
+
+                  if (this->open_i (aix_pathname, open_mode, errors))
+                    break;
+                }
+#endif /* AIX */
             }
 
           if (this->handle_ == ACE_SHLIB_INVALID_HANDLE)
@@ -243,12 +281,16 @@ ACE_DLL_Handle::symbol (const ACE_TCHAR *sym_name, bool ignore_errors, ACE_TStri
   ACE_TRACE ("ACE_DLL_Handle::symbol");
   ACE_MT (ACE_GUARD_RETURN (ACE_Thread_Mutex, ace_mon, this->lock_, 0));
 
-  std::unique_ptr <ACE_TCHAR[]> auto_name (ACE::ldname (sym_name));
+  ACE_Auto_Array_Ptr <ACE_TCHAR> auto_name (ACE::ldname (sym_name));
   // handle_ can be invalid especially when ACE_DLL_Handle resigned ownership
   // BTW. Handle lifecycle management is a little crazy in ACE
   if (this->handle_ != ACE_SHLIB_INVALID_HANDLE)
     {
+#if defined (ACE_OPENVMS)
+      void *sym =  ACE::ldsymbol (this->handle_, auto_name.get ());
+#else
       void *sym =  ACE_OS::dlsym (this->handle_, auto_name.get ());
+#endif
 
       // Linux says that the symbol could be null and that it isn't an
       // error.  So you should check the error message also, but since
@@ -265,11 +307,11 @@ ACE_DLL_Handle::symbol (const ACE_TCHAR *sym_name, bool ignore_errors, ACE_TStri
                         auto_name.get (),
                         error.c_str ()));
 
-          return nullptr;
+          return 0;
         }
       return sym;
     }
-  return nullptr;
+  return 0;
 }
 
 ACE_SHLIB_HANDLE
@@ -716,7 +758,13 @@ ACE_DLL_Manager::unload_dll (ACE_DLL_Handle *dll_handle, int force_unload)
 
               void * const unload_policy_ptr =
                 dll_handle->symbol (ACE_TEXT ("_get_dll_unload_policy"), 1);
-              intptr_t const temp_p = reinterpret_cast<intptr_t> (unload_policy_ptr);
+#if defined (ACE_OPENVMS) && (!defined (__INITIAL_POINTER_SIZE) || (__INITIAL_POINTER_SIZE < 64))
+              int const temp_p =
+                reinterpret_cast<int> (unload_policy_ptr);
+#else
+              intptr_t const temp_p =
+                reinterpret_cast<intptr_t> (unload_policy_ptr);
+#endif
 
               dll_unload_policy const the_policy =
                 reinterpret_cast<dll_unload_policy> (temp_p);

@@ -4,7 +4,6 @@
 #include "ace/Time_Value.h"
 #include "ace/OS_NS_unistd.h"
 #include "ace/OS_NS_sys_time.h"
-#include <ctime>
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -16,7 +15,7 @@ ACE_OS::asctime (const struct tm *t)
   ACE_UNUSED_ARG (t);
   ACE_NOTSUP_RETURN (0);
 #else
-  return std::asctime (t);
+  ACE_OSCALL_RETURN (ACE_STD_NAMESPACE::asctime (t), char *, 0);
 #endif /* ACE_LACKS_ASCTIME */
 }
 
@@ -32,9 +31,9 @@ ACE_OS::asctime_r (const struct tm *t, char *buf, int buflen)
   return buf;
 # else
 #   if defined (ACE_HAS_SIZET_PTR_ASCTIME_R_AND_CTIME_R)
-  return ::asctime_r (t, buf, reinterpret_cast<size_t*>(&buflen));
+  ACE_OSCALL_RETURN (::asctime_r (t, buf, reinterpret_cast<size_t*>(&buflen)), char *, 0);
 #   else
-  return ::asctime_r (t, buf, buflen);
+  ACE_OSCALL_RETURN (::asctime_r (t, buf, buflen), char *, 0);
 #   endif /* ACE_HAS_SIZET_PTR_ASCTIME_R_AND_CTIME_R */
 # endif /* ACE_HAS_2_PARAM_ASCTIME_R_AND_CTIME_R */
 #elif defined (ACE_HAS_TR24731_2005_CRT)
@@ -49,7 +48,7 @@ ACE_OS::asctime_r (const struct tm *t, char *buf, int buflen)
   ACE_NOTSUP_RETURN (0);
 #else
   char *result = 0;
-  ACE_OSCALL (std::asctime (t), char *, result);
+  ACE_OSCALL (ACE_STD_NAMESPACE::asctime (t), char *, 0, result);
   ACE_OS::strsncpy (buf, result, buflen);
   return buf;
 #endif /* ACE_HAS_REENTRANT_FUNCTIONS */
@@ -60,7 +59,7 @@ ACE_OS::clock_gettime (clockid_t clockid, struct timespec *ts)
 {
   ACE_OS_TRACE ("ACE_OS::clock_gettime");
 #if defined (ACE_HAS_CLOCK_GETTIME)
-  return ::clock_gettime (clockid, ts);
+  ACE_OSCALL_RETURN (::clock_gettime (clockid, ts), int, -1);
 #else
   ACE_UNUSED_ARG (clockid);
   ACE_UNUSED_ARG (ts);
@@ -73,9 +72,9 @@ ACE_OS::clock_settime (clockid_t clockid, const struct timespec *ts)
 {
 #if defined (ACE_HAS_CLOCK_SETTIME)
 #  if defined (ACE_HAS_NONCONST_CLOCK_SETTIME)
-  return ::clock_settime (clockid, const_cast<struct timespec *>(ts));
+  ACE_OSCALL_RETURN (::clock_settime (clockid, const_cast<struct timespec *>(ts)), int, -1);
 #  else
-  return ::clock_settime (clockid, ts);
+  ACE_OSCALL_RETURN (::clock_settime (clockid, ts), int, -1);
 #  endif /* ACE_HAS_NONCONST_CLOCK_SETTIME */
 #else
   ACE_UNUSED_ARG (clockid);
@@ -85,7 +84,7 @@ ACE_OS::clock_settime (clockid_t clockid, const struct timespec *ts)
 }
 
 // Magic number declaration and definition for ctime and ctime_r ()
-static constexpr int ctime_buf_size = 26;
+static const int ctime_buf_size = 26;
 
 ACE_INLINE ACE_TCHAR *
 ACE_OS::ctime (const time_t *t)
@@ -94,12 +93,17 @@ ACE_OS::ctime (const time_t *t)
 #if defined (ACE_LACKS_CTIME)
   ACE_UNUSED_ARG (t);
   ACE_NOTSUP_RETURN (0);
+#elif defined (ACE_HAS_WINCE)
+  static ACE_TCHAR buf [ctime_buf_size];
+  return ACE_OS::ctime_r (t,
+                          buf,
+                          ctime_buf_size);
 #elif defined (ACE_WIN32) && defined (ACE_USES_WCHAR)
-  return ::_wctime (t);
+  ACE_OSCALL_RETURN (::_wctime (t), wchar_t *, 0);
 #else
 #  if defined (ACE_USES_WCHAR)   /* Not Win32, else it would do the above */
   char *narrow_time;
-  ACE_OSCALL (::ctime (t), char *, narrow_time);
+  ACE_OSCALL (::ctime (t), char *, 0, narrow_time);
   if (narrow_time == 0)
     return 0;
   // ACE_Ascii_To_Wide::convert allocates (via new []) a wchar_t[]. If
@@ -112,11 +116,12 @@ ACE_OS::ctime (const time_t *t)
   wide_time = ACE_Ascii_To_Wide::convert (narrow_time);
   return wide_time;
 #  else
-  return ::ctime (t);
+  ACE_OSCALL_RETURN (::ctime (t), char *, 0);
 #  endif /* ACE_USES_WCHAR */
-# endif /* ACE_LACKS_CTIME */
+# endif /* ACE_HAS_WINCE */
 }
 
+#if !defined (ACE_HAS_WINCE)  /* CE version in OS.cpp */
 ACE_INLINE ACE_TCHAR *
 ACE_OS::ctime_r (const time_t *t, ACE_TCHAR *buf, int buflen)
 {
@@ -138,7 +143,7 @@ ACE_OS::ctime_r (const time_t *t, ACE_TCHAR *buf, int buflen)
       return 0;
     }
 #   if defined (ACE_HAS_2_PARAM_ASCTIME_R_AND_CTIME_R)
-  ACE_OSCALL (::ctime_r (t, bufp), char *, bufp);
+  ACE_OSCALL (::ctime_r (t, bufp), char *, 0, bufp);
 #   else /* ACE_HAS_2_PARAM_ASCTIME_R_AND_CTIME_R */
 
 #      if defined (ACE_HAS_SIZET_PTR_ASCTIME_R_AND_CTIME_R)
@@ -183,15 +188,16 @@ ACE_OS::ctime_r (const time_t *t, ACE_TCHAR *buf, int buflen)
 
   ACE_TCHAR *result = 0;
 #     if defined (ACE_USES_WCHAR)
-  ACE_OSCALL (::_wctime (t), wchar_t *, result);
+  ACE_OSCALL (::_wctime (t), wchar_t *, 0, result);
 #     else /* ACE_USES_WCHAR */
-  ACE_OSCALL (::ctime (t), char *, result);
+  ACE_OSCALL (::ctime (t), char *, 0, result);
 #     endif /* ACE_USES_WCHAR */
   if (result != 0)
     ACE_OS::strsncpy (buf, result, buflen);
   return buf;
 #endif /* ACE_HAS_REENTRANT_FUNCTIONS */
 }
+#endif /* !ACE_HAS_WINCE */
 
 #if defined (ACE_USES_ULONG_FOR_STAT_TIME)
 ACE_INLINE ACE_TCHAR *
@@ -235,11 +241,13 @@ ACE_OS::localtime_r (const unsigned long *clock,
 
 #endif
 
+#if !defined (ACE_LACKS_DIFFTIME)
 ACE_INLINE double
 ACE_OS::difftime (time_t t1, time_t t0)
 {
   return ::ace_difftime (t1, t0);
 }
+#endif /* ! ACE_LACKS_DIFFTIME */
 
 ACE_INLINE ACE_hrtime_t
 ACE_OS::gethrtime (const ACE_HRTimer_Op op)
@@ -248,6 +256,14 @@ ACE_OS::gethrtime (const ACE_HRTimer_Op op)
 #if defined (ACE_HAS_HI_RES_TIMER)
   ACE_UNUSED_ARG (op);
   return ::gethrtime ();
+#elif defined (ACE_HAS_AIX_HI_RES_TIMER)
+  ACE_UNUSED_ARG (op);
+  timebasestruct_t tb;
+
+  ::read_real_time(&tb, TIMEBASE_SZ);
+  ::time_base_to_time(&tb, TIMEBASE_SZ);
+
+  return ACE_hrtime_t(tb.tb_high) * ACE_ONE_SECOND_IN_NSECS + tb.tb_low;
 #elif defined (ACE_WIN32)
   ACE_UNUSED_ARG(op);
   LARGE_INTEGER freq;
@@ -334,7 +350,7 @@ ACE_OS::gmtime (const time_t *t)
   ACE_UNUSED_ARG (t);
   ACE_NOTSUP_RETURN (0);
 #else
-  return ::gmtime (t);
+  ACE_OSCALL_RETURN (::gmtime (t), struct tm *, 0);
 #endif /* ACE_LACKS_GMTIME */
 }
 
@@ -354,7 +370,7 @@ ACE_OS::gmtime_r (const time_t *t, struct tm *res)
   ACE_NOTSUP_RETURN (0);
 #else
   struct tm *result;
-  ACE_OSCALL (::gmtime (t), struct tm *, result) ;
+  ACE_OSCALL (::gmtime (t), struct tm *, 0, result) ;
   if (result != 0)
     *res = *result;
   return res;
@@ -369,7 +385,7 @@ ACE_OS::localtime (const time_t *t)
   ACE_UNUSED_ARG (t);
   ACE_NOTSUP_RETURN (0);
 #else
-  return ::localtime (t);
+  ACE_OSCALL_RETURN (::localtime (t), struct tm *, 0);
 #endif /* ACE_LACKS_LOCALTIME */
 }
 
@@ -381,7 +397,8 @@ ACE_OS::nanosleep (const struct timespec *requested,
 #if defined (ACE_HAS_CLOCK_GETTIME)
   // ::nanosleep () is POSIX 1003.1b.  So is ::clock_gettime ().  So,
   // if ACE_HAS_CLOCK_GETTIME is defined, then ::nanosleep () should
-  // be available on the platform
+  // be available on the platform.  On Solaris 2.x, both functions
+  // require linking with -lposix4.
   return ::nanosleep ((ACE_TIMESPEC_PTR) requested, remaining);
 #else
   ACE_UNUSED_ARG (remaining);
@@ -404,7 +421,7 @@ ACE_OS::strftime (char *s, size_t maxsize, const char *format,
   ACE_UNUSED_ARG (timeptr);
   ACE_NOTSUP_RETURN (0);
 #else
-  return std::strftime (s, maxsize, format, timeptr);
+  return ACE_STD_NAMESPACE::strftime (s, maxsize, format, timeptr);
 #endif /* ACE_LACKS_STRFTIME */
 }
 
@@ -415,7 +432,7 @@ ACE_OS::strptime (const char *buf, const char *format, struct tm *tm)
 #if defined (ACE_LACKS_STRPTIME)
   return ACE_OS::strptime_emulation (buf, format, tm);
 #else
-  return ::strptime (buf, format, tm);
+  return ACE_STD_NAMESPACE::strptime (buf, format, tm);
 #endif /* ACE_LACKS_STRPTIME */
 }
 
@@ -429,7 +446,7 @@ ACE_OS::time (time_t *tloc)
     *tloc = retv;
   return retv;
 #else
-  return ::time (tloc);
+  ACE_OSCALL_RETURN (::time (tloc), time_t, (time_t) -1);
 #endif /* ACE_LACKS_TIME */
 }
 
@@ -444,7 +461,7 @@ namespace ACE_OS {
 } /* namespace ACE_OS */
 #else
 ACE_INLINE long
-ACE_OS::timezone ()
+ACE_OS::timezone (void)
 {
   return ::ace_timezone ();
 }

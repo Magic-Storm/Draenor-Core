@@ -9,6 +9,7 @@
 
 #include /**/ "ace/pre.h"
 
+#include "ace/Copy_Disabled.h"
 #include "ace/Event_Handler.h"
 #include "ace/Intrusive_List.h"
 #include "ace/Intrusive_List_Node.h"
@@ -77,7 +78,7 @@ private:
  *
  * This code was refactored from Select_Reactor_Base.
  */
-class ACE_Export ACE_Notification_Queue
+class ACE_Export ACE_Notification_Queue : private ACE_Copy_Disabled
 {
 public:
   ACE_Notification_Queue();
@@ -125,11 +126,6 @@ private:
    * @brief Allocate more memory for the queue
    */
   int allocate_more_buffers();
-
-  ACE_Notification_Queue (const ACE_Notification_Queue &) = delete;
-  ACE_Notification_Queue (ACE_Notification_Queue &&) = delete;
-  ACE_Notification_Queue &operator= (const ACE_Notification_Queue &) = delete;
-  ACE_Notification_Queue &operator= (ACE_Notification_Queue &&) = delete;
 
 private:
   /// Keeps track of allocated arrays of type

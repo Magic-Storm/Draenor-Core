@@ -23,6 +23,8 @@
 
 #if defined (ACE_HAS_PDH_H) && !defined (ACE_LACKS_PDH_H)
 #include "ace/Monitor_Control/Windows_Monitor.h"
+#elif defined (ACE_HAS_KSTAT)
+#include "ace/os_include/os_kstat.h"
 #endif
 
 #include "ace/Monitor_Control/Monitor_Control_export.h"
@@ -48,28 +50,32 @@ namespace ACE
       CPU_Load_Monitor (const char* name);
 
       /// Implementation of the pure virtual method.
-      virtual void update ();
+      virtual void update (void);
 
       /// Stores the default name, used if none is supplied by the user.
-      static const char* default_name ();
+      static const char* default_name (void);
 
     private:
       /// Overridden reset, calls platform-specific reset.
-      virtual void clear_i ();
+      virtual void clear_i (void);
 
       /// Common code to the constructor and to clear_i().
-      void init ();
+      void init (void);
 
     private:
 #if defined (ACE_LINUX)
       void access_proc_stat (unsigned long *which_idle);
 #endif
 
+#if defined (ACE_HAS_KSTAT)
+      void access_kstats (unsigned long *which_idle);
+#endif
+
     private:
       static const char* default_name_;
 
-      /// Linux implementation
-#if defined (ACE_LINUX)
+      /// Common to Linux and Solaris implementations.
+#if defined (ACE_LINUX) || defined (ACE_HAS_KSTAT)
       unsigned long user_;
       unsigned long wait_;
       unsigned long kernel_;
@@ -80,6 +86,10 @@ namespace ACE
 #if defined (ACE_LINUX)
       FILE *file_ptr_;
       char buf_[1024];
+#elif defined (ACE_HAS_KSTAT)
+      kstat_ctl_t *kstats_;
+      kstat_t *kstat_;
+      kid_t kstat_id_;
 #endif
     };
   }

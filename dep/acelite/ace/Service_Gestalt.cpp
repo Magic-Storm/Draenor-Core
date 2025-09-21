@@ -5,6 +5,7 @@
 #include "ace/Service_Manager.h"
 #include "ace/Service_Types.h"
 #include "ace/Containers.h"
+#include "ace/Auto_Ptr.h"
 #include "ace/Reactor.h"
 #include "ace/Thread_Manager.h"
 #include "ace/DLL.h"
@@ -20,10 +21,11 @@
 #include "ace/OS_NS_time.h"
 #include "ace/OS_NS_unistd.h"
 #include "ace/OS_NS_sys_stat.h"
+
 #include "ace/TSS_T.h"
 #include "ace/Service_Gestalt.h"
+
 #include "ace/Svc_Conf_Param.h"
-#include <memory>
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -122,6 +124,7 @@ ACE_Service_Type_Dynamic_Guard::~ACE_Service_Type_Dynamic_Guard ()
 }
 
 
+
 // ----------------------------------------
 
 ACE_Service_Gestalt::Processed_Static_Svc::
@@ -172,6 +175,7 @@ ACE_Service_Gestalt::intrusive_remove_ref (ACE_Service_Gestalt* g)
 
 ACE_Service_Gestalt::~ACE_Service_Gestalt ()
 {
+
   if (this->svc_repo_is_owned_)
     delete this->repo_;
 
@@ -287,7 +291,9 @@ ACE_Service_Gestalt::load_static_svcs ()
         return -1;
     }
   return 0;
+
 } /* load_static_svcs () */
+
 
 
 /// Find a static service descriptor by name
@@ -336,6 +342,7 @@ ACE_Service_Gestalt::find_processed_static_svc (const ACE_TCHAR* name)
 }
 
 
+
 /// @brief Captures a list of the direcives processed (explicitely) for this
 /// Gestalt so that services can be replicated in other repositories
 /// upon their first initialization.
@@ -346,6 +353,7 @@ void
 ACE_Service_Gestalt::add_processed_static_svc
   (const ACE_Static_Svc_Descriptor *assd)
 {
+
   /// When process_directive(Static_Svc_Descriptor&) is called, it
   /// associates a service object with the Gestalt and makes the
   /// resource (a Service Object) local to the repository. This is but
@@ -549,7 +557,7 @@ ACE_Service_Gestalt::initialize (const ACE_Service_Type_Factory *stf,
 
   // make_service_type() is doing the dynamic loading and also runs
   // any static initializers
-  std::unique_ptr<ACE_Service_Type> tmp (stf->make_service_type (this));
+  ACE_Auto_Ptr<ACE_Service_Type> tmp (stf->make_service_type (this));
 
   if (tmp.get () != 0 &&
       this->initialize_i (tmp.get (), parameters) == 0)
@@ -604,6 +612,7 @@ ACE_Service_Gestalt::initialize (const ACE_Service_Type *sr,
     }
 
   return this->initialize_i (sr, parameters);
+
 }
 
 /// Dynamically link the shared object file and retrieve a pointer to
@@ -818,8 +827,14 @@ ACE_Service_Gestalt::get_xml_svc_conf (ACE_DLL &xmldll)
                        ACE_TEXT("ACE_Service_Config::get_xml_svc_conf")),
                       0);
 
-  void * foo = xmldll.symbol (ACE_TEXT ("_ACEXML_create_XML_Svc_Conf_Object"));
+  void * foo =
+    xmldll.symbol (ACE_TEXT ("_ACEXML_create_XML_Svc_Conf_Object"));
+
+#if defined (ACE_OPENVMS) && (!defined (__INITIAL_POINTER_SIZE) || (__INITIAL_POINTER_SIZE < 64))
+  int const temp_p = reinterpret_cast<int> (foo);
+#else
   intptr_t const temp_p = reinterpret_cast<intptr_t> (foo);
+#endif
 
   ACE_XML_Svc_Conf::Factory factory = reinterpret_cast<ACE_XML_Svc_Conf::Factory> (temp_p);
 
@@ -899,7 +914,7 @@ ACE_Service_Gestalt::process_file (const ACE_TCHAR file[])
 #else
   ACE_DLL dll;
 
-  std::unique_ptr<ACE_XML_Svc_Conf> xml_svc_conf (this->get_xml_svc_conf (dll));
+  auto_ptr<ACE_XML_Svc_Conf> xml_svc_conf (this->get_xml_svc_conf (dll));
 
   if (xml_svc_conf.get () == 0)
     return -1;
@@ -930,7 +945,8 @@ ACE_Service_Gestalt::process_directive (const ACE_TCHAR directive[])
 #else
   ACE_DLL dll;
 
-  std::unique_ptr<ACE_XML_Svc_Conf> xml_svc_conf (this->get_xml_svc_conf (dll));
+  auto_ptr<ACE_XML_Svc_Conf>
+    xml_svc_conf (this->get_xml_svc_conf (dll));
 
   if (xml_svc_conf.get () == 0)
     return -1;
@@ -970,6 +986,7 @@ ACE_Service_Gestalt::init_svc_conf_file_queue ()
 #endif
 
   return 0;
+
 } /* init_svc_conf_file_queue () */
 
 
@@ -1072,6 +1089,7 @@ ACE_Service_Gestalt::open_i (const ACE_TCHAR program_name[],
                 ACE_OS::fclose(fp);
               else
                 add_default = false;
+
             }
         }
 
@@ -1155,6 +1173,7 @@ ACE_Service_Gestalt::process_commandline_directives ()
     }
 
   return result;
+
 } /* process_commandline_directives () */
 
 
@@ -1232,6 +1251,7 @@ ACE_Service_Gestalt::parse_args_i (int argc,
 } /* parse_args_i () */
 
 
+
 // Process service configuration directives from the files queued for
 // processing
 int
@@ -1259,6 +1279,7 @@ ACE_Service_Gestalt::process_directives (bool )
     }
 
   return failed;
+
 } /* process_directives () */
 
 // Tidy up and perform last rites on a terminating ACE_Service_Gestalt.

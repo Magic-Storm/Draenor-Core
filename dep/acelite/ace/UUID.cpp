@@ -12,7 +12,6 @@
 #include "ace/OS_NS_netdb.h"
 #include "ace/OS_NS_unistd.h"
 #include "ace/ACE.h"
-#include <memory>
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -64,7 +63,7 @@ namespace ACE_Utils
 
     // Get a buffer exactly the correct size. Use the nil UUID as a
     // gauge.  Don't forget the trailing nul.
-    std::unique_ptr <char[]> auto_clean;
+    ACE_Auto_Array_Ptr <char> auto_clean;
     size_t UUID_STRING_LENGTH = 36 + thr_id_.length () + pid_.length ();
     char *buf = 0;
 

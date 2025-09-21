@@ -33,7 +33,13 @@
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
-#define ACE_ARRAY_MAP_DEFAULT_ALLOCATOR(K, V) std::allocator<std::pair<K, V> >
+#if defined __SUNPRO_CC && !defined _RWSTD_ALLOCATOR
+# define ACE_ARRAY_MAP_DEFAULT_ALLOCATOR(K, V) std::allocator_interface< \
+                                                 std::allocator<void>,   \
+                                                 std::pair<K, V> >
+#else
+# define ACE_ARRAY_MAP_DEFAULT_ALLOCATOR(K, V) std::allocator<std::pair<K, V> >
+#endif
 
 /**
  * @class ACE_Array_Map
@@ -86,7 +92,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
  *       -# operator=
  */
 template<typename Key, typename Value, class EqualTo = std::equal_to<Key>,
-         class Alloc = std::allocator<std::pair<Key,Value>>>
+         class Alloc = ACE_ARRAY_MAP_DEFAULT_ALLOCATOR (Key, Value) >
 class ACE_Array_Map
 {
 public:
@@ -104,8 +110,7 @@ public:
   typedef value_type const *                     const_iterator;
   typedef ptrdiff_t                              difference_type;
   typedef size_t                                 size_type;
-  typedef std::reverse_iterator<iterator>        reverse_iterator;
-  typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
+  ACE_DECLARE_STL_REVERSE_ITERATORS
 
   /// Default Constructor.
   /**
@@ -282,7 +287,13 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 # include "ace/Array_Map.inl"
 #endif /* __ACE_INLINE__ */
 
-#include "ace/Array_Map.cpp"
+#if defined (ACE_TEMPLATES_REQUIRE_SOURCE)
+# include "ace/Array_Map.cpp"
+#endif /* ACE_TEMPLATES_REQUIRE_SOURCE */
+
+#if defined (ACE_TEMPLATES_REQUIRE_PRAGMA)
+#pragma implementation ("Array_Map.cpp")
+#endif /* ACE_TEMPLATES_REQUIRE_PRAGMA */
 
 #include /**/ "ace/post.h"
 

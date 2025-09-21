@@ -4,7 +4,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 int
-ACE_SSL_Initializer::static_init ()
+ACE_SSL_Initializer::static_init (void)
 {
   ACE_Service_Config::process_directive (ace_svc_desc_ACE_SSL_Initializer);
   return 0;
@@ -22,7 +22,7 @@ ACE_SSL_Initializer::init (int, ACE_TCHAR *[])
 }
 
 int
-ACE_SSL_Initializer::fini ()
+ACE_SSL_Initializer::fini (void)
 {
   // Explicitly close the ACE_SSL_Context singleton.
   ACE_SSL_Context::close ();

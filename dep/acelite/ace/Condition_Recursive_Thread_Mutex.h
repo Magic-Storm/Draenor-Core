@@ -4,6 +4,8 @@
 /**
  *  @file    Condition_Recursive_Thread_Mutex.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -85,8 +87,9 @@ public:
   void dump () const;
 
 private:
-  void operator= (const ACE_Condition<ACE_Recursive_Thread_Mutex> &) = delete;
-  ACE_Condition (const ACE_Condition<ACE_Recursive_Thread_Mutex> &) = delete;
+  // = Prevent assignment and copying.
+  void operator= (const ACE_Condition<ACE_Recursive_Thread_Mutex> &);
+  ACE_Condition (const ACE_Condition<ACE_Recursive_Thread_Mutex> &);
 
 private:
   /// A normal (i.e., non-recursive) condition variable.

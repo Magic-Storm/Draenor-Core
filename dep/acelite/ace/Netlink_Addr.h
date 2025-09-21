@@ -37,7 +37,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 class ACE_Export ACE_Netlink_Addr : public ACE_Addr {
 public:
   /// Default constructor.
-  ACE_Netlink_Addr ();
+  ACE_Netlink_Addr (void);
 
   /// Copy constructor.
   ACE_Netlink_Addr (const ACE_Netlink_Addr &);
@@ -46,7 +46,7 @@ public:
   ACE_Netlink_Addr (const sockaddr_nl *, int len);
 
   /// Dtor
-  ~ACE_Netlink_Addr () = default;
+  ~ACE_Netlink_Addr (void);
 
   /**
    * @param naddr sets the nl_ member @see nl_
@@ -63,19 +63,19 @@ public:
   /**
    * @return pid
    */
-  int get_pid () const;
+  int get_pid (void) const;
   /**
    * @return the group id @see nl_
    */
-  int get_gid () const;
+  int get_gid (void) const;
   /**
    * @return addr pointer @see nl_
    */
-  virtual void *get_addr () const;
+  virtual void *get_addr (void) const;
   /**
    * @return nl_ member  @see nl_  size
    */
-  int get_addr_size () const;
+  int get_addr_size (void) const;
   /**
    * Set a pointer to the address
    */
@@ -89,11 +89,11 @@ private:
    * @return family type  AF_NETLINK
    *
    * */
-  int determine_type () const;
+  int determine_type (void) const;
   /**
    * set nl_  @see nl_ to zero and sets address family to default value
    */
-  void reset ();
+  void reset (void);
 
   sockaddr_nl  nl_;
 };
@@ -109,5 +109,6 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include /**/ "ace/post.h"
 
 #endif /* ACE_NETLINK_ADDR_H */
+
 
 

@@ -4,6 +4,8 @@
 /**
  *  @file    Null_Mutex.h
  *
+ *   Moved from Synch.h.
+ *
  *  @author Douglas C. Schmidt <d.schmidt@vanderbilt.edu>
  */
 //==========================================================================
@@ -36,7 +38,7 @@ class ACE_Export ACE_Null_Mutex
 public:
   ACE_Null_Mutex (const ACE_TCHAR * = 0)
     : lock_ (0) {}
-  ~ACE_Null_Mutex () = default;
+  ~ACE_Null_Mutex () {}
   /// Return 0.
   int remove () {return 0;}
 
@@ -101,7 +103,7 @@ public:
   ACE_Guard (ACE_Null_Mutex &, int) {}
   ACE_Guard (ACE_Null_Mutex &, int, int) {}
 #if defined (ACE_WIN32)
-  ~ACE_Guard () = default;
+  ~ACE_Guard (void) {}
 #endif /* ACE_WIN32 */
 
   int acquire () { return 0; }

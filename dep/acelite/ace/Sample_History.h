@@ -46,7 +46,7 @@ public:
   ACE_Sample_History (size_t max_samples);
 
   /// Destructor
-  ~ACE_Sample_History ();
+  ~ACE_Sample_History (void);
 
   /// Record one sample.
   /**
@@ -55,10 +55,10 @@ public:
   int sample (ACE_UINT64 value);
 
   /// Returns the maximum number of samples
-  size_t max_samples () const;
+  size_t max_samples (void) const;
 
   /// Returns the current number of samples
-  size_t sample_count () const;
+  size_t sample_count (void) const;
 
   /// Dump all the samples
   /**

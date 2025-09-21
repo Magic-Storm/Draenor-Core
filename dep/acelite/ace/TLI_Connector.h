@@ -8,6 +8,7 @@
  */
 //=============================================================================
 
+
 #ifndef ACE_TLI_CONNECTOR_H
 #define ACE_TLI_CONNECTOR_H
 #include /**/ "ace/pre.h"
@@ -33,7 +34,7 @@ class ACE_Export ACE_TLI_Connector
 {
 public:
   /// Default constructor.
-  ACE_TLI_Connector ();
+  ACE_TLI_Connector (void);
 
   /**
    * Actively connect and produce a <new_stream> if things go well.

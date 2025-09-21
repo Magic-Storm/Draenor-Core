@@ -1,6 +1,6 @@
 #include "ace/Registry.h"
 
-#if defined (ACE_WIN32)
+#if defined (ACE_WIN32) && !defined (ACE_LACKS_WIN32_REGISTRY)
 
 #  include "ace/os_include/os_netdb.h"
 #  include "ace/OS_NS_unistd.h"
@@ -100,7 +100,7 @@ ACE_Registry::Binding::name (ACE_TString &name)
 // Name accessors
 // (String version)
 ACE_TString
-ACE_Registry::Binding::name ()
+ACE_Registry::Binding::name (void)
 {
   return this->name_;
 }
@@ -108,7 +108,7 @@ ACE_Registry::Binding::name ()
 
 // Type accessor
 ACE_Registry::Binding_Type
-ACE_Registry::Binding::type ()
+ACE_Registry::Binding::type (void)
 {
   return this->type_;
 }
@@ -133,7 +133,7 @@ ACE_Registry::Object::data (void *data)
 
 
 void *
-ACE_Registry::Object::data () const
+ACE_Registry::Object::data (void) const
 {
   return this->data_;
 }
@@ -147,7 +147,7 @@ ACE_Registry::Object::size (u_long size)
 
 
 u_long
-ACE_Registry::Object::size () const
+ACE_Registry::Object::size (void) const
 {
   return this->size_;
 }
@@ -161,14 +161,14 @@ ACE_Registry::Object::type (u_long type)
 
 
 u_long
-ACE_Registry::Object::type () const
+ACE_Registry::Object::type (void) const
 {
   return this->type_;
 }
 
 
 // Simple context constructor
-ACE_Registry::Naming_Context::Naming_Context ()
+ACE_Registry::Naming_Context::Naming_Context (void)
   : key_ ((HKEY) 0),
     parent_key_ ((HKEY) 0),
     name_ ()
@@ -575,7 +575,7 @@ ACE_Registry::Naming_Context::resolve_context (const ACE_TString &name,
 
 // Same as unbind_context() with <this> as naming_context
 int
-ACE_Registry::Naming_Context::destroy ()
+ACE_Registry::Naming_Context::destroy (void)
 {
   // hopefully the parent_key_ is still open
   long result = ACE_TEXT_RegDeleteKey (this->parent_key_,
@@ -587,7 +587,7 @@ ACE_Registry::Naming_Context::destroy ()
 
 // Sync content of context to disk
 int
-ACE_Registry::Naming_Context::flush ()
+ACE_Registry::Naming_Context::flush (void)
 {
   long result = ::RegFlushKey (this->key_);
   ACE_REGISTRY_CALL_RETURN (result);
@@ -596,7 +596,7 @@ ACE_Registry::Naming_Context::flush ()
 
 // Close the handle of the context
 int
-ACE_Registry::Naming_Context::close ()
+ACE_Registry::Naming_Context::close (void)
 {
   long result = this->key_ ? ::RegCloseKey (this->key_) : ERROR_SUCCESS;
   ACE_REGISTRY_CALL_RETURN (result);
@@ -676,7 +676,7 @@ ACE_Registry::Naming_Context::key (HKEY key)
 
 // Get key
 HKEY
-ACE_Registry::Naming_Context::key ()
+ACE_Registry::Naming_Context::key (void)
 {
   return this->key_;
 }
@@ -692,7 +692,7 @@ ACE_Registry::Naming_Context::parent (HKEY parent)
 
 // Get parent
 HKEY
-ACE_Registry::Naming_Context::parent ()
+ACE_Registry::Naming_Context::parent (void)
 {
   return this->parent_key_;
 }
@@ -728,7 +728,7 @@ ACE_Registry::Naming_Context::name (const ACE_TString &name)
 // Get name
 // (String version)
 ACE_TString
-ACE_Registry::Naming_Context::name ()
+ACE_Registry::Naming_Context::name (void)
 {
   return this->name_;
 }
@@ -836,12 +836,12 @@ ACE_Registry::Binding_Iterator::Iteration_State::iterator (Binding_Iterator *ite
 }
 
 
-ACE_Registry::Binding_Iterator::Iteration_State::Iteration_State ()
+ACE_Registry::Binding_Iterator::Iteration_State::Iteration_State (void)
   : index_ (0)
 {
 }
 
-ACE_Registry::Binding_Iterator::Iteration_State::~Iteration_State ()
+ACE_Registry::Binding_Iterator::Iteration_State::~Iteration_State (void)
 {
 }
 
@@ -877,7 +877,7 @@ ACE_Registry::Binding_Iterator::next_n (u_long how_many,
 
 // Destroy iterator
 int
-ACE_Registry::Binding_Iterator::destroy ()
+ACE_Registry::Binding_Iterator::destroy (void)
 {
   this->reset ();
   return 0;
@@ -893,7 +893,7 @@ ACE_Registry::Binding_Iterator::naming_context (Naming_Context &naming_context)
 
 
 ACE_Registry::Naming_Context &
-ACE_Registry::Binding_Iterator::naming_context ()
+ACE_Registry::Binding_Iterator::naming_context (void)
 {
   return *this->naming_context_;
 }
@@ -908,7 +908,7 @@ ACE_Registry::Binding_Iterator::current_enumeration (Iteration_State &current_en
 
 
 ACE_Registry::Binding_Iterator::Iteration_State &
-ACE_Registry::Binding_Iterator::current_enumeration ()
+ACE_Registry::Binding_Iterator::current_enumeration (void)
 {
   return *this->current_enumeration_;
 }
@@ -1071,6 +1071,12 @@ ACE_Predefined_Naming_Contexts::connect (ACE_Registry::Naming_Context &naming_co
                                          HKEY predefined,
                                          const ACE_TCHAR *machine_name)
 {
+#if defined (ACE_HAS_WINCE)
+  ACE_UNUSED_ARG(naming_context);
+  ACE_UNUSED_ARG(predefined);
+  ACE_UNUSED_ARG(machine_name);
+  return -1;
+#else
   long result = -1;
 
   if (machine_name != 0 && ACE_OS::strcmp (ACE_TEXT ("localhost"), machine_name) == 0)
@@ -1095,9 +1101,10 @@ ACE_Predefined_Naming_Contexts::connect (ACE_Registry::Naming_Context &naming_co
     }
 
   ACE_REGISTRY_CALL_RETURN (result);
+#endif  // ACE_HAS_WINCE
 }
 
-/// Check if @a machine_name is the local host
+// Check if <machine_name> is the local host
 /* static */
 int
 ACE_Predefined_Naming_Contexts::is_local_host (const ACE_TCHAR *machine_name)
@@ -1113,4 +1120,4 @@ ACE_Predefined_Naming_Contexts::is_local_host (const ACE_TCHAR *machine_name)
 
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-#endif /* ACE_WIN32 */
+#endif /* ACE_WIN32 && !ACE_LACKS_WIN32_REGISTRY */

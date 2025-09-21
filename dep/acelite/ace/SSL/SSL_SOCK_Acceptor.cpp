@@ -18,7 +18,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_ALLOC_HOOK_DEFINE(ACE_SSL_SOCK_Acceptor)
 
-ACE_SSL_SOCK_Acceptor::~ACE_SSL_SOCK_Acceptor ()
+ACE_SSL_SOCK_Acceptor::~ACE_SSL_SOCK_Acceptor (void)
 {
   ACE_TRACE ("ACE_SSL_SOCK_Acceptor::~ACE_SSL_SOCK_Acceptor");
 }
@@ -157,6 +157,7 @@ ACE_SSL_SOCK_Acceptor::ssl_accept (ACE_SSL_SOCK_Stream &new_stream,
     }
 
   return (status == -1 ? -1 : 0);
+
 }
 
 // General purpose routine for accepting new connections.
@@ -197,6 +198,7 @@ ACE_SSL_SOCK_Acceptor::accept (ACE_SSL_SOCK_Stream &new_stream,
     }
 
   return 0;
+
 }
 
 int

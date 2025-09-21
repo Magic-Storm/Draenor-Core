@@ -434,6 +434,7 @@ private:
   ACE_Get_Opt &operator= (ACE_Get_Opt &&) = delete;
 
 private:
+
   /// Holds the option string.
   ACE_TString *optstring_;
 
@@ -480,6 +481,7 @@ private:
 
   /// Declare the dynamic allocation hooks.
   ACE_ALLOC_HOOK_DECLARE;
+
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

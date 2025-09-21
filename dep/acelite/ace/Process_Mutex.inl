@@ -3,7 +3,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 #if !defined (_ACE_USE_SV_SEM)
 ACE_INLINE const ACE_mutex_t &
-ACE_Process_Mutex::lock () const
+ACE_Process_Mutex::lock (void) const
 {
 // ACE_TRACE ("ACE_Process_Mutex::lock");
   return this->lock_.lock ();
@@ -12,14 +12,14 @@ ACE_Process_Mutex::lock () const
 
 // Explicitly destroy the mutex.
 ACE_INLINE int
-ACE_Process_Mutex::remove ()
+ACE_Process_Mutex::remove (void)
 {
   return this->lock_.remove ();
 }
 
 // Acquire lock ownership (wait on priority queue if necessary).
 ACE_INLINE int
-ACE_Process_Mutex::acquire ()
+ACE_Process_Mutex::acquire (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.acquire (0, SEM_UNDO);
@@ -42,7 +42,7 @@ ACE_Process_Mutex::acquire (ACE_Time_Value &tv)
 
 // Conditionally acquire lock (i.e., don't wait on queue).
 ACE_INLINE int
-ACE_Process_Mutex::tryacquire ()
+ACE_Process_Mutex::tryacquire (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.tryacquire (0, SEM_UNDO);
@@ -53,7 +53,7 @@ ACE_Process_Mutex::tryacquire ()
 
 // Release lock and unblock a thread at head of priority queue.
 ACE_INLINE int
-ACE_Process_Mutex::release ()
+ACE_Process_Mutex::release (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.release (0, SEM_UNDO);
@@ -64,7 +64,7 @@ ACE_Process_Mutex::release ()
 
 // Acquire lock ownership (wait on priority queue if necessary).
 ACE_INLINE int
-ACE_Process_Mutex::acquire_read ()
+ACE_Process_Mutex::acquire_read (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.acquire_read (0, SEM_UNDO);
@@ -75,7 +75,7 @@ ACE_Process_Mutex::acquire_read ()
 
 // Acquire lock ownership (wait on priority queue if necessary).
 ACE_INLINE int
-ACE_Process_Mutex::acquire_write ()
+ACE_Process_Mutex::acquire_write (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.acquire_write (0, SEM_UNDO);
@@ -86,7 +86,7 @@ ACE_Process_Mutex::acquire_write ()
 
 // Conditionally acquire a lock (i.e., won't block).
 ACE_INLINE int
-ACE_Process_Mutex::tryacquire_read ()
+ACE_Process_Mutex::tryacquire_read (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.tryacquire_read (0, SEM_UNDO);
@@ -97,7 +97,7 @@ ACE_Process_Mutex::tryacquire_read ()
 
 // Conditionally acquire a lock (i.e., won't block).
 ACE_INLINE int
-ACE_Process_Mutex::tryacquire_write ()
+ACE_Process_Mutex::tryacquire_write (void)
 {
 #if defined (_ACE_USE_SV_SEM)
   return this->lock_.tryacquire_write (0, SEM_UNDO);
@@ -107,7 +107,7 @@ ACE_Process_Mutex::tryacquire_write ()
 }
 
 ACE_INLINE int
-ACE_Process_Mutex::tryacquire_write_upgrade ()
+ACE_Process_Mutex::tryacquire_write_upgrade (void)
 {
   return 0;
 }

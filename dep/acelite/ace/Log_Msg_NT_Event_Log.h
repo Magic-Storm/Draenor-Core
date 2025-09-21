@@ -34,10 +34,10 @@ class ACE_Export ACE_Log_Msg_NT_Event_Log : public ACE_Log_Msg_Backend
 {
 public:
   /// Constructor
-  ACE_Log_Msg_NT_Event_Log () = default;
+  ACE_Log_Msg_NT_Event_Log (void);
 
   /// Destructor
-  ~ACE_Log_Msg_NT_Event_Log () override;
+  virtual ~ACE_Log_Msg_NT_Event_Log (void);
 
   /// Open a new event log.
   /**
@@ -47,19 +47,19 @@ public:
    *                   it is 0 (no name), the application name as
    *                   returned from ACE_Log_Msg::program_name() is used.
    */
-  int open (const ACE_TCHAR *logger_key) override;
+  virtual int open (const ACE_TCHAR *logger_key);
 
   /// Reset the backend.
-  int reset () override;
+  virtual int reset (void);
 
   /// Close the backend completely.
-  int close () override;
+  virtual int close (void);
 
   /// This is called when we want to log a message.
-  ssize_t log (ACE_Log_Record &log_record) override;
+  virtual ssize_t log (ACE_Log_Record &log_record);
 
 private:
-  HANDLE evlog_handle_ {0};
+  HANDLE evlog_handle_;
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL

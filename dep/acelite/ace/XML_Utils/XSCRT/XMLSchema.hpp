@@ -49,10 +49,14 @@ namespace XMLSchema
     typedef basic_string<C> Base__ ;
 
   public:
+
     //@@ VC6 does not inject XSCRT::Type into the scope so I have
     //   to qualify it all the time.
     //
-    string () = default;
+
+    string ()
+    {
+    }
 
     string (XSCRT::XML::Element<C> const& e)
         : Base__ (e.value ())
@@ -85,7 +89,9 @@ namespace XMLSchema
     typedef typename string<C>::Base__ Base__;
 
   public:
-    normalizedString () = default;
+    normalizedString ()
+    {
+    }
 
     normalizedString (XSCRT::XML::Element<C> const& e)
         : string<C> (e)
@@ -118,7 +124,9 @@ namespace XMLSchema
     typedef typename normalizedString<C>::Base__ Base__;
 
   public:
-    token () = default;
+    token ()
+    {
+    }
 
     token (XSCRT::XML::Element<C> const& e)
         : normalizedString<C> (e)
@@ -151,7 +159,9 @@ namespace XMLSchema
     typedef typename token<C>::Base__ Base__;
 
   public:
-    NMTOKEN () = default;
+    NMTOKEN ()
+    {
+    }
 
     NMTOKEN (XSCRT::XML::Element<C> const& e)
         : token<C> (e)
@@ -183,7 +193,9 @@ namespace XMLSchema
     typedef typename token<C>::Base__ Base__;
 
   public:
-    Name() = default;
+    Name()
+    {
+    }
 
     Name(XSCRT::XML::Element<C> const& e)
         : token<C> (e)
@@ -216,7 +228,9 @@ namespace XMLSchema
     typedef typename Name<C>::Base__ Base__;
 
   public:
-    NCName() = default;
+    NCName()
+    {
+    }
 
     NCName(XSCRT::XML::Element<C> const& e)
         : Name<C> (e)
@@ -248,7 +262,9 @@ namespace XMLSchema
     typedef typename Name<C>::Base__ Base__;
 
   public:
-    QName() = default;
+    QName()
+    {
+    }
 
     QName(XSCRT::XML::Element<C> const& e)
         : Name<C> (e)

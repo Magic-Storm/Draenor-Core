@@ -43,6 +43,7 @@ public:
    * Data transfer routines.
    */
   //@{
+
   /// Send an @a n byte @a buf to the datagram socket (uses
   /// @c sendto(3) ).
   ssize_t send (void const * buf,
@@ -77,9 +78,11 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 protected:
+
   // Protected constructors, so the class can only be derived from.
+
   /// Default constructor.
-  ACE_ICMP_Socket ();
+  ACE_ICMP_Socket (void);
 
   /// Constructor that takes a local listening address.
   ACE_ICMP_Socket (ACE_Addr const & local,

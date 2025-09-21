@@ -13,7 +13,11 @@
 #include "ace/SOCK_Acceptor.inl"
 #endif /* __ACE_INLINE__ */
 
+#if !defined (ACE_HAS_WINCE)
 #include "ace/OS_QoS.h"
+#endif  // ACE_HAS_WINCE
+
+
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -152,6 +156,7 @@ ACE_SOCK_Acceptor::accept (ACE_SOCK_Stream &new_stream,
                                      reset_new_handle);
 }
 
+#if !defined (ACE_HAS_WINCE)
 int
 ACE_SOCK_Acceptor::accept (ACE_SOCK_Stream &new_stream,
                            ACE_Accept_QoS_Params qos_params,
@@ -203,6 +208,7 @@ ACE_SOCK_Acceptor::accept (ACE_SOCK_Stream &new_stream,
                                      in_blocking_mode,
                                      reset_new_handle);
 }
+#endif  // ACE_HAS_WINCE
 
 void
 ACE_SOCK_Acceptor::dump () const

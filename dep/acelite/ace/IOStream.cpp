@@ -85,7 +85,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_HANDLE
-ACE_Streambuf::get_handle ()
+ACE_Streambuf::get_handle (void)
 {
   return 0;
 }
@@ -106,7 +106,7 @@ ACE_Streambuf::recv_timeout (ACE_Time_Value *tv)
 }
 
 int
-ACE_Streambuf::underflow ()
+ACE_Streambuf::underflow (void)
 {
   // If input mode is not set, any attempt to read from the stream is
   // a failure.
@@ -314,7 +314,7 @@ ACE_Streambuf::overflow (int c)
 // syncin
 
 int
-ACE_Streambuf::syncin ()
+ACE_Streambuf::syncin (void)
 {
   // As discussed, there really isn't any way to sync input from a
   // socket-like device.  We specifially override this base-class
@@ -325,7 +325,7 @@ ACE_Streambuf::syncin ()
 // syncout
 
 int
-ACE_Streambuf::syncout ()
+ACE_Streambuf::syncout (void)
 {
   // Unlike syncin, syncout is a doable thing.  All we have to do is
   // write whatever is in the output buffer to the peer.  flushbuf ()
@@ -338,7 +338,7 @@ ACE_Streambuf::syncout ()
 }
 
 int
-ACE_Streambuf::sync ()
+ACE_Streambuf::sync (void)
 {
   // sync () is fairly traditional in that it syncs both input and
   // output.  We could have omitted the call to syncin () but someday,
@@ -358,7 +358,7 @@ ACE_Streambuf::sync ()
 // flushbuf
 
 int
-ACE_Streambuf::flushbuf ()
+ACE_Streambuf::flushbuf (void)
 {
   // pptr () is one character beyond the last character put into the
   // buffer.  pbase () points to the beginning of the put buffer.
@@ -415,7 +415,7 @@ ACE_Streambuf::flushbuf ()
 }
 
 int
-ACE_Streambuf::get_one_byte ()
+ACE_Streambuf::get_one_byte (void)
 {
   this->timeout_ = 0;
 
@@ -439,7 +439,7 @@ ACE_Streambuf::get_one_byte ()
 // (ie -- gptr == egptr).
 
 int
-ACE_Streambuf::fillbuf ()
+ACE_Streambuf::fillbuf (void)
 {
   // Invoke recv_n to get exactly one byte from the remote.  This will
   // block until something shows up.
@@ -485,7 +485,7 @@ ACE_Streambuf::ACE_Streambuf (u_int streambuf_size, int io_mode)
 }
 
 u_int
-ACE_Streambuf::streambuf_size ()
+ACE_Streambuf::streambuf_size (void)
 {
   return streambuf_size_;
 }
@@ -494,7 +494,7 @@ ACE_Streambuf::streambuf_size ()
 // gptr.
 
 u_int
-ACE_Streambuf::get_waiting ()
+ACE_Streambuf::get_waiting (void)
 {
   return this->gptr_saved_ - this->eback_saved_;
 }
@@ -503,7 +503,7 @@ ACE_Streambuf::get_waiting ()
 // gotten); eback + get_avail = egptr.
 
 u_int
-ACE_Streambuf::get_avail ()
+ACE_Streambuf::get_avail (void)
 {
   return this->egptr_saved_ - this->eback_saved_;
 }
@@ -512,7 +512,7 @@ ACE_Streambuf::get_avail ()
 // pbase + put_avail = pptr.
 
 u_int
-ACE_Streambuf::put_avail ()
+ACE_Streambuf::put_avail (void)
 {
   return this->pptr_saved_ - this->pbase_saved_;
 }
@@ -624,7 +624,7 @@ ACE_Streambuf::reset_put_buffer (char *newBuffer,
 }
 
 void
-ACE_Streambuf::reset_base ()
+ACE_Streambuf::reset_base (void)
 {
   // Until we experience the first get or put operation, we do not
   // know what our current IO mode is.
@@ -642,13 +642,13 @@ ACE_Streambuf::reset_base ()
 // would be deleted when the object destructs.  Since we are providing
 // separate read/write buffers, it is up to us to manage their memory.
 
-ACE_Streambuf::~ACE_Streambuf ()
+ACE_Streambuf::~ACE_Streambuf (void)
 {
   delete [] this->eback_saved_;
   delete [] this->pbase_saved_;
 }
 
-u_char ACE_Streambuf::timeout ()
+u_char ACE_Streambuf::timeout (void)
 {
   u_char rval = this->timeout_;
   this->timeout_ = 0;

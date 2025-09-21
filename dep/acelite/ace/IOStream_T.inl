@@ -6,7 +6,7 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 template <class STREAM> ACE_INLINE int
-ACE_IOStream<STREAM>::eof () const
+ACE_IOStream<STREAM>::eof (void) const
 {
   // Get the timeout value of the streambuf
   ACE_Time_Value *timeout = this->streambuf_->recv_timeout (0);
@@ -33,7 +33,7 @@ ACE_IOStream<STREAM>::eof () const
 }
 
 template <class STREAM> ACE_INLINE
-ACE_SOCK_Dgram_SC<STREAM>::ACE_SOCK_Dgram_SC ()
+ACE_SOCK_Dgram_SC<STREAM>::ACE_SOCK_Dgram_SC (void)
 {
 }
 

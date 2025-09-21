@@ -116,8 +116,8 @@ inline wchar_t *
 ACE_Ascii_To_Wide::convert (const char *str)
 {
   // Short circuit null pointer case
-  if (!str)
-    return nullptr;
+  if (str == 0)
+    return 0;
 
 # if defined (ACE_WIN32)
   UINT const cp = GetACP ();  // Codepage

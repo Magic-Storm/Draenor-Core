@@ -38,13 +38,10 @@ class ACE_Export ACE_UNIX_Addr : public ACE_Addr
 {
 public:
   /// Default constructor.
-  ACE_UNIX_Addr ();
+  ACE_UNIX_Addr (void);
 
   /// Copy constructor.
   ACE_UNIX_Addr (const ACE_UNIX_Addr &sa);
-
-  /// Assignment operator
-  ACE_UNIX_Addr& operator= (const ACE_UNIX_Addr&) = default;
 
   /// Creates an ACE_UNIX_Addr from a string.
   ACE_UNIX_Addr (const char rendezvous_point[]);
@@ -62,7 +59,7 @@ public:
   int set (const sockaddr_un *, int len);
 
   /// Return a pointer to the underlying network address.
-  virtual void *get_addr () const;
+  virtual void *get_addr (void) const;
 
   /// Set a pointer to the underlying network address.
   virtual void set_addr (const void *addr, int len);
@@ -88,10 +85,10 @@ public:
   bool operator != (const ACE_UNIX_Addr &SAP) const;
 
   /// Return the path name of the underlying rendezvous point.
-  const char *get_path_name () const;
+  const char *get_path_name (void) const;
 
   /// Computes and returns hash value.
-  virtual u_long hash () const;
+  virtual u_long hash (void) const;
 
   /// Dump the state of an object.
   void dump () const;

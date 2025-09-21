@@ -29,91 +29,91 @@ template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::operator++ ()
 {
-  return __atomic_add_fetch (&value_, 1, __ATOMIC_ACQ_REL);
+  return __sync_add_and_fetch (&this->value_, 1);
 }
 
 template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::operator++ (int)
 {
-  return __atomic_fetch_add (&value_, 1, __ATOMIC_ACQ_REL);
+  return __sync_fetch_and_add (&this->value_, 1);
 }
 
 template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::operator-- ()
 {
-  return __atomic_sub_fetch (&value_, 1, __ATOMIC_ACQ_REL);
+  return __sync_sub_and_fetch (&this->value_, 1);
 }
 
 template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::operator-- (int)
 {
-  return __atomic_fetch_sub (&value_, 1, __ATOMIC_ACQ_REL);
+  return __sync_fetch_and_sub (&this->value_, 1);
 }
 
 template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::operator+= (T rhs)
 {
-  return __atomic_add_fetch (&value_, rhs, __ATOMIC_ACQ_REL);
+  return __sync_add_and_fetch (&this->value_, rhs);
 }
 
 template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::operator-= (T rhs)
 {
-  return __atomic_sub_fetch (&value_, rhs, __ATOMIC_ACQ_REL);
+  return __sync_sub_and_fetch (&this->value_, rhs);
 }
 
 template <typename T>
 ACE_INLINE bool
 ACE_Atomic_Op_GCC<T>::operator== (T rhs) const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME) == rhs;
+  return (this->value_ == rhs);
 }
 
 template <typename T>
 ACE_INLINE bool
 ACE_Atomic_Op_GCC<T>::operator!= (T rhs) const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME) != rhs;
+  return (this->value_ != rhs);
 }
 
 template <typename T>
 ACE_INLINE bool
 ACE_Atomic_Op_GCC<T>::operator>= (T rhs) const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME) >= rhs;
+  return (this->value_ >= rhs);
 }
 
 template <typename T>
 ACE_INLINE bool
 ACE_Atomic_Op_GCC<T>::operator> (T rhs) const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME) > rhs;
+  return (this->value_ > rhs);
 }
 
 template <typename T>
 ACE_INLINE bool
 ACE_Atomic_Op_GCC<T>::operator<= (T rhs) const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME) <= rhs;
+  return (this->value_ <= rhs);
 }
 
 template <typename T>
 ACE_INLINE bool
 ACE_Atomic_Op_GCC<T>::operator< (T rhs) const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME) < rhs;
+  return (this->value_ < rhs);
 }
 
 template <typename T>
 ACE_INLINE ACE_Atomic_Op_GCC<T> &
 ACE_Atomic_Op_GCC<T>::operator= (T rhs)
 {
-  __atomic_store_n (&value_, rhs, __ATOMIC_RELEASE);
+  (void) __sync_lock_test_and_set (&this->value_, rhs);
   return *this;
 }
 
@@ -122,7 +122,7 @@ ACE_INLINE ACE_Atomic_Op_GCC<T> &
 ACE_Atomic_Op_GCC<T>::operator= (
    const ACE_Atomic_Op_GCC<T> &rhs)
 {
-  __atomic_store_n (&value_, __atomic_load_n (&rhs.value_, __ATOMIC_CONSUME), __ATOMIC_RELEASE);
+  (void) __sync_lock_test_and_set (&this->value_, rhs.value_);
   return *this;
 }
 
@@ -130,21 +130,21 @@ template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::exchange (T newval)
 {
-  return __atomic_exchange_n (&value_, newval, __ATOMIC_ACQ_REL);
+  return __sync_val_compare_and_swap (&this->value_, this->value_, newval);
 }
 
 template <typename T>
 ACE_INLINE T
 ACE_Atomic_Op_GCC<T>::value () const
 {
-  return __atomic_load_n (&value_, __ATOMIC_CONSUME);
+  return this->value_;
 }
 
 template <typename T>
 ACE_INLINE volatile T &
 ACE_Atomic_Op_GCC<T>::value_i ()
 {
-  return value_;
+  return this->value_;
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL

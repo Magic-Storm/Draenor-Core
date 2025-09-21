@@ -126,22 +126,22 @@ ACE_ICMP_Socket::shared_open (ACE_Addr const & local)
 {
   ACE_TRACE ("ACE_ICMP_Socket::shared_open");
 
-  bool error = false;
+  int error = 0;
   if (local == ACE_Addr::sap_any)
     {
       if (ACE::bind_port (this->get_handle ()) == -1)
         {
-          error = true;
+          error = 1;
         }
     }
   else if (ACE_OS::bind (this->get_handle (),
                          reinterpret_cast<sockaddr *> (local.get_addr ()),
                          local.get_size ()) == -1)
     {
-      error = true;
+      error = 1;
     }
 
-  if (error)
+  if (error != 0)
     {
       this->close ();
     }

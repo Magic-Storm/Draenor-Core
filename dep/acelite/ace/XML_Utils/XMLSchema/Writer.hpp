@@ -54,7 +54,9 @@ namespace XMLSchema
         Traversal::Traverser<T>::traverse (t);
       }
 
-      FundamentalType () = default;
+      FundamentalType ()
+      {
+      }
     };
 
     template<typename C>
@@ -103,7 +105,9 @@ namespace XMLSchema
         Traversal::Traverser<XSCRT::FundamentalType<bool> >::traverse (t);
       }
 
-      FundamentalType () = default;
+      FundamentalType ()
+      {
+      }
     };
 
 
@@ -140,7 +144,9 @@ namespace XMLSchema
         Traversal::Traverser<XMLSchema::IDREF<C> >::traverse (o);
       }
 
-      IDREF () = default;
+      IDREF ()
+      {
+      }
     };
   }
 }
