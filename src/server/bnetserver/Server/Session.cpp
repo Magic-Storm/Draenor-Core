@@ -17,13 +17,13 @@
 
 #include "Session.h"
 #include "BattlenetRpcErrorCodes.h"
-#include "ByteConverter.h"
+#include "../../shared/Utilities/ByteConverter.h"
 #include "Database/DatabaseEnv.h"
 #include "LoginRESTService.h"
-#include "ProtobufJSON.h"
+#include "../../shared/JSON/ProtobufJSON.h"
 #include "RealmList.h"
 #include "ServiceDispatcher.h"
-#include "RealmList.pb.h"
+#include "../../proto/RealmList/RealmList.pb.h"
 #include <zlib.h>
 
 void Battlenet::Session::AccountInfo::LoadResult(PreparedQueryResult result)

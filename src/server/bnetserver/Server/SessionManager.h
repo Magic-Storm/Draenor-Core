@@ -20,6 +20,7 @@
 
 #include "SocketMgr.h"
 #include "Session.h"
+#include <memory>
 
 namespace Battlenet
 {
@@ -34,11 +35,14 @@ namespace Battlenet
 
     protected:
         NetworkThread<Session>* CreateThreads() const;
+        void OnSocketOpen(boost::asio::ip::tcp::socket&& sock, uint32 threadIndex) override;
 
     private:
         static void OnSocketAccept(tcp::socket&& sock, uint32 threadIndex);
         
         std::unique_ptr<SocketAcceptor<Session>> _acceptor;
+        int32 _socketSystemSendBufferSize = -1;
+        bool _tcpNoDelay = true;
     };
 }
 

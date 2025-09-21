@@ -106,7 +106,7 @@ namespace Battlenet
             std::string DisplayName;
             bool IsBanned;
             bool IsPermanenetlyBanned;
-            AccountTypes SecurityLevel;
+            uint32 SecurityLevel;
 
             std::unordered_map<uint32 /*realmAddress*/, uint8> CharacterCounts;
             std::unordered_map<std::string /*subRegion*/, LastPlayedCharacterInfo> LastPlayedCharacters;

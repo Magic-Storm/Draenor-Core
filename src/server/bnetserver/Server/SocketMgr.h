@@ -35,7 +35,7 @@ public:
 protected:
     virtual int GetNetworkThreadCount() const { return 1; }
     virtual SocketType* GetSocketForAccept() { return nullptr; }
-    virtual void OnSocketOpen(SocketType&& sock, uint32 threadIndex) = 0;
+    virtual void OnSocketOpen(boost::asio::ip::tcp::socket&& sock, uint32 threadIndex) = 0;
 };
 
 template<class SocketType>
@@ -61,7 +61,7 @@ public:
         _socketFactory = factory;
     }
 
-    template<void(*Callback)(typename SocketType::socket_type&&, uint32)>
+    template<void(*Callback)(boost::asio::ip::tcp::socket&&, uint32)>
     void AsyncAcceptWithCallback()
     {
         // Placeholder implementation
