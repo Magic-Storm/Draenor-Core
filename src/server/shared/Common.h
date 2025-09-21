@@ -134,6 +134,15 @@
 #define vsnprintf _vsnprintf
 #define llabs _abs64
 
+// Fix for newer Visual Studio versions where _vsnprintf is not in std namespace
+#if _MSC_VER >= 1900
+namespace std {
+    inline int _vsnprintf(char* buffer, size_t count, const char* format, va_list argptr) {
+        return ::_vsnprintf(buffer, count, format, argptr);
+    }
+}
+#endif
+
 #else
 
 #define stricmp strcasecmp
