@@ -20,7 +20,7 @@
 
 #include "Session.h"
 #include "Define.h"
-#include "Login.pb.h"
+#include "../../proto/Login/Login.pb.h"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ip/address.hpp>

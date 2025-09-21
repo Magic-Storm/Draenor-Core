@@ -15,31 +15,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SessionManager_h__
-#define SessionManager_h__
+#ifndef Realm_h__
+#define Realm_h__
 
-#include "SocketMgr.h"
-#include "Session.h"
+#include <cstdint>
 
 namespace Battlenet
 {
-    class SessionManager : public SocketMgr<Session>
-    {
-        typedef SocketMgr<Session> BaseSocketMgr;
-
-    public:
-        static SessionManager& Instance();
-
-        bool StartNetwork(boost::asio::io_service& service, std::string const& bindIp, uint16 port, int threadCount = 1);
-
-    protected:
-        NetworkThread<Session>* CreateThreads() const;
-
-    private:
-        static void OnSocketAccept(tcp::socket&& sock, uint32 threadIndex);
-    };
+    typedef uint32_t RealmHandle;
 }
 
-#define sSessionMgr Battlenet::SessionManager::Instance()
-
-#endif // SessionManager_h__
+#endif // Realm_h__

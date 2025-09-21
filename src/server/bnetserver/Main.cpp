@@ -34,8 +34,10 @@
 #include <ace/Reactor.h>
 #include <ace/Event_Handler.h>
 #include <google/protobuf/stubs/common.h>
-
-// Removed boost::asio usage
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/signal_set.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #ifndef _TRINITY_BNET_CONFIG
 # define _TRINITY_BNET_CONFIG  "bnetserver.conf"
@@ -54,21 +56,22 @@ char serviceDescription[] = "TrinityCore Battle.net emulator authentication serv
 */
 int m_ServiceStatus = -1;
 
-static ACE_Event_Handler* _serviceStatusWatchTimer;
-void ServiceStatusWatcher();
+static boost::asio::deadline_timer* _serviceStatusWatchTimer;
+void ServiceStatusWatcher(boost::system::error_code const& error);
 #endif
 
 bool StartDB();
 void StopDB();
-void SignalHandler(int signalNumber);
-void KeepDatabaseAliveHandler();
-void BanExpiryHandler();
+void SignalHandler(boost::system::error_code const& error, int signalNumber);
+void KeepDatabaseAliveHandler(boost::system::error_code const& error);
+void BanExpiryHandler(boost::system::error_code const& error);
 std::map<std::string, std::string> GetConsoleArguments(int argc, char** argv, std::string& configFile, std::string& configService);
 
 static ACE_Reactor* _reactor;
-static ACE_Event_Handler* _dbPingTimer;
+static boost::asio::io_service* _ioService;
+static boost::asio::deadline_timer* _dbPingTimer;
 static uint32 _dbPingInterval;
-static ACE_Event_Handler* _banExpiryCheckTimer;
+static boost::asio::deadline_timer* _banExpiryCheckTimer;
 static uint32 _banExpiryCheckInterval;
 
 int main(int argc, char** argv)

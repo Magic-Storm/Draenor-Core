@@ -20,7 +20,7 @@
 
 #include "Common.h"
 #include "Service.h"
-#include "account_service.pb.h"
+#include "../../proto/Client/account_service.pb.h"
 
 namespace Battlenet
 {

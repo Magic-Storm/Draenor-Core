@@ -22,13 +22,20 @@
 #include "SslContext.h"
 #include "BigNumber.h"
 #include "Callback.h"
+#include "Utilities/MessageBuffer.h"
+#include "Database/DatabaseEnv.h"
+#include "Common.h"
 #include <ace/Synch_Traits.h>
 #include <ace/Svc_Handler.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/Message_Block.h>
 #include <ace/Basic_Types.h>
 #include <google/protobuf/message.h>
+#include <boost/asio/ip/tcp.hpp>
 #include <memory>
+#include <functional>
+#include <unordered_map>
+#include <array>
 
 using boost::asio::ip::tcp;
 
@@ -124,8 +131,8 @@ namespace Battlenet
         explicit Session(tcp::socket&& socket);
         ~Session();
 
-        void Start() override;
-        bool Update() override;
+        void Start();
+        bool Update();
 
         uint32 GetAccountId() const { return _accountInfo->Id; }
         uint32 GetGameAccountId() const { return _gameAccountInfo->Id; }
@@ -152,7 +159,7 @@ namespace Battlenet
 
     protected:
         void HandshakeHandler();
-        void ReadHandler() override;
+        void ReadHandler();
         bool ReadHeaderLengthHandler();
         bool ReadHeaderHandler();
         bool ReadDataHandler();

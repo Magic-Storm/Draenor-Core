@@ -27,8 +27,8 @@
 #include "account_types.pb.h"
 #include "entity_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)

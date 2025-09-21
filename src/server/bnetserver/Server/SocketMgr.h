@@ -15,31 +15,32 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SessionManager_h__
-#define SessionManager_h__
+#ifndef SocketMgr_h__
+#define SocketMgr_h__
 
-#include "SocketMgr.h"
-#include "Session.h"
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <string>
 
-namespace Battlenet
+template<class SocketType>
+class SocketMgr
 {
-    class SessionManager : public SocketMgr<Session>
-    {
-        typedef SocketMgr<Session> BaseSocketMgr;
+public:
+    virtual ~SocketMgr() = default;
 
-    public:
-        static SessionManager& Instance();
+    virtual bool StartNetwork(boost::asio::io_service& service, std::string const& bindIp, uint16 port, int threadCount = 1) = 0;
+    virtual void StopNetwork() = 0;
 
-        bool StartNetwork(boost::asio::io_service& service, std::string const& bindIp, uint16 port, int threadCount = 1);
+protected:
+    template<class NetworkThread>
+    NetworkThread* CreateThreads() const { return nullptr; }
+};
 
-    protected:
-        NetworkThread<Session>* CreateThreads() const;
+template<class SocketType>
+class NetworkThread
+{
+public:
+    virtual ~NetworkThread() = default;
+};
 
-    private:
-        static void OnSocketAccept(tcp::socket&& sock, uint32 threadIndex);
-    };
-}
-
-#define sSessionMgr Battlenet::SessionManager::Instance()
-
-#endif // SessionManager_h__
+#endif // SocketMgr_h__
