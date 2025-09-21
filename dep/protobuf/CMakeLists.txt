@@ -62,7 +62,7 @@ add_library(protobuf STATIC ${protobuf_STAT_SRCS})
 target_include_directories(protobuf
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/tc_custom)
+    ${CMAKE_CURRENT_SOURCE_DIR}/tc_custom
   PRIVATE
     ${CMAKE_SOURCE_DIR}/dep/threads)
 
