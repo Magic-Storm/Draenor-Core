@@ -28,8 +28,8 @@
 #include "entity_types.pb.h"
 #include "channel_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)
@@ -1771,7 +1771,7 @@ class TC_SHARED_API ChannelService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit ChannelService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit ChannelService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0xB732DB32u> OriginalHash;
   typedef std::integral_constant<uint32, 0xA913A87Bu> NameHash;
@@ -1815,7 +1815,7 @@ class TC_SHARED_API ChannelListener : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit ChannelListener(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit ChannelListener(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0xBF8C8094u> OriginalHash;
   typedef std::integral_constant<uint32, 0xDA660990u> NameHash;

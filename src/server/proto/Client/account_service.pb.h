@@ -3297,7 +3297,7 @@ class TC_SHARED_API AccountService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit AccountService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit AccountService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0x62DA0891u> OriginalHash;
   typedef std::integral_constant<uint32, 0x1E4DC42Fu> NameHash;
@@ -3361,7 +3361,7 @@ class TC_SHARED_API AccountListener : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit AccountListener(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit AccountListener(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0x54DFDA17u> OriginalHash;
   typedef std::integral_constant<uint32, 0x7807483Cu> NameHash;

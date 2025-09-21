@@ -27,8 +27,8 @@
 #include "entity_types.pb.h"
 #include "presence_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)
@@ -763,7 +763,7 @@ class TC_SHARED_API PresenceService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit PresenceService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit PresenceService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0xFA0796FFu> OriginalHash;
   typedef std::integral_constant<uint32, 0xD8F94B3Bu> NameHash;

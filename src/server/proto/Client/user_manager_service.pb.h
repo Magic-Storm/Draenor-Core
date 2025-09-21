@@ -28,8 +28,8 @@
 #include "entity_types.pb.h"
 #include "role_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)
@@ -1297,7 +1297,7 @@ class TC_SHARED_API UserManagerService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit UserManagerService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit UserManagerService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0x3E19268Au> OriginalHash;
   typedef std::integral_constant<uint32, 0x8EE5694Eu> NameHash;
@@ -1341,7 +1341,7 @@ class TC_SHARED_API UserManagerListener : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit UserManagerListener(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit UserManagerListener(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0xBC872C22u> OriginalHash;
   typedef std::integral_constant<uint32, 0xB3426BB3u> NameHash;

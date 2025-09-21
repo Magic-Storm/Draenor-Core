@@ -27,8 +27,8 @@
 #include "attribute_types.pb.h"
 #include "entity_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)
@@ -275,7 +275,7 @@ class TC_SHARED_API ReportService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit ReportService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit ReportService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0x7CAF61C9u> OriginalHash;
   typedef std::integral_constant<uint32, 0x724F5F47u> NameHash;

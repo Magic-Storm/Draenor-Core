@@ -21,6 +21,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <string>
+#include <memory>
 
 template<class SocketType>
 class SocketMgr
@@ -32,8 +33,9 @@ public:
     virtual void StopNetwork() = 0;
 
 protected:
-    template<class NetworkThread>
-    NetworkThread* CreateThreads() const { return nullptr; }
+    virtual int GetNetworkThreadCount() const { return 1; }
+    virtual SocketType* GetSocketForAccept() { return nullptr; }
+    virtual void OnSocketOpen(SocketType&& sock, uint32 threadIndex) = 0;
 };
 
 template<class SocketType>
@@ -41,6 +43,29 @@ class NetworkThread
 {
 public:
     virtual ~NetworkThread() = default;
+};
+
+// Forward declaration for acceptor
+template<class SocketType>
+class SocketAcceptor;
+
+template<class SocketType>
+class SocketAcceptor
+{
+public:
+    SocketAcceptor() = default;
+    virtual ~SocketAcceptor() = default;
+
+    void SetSocketFactory(std::function<SocketType*()> factory) 
+    {
+        _socketFactory = factory;
+    }
+
+    template<void(*Callback)(typename SocketType::socket_type&&, uint32)>
+    void AsyncAcceptWithCallback()
+    {
+        // Placeholder implementation
+    }
 };
 
 #endif // SocketMgr_h__

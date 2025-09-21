@@ -22,6 +22,7 @@ bool Battlenet::SessionManager::StartNetwork(boost::asio::io_service& service, s
     if (!BaseSocketMgr::StartNetwork(service, bindIp, port, threadCount))
         return false;
 
+    _acceptor = std::make_unique<SocketAcceptor<Session>>();
     _acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
     _acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
     return true;

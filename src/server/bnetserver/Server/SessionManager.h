@@ -37,6 +37,8 @@ namespace Battlenet
 
     private:
         static void OnSocketAccept(tcp::socket&& sock, uint32 threadIndex);
+        
+        std::unique_ptr<SocketAcceptor<Session>> _acceptor;
     };
 }
 

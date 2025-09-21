@@ -26,12 +26,12 @@
 #include "../../proto/Client/challenge_service.pb.h"
 #include "../../proto/Client/channel_service.pb.h"
 #include "ConnectionService.h"
-#include "friends_service.pb.h"
+#include "../../proto/Client/friends_service.pb.h"
 #include "GameUtilitiesService.h"
-#include "presence_service.pb.h"
-#include "report_service.pb.h"
-#include "resource_service.pb.h"
-#include "user_manager_service.pb.h"
+#include "../../proto/Client/presence_service.pb.h"
+#include "../../proto/Client/report_service.pb.h"
+#include "../../proto/Client/resource_service.pb.h"
+#include "../../proto/Client/user_manager_service.pb.h"
 
 namespace Battlenet
 {

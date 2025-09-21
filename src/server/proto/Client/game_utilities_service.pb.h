@@ -29,8 +29,8 @@
 #include "entity_types.pb.h"
 #include "game_utilities_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)
@@ -1333,7 +1333,7 @@ class TC_SHARED_API GameUtilitiesService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit GameUtilitiesService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit GameUtilitiesService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0x3FC1274Du> OriginalHash;
   typedef std::integral_constant<uint32, 0x51923A28u> NameHash;

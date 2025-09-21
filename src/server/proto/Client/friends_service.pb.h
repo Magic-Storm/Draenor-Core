@@ -30,8 +30,8 @@
 #include "invitation_types.pb.h"
 #include "role_types.pb.h"
 #include "rpc_types.pb.h"
-#include "ServiceBase.h"
-#include "MessageBuffer.h"
+#include "../ServiceBase.h"
+#include "../../shared/Utilities/MessageBuffer.h"
 #include <functional>
 #include <type_traits>
 // @@protoc_insertion_point(includes)
@@ -1345,7 +1345,7 @@ class TC_SHARED_API FriendsService : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit FriendsService(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit FriendsService(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0xA3DDB1BDu> OriginalHash;
   typedef std::integral_constant<uint32, 0xABDFED63u> NameHash;
@@ -1397,7 +1397,7 @@ class TC_SHARED_API FriendsListener : public ServiceBase
  public:
 
   template<typename HashSelector>
-  explicit FriendsListener(HashSelector) : service_hash_(HashSelector::Result::value) { }
+  explicit FriendsListener(HashSelector) : service_hash_(HashSelector{}.value) { }
 
   typedef std::integral_constant<uint32, 0x6F259A13u> OriginalHash;
   typedef std::integral_constant<uint32, 0xA6717548u> NameHash;
