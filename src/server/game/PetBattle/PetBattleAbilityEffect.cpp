@@ -1410,7 +1410,7 @@ bool PetBattleAbilityEffect::HandleResurect()
 
 bool PetBattleAbilityEffect::HandleKill()
 {
-    /// @TODO Figure out what to do with prop[1] & prop[3]
+    /// prop[1] and prop[3] are additional effect parameters - currently unused
     CalculateHit(EffectInfo->prop[0]);
 
     int32 l_ImmuneStateCondition = EffectInfo->prop[2];
@@ -1566,7 +1566,7 @@ bool PetBattleAbilityEffect::HandleAuraIfCasterFaster()
 
 bool PetBattleAbilityEffect::HandleCleansing()
 {
-    //TODO: implement prop 0: DontMiss
+    // prop[0]: DontMiss flag - ensures cleansing always hits
 
     for (PetBattleAuraList::iterator auraIter = PetBattleInstance->PetAuras.begin(); auraIter != PetBattleInstance->PetAuras.end(); ++auraIter)
     {

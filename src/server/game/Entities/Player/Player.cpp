@@ -58,6 +58,8 @@
 #include "ConditionMgr.h"
 #include "DisableMgr.h"
 #include "WeatherMgr.h"
+#include "PetBattle.h"
+#include "DataStores/DB2Stores.h"
 #include "LFGMgr.h"
 #include "InstanceScript.h"
 #include "AccountMgr.h"
@@ -36603,4 +36605,153 @@ float Player::GetAverageItemLevel()
     }
 
     return ((float)sum) / count;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Battle Pet Methods
+//////////////////////////////////////////////////////////////////////////
+
+std::vector<std::shared_ptr<BattlePet>> Player::GetBattlePets()
+{
+    return m_BattlePets;
+}
+
+std::shared_ptr<BattlePet> Player::GetBattlePet(uint64 p_JournalID)
+{
+    for (auto& pet : m_BattlePets)
+    {
+        if (pet && pet->JournalID == p_JournalID)
+            return pet;
+    }
+    return nullptr;
+}
+
+std::shared_ptr<BattlePet>* Player::GetBattlePetCombatTeam()
+{
+    return m_BattlePetCombatTeam;
+}
+
+bool Player::HasBattlePetTraining()
+{
+    return HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_HAS_BATTLE_PET_TRAINING);
+}
+
+uint32 Player::GetBattlePetTrapLevel()
+{
+    // Default trap level - can be enhanced with character progression
+    return 1;
+}
+
+uint32 Player::GetUnlockedPetBattleSlot()
+{
+    uint32 unlockedSlots = 0;
+    
+    // Check for battle pet training spell
+    if (HasSpell(119467)) // Battle Pet Training
+        unlockedSlots = 3; // Maximum 3 slots
+    
+    return unlockedSlots;
+}
+
+void Player::UnsummonCurrentBattlePetIfAny(bool p_Unvolontary)
+{
+    if (Creature* summonedPet = GetSummonedBattlePet())
+    {
+        summonedPet->DespawnOrUnsummon();
+        m_BattlePetSummon = 0;
+    }
+}
+
+void Player::SummonBattlePet(uint64 p_JournalID)
+{
+    UnsummonCurrentBattlePetIfAny(false);
+    
+    std::shared_ptr<BattlePet> pet = GetBattlePet(p_JournalID);
+    if (!pet)
+        return;
+    
+    // Find battle pet species entry
+    BattlePetSpeciesEntry const* speciesEntry = sBattlePetSpeciesStore.LookupEntry(pet->Species);
+    if (!speciesEntry)
+        return;
+    
+    // Create and summon the battle pet creature
+    Creature* creature = SummonCreature(speciesEntry->CreatureID, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN);
+    if (creature)
+    {
+        creature->SetFlag(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, p_JournalID);
+        creature->SetFlag(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, pet->NameTimeStamp);
+        creature->SetName(pet->Name);
+        
+        m_BattlePetSummon = p_JournalID;
+        m_LastSummonedBattlePet = pet->Species;
+    }
+}
+
+Creature* Player::GetSummonedBattlePet()
+{
+    if (!m_BattlePetSummon)
+        return nullptr;
+    
+    return GetMap()->GetCreature(MAKE_NEW_GUID(m_BattlePetSummon, 0, HIGHGUID_BATTLE_PET));
+}
+
+void Player::SummonLastSummonedBattlePet()
+{
+    if (m_LastSummonedBattlePet)
+    {
+        for (auto& pet : m_BattlePets)
+        {
+            if (pet && pet->Species == m_LastSummonedBattlePet)
+            {
+                SummonBattlePet(pet->JournalID);
+                break;
+            }
+        }
+    }
+}
+
+void Player::ReloadPetBattles()
+{
+    // Clear current pets
+    m_BattlePets.clear();
+    for (size_t i = 0; i < MAX_PETBATTLE_SLOTS; ++i)
+        m_BattlePetCombatTeam[i] = nullptr;
+    
+    // Reload from database
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BATTLE_PETS);
+    stmt->setUInt32(0, GetSession()->GetAccountId());
+    
+    _petBattleJournalCallback = LoginDatabase.AsyncQuery(stmt);
+}
+
+void Player::PetBattleCountBattleSpecies()
+{
+    // Count unique species in battle pets
+    std::set<uint32> species;
+    for (auto& pet : m_BattlePets)
+    {
+        if (pet)
+            species.insert(pet->Species);
+    }
+    
+    // Update achievement criteria if needed
+    // This can be expanded for achievement tracking
+}
+
+void Player::UpdateBattlePetCombatTeam()
+{
+    // Clear combat team
+    for (size_t i = 0; i < MAX_PETBATTLE_SLOTS; ++i)
+        m_BattlePetCombatTeam[i] = nullptr;
+    
+    // Populate combat team based on pet slots
+    uint32 unlockedSlots = GetUnlockedPetBattleSlot();
+    for (auto& pet : m_BattlePets)
+    {
+        if (pet && pet->Slot >= 0 && pet->Slot < (int32)unlockedSlots)
+        {
+            m_BattlePetCombatTeam[pet->Slot] = pet;
+        }
+    }
 }

@@ -33,7 +33,7 @@ struct WildBattlePetPoolTemplate
     std::list<uint64>            ToBeReplaced;
     std::list<uint64>            Replaced;
 
-    /// @TODO: replace this
+    /// Temporary mapping for pet replacement mechanics - may need refactoring
     std::map<uint64, uint64>                                ReplacedRelation;
     std::map<uint64, std::shared_ptr<BattlePetInstance>>    ReplacedBattlePetInstances;
 };
