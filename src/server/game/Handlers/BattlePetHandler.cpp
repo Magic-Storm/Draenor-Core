@@ -603,11 +603,11 @@ void WorldSession::HandleBattlePetCage(WorldPacket& p_RecvData)
     if (!l_SpeciesEntry)
         return;
 
-    // Check if pet can be traded (no SPECIES_FLAG_CANT_TRADE equivalent in this codebase)
-    // Note: This check is skipped as the flag system doesn't exist in this codebase
+    // Check if pet can be traded (cageable)
+    if ((l_SpeciesEntry->Flags & BATTLEPET_SPECIES_FLAG_CAGEABLE) == 0)
+        return;
 
-    // Check if pet is already deleted
-    // Note: SaveInfo/STATE_DELETED system doesn't exist in this codebase
+    // if (petInfo->SaveInfo == STATE_DELETED) - This check is not available in Draenor-Core
 
     // Use species item ID for cage
     uint32 l_ItemId = ITEM_BATTLE_PET_CAGE_ID;
