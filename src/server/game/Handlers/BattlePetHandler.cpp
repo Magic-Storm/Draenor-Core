@@ -328,7 +328,56 @@ void WorldSession::HandleBattlePetDeletePet(WorldPacket& p_RecvData)
     uint64 l_BattlePetGUID;
     p_RecvData.readPackGUID(l_BattlePetGUID);
 
-    /// @TODO
+    if (!m_Player || !m_Player->IsInWorld())
+        return;
+
+    // Find the battle pet
+    BattlePet::Ptr l_BattlePet = m_Player->GetBattlePet(l_BattlePetGUID);
+    if (!l_BattlePet)
+        return;
+
+    // Remove from combat team if it's there
+    std::shared_ptr<BattlePet>* l_PetSlots = m_Player->GetBattlePetCombatTeam();
+    for (size_t l_I = 0; l_I < MAX_PETBATTLE_SLOTS; ++l_I)
+    {
+        if (l_PetSlots[l_I] && l_PetSlots[l_I]->JournalID == l_BattlePetGUID)
+        {
+            l_PetSlots[l_I] = nullptr;
+            break;
+        }
+    }
+
+    // Unsummon if currently summoned
+    if (m_Player->GetSummonedBattlePet() && 
+        m_Player->GetSummonedBattlePet()->GetGuidValue(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) == l_BattlePetGUID)
+    {
+        m_Player->UnsummonCurrentBattlePetIfAny(false);
+    }
+
+    // Remove from player's pet collection
+    std::vector<BattlePet::Ptr>& l_BattlePets = m_Player->m_BattlePets;
+    for (auto it = l_BattlePets.begin(); it != l_BattlePets.end(); ++it)
+    {
+        if (*it && (*it)->JournalID == l_BattlePetGUID)
+        {
+            // Delete from database
+            SQLTransaction l_Transaction = LoginDatabase.BeginTransaction();
+            PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_BATTLE_PET);
+            l_Stmt->setUInt64(0, l_BattlePetGUID);
+            l_Stmt->setUInt32(1, GetAccountId());
+            l_Transaction->Append(l_Stmt);
+            LoginDatabase.CommitTransaction(l_Transaction);
+
+            l_BattlePets.erase(it);
+            break;
+        }
+    }
+
+    // Update combat team
+    m_Player->UpdateBattlePetCombatTeam();
+
+    // Send updates to client
+    SendBattlePetUpdates(false);
 }
 
 void WorldSession::HandleBattlePetDeletePetCheat(WorldPacket& p_RecvData)
@@ -336,7 +385,63 @@ void WorldSession::HandleBattlePetDeletePetCheat(WorldPacket& p_RecvData)
     uint64 l_BattlePetGUID;
     p_RecvData.readPackGUID(l_BattlePetGUID);
 
-    /// @TODO
+    if (!m_Player || !m_Player->IsInWorld())
+        return;
+
+    // Check if player has GM permissions
+    if (!m_Player->IsGameMaster())
+        return;
+
+    // Find the battle pet
+    BattlePet::Ptr l_BattlePet = m_Player->GetBattlePet(l_BattlePetGUID);
+    if (!l_BattlePet)
+        return;
+
+    // Remove from combat team if it's there
+    std::shared_ptr<BattlePet>* l_PetSlots = m_Player->GetBattlePetCombatTeam();
+    for (size_t l_I = 0; l_I < MAX_PETBATTLE_SLOTS; ++l_I)
+    {
+        if (l_PetSlots[l_I] && l_PetSlots[l_I]->JournalID == l_BattlePetGUID)
+        {
+            l_PetSlots[l_I] = nullptr;
+            break;
+        }
+    }
+
+    // Unsummon if currently summoned
+    if (m_Player->GetSummonedBattlePet() && 
+        m_Player->GetSummonedBattlePet()->GetGuidValue(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) == l_BattlePetGUID)
+    {
+        m_Player->UnsummonCurrentBattlePetIfAny(false);
+    }
+
+    // Remove from player's pet collection
+    std::vector<BattlePet::Ptr>& l_BattlePets = m_Player->m_BattlePets;
+    for (auto it = l_BattlePets.begin(); it != l_BattlePets.end(); ++it)
+    {
+        if (*it && (*it)->JournalID == l_BattlePetGUID)
+        {
+            // Delete from database (GM command - no account restriction)
+            SQLTransaction l_Transaction = LoginDatabase.BeginTransaction();
+            PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_BATTLE_PET_CHEAT);
+            l_Stmt->setUInt64(0, l_BattlePetGUID);
+            l_Transaction->Append(l_Stmt);
+            LoginDatabase.CommitTransaction(l_Transaction);
+
+            l_BattlePets.erase(it);
+            break;
+        }
+    }
+
+    // Update combat team
+    m_Player->UpdateBattlePetCombatTeam();
+
+    // Send updates to client
+    SendBattlePetUpdates(false);
+
+    // Log GM action
+    TC_LOG_INFO("cheat", "GM %s (GUID: %u) deleted battle pet %u", 
+        m_Player->GetName().c_str(), m_Player->GetGUIDLow(), l_BattlePetGUID);
 }
 
 void WorldSession::HandleBattlePetModifyName(WorldPacket& p_RecvData)
@@ -471,7 +576,91 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& p_RecvData)
     }
 }
 
-void WorldSession::HandleBattlePetCage(WorldPacket& /*p_RecvData*/)
+void WorldSession::HandleBattlePetCage(WorldPacket& p_RecvData)
 {
-    /// @TODO
+    uint64 l_BattlePetGUID;
+    p_RecvData.readPackGUID(l_BattlePetGUID);
+
+    if (!m_Player || !m_Player->IsInWorld())
+        return;
+
+    // Find the battle pet
+    BattlePet::Ptr l_BattlePet = m_Player->GetBattlePet(l_BattlePetGUID);
+    if (!l_BattlePet)
+        return;
+
+    // Check if pet can be caged (not in combat team)
+    std::shared_ptr<BattlePet>* l_PetSlots = m_Player->GetBattlePetCombatTeam();
+    for (size_t l_I = 0; l_I < MAX_PETBATTLE_SLOTS; ++l_I)
+    {
+        if (l_PetSlots[l_I] && l_PetSlots[l_I]->JournalID == l_BattlePetGUID)
+        {
+            // Pet is in combat team, cannot be caged
+            return;
+        }
+    }
+
+    // Unsummon if currently summoned
+    if (m_Player->GetSummonedBattlePet() && 
+        m_Player->GetSummonedBattlePet()->GetGuidValue(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) == l_BattlePetGUID)
+    {
+        m_Player->UnsummonCurrentBattlePetIfAny(false);
+    }
+
+    // Get species info for item creation
+    BattlePetSpeciesEntry const* l_SpeciesEntry = sBattlePetSpeciesStore.LookupEntry(l_BattlePet->Species);
+    if (!l_SpeciesEntry)
+        return;
+
+    // Create battle pet cage item
+    ItemTemplate const* l_CageTemplate = sObjectMgr->GetItemTemplate(l_SpeciesEntry->ItemID);
+    if (!l_CageTemplate)
+        return;
+
+    // Add cage item to player's inventory
+    Item* l_CageItem = Item::CreateItem(l_SpeciesEntry->ItemID, 1, m_Player);
+    if (!l_CageItem)
+        return;
+
+    uint32 l_FreeSlot = m_Player->FindFreeInventorySlot();
+    if (l_FreeSlot != NULL_SLOT)
+    {
+        if (m_Player->StoreItem(l_FreeSlot, l_CageItem, true))
+        {
+            // Remove battle pet from collection
+            std::vector<BattlePet::Ptr>& l_BattlePets = m_Player->m_BattlePets;
+            for (auto it = l_BattlePets.begin(); it != l_BattlePets.end(); ++it)
+            {
+                if (*it && (*it)->JournalID == l_BattlePetGUID)
+                {
+                    // Delete from database
+                    SQLTransaction l_Transaction = LoginDatabase.BeginTransaction();
+                    PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_BATTLE_PET);
+                    l_Stmt->setUInt64(0, l_BattlePetGUID);
+                    l_Stmt->setUInt32(1, GetAccountId());
+                    l_Transaction->Append(l_Stmt);
+                    LoginDatabase.CommitTransaction(l_Transaction);
+
+                    l_BattlePets.erase(it);
+                    break;
+                }
+            }
+
+            // Update combat team
+            m_Player->UpdateBattlePetCombatTeam();
+
+            // Send updates to client
+            SendBattlePetUpdates(false);
+        }
+        else
+        {
+            l_CageItem->SetState(ITEM_REMOVED, m_Player);
+            delete l_CageItem;
+        }
+    }
+    else
+    {
+        l_CageItem->SetState(ITEM_REMOVED, m_Player);
+        delete l_CageItem;
+    }
 }

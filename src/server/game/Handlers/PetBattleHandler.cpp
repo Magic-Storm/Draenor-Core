@@ -1221,12 +1221,36 @@ void WorldSession::HandlePetBattleRequestUpdate(WorldPacket& p_RecvData)
 
 void WorldSession::HandlePetBattleQuitNotify(WorldPacket& /*p_RecvData*/)
 {
-    /// @TODO
+    Player* player = GetPlayer();
+    if (!player)
+        return;
+
+    // Get current pet battle using the battle system
+    PetBattle* petBattle = sPetBattleSystem->GetBattle(player->_petBattleId);
+    if (!petBattle)
+        return;
+
+    // Mark battle as abandoned and set opponent as winner
+    petBattle->Abandoned = true;
+    petBattle->WinnerTeamId = (petBattle->Teams[PETBATTLE_TEAM_1]->PlayerGuid == player->GetGUID()) ? PETBATTLE_TEAM_2 : PETBATTLE_TEAM_1;
+
+    // Finish the battle with abandonment flag
+    petBattle->Finish(petBattle->WinnerTeamId, true);
 }
 
 void WorldSession::HandlePetBattleFinalNotify(WorldPacket& /*p_RecvData*/)
 {
-    /// @TODO
+    Player* player = GetPlayer();
+    if (!player)
+        return;
+
+    // Get current pet battle using the battle system
+    PetBattle* petBattle = sPetBattleSystem->GetBattle(player->_petBattleId);
+    if (!petBattle)
+        return;
+
+    // Finish the battle normally (not abandoned)
+    petBattle->Finish(petBattle->WinnerTeamId, false);
 }
 
 void WorldSession::HandlePetBattleQueueProposeMatchResult(WorldPacket& p_RecvData)

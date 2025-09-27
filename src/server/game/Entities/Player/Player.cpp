@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+ghjdtyhm ntgthm gjvtnjlfv cdjb////////////////////////////////////////////////////////////////////////////////
 //
 // Project-Hellscream https://hellscream.org
 // Copyright (C) 2018-2020 Project-Hellscream-6.2
@@ -36719,7 +36719,7 @@ void Player::ReloadPetBattles()
         m_BattlePetCombatTeam[i] = nullptr;
     
     // Reload from database
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BATTLE_PETS);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_PETBATTLE_ACCOUNT);
     stmt->setUInt32(0, GetSession()->GetAccountId());
     
     _petBattleJournalCallback = LoginDatabase.AsyncQuery(stmt);

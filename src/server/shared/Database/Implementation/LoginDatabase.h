@@ -116,6 +116,8 @@ enum LoginDatabaseStatements
     LOGIN_SEL_PETBATTLE_ACCOUNT,
     LOGIN_REP_PETBATTLE,
     LOGIN_INS_PETBATTLE,
+    LOGIN_DEL_BATTLE_PET,
+    LOGIN_DEL_BATTLE_PET_CHEAT,
 
     //////////////////////////////////////////////////////////////////////////
     /// Transfers

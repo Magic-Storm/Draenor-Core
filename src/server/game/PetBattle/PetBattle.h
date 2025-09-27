@@ -741,7 +741,9 @@ class PetBattle
 
         PetBattleTeam * Teams[MAX_PETBATTLE_TEAM];                              ///< Battle teams
         std::shared_ptr<BattlePetInstance> Pets[MAX_PETBATTLE_TEAM * MAX_PETBATTLE_SLOTS];      ///< All pets involved in the battle
-        uint32 TotalPetCount;                                                   ///< Battle total pet count
+        uint32 TotalPetCount;                                                    ///< Battle total pet count
+        
+        bool Abandoned;                                                          ///< Battle was abandoned by a player
 
         PetBattleAuraList PetAuras;                                             ///< Current battle pets auras
         uint32 WeatherAbilityId;                                                ///< Only one weather at a time on battle

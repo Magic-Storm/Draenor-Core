@@ -492,15 +492,15 @@ void PetBattleAura::Apply(PetBattle* p_Battle)
 
         uint32 l_Flags = 0;
 
-        // Passive: elemental
-        // State flags for positive/negative effects - implemented below with immunity checks
-        /*FIXME: need more work; check weather ability, dont change state value on remove
+        // Passive: elemental - immunity to negative effects and positive harmful effects
+        // Elemental pets are immune to debuffs that reduce healing/accuracy and positive effects that cause harmful states
         if (p_Battle->Pets[TargetPetID]->States[BATTLEPET_STATE_Passive_Elemental])
         {
             switch (l_Entry->stateId)
             {
             case BATTLEPET_STATE_Mod_HealingTakenPercent:
             case BATTLEPET_STATE_Stat_Accuracy:
+                // Immune to negative effects that reduce healing or accuracy
                 if (l_Entry->value < 0)
                     l_Flags |= PETBATTLE_EVENT_FLAG_IMMUNE;
                 break;
@@ -509,6 +509,7 @@ void PetBattleAura::Apply(PetBattle* p_Battle)
             case BATTLEPET_STATE_Mechanic_IsChilled:
             case BATTLEPET_STATE_Mechanic_IsBurning:
             case BATTLEPET_STATE_swapOutLock:
+                // Immune to positive effects that apply harmful states
                 if (l_Entry->value > 0)
                     l_Flags |= PETBATTLE_EVENT_FLAG_IMMUNE;
                 break;
@@ -517,7 +518,6 @@ void PetBattleAura::Apply(PetBattle* p_Battle)
                 break;
             }
         }
-        */
 
         int32 l_Value = p_Battle->Pets[TargetPetID]->States[l_Entry->stateId];
         if (!l_Flags)
@@ -990,6 +990,7 @@ PetBattle::PetBattle()
 
     WinnerTeamId = -1;
     CatchedPetId = PETBATTLE_NULL_ID;
+    Abandoned = false;
 
     m_UpdateTimer.SetInterval(PETBATTLE_UPDATE_INTERVAL);
 }
