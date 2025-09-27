@@ -405,7 +405,7 @@ enum Opcodes
         SMSG_PET_BATTLE_REPLACEMENTS_MADE                   = 0x1360,   ///< 6.2.3 20726
         SMSG_PET_BATTLE_FINAL_ROUND                         = 0x02CF,   ///< 6.2.3 20726
         SMSG_PET_BATTLE_FINISHED                            = 0x02F8,   ///< 6.2.3 20726
-        SMSG_PET_BATTLE_CHAT_RESTRICTED                     = 0x1B48    ///< 6.2.3 20726,   ///< 6.2.3 20726
+        SMSG_PET_BATTLE_CHAT_RESTRICTED                     = 0x1B48,    ///< 6.2.3 20726   ///< 6.2.3 20726
         SMSG_PET_BATTLE_MAX_GAME_LENGTH_WARNING             = 0x1AC8,   ///< 6.2.3 20726
         SMSG_PET_BATTLE_QUEUE_PROPOSE_MATCH                 = 0x03D3,   ///< 6.2.3 20726
         SMSG_PET_BATTLE_QUEUE_STATUS                        = 0x1BD3,   ///< 6.2.3 20726

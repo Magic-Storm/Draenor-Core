@@ -12416,7 +12416,7 @@ uint8 Unit::ProcMultistrike(SpellInfo const* p_ProcSpell, Unit* p_Target, uint32
                 if (SpellXSpellVisualEntry const* l_VisualEntry = sSpellXSpellVisualStore.LookupEntry(p_ProcSpell->GetSpellXSpellVisualId(this)))
                     l_VisualID = l_VisualEntry->VisualID;
 
-                if (l_VisualID && l_VisualID[0] && p_ProcFlag != PROC_FLAG_DONE_PERIODIC || !p_ProcSpell->Id == 129250) // HoTs, DoTs, Power Word: Solace should not proc a visual
+                if (l_VisualID && l_VisualID[0] && p_ProcFlag != PROC_FLAG_DONE_PERIODIC || p_ProcSpell->Id != 129250) // HoTs, DoTs, Power Word: Solace should not proc a visual
                     SendPlaySpellVisual(l_VisualID[0], p_Target, (p_ProcSpell->Speed * 2.0f), 0.0f, Position());
 
                 if (p_OwnerAuraEffect)

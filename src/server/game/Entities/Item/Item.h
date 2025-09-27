@@ -15,6 +15,8 @@
 #include "ItemPrototype.h"
 #include "DatabaseEnv.h"
 
+#define ITEM_BATTLE_PET_CAGE_ID 82800
+
 class SpellInfo;
 class Bag;
 class Unit;
