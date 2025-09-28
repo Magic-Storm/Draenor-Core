@@ -1572,36 +1572,99 @@ void PetBattle::Update(uint32 p_TimeDiff)
     {
         m_UpdateTimer.Reset();
 
-        Teams[PETBATTLE_TEAM_1]->Update();
-        bool l_BattleIsFinish = Teams[PETBATTLE_TEAM_2]->Update();
+        // Validate teams exist before updating
+        if (!Teams[PETBATTLE_TEAM_1] || !Teams[PETBATTLE_TEAM_2])
+        {
+            TC_LOG_ERROR("petbattle", "Pet battle %u has invalid teams, finishing battle", ID);
+            Finish(PETBATTLE_NULL_ID, true);
+            return;
+        }
+
+        // Update teams with error handling
+        bool l_Team1UpdateSuccess = true;
+        bool l_Team2UpdateSuccess = true;
+
+        try
+        {
+            Teams[PETBATTLE_TEAM_1]->Update();
+        }
+        catch (const std::exception& e)
+        {
+            TC_LOG_ERROR("petbattle", "Exception in team 1 update for battle %u: %s", ID, e.what());
+            l_Team1UpdateSuccess = false;
+        }
+
+        try
+        {
+            l_Team2UpdateSuccess = Teams[PETBATTLE_TEAM_2]->Update();
+        }
+        catch (const std::exception& e)
+        {
+            TC_LOG_ERROR("petbattle", "Exception in team 2 update for battle %u: %s", ID, e.what());
+            l_Team2UpdateSuccess = false;
+        }
+
+        // Handle update failures
+        if (!l_Team1UpdateSuccess || !l_Team2UpdateSuccess)
+        {
+            TC_LOG_ERROR("petbattle", "Pet battle %u update failed, finishing battle", ID);
+            Finish(PETBATTLE_NULL_ID, true);
+            return;
+        }
 
         // if the first update return battle finish state, it's handle in the second update
-        if (l_BattleIsFinish)
+        if (l_Team2UpdateSuccess == false)
         {
             Teams[PETBATTLE_TEAM_1]->Ready = false;
             Teams[PETBATTLE_TEAM_2]->Ready = false;
             return;
         }
 
-        if (!Teams[PETBATTLE_TEAM_1]->Ready && Teams[PETBATTLE_TEAM_1]->ActivePetID != PETBATTLE_NULL_ID && !Pets[Teams[PETBATTLE_TEAM_1]->ActivePetID]->CanAttack())
+        // Validate active pet IDs before checking if they can attack
+        if (!Teams[PETBATTLE_TEAM_1]->Ready && Teams[PETBATTLE_TEAM_1]->ActivePetID != PETBATTLE_NULL_ID)
         {
-            Teams[PETBATTLE_TEAM_1]->Ready = true;
-            Teams[PETBATTLE_TEAM_1]->ActiveAbilityId = 0;
-            Teams[PETBATTLE_TEAM_1]->activeAbilityTurn = 0;
-            Teams[PETBATTLE_TEAM_1]->activeAbilityTurnMax = 0;
+            if (Teams[PETBATTLE_TEAM_1]->ActivePetID >= MAX_PETBATTLE_TEAM * MAX_PETBATTLE_SLOTS || !Pets[Teams[PETBATTLE_TEAM_1]->ActivePetID])
+            {
+                TC_LOG_ERROR("petbattle", "Team 1 has invalid active pet ID %u in battle %u", Teams[PETBATTLE_TEAM_1]->ActivePetID, ID);
+                Teams[PETBATTLE_TEAM_1]->Ready = true;
+            }
+            else if (!Pets[Teams[PETBATTLE_TEAM_1]->ActivePetID]->CanAttack())
+            {
+                Teams[PETBATTLE_TEAM_1]->Ready = true;
+                Teams[PETBATTLE_TEAM_1]->ActiveAbilityId = 0;
+                Teams[PETBATTLE_TEAM_1]->activeAbilityTurn = 0;
+                Teams[PETBATTLE_TEAM_1]->activeAbilityTurnMax = 0;
+            }
         }
 
-        if (!Teams[PETBATTLE_TEAM_2]->Ready && Teams[PETBATTLE_TEAM_2]->ActivePetID != PETBATTLE_NULL_ID && !Pets[Teams[PETBATTLE_TEAM_2]->ActivePetID]->CanAttack())
+        if (!Teams[PETBATTLE_TEAM_2]->Ready && Teams[PETBATTLE_TEAM_2]->ActivePetID != PETBATTLE_NULL_ID)
         {
-            Teams[PETBATTLE_TEAM_2]->Ready = true;
-            Teams[PETBATTLE_TEAM_2]->ActiveAbilityId = 0;
-            Teams[PETBATTLE_TEAM_2]->activeAbilityTurn = 0;
-            Teams[PETBATTLE_TEAM_2]->activeAbilityTurnMax = 0;
+            if (Teams[PETBATTLE_TEAM_2]->ActivePetID >= MAX_PETBATTLE_TEAM * MAX_PETBATTLE_SLOTS || !Pets[Teams[PETBATTLE_TEAM_2]->ActivePetID])
+            {
+                TC_LOG_ERROR("petbattle", "Team 2 has invalid active pet ID %u in battle %u", Teams[PETBATTLE_TEAM_2]->ActivePetID, ID);
+                Teams[PETBATTLE_TEAM_2]->Ready = true;
+            }
+            else if (!Pets[Teams[PETBATTLE_TEAM_2]->ActivePetID]->CanAttack())
+            {
+                Teams[PETBATTLE_TEAM_2]->Ready = true;
+                Teams[PETBATTLE_TEAM_2]->ActiveAbilityId = 0;
+                Teams[PETBATTLE_TEAM_2]->activeAbilityTurn = 0;
+                Teams[PETBATTLE_TEAM_2]->activeAbilityTurnMax = 0;
+            }
         }
 
         if (Teams[PETBATTLE_TEAM_1]->Ready && Teams[PETBATTLE_TEAM_2]->Ready)
         {
-            ProceedRound();
+            try
+            {
+                ProceedRound();
+            }
+            catch (const std::exception& e)
+            {
+                TC_LOG_ERROR("petbattle", "Exception in ProceedRound for battle %u: %s", ID, e.what());
+                Finish(PETBATTLE_NULL_ID, true);
+                return;
+            }
 
             Teams[PETBATTLE_TEAM_1]->Ready = false;
             Teams[PETBATTLE_TEAM_2]->Ready = false;
@@ -1917,14 +1980,75 @@ void PetBattle::Kill(int8 p_Killer, int8 p_Target, uint32 p_KillerAbibilityEffec
 /// Catch
 void PetBattle::Catch(int8 p_Catcher, int8 p_CatchedTarget, uint32 p_FromAbilityEffectID)
 {
+    // Validate parameters
+    if (p_Catcher < 0 || p_Catcher >= MAX_PETBATTLE_TEAM * MAX_PETBATTLE_SLOTS)
+    {
+        TC_LOG_ERROR("petbattle", "Catch: Invalid catcher pet ID %d in battle %u", p_Catcher, ID);
+        return;
+    }
+
+    if (p_CatchedTarget < 0 || p_CatchedTarget >= MAX_PETBATTLE_TEAM * MAX_PETBATTLE_SLOTS)
+    {
+        TC_LOG_ERROR("petbattle", "Catch: Invalid target pet ID %d in battle %u", p_CatchedTarget, ID);
+        return;
+    }
+
+    // Validate pets exist
+    if (!Pets[p_Catcher] || !Pets[p_CatchedTarget])
+    {
+        TC_LOG_ERROR("petbattle", "Catch: Invalid pets in battle %u (catcher: %d, target: %d)", ID, p_Catcher, p_CatchedTarget);
+        return;
+    }
+
+    // Validate teams
+    if (!Teams[Pets[p_Catcher]->TeamID])
+    {
+        TC_LOG_ERROR("petbattle", "Catch: Invalid team for catcher %d in battle %u", p_Catcher, ID);
+        return;
+    }
+
+    // Check if target is already captured
+    if (Teams[Pets[p_Catcher]->TeamID]->CapturedPet != PETBATTLE_NULL_ID)
+    {
+        TC_LOG_WARN("petbattle", "Catch: Team already captured a pet in battle %u", ID);
+        return;
+    }
+
+    // Validate catch conditions
+    uint8 catchFlags = Teams[Pets[p_Catcher]->TeamID]->CanCatchOpponentTeamFrontPet();
+    if (catchFlags != PETBATTLE_TEAM_CATCH_FLAG_ENABLE_TRAP)
+    {
+        TC_LOG_DEBUG("petbattle", "Catch: Catch conditions not met (flags: %u) in battle %u", catchFlags, ID);
+        return;
+    }
+
+    // Log successful capture
+    TC_LOG_INFO("petbattle", "Pet %d successfully captured pet %d (species: %u) in battle %u", 
+                p_Catcher, p_CatchedTarget, Pets[p_CatchedTarget]->Species, ID);
+
+    // Kill the target pet
     Kill(p_Catcher, p_CatchedTarget, p_FromAbilityEffectID);
 
+    // Set captured pet
     Teams[Pets[p_Catcher]->TeamID]->CapturedPet = p_CatchedTarget;
     CatchedPetId = p_CatchedTarget;
 
+    // Add to dead pets list
     RoundDeadPets.push_back(p_CatchedTarget);
 
+    // Set round result
     RoundResult = PETBATTLE_ROUND_RESULT_CATCH_OR_KILL;
+
+    // Update species count for catch limits
+    if (Teams[Pets[p_Catcher]->TeamID]->CapturedSpeciesCount.find(Pets[p_CatchedTarget]->Species) == 
+        Teams[Pets[p_Catcher]->TeamID]->CapturedSpeciesCount.end())
+    {
+        Teams[Pets[p_Catcher]->TeamID]->CapturedSpeciesCount[Pets[p_CatchedTarget]->Species] = 1;
+    }
+    else
+    {
+        Teams[Pets[p_Catcher]->TeamID]->CapturedSpeciesCount[Pets[p_CatchedTarget]->Species]++;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1932,16 +2056,61 @@ void PetBattle::Catch(int8 p_Catcher, int8 p_CatchedTarget, uint32 p_FromAbility
 /// Get first attacking team
 uint32 PetBattle::GetFirstAttackingTeam()
 {
+    // Validate teams exist
+    if (!Teams[PETBATTLE_TEAM_1] || !Teams[PETBATTLE_TEAM_2])
+    {
+        TC_LOG_ERROR("petbattle", "GetFirstAttackingTeam: Invalid teams in battle %u", ID);
+        return PETBATTLE_TEAM_1; // Default to team 1
+    }
+
+    // Validate active pet IDs
+    if (Teams[PETBATTLE_TEAM_1]->ActivePetID == PETBATTLE_NULL_ID || 
+        Teams[PETBATTLE_TEAM_2]->ActivePetID == PETBATTLE_NULL_ID)
+    {
+        TC_LOG_ERROR("petbattle", "GetFirstAttackingTeam: Invalid active pet IDs in battle %u", ID);
+        return PETBATTLE_TEAM_1; // Default to team 1
+    }
+
     std::shared_ptr<BattlePetInstance> l_ActivePets[2];
-    l_ActivePets[0] = Pets[Teams[0]->ActivePetID];
-    l_ActivePets[1] = Pets[Teams[1]->ActivePetID];
+    l_ActivePets[0] = Pets[Teams[PETBATTLE_TEAM_1]->ActivePetID];
+    l_ActivePets[1] = Pets[Teams[PETBATTLE_TEAM_2]->ActivePetID];
+
+    // Validate pets exist
+    if (!l_ActivePets[0] || !l_ActivePets[1])
+    {
+        TC_LOG_ERROR("petbattle", "GetFirstAttackingTeam: Invalid active pets in battle %u", ID);
+        return PETBATTLE_TEAM_1; // Default to team 1
+    }
 
     //////////////////////////////////////////////////////////////////////////
     /// Deduce the first caster (based on front pets speed)
     int32 l_Pet0Speed = l_ActivePets[0]->GetSpeed();
     int32 l_Pet1Speed = l_ActivePets[1]->GetSpeed();
 
-    return (l_Pet0Speed == l_Pet1Speed) ? rand() & 1 : l_Pet1Speed > l_Pet0Speed;
+    // Apply speed modifiers from states
+    l_Pet0Speed += l_ActivePets[0]->States[BATTLEPET_STATE_Mod_SpeedPercent];
+    l_Pet1Speed += l_ActivePets[1]->States[BATTLEPET_STATE_Mod_SpeedPercent];
+
+    // Ensure speeds are positive
+    l_Pet0Speed = std::max(1, l_Pet0Speed);
+    l_Pet1Speed = std::max(1, l_Pet1Speed);
+
+    // Log speed comparison for debugging
+    TC_LOG_DEBUG("petbattle", "GetFirstAttackingTeam: Pet 0 speed %d, Pet 1 speed %d in battle %u", 
+                 l_Pet0Speed, l_Pet1Speed, ID);
+
+    // If speeds are equal, use random selection
+    if (l_Pet0Speed == l_Pet1Speed)
+    {
+        uint32 result = rand() & 1;
+        TC_LOG_DEBUG("petbattle", "GetFirstAttackingTeam: Equal speeds, random selection: team %u", result);
+        return result;
+    }
+
+    // Return team with higher speed
+    uint32 result = (l_Pet1Speed > l_Pet0Speed) ? PETBATTLE_TEAM_2 : PETBATTLE_TEAM_1;
+    TC_LOG_DEBUG("petbattle", "GetFirstAttackingTeam: Team %u has higher speed", result);
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////

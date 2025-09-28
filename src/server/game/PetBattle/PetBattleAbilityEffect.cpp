@@ -24,26 +24,26 @@ static PetBattleAbilityEffectHandler Handlers[MAX_PETBATTLE_EFFECT_TYPES] =
 {
     /* EFFECT 0   */{0,                                                         PETBATTLE_TARGET_NONE},
     /* EFFECT 1   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 2   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 3   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 4   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 5   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 6   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 7   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 8   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 9   */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 10  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 11  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 12  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 13  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 14  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 15  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 16  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 17  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 18  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 19  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 20  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 21  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
+    /* EFFECT 2   */{&PetBattleAbilityEffect::HandleDamagePercent,              PETBATTLE_TARGET_TARGET}, // Damage Percent
+    /* EFFECT 3   */{&PetBattleAbilityEffect::HandleHealPercent,                PETBATTLE_TARGET_CASTER}, // Heal Percent
+    /* EFFECT 4   */{&PetBattleAbilityEffect::HandleDamageWithBonus,            PETBATTLE_TARGET_TARGET}, // Damage With Bonus
+    /* EFFECT 5   */{&PetBattleAbilityEffect::HandleHealState,                  PETBATTLE_TARGET_CASTER}, // Heal State
+    /* EFFECT 6   */{&PetBattleAbilityEffect::HandleDamageRange,                PETBATTLE_TARGET_TARGET}, // Damage Range
+    /* EFFECT 7   */{&PetBattleAbilityEffect::HandleExtraAttack,                PETBATTLE_TARGET_TARGET}, // Extra Attack
+    /* EFFECT 8   */{&PetBattleAbilityEffect::HandleWeatherAura,                PETBATTLE_TARGET_ALL},     // Weather Aura
+    /* EFFECT 9   */{&PetBattleAbilityEffect::HandleWeatherDamage,              PETBATTLE_TARGET_TARGET}, // Weather Damage
+    /* EFFECT 10  */{&PetBattleAbilityEffect::HandleHealOnSpecificWeather,      PETBATTLE_TARGET_CASTER}, // Heal On Weather
+    /* EFFECT 11  */{&PetBattleAbilityEffect::HandleAuraState,                  PETBATTLE_TARGET_CASTER}, // Aura State
+    /* EFFECT 12  */{&PetBattleAbilityEffect::HandleCheckState,                 PETBATTLE_TARGET_TARGET}, // Check State
+    /* EFFECT 13  */{&PetBattleAbilityEffect::HandleDamageNonLetal,             PETBATTLE_TARGET_TARGET}, // Non-Lethal Damage
+    /* EFFECT 14  */{&PetBattleAbilityEffect::HandleSplittedDamage,             PETBATTLE_TARGET_TARGET}, // Splitted Damage
+    /* EFFECT 15  */{&PetBattleAbilityEffect::HandleEqualizeLife,               PETBATTLE_TARGET_TARGET}, // Equalize Life
+    /* EFFECT 16  */{&PetBattleAbilityEffect::HandleDamageCasterPercent,        PETBATTLE_TARGET_CASTER}, // Damage Caster Percent
+    /* EFFECT 17  */{&PetBattleAbilityEffect::HandleHealCasterPercentNotState,  PETBATTLE_TARGET_CASTER}, // Heal Caster Percent Not State
+    /* EFFECT 18  */{&PetBattleAbilityEffect::HandleDamageStateBonus,           PETBATTLE_TARGET_TARGET}, // Damage State Bonus
+    /* EFFECT 19  */{&PetBattleAbilityEffect::HandleDamageRuthless,             PETBATTLE_TARGET_TARGET}, // Ruthless Damage
+    /* EFFECT 20  */{&PetBattleAbilityEffect::HandleHealPetType,                PETBATTLE_TARGET_CASTER}, // Heal Pet Type
+    /* EFFECT 21  */{&PetBattleAbilityEffect::HandleDamagePercentTaken,         PETBATTLE_TARGET_TARGET}, // Damage Percent Taken
     /* EFFECT 22  */{&PetBattleAbilityEffect::HandleDummy,                      PETBATTLE_TARGET_CASTER}, // Dummy
     /* EFFECT 23  */{&PetBattleAbilityEffect::HandleHeal,                       PETBATTLE_TARGET_CASTER},
     /* EFFECT 24  */{&PetBattleAbilityEffect::HandleDamage,                     PETBATTLE_TARGET_TARGET},
@@ -52,20 +52,20 @@ static PetBattleAbilityEffectHandler Handlers[MAX_PETBATTLE_EFFECT_TYPES] =
     /* EFFECT 27  */{&PetBattleAbilityEffect::HandleRampingDamage,              PETBATTLE_TARGET_TARGET},
     /* EFFECT 28  */{&PetBattleAbilityEffect::HandleCancellableAura,            PETBATTLE_TARGET_CASTER},
     /* EFFECT 29  */{&PetBattleAbilityEffect::HandleStateDamage,                PETBATTLE_TARGET_TARGET},
-    /* EFFECT 30  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
+    /* EFFECT 30  */{&PetBattleAbilityEffect::HandleExtraAttackIfMoreFaster,     PETBATTLE_TARGET_TARGET}, // Extra Attack If Faster
     /* EFFECT 31  */{&PetBattleAbilityEffect::HandleSetState,                   PETBATTLE_TARGET_CASTER},
     /* EFFECT 32  */{&PetBattleAbilityEffect::HandleHealPercentDealt,           PETBATTLE_TARGET_CASTER},
-    /* EFFECT 33  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 34  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 35  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 36  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 37  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 38  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 39  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 40  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 41  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 42  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
-    /* EFFECT 43  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
+    /* EFFECT 33  */{&PetBattleAbilityEffect::HandleExtraAttackIfLessFaster,    PETBATTLE_TARGET_TARGET}, // Extra Attack If Slower
+    /* EFFECT 34  */{&PetBattleAbilityEffect::HandleExtraHealIfLastHitKill,     PETBATTLE_TARGET_CASTER}, // Extra Heal If Last Hit Kill
+    /* EFFECT 35  */{&PetBattleAbilityEffect::HandleAuraCondAccuracyState,      PETBATTLE_TARGET_CASTER}, // Aura Condition Accuracy State
+    /* EFFECT 36  */{&PetBattleAbilityEffect::HandlePowerlessAura,              PETBATTLE_TARGET_TARGET}, // Powerless Aura
+    /* EFFECT 37  */{&PetBattleAbilityEffect::HandleControlAura,                PETBATTLE_TARGET_TARGET}, // Control Aura
+    /* EFFECT 38  */{&PetBattleAbilityEffect::HandleNegativeAura,               PETBATTLE_TARGET_TARGET}, // Negative Aura
+    /* EFFECT 39  */{&PetBattleAbilityEffect::HandlePeriodicPositiveTrigger,    PETBATTLE_TARGET_CASTER}, // Periodic Positive Trigger
+    /* EFFECT 40  */{&PetBattleAbilityEffect::HandleHealToggleAura,             PETBATTLE_TARGET_CASTER}, // Heal Toggle Aura
+    /* EFFECT 41  */{&PetBattleAbilityEffect::HandleDamageToggleAura,           PETBATTLE_TARGET_TARGET}, // Damage Toggle Aura
+    /* EFFECT 42  */{&PetBattleAbilityEffect::HandleHealStateToggleAura,        PETBATTLE_TARGET_CASTER}, // Heal State Toggle Aura
+    /* EFFECT 43  */{&PetBattleAbilityEffect::HandleDamageAuraToggleAura,       PETBATTLE_TARGET_TARGET}, // Damage Aura Toggle Aura
     /* EFFECT 44  */{&PetBattleAbilityEffect::HandleHealLastHitTaken,           PETBATTLE_TARGET_CASTER},
     /* EFFECT 45  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
     /* EFFECT 46  */{&PetBattleAbilityEffect::HandleNull,                       PETBATTLE_TARGET_NONE},
@@ -1738,3 +1738,4 @@ bool PetBattleAbilityEffect::HandleDamageWithBonus()
 
     return Damage(Target, l_Damage);
 }
+
