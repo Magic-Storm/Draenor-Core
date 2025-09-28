@@ -79,6 +79,8 @@ include(GroupSources)
 find_package(PCHSupport)
 find_package(ACE REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(curl REQUIRED)
+find_package(EasyJSon REQUIRED)
 # FIND_PACKAGE(msFramework REQUIRED)
 find_package(MySQL REQUIRED)
 
@@ -92,10 +94,7 @@ if( NOT DISABLEGITCHECK )
   find_package(Git)
 endif()
 
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS system locale filesystem thread regex serialization
-    REQUIRED
-)
+# Boost will be handled by dep/boost/CMakeLists.txt
 
 # Find revision ID and hash of the sourcetree
 include(cmake/genrev.cmake)
