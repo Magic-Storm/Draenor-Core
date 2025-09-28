@@ -116,7 +116,13 @@ target_link_libraries(authserver
 )
 
 if (Boost_FOUND)
-  target_link_libraries(authserver ${Boost_LIBRARIES})
+  target_link_libraries(authserver 
+    ${Boost_LIBRARIES}
+    boost::thread
+    boost::chrono
+    boost::regex
+    boost::system
+  )
 endif()
 
 if( WIN32 )
