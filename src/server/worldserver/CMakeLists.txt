@@ -223,7 +223,6 @@ target_link_libraries(worldserver
   ${OPENSSL_EXTRA_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${MSFRAMEWORK_LIBRARIES}
-  ${Boost_LIBRARIES}
 )
 
 if( WIN32 )

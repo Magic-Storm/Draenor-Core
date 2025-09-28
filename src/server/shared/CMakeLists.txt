@@ -102,6 +102,7 @@ target_link_libraries(shared
   ${ACE_LIBRARY}
     rapidjson
     proto
+    boost
 )
 
 add_dependencies(shared revision.h)

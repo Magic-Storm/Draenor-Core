@@ -113,8 +113,11 @@ target_link_libraries(authserver
   ${OSX_LIBS}
   ${CURL_LIBRARIES}
   ${MSFRAMEWORK_LIBRARIES}
-  ${Boost_LIBRARIES}
 )
+
+if (Boost_FOUND)
+  target_link_libraries(authserver ${Boost_LIBRARIES})
+endif()
 
 if( WIN32 )
   if ( MSVC )

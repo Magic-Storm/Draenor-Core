@@ -263,6 +263,11 @@ add_library(game STATIC
 )
 set_property(TARGET game PROPERTY FOLDER "server")
 
+target_link_libraries(game
+  shared
+  boost
+)
+
 add_dependencies(game revision.h)
 
 # Generate precompiled header
