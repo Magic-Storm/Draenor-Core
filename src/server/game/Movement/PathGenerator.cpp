@@ -80,6 +80,13 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     return true;
 }
 
+bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool forceDest, bool straightLine, Unit* target, bool useCombatReach)
+{
+    // For now, just call the original method with the basic parameters
+    // The target and useCombatReach parameters can be used for future enhancements
+    return CalculatePath(destX, destY, destZ, forceDest, straightLine);
+}
+
 dtPolyRef PathGenerator::GetPathPolyByPosition(dtPolyRef const* polyPath, uint32 polyPathSize, float const* point, float* distance) const
 {
     if (!polyPath || !polyPathSize)

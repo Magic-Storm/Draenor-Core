@@ -1292,13 +1292,13 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
     // Validate input parameters
     if (l_Action > PETBATTLE_ACTION_LEAVE_PETBATTLE)
     {
-        TC_LOG_ERROR("network", "Player %s sent invalid pet battle action %u", m_Player->GetName().c_str(), l_Action);
+        TC_LOG_ERROR("network", "Player %s sent invalid pet battle action %u", m_Player->GetName(), l_Action);
         return;
     }
 
     if (l_NewFrontPetID >= MAX_PETBATTLE_SLOTS)
     {
-        TC_LOG_ERROR("network", "Player %s sent invalid front pet ID %u", m_Player->GetName().c_str(), l_NewFrontPetID);
+        TC_LOG_ERROR("network", "Player %s sent invalid front pet ID %u", m_Player->GetName(), l_NewFrontPetID);
         return;
     }
 
@@ -1313,7 +1313,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
 
     if (!m_Player->_petBattleId)
     {
-        TC_LOG_DEBUG("network", "Player %s tried to use pet battle action without being in a battle", m_Player->GetName().c_str());
+        TC_LOG_DEBUG("network", "Player %s tried to use pet battle action without being in a battle", m_Player->GetName());
         SendPetBattleFinished(0);
         return;
     }
@@ -1322,14 +1322,14 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
 
     if (!l_PetBattle)
     {
-        TC_LOG_ERROR("network", "Player %s tried to use pet battle action but battle %u not found", m_Player->GetName().c_str(), m_Player->_petBattleId);
+        TC_LOG_ERROR("network", "Player %s tried to use pet battle action but battle %u not found", m_Player->GetName(), m_Player->_petBattleId);
         SendPetBattleFinished(0);
         return;
     }
 
     if (l_PetBattle->BattleStatus == PETBATTLE_STATUS_FINISHED)
     {
-        TC_LOG_DEBUG("network", "Player %s tried to use pet battle action but battle is finished", m_Player->GetName().c_str());
+        TC_LOG_DEBUG("network", "Player %s tried to use pet battle action but battle is finished", m_Player->GetName());
         SendPetBattleFinished(0);
         return;
     }
@@ -1337,7 +1337,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
     ///// Check sync - prevent desync attacks
     if ((l_Turn + 1) != l_PetBattle->Turn)
     {
-        TC_LOG_WARN("network", "Player %s sent desynced pet battle turn %u (expected %u)", m_Player->GetName().c_str(), l_Turn, l_PetBattle->Turn - 1);
+        TC_LOG_WARN("network", "Player %s sent desynced pet battle turn %u (expected %u)", m_Player->GetName(), l_Turn, l_PetBattle->Turn - 1);
         sPetBattleSystem->ForfeitBattle(l_PetBattle->ID, m_Player->GetGUID());
         return;
     }
@@ -1352,20 +1352,20 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
         // Skip if input already died
         if (l_PetBattle->Teams[l_PlayerTeamID]->Ready)
         {
-            TC_LOG_DEBUG("network", "Player %s tried to use pet battle action but team is already ready", m_Player->GetName().c_str());
+            TC_LOG_DEBUG("network", "Player %s tried to use pet battle action but team is already ready", m_Player->GetName());
             return;
         }
 
         // Validate team exists and is valid
         if (!l_PetBattle->Teams[l_PlayerTeamID])
         {
-            TC_LOG_ERROR("network", "Player %s has invalid team ID %u in pet battle", m_Player->GetName().c_str(), l_PlayerTeamID);
+            TC_LOG_ERROR("network", "Player %s has invalid team ID %u in pet battle", m_Player->GetName(), l_PlayerTeamID);
             return;
         }
 
         if (l_Action == PETBATTLE_ACTION_REQUEST_LEAVE)
         {
-            TC_LOG_DEBUG("network", "Player %s requested to leave pet battle %u", m_Player->GetName().c_str(), l_PetBattle->ID);
+            TC_LOG_DEBUG("network", "Player %s requested to leave pet battle %u", m_Player->GetName(), l_PetBattle->ID);
             sPetBattleSystem->ForfeitBattle(l_PetBattle->ID, m_Player->GetGUID());
         }
         else if (l_Action == PETBATTLE_ACTION_CAST)
@@ -1373,18 +1373,18 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
             // Validate ability ID
             if (l_Ability == 0)
             {
-                TC_LOG_WARN("network", "Player %s tried to cast ability with ID 0", m_Player->GetName().c_str());
+                TC_LOG_WARN("network", "Player %s tried to cast ability with ID 0", m_Player->GetName());
                 return;
             }
 
             if (l_PetBattle->CanCast(l_PlayerTeamID, l_Ability))
             {
-                TC_LOG_DEBUG("network", "Player %s casting ability %u in pet battle", m_Player->GetName().c_str(), l_Ability);
+                TC_LOG_DEBUG("network", "Player %s casting ability %u in pet battle", m_Player->GetName(), l_Ability);
                 l_PetBattle->PrepareCast(l_PlayerTeamID, l_Ability);
             }
             else
             {
-                TC_LOG_DEBUG("network", "Player %s tried to cast invalid ability %u", m_Player->GetName().c_str(), l_Ability);
+                TC_LOG_DEBUG("network", "Player %s tried to cast invalid ability %u", m_Player->GetName(), l_Ability);
             }
         }
         else if (l_Action == PETBATTLE_ACTION_CATCH)
@@ -1393,12 +1393,12 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
 
             if (l_PetBattle->Teams[l_PlayerTeamID]->CanCatchOpponentTeamFrontPet() == PETBATTLE_TEAM_CATCH_FLAG_ENABLE_TRAP)
             {
-                TC_LOG_DEBUG("network", "Player %s attempting to catch pet in battle", m_Player->GetName().c_str());
+                TC_LOG_DEBUG("network", "Player %s attempting to catch pet in battle", m_Player->GetName());
                 l_PetBattle->PrepareCast(l_PlayerTeamID, l_CatchAbilityID);
             }
             else
             {
-                TC_LOG_DEBUG("network", "Player %s tried to catch but conditions not met", m_Player->GetName().c_str());
+                TC_LOG_DEBUG("network", "Player %s tried to catch but conditions not met", m_Player->GetName());
             }
         }
         else if (l_Action == PETBATTLE_ACTION_SWAP_OR_PASS)
@@ -1408,17 +1408,17 @@ void WorldSession::HandlePetBattleInput(WorldPacket& p_RecvData)
             // Validate pet ID range
             if (l_NewFrontPetID >= (l_PlayerTeamID == PETBATTLE_TEAM_2 ? MAX_PETBATTLE_SLOTS * 2 : MAX_PETBATTLE_SLOTS))
             {
-                TC_LOG_WARN("network", "Player %s tried to swap to invalid pet ID %u", m_Player->GetName().c_str(), l_NewFrontPetID);
+                TC_LOG_WARN("network", "Player %s tried to swap to invalid pet ID %u", m_Player->GetName(), l_NewFrontPetID);
                 return;
             }
 
             if (!l_PetBattle->Teams[l_PlayerTeamID]->CanSwap(l_NewFrontPetID))
             {
-                TC_LOG_DEBUG("network", "Player %s tried to swap to pet %u but swap not allowed", m_Player->GetName().c_str(), l_NewFrontPetID);
+                TC_LOG_DEBUG("network", "Player %s tried to swap to pet %u but swap not allowed", m_Player->GetName(), l_NewFrontPetID);
                 return;
             }
 
-            TC_LOG_DEBUG("network", "Player %s swapping to pet %u", m_Player->GetName().c_str(), l_NewFrontPetID);
+            TC_LOG_DEBUG("network", "Player %s swapping to pet %u", m_Player->GetName(), l_NewFrontPetID);
             l_PetBattle->SwapPet(l_PlayerTeamID, l_NewFrontPetID);
         }
     }

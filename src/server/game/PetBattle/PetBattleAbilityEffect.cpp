@@ -1051,6 +1051,24 @@ bool PetBattleAbilityEffect::HandleExtraAttackIfMoreFaster()
     return Damage(Target, CalculateDamage(EffectInfo->prop[0]));
 }
 
+bool PetBattleAbilityEffect::HandleExtraHealIfLastHitKill()
+{
+    // Check if the last hit dealt by the caster was enough to kill the target
+    // This is a simplified implementation - in a real scenario, you might need
+    // to track the actual kill state differently
+    int32 lastHitDealt = GetState(Caster, BATTLEPET_STATE_Last_HitDealt);
+    int32 targetHealth = GetHealth(Target);
+    
+    // If the last hit dealt was greater than or equal to the target's current health,
+    // it means the last hit was a kill
+    if (lastHitDealt < targetHealth)
+        return false;
+
+    CalculateHit(EffectInfo->prop[1]);
+
+    return Heal(Target, CalculateHeal(EffectInfo->prop[0]));
+}
+
 bool PetBattleAbilityEffect::HandleHealState()
 {
     if (EffectInfo->prop[3] && !GetState(Target, EffectInfo->prop[3]))

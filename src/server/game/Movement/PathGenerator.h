@@ -48,6 +48,7 @@ class PathGenerator
         // Calculate the path from owner to given destination
         // return: true if new path was calculated, false otherwise (no change needed)
         bool CalculatePath(float destX, float destY, float destZ, bool forceDest = false, bool straightLine = false);
+        bool CalculatePath(float destX, float destY, float destZ, bool forceDest, bool straightLine, Unit* target, bool useCombatReach);
 		bool IsInvalidDestinationZ(float Z) const;
         // option setters - use optional
         void SetUseStraightPath(bool useStraightPath) { _useStraightPath = useStraightPath; }
