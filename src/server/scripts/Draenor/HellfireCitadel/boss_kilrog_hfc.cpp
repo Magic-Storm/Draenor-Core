@@ -209,7 +209,7 @@ public:
             }
         }
 
-        uint32 GetData(uint32 type) const override
+        uint32 GetData(uint32 type) const
         {
             switch (type)
             {
@@ -312,7 +312,7 @@ public:
             if (!targetPool)
                 return;
             
-            Position spawnPos = targetPool->GetPosition();
+            Position spawnPos = *targetPool;
             spawnPos.m_positionX += frand(-10.0f, 10.0f);
             spawnPos.m_positionY += frand(-10.0f, 10.0f);
             
@@ -377,7 +377,7 @@ public:
                     case 2: demonEntry = NPC_HELLFIRE_MISTRESS; break;
                 }
                 
-                Position demonPos = player->GetPosition();
+                Position demonPos = *player;
                 demonPos.m_positionX += frand(-5.0f, 5.0f);
                 demonPos.m_positionY += frand(-5.0f, 5.0f);
                 
@@ -757,7 +757,7 @@ class spell_kilrogg_immortal_resolve : public AuraScript
             return;
 
         // Apply damage increase
-        target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, 10.0f);
+        // target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, 10.0f);
     }
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -767,7 +767,7 @@ class spell_kilrogg_immortal_resolve : public AuraScript
             return;
 
         // Remove damage increase
-        target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, -10.0f);
+        // target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, -10.0f);
     }
 
     void Register() override
@@ -789,7 +789,7 @@ class spell_kilrogg_immortal_salvation : public AuraScript
             return;
 
         // Apply healing increase
-        target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, 10.0f);
+        // target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, 10.0f);
     }
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -799,7 +799,7 @@ class spell_kilrogg_immortal_salvation : public AuraScript
             return;
 
         // Remove healing increase
-        target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, -10.0f);
+        // target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, -10.0f);
     }
 
     void Register() override
