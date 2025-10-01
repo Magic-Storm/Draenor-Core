@@ -5,7 +5,7 @@
 #include "SRP6a.h"
 #include "Packet.hpp"
 #include "BNet2Crypt.hpp"
-#include "../Server/RealmSocket.h"
+//#include "../Server/RealmSocket.h" // File not found, commented out
 
 namespace BNet2 {
 

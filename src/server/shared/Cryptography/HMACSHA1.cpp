@@ -57,7 +57,7 @@ void HmacHash::Finalize()
 
 uint8* HmacHash::ComputeHash(BigNumber* bn)
 {
-    HMAC_Update(ctx, bn->AsByteArray(), bn->GetNumBytes());
+    HMAC_Update(ctx, bn->AsByteArray().get(), bn->GetNumBytes());
     Finalize();
     return (uint8*)m_digest;
 }
@@ -94,7 +94,7 @@ void HmacHash256::Finalize()
 
 uint8 *HmacHash256::ComputeHash(BigNumber* bn)
 {
-    HMAC_Update(ctx, bn->AsByteArray(), bn->GetNumBytes());
+    HMAC_Update(ctx, bn->AsByteArray().get(), bn->GetNumBytes());
     Finalize();
     return (uint8*)m_digest;
 }

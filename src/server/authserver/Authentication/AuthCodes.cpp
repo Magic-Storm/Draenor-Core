@@ -29,4 +29,43 @@ namespace AuthHelper
 
         return false;
     }
+
+    bool IsPreBCAcceptedClientBuild(int build)
+    {
+        // Pre-BC builds (1.12.x)
+        return build >= 5875 && build <= 6180;
+    }
+
+    RealmBuildInfo const* GetBuildInfo(int build)
+    {
+        static RealmBuildInfo buildInfo = {0, 0, 0, 0};
+        
+        // Simple build info mapping
+        if (build >= 17399) // MoP
+        {
+            buildInfo.MajorVersion = 5;
+            buildInfo.MinorVersion = 4;
+            buildInfo.BugfixVersion = 7;
+            buildInfo.Build = build;
+            return &buildInfo;
+        }
+        else if (build >= 16135) // Cata
+        {
+            buildInfo.MajorVersion = 4;
+            buildInfo.MinorVersion = 3;
+            buildInfo.BugfixVersion = 4;
+            buildInfo.Build = build;
+            return &buildInfo;
+        }
+        else if (build >= 12340) // WotLK
+        {
+            buildInfo.MajorVersion = 3;
+            buildInfo.MinorVersion = 3;
+            buildInfo.BugfixVersion = 5;
+            buildInfo.Build = build;
+            return &buildInfo;
+        }
+        
+        return nullptr;
+    }
 };

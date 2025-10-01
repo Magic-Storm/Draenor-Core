@@ -60,9 +60,9 @@ namespace AccountMgr
         BigNumber X;
         X.SetBinary(shaX.GetDigest(), shaX.GetLength());
         BigNumber res = G.ModExp(X, N);
-        std::string temp = ByteArrayToHexStr(X.AsByteArray(), 32);
+        std::string temp = ByteArrayToHexStr(X.AsByteArray().get(), 32);
 
-        return ByteArrayToHexStr(res.AsByteArray(), res.GetNumBytes());
+        return ByteArrayToHexStr(res.AsByteArray().get(), res.GetNumBytes());
     }
 
 #ifndef CROSS

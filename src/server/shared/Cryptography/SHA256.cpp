@@ -40,7 +40,7 @@ void SHA256Hash::UpdateBigNumbers(BigNumber* bn0, ...)
     bn = bn0;
     while (bn)
     {
-        UpdateData(bn->AsByteArray(), bn->GetNumBytes()); // this might not good :S old was: UpdateData(bn->AsByteArray().get(), bn->GetNumBytes());
+        UpdateData(bn->AsByteArray().get(), bn->GetNumBytes());
         bn = va_arg(v, BigNumber*);
     }
     va_end(v);

@@ -76,7 +76,7 @@ class BigNumber
 
         uint32 AsDword();
 
-        uint8* AsByteArray(int32 minSize = 0, bool littleEndian = true);
+        std::unique_ptr<uint8> AsByteArray(int32 minSize = 0, bool littleEndian = true);
 
         char * AsHexStr() const;
         char * AsDecStr() const;
