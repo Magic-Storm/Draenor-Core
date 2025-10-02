@@ -678,8 +678,8 @@ struct AchievementCriteriaUpdateTask
     std::function<void(uint64, uint64)> Task;
 };
 
-using LockedAchievementCriteriaTaskQueue   = ACE_Based::LockedQueue<AchievementCriteriaUpdateTask, ACE_Thread_Mutex>;
-using LockedPlayersAchievementCriteriaTask = ACE_Based::LockedMap<uint64, LockedAchievementCriteriaTaskQueue>;
+using LockedAchievementCriteriaTaskQueue   = std::queue<AchievementCriteriaUpdateTask>;
+using LockedPlayersAchievementCriteriaTask = std::map<uint64, LockedAchievementCriteriaTaskQueue>;
 
 using AchievementCriteriaTaskQueue   = std::queue<AchievementCriteriaUpdateTask>;
 using PlayersAchievementCriteriaTask = std::map<uint32, AchievementCriteriaTaskQueue>;
@@ -804,7 +804,7 @@ class AchievementGlobalMgr
 
         void AddCriteriaUpdateTask(AchievementCriteriaUpdateTask const& p_Task)
         {
-            m_LockedPlayersAchievementCriteriaTask[p_Task.PlayerGUID].add(p_Task);
+            m_LockedPlayersAchievementCriteriaTask[p_Task.PlayerGUID].push(p_Task);
         }
 
         PlayersAchievementCriteriaTask const& GetPlayersCriteriaTask() const

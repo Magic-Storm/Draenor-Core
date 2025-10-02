@@ -63,12 +63,14 @@
 #endif /* CROSS */
 #ifdef _WIN32
 #include "ServiceWin32.h"
+#include <process.h>
 extern int m_ServiceStatus;
 #endif
 
 #ifdef __linux__
 #include <sched.h>
 #include <sys/resource.h>
+#include <unistd.h>
 #define PROCESS_HIGH_PRIORITY -15 // [-20, 19], default is 0
 #endif
 
@@ -112,7 +114,7 @@ void FreezeDetectorThread(uint32 delayTime, uint32 fdpid)
     if (!delayTime)
         return;
 
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Starting up anti-freeze thread (%u seconds max stuck time)...", delayTime / 1000);
+    TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", delayTime / 1000);
     uint32 loops = 0;
     uint32 lastChange = 0;
 
@@ -143,7 +145,7 @@ void FreezeDetectorThread(uint32 delayTime, uint32 fdpid)
         }
 #endif
     }
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Anti-freeze thread exiting without problems.");
+    TC_LOG_INFO("server.worldserver", "Anti-freeze thread exiting without problems.");
 }
 
 Master::Master()
@@ -216,7 +218,7 @@ int Master::Run()
     ///- Launch WorldRunnable thread
     std::thread worldThread(WorldThread);
 
-    std::thread* cliThread = NULL;
+    std::thread* cliThread = nullptr;
 
 #ifdef _WIN32
     if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
@@ -229,8 +231,6 @@ int Master::Run()
     }
 
     std::thread rarThread(RemoteAccessThread);
-
-#if defined(_WIN32) || defined(__linux__)
 
     ///- Handle affinity for multiple processors and process priority
     uint32 affinity = sConfigMgr->GetIntDefault("UseProcessors", 0);
@@ -310,6 +310,11 @@ int Master::Run()
     ///- Start up freeze catcher thread
     if (uint32 freezeDelay = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
     {
+#ifdef _WIN32
+        uint32 pid = GetCurrentProcessId();
+#else
+        uint32 pid = getpid();
+#endif
         freezeDetectorThread = new std::thread(FreezeDetectorThread, freezeDelay, pid);
     }
 
@@ -341,8 +346,7 @@ int Master::Run()
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_INVALID, g_RealmID);
 
     InterRealmSession* irt = new InterRealmSession();
-    ACE_Based::Thread interrealm_thread(irt, "InterRealm");
-    interrealm_thread.setPriority(ACE_Based::Highest);
+    std::thread interrealm_thread([irt]() { irt->run(); });
     sWorld->SetInterRealmSession(irt);
 #endif /* not CROSS */
 
