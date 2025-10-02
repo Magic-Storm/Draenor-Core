@@ -2107,13 +2107,358 @@ class debug_commandscript: public CommandScript
                     handler->SendSysMessage("All OK!");
             }
 
+        return true;
+    }
+
+    static bool HandleDebugBattlegroundCommand(ChatHandler* /*handler*/, char const* /*args*/)
+    {
+        sBattlegroundMgr->ToggleTesting();
+        return true;
+    }
+
+    static bool HandleDebugArenaCommand(ChatHandler* /*handler*/, char const* /*args*/)
+    {
+        sBattlegroundMgr->ToggleArenaTesting();
+        return true;
+    }
+
+    static bool HandleDebugThreatListCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        Creature* target = handler->getSelectedCreature();
+        if (!target || target->isTotem() || target->isPet())
+            return false;
+
+        std::list<HostileReference*>& threatList = target->getThreatManager().getThreatList();
+        std::list<HostileReference*>::iterator itr;
+        uint32 count = 0;
+        handler->PSendSysMessage("Threat list of %s (guid %u)", target->GetName(), target->GetGUIDLow());
+        for (itr = threatList.begin(); itr != threatList.end(); ++itr)
+        {
+            Unit* unit = (*itr)->getTarget();
+            if (!unit)
+                continue;
+            ++count;
+            handler->PSendSysMessage("   %u.   %s   (guid %u)  - threat %f", count, unit->GetName(), unit->GetGUIDLow(), (*itr)->getThreat());
+        }
+        handler->SendSysMessage("End of threat list.");
+        return true;
+    }
+
+    static bool HandleDebugHostileRefListCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+            target = handler->GetSession()->GetPlayer();
+        HostileReference* ref = target->getHostileRefManager().getFirst();
+        uint32 count = 0;
+        handler->PSendSysMessage("Hostil reference list of %s (guid %u)", target->GetName(), target->GetGUIDLow());
+        while (ref)
+        {
+            if (Unit* unit = ref->getSource()->getOwner())
+            {
+                ++count;
+                handler->PSendSysMessage("   %u.   %s   (guid %u)  - threat %f", count, unit->GetName(), unit->GetGUIDLow(), ref->getThreat());
+            }
+            ref = ref->next();
+        }
+        handler->SendSysMessage("End of hostil reference list.");
+        return true;
+    }
+
+    static bool HandleDebugSetVehicleIdCommand(ChatHandler* handler, char const* args)
+    {
+        Unit* target = handler->getSelectedUnit();
+        if (!target || target->GetTypeId() != TYPEID_UNIT || !target->IsVehicle())
+            return false;
+
+        if (!args)
+            return false;
+
+        char* i = strtok((char*)args, " ");
+        if (!i)
+            return false;
+
+        uint32 vehicle_id = (uint32)atoi(i);
+        VehicleEntry const * entry = sVehicleStore.LookupEntry(vehicle_id);
+        if (!entry)
+        {
+            handler->PSendSysMessage("No such vehicle id");
+            return false;
+        }
+
+        if (target->GetVehicleKit())
+            target->RemoveVehicleKit();
+
+        if (!target->CreateVehicleKit(entry->m_ID, target->GetEntry()))
+        {
+            handler->PSendSysMessage("Can't create vehicle kit id %u.", vehicle_id);
+            return false;
+        }
+
+        if (target->GetVehicleKit())
+            target->GetVehicleKit()->Reset();
+
+        handler->PSendSysMessage("Vehicle id set to %u", vehicle_id);
+        return true;
+    }
+
+    static bool HandleDebugEnterVehicleCommand(ChatHandler* handler, char const* args)
+    {
+        Unit* target = handler->getSelectedUnit();
+        if (!target)// || !target->IsVehicle())
+            return false;
+
+        if (!args)
+            return false;
+
+        char* i = strtok((char*)args, " ");
+        if (!i)
+            return false;
+
+        char* j = strtok(NULL, " ");
+
+        int32 entry = (int32)atoi(i);
+        int8 seatId = j ? (int8)atoi(j) : -1;
+
+        if (entry == -1)
+            target->EnterVehicle(handler->GetSession()->GetPlayer(), seatId);
+        else if (!entry)
+            handler->GetSession()->GetPlayer()->EnterVehicle(target, seatId);
+        else
+        {
+            Creature* passenger = NULL;
+            Trinity::AllCreaturesOfEntryInRange check(handler->GetSession()->GetPlayer(), entry, 20.0f);
+            Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(handler->GetSession()->GetPlayer(), passenger, check);
+            handler->GetSession()->GetPlayer()->VisitNearbyObject(30.0f, searcher);
+            if (!passenger || passenger == target)
+                return false;
+            passenger->EnterVehicle(target, seatId);
+        }
+
+        handler->PSendSysMessage("Unit %u entered vehicle %d", entry, (int32)seatId);
+        return true;
+    }
+
+    static bool HandleDebugSpawnVehicleCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* e = strtok((char*)args, " ");
+        char* i = strtok(NULL, " ");
+
+        if (!e)
+            return false;
+
+        uint32 entry = (uint32)atoi(e);
+
+        float x, y, z, o = handler->GetSession()->GetPlayer()->GetOrientation();
+        handler->GetSession()->GetPlayer()->GetClosePoint(x, y, z, handler->GetSession()->GetPlayer()->GetObjectSize());
+
+        if (!i)
+            return handler->GetSession()->GetPlayer()->SummonCreature(entry, x, y, z, o);
+
+        uint32 id = (uint32)atoi(i);
+
+        CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(entry);
+
+        if (!ci)
+            return false;
+
+        VehicleEntry const* ve = sVehicleStore.LookupEntry(id);
+
+        if (!ve)
+            return false;
+
+        Creature* v = new Creature;
+
+        Map* map = handler->GetSession()->GetPlayer()->GetMap();
+
+        if (!v->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_VEHICLE), map, handler->GetSession()->GetPlayer()->GetPhaseMask(), entry, id, handler->GetSession()->GetPlayer()->GetTeam(), x, y, z, o))
+        {
+            delete v;
+            return false;
+        }
+
+        map->AddToMap(v->ToCreature());
+
+        return true;
+    }
+
+    static bool HandleDebugSendLargePacketCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        const char* stuffingString = "This is a dummy string to push the packet's size beyond 128000 bytes. ";
+        std::ostringstream ss;
+        while (ss.str().size() < 128000)
+            ss << stuffingString;
+        handler->SendSysMessage(ss.str().c_str());
+        return true;
+    }
+
+    static bool HandleDebugSendSetPhaseShiftCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* t = strtok((char*)args, " ");
+        char* p = strtok(NULL, " ");
+        char* w = strtok(NULL, " ");
+        if (!t)
+            return false;
+
+        std::set<uint32> terrainswap;
+        std::set<uint32> phaseId;
+        std::set<uint32> worldAreaIds;
+
+        terrainswap.insert((uint32)atoi(t));
+
+        if (p)
+            phaseId.insert((uint32)atoi(p));
+
+        if (w)
+            worldAreaIds.insert((uint32)atoi(w));
+
+        handler->GetSession()->SendSetPhaseShift(phaseId, terrainswap, worldAreaIds);
+        return true;
+    }
+
+    static bool HandleDebugGetItemValueCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* e = strtok((char*)args, " ");
+        char* f = strtok(NULL, " ");
+
+        if (!e || !f)
+            return false;
+
+        uint32 guid = (uint32)atoi(e);
+        uint32 index = (uint32)atoi(f);
+
+        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
+
+        if (!i)
+            return false;
+
+        if (index >= i->GetValuesCount())
+            return false;
+
+        uint32 value = i->GetUInt32Value(index);
+
+        handler->PSendSysMessage("Item %u: value at %u is %u", guid, index, value);
+
+        return true;
+    }
+
+    static bool HandleDebugSetItemValueCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* e = strtok((char*)args, " ");
+        char* f = strtok(NULL, " ");
+        char* g = strtok(NULL, " ");
+
+        if (!e || !f || !g)
+            return false;
+
+        uint32 guid = (uint32)atoi(e);
+        uint32 index = (uint32)atoi(f);
+        uint32 value = (uint32)atoi(g);
+
+        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
+
+        if (!i)
+            return false;
+
+        if (index >= i->GetValuesCount())
+            return false;
+
+        i->SetUInt32Value(index, value);
+
+        return true;
+    }
+
+    static bool HandleDebugItemExpireCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* e = strtok((char*)args, " ");
+        if (!e)
+            return false;
+
+        uint32 guid = (uint32)atoi(e);
+
+        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
+
+        if (!i)
+            return false;
+
+        handler->GetSession()->GetPlayer()->DestroyItem(i->GetBagSlot(), i->GetSlot(), true);
+        sScriptMgr->OnItemExpire(handler->GetSession()->GetPlayer(), i->GetTemplate());
+
+        return true;
+    }
+
+    //show animation
+    static bool HandleDebugAnimCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        uint32 animId = atoi((char*)args);
+        handler->GetSession()->GetPlayer()->HandleEmoteCommand(animId);
+        return true;
+    }
+
+    static bool HandleDebugLoSCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        if (Unit* unit = handler->getSelectedUnit())
+            handler->PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName(), unit->GetGUIDLow(), handler->GetSession()->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
+        return true;
+    }
+
+    static bool HandleDebugSetAuraStateCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        Unit* unit = handler->getSelectedUnit();
+        if (!unit)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        int32 state = atoi((char*)args);
+        if (!state)
+        {
+            // reset all states
+            for (int i = 1; i <= 32; ++i)
+                unit->ModifyAuraState(AuraStateType(i), false);
             return true;
         }
 
+        state = abs(state);
+        if (state > 32)
+            state = 32;
+
+        unit->ModifyAuraState(AuraStateType(state), true);
+
+        return true;
+    }
+
 #ifndef CROSS
-        static bool HandleDebugBattlegroundCommand(ChatHandler* handler, char const* /*args*/)
+    static bool HandleDebugBattlegroundCommand(ChatHandler* handler, char const* /*args*/)
 #else /* CROSS */
-        static bool HandleDebugBattlegroundCommand(ChatHandler* /*handler*/, char const* /*args*/)
+    static bool HandleDebugBattlegroundCommand(ChatHandler* /*handler*/, char const* /*args*/)
 #endif /* CROSS */
         {
 #ifndef CROSS

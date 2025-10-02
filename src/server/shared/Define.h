@@ -61,7 +61,7 @@
 #else //COMPILER != COMPILER_GNU
 #  define ATTR_NORETURN
 #  define ATTR_PRINTF(F, V)
-#  define ATTR_DEPRECATED
+#    define ATTR_DEPRECATED
 #endif //COMPILER == COMPILER_GNU
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
@@ -83,7 +83,7 @@
  #  define TC_SHARED_API TC_API_EXPORT
  #else
  #  define TC_SHARED_API TC_API_IMPORT
- #endif
+#endif
  
 #define UI64FMTD PRIu64
 #define UI64LIT(N) UINT64_C(N)

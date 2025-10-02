@@ -1127,7 +1127,7 @@ class World
 
         // sessions that are added async
         void AddSession_(WorldSession* s);
-        ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
+        LockedQueue<WorldSession*> addSessQueue;
 #endif
 
 #ifdef CROSS
@@ -1146,7 +1146,7 @@ class World
         uint32 m_LastAccountLogId;
         PreparedQueryResultFuture m_AccountLogIpScanCallback;
 
-        ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;
+        LockedQueue<CliCommandHolder*> cliCmdQueue;
 
         std::string m_newCharString;
         std::string m_realmName;

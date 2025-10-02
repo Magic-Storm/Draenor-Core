@@ -1167,7 +1167,6 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
     {
         TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %zu)",
                 internal_event_id, mGameEventCreatureGuids.size());
-            internal_event_id, mGameEventCreatureGuids.size();
         return;
     }
 
