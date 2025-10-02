@@ -209,13 +209,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SFMT_PARITY 0x00000001, 0x00000000, 0x00000000, 0x5986f054  // Period certification vector
 #endif
 
-// Class for SFMT generator with or without Mother-Of-All generator
-class CRandomSFMT {                              // Encapsulate random number generator
+namespace boost {
+    template <typename T> class thread_specific_ptr;
+}
+
+// Class for SFMT generator
+class SFMTRand {                              // Encapsulate random number generator
+    friend class boost::thread_specific_ptr<SFMTRand>;
 public:
-   CRandomSFMT(int seed = 9999, int IncludeMother = 0) {// Constructor
-      UseMother = IncludeMother; 
-      LastInterval = 0;
-      RandomInit(seed);}
+   SFMTRand()
+   {
+       RandomInit(9999);
+   }
    void RandomInit(int seed);                    // Re-seed
    void RandomInitByArray(int const seeds[], int NumSeeds); // Seed by more than 32 bits
    int  IRandom  (int min, int max);             // Output random integer
