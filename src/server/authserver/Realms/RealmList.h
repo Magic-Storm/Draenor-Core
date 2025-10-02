@@ -19,8 +19,6 @@
 #ifndef _REALMLIST_H
 #define _REALMLIST_H
 
-#include <ace/Singleton.h>
-#include <ace/Null_Mutex.h>
 #include "Common.h"
 
 enum RealmFlags
@@ -57,8 +55,11 @@ public:
     typedef std::map<std::string, Realm> RealmMap;
     typedef std::vector<std::string> FirewallFarms;
 
-    RealmList();
-    ~RealmList() {}
+    static RealmList& instance()
+    {
+        static RealmList *instance = new RealmList();
+        return *instance;
+    }
 
     void Initialize(uint32 updateInterval);
 
@@ -74,6 +75,8 @@ public:
     std::string GetRandomFirewall() { return m_firewallFarms[rand() % firewallSize()]; }
 
 private:
+    RealmList();
+
     void UpdateRealms(bool init = false);
     void UpdateRealm(uint32 id, const std::string& name, const std::string& address, uint16 port, uint8 icon, RealmFlags flag, uint8 timezone, AccountTypes allowedSecurityLevel, float popu, uint32 build);
 
@@ -83,5 +86,5 @@ private:
     time_t   m_NextUpdateTime;
 };
 
-#define sRealmList ACE_Singleton<RealmList, ACE_Null_Mutex>::instance()
+#define sRealmList RealmList::instance()
 #endif

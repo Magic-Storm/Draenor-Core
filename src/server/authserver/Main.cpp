@@ -147,8 +147,8 @@ int main(int argc, char** argv)
     sLog->SetRealmId(0);                                               // ensure we've set realm to 0 (authserver realmid)
 
     // Get the list of realms for the server
-    sRealmList->Initialize(sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 20));
-    if (sRealmList->size() == 0)
+    sRealmList.Initialize(sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 20));
+    if (sRealmList.size() == 0)
     {
         TC_LOG_ERROR("authserver", "No valid realms specified.");
         return 1;
