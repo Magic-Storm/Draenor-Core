@@ -77,7 +77,6 @@ include(GroupSources)
 
 # basic packagesearching and setup (further support will be needed, this is a preliminary release!)
 find_package(PCHSupport)
-find_package(ACE REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(curl REQUIRED)
 find_package(EasyJSon REQUIRED)
