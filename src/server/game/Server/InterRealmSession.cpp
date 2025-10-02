@@ -382,7 +382,7 @@ void InterRealmSession::SendPacket(WorldPacket const* packet)
 
     if (m_IRSocket->SendPacket(packet) == -1)
     {
-        //sLog->outInterRealm("[INTERREALM] Cannot send packet %u, closing socket.", packet->GetOpcode());
+        //TC_LOG_DEBUG("server.interrealm", "[INTERREALM] Cannot send packet %u, closing socket.", packet->GetOpcode());
         //m_IRSocket->CloseSocket();
     }
 }
@@ -420,17 +420,17 @@ void InterRealmSession::SendServerAnnounce(uint64 guid, std::string const &text)
 
 void InterRealmSession::Handle_Unhandled(WorldPacket& recvPacket)
 {
-    //sLog->outInterRealm("[INTERREALM] Unhandled Packet with IROpcode %u received !",recvPacket.GetOpcode());
+    //TC_LOG_DEBUG("server.interrealm", "[INTERREALM] Unhandled Packet with IROpcode %u received !",recvPacket.GetOpcode());
 }
 
 void InterRealmSession::Handle_Null(WorldPacket& recvPacket)
 {
-    //sLog->outInterRealm("[INTERREALM] Packet with Invalid IROpcode %u received !",recvPacket.GetOpcode());
+    //TC_LOG_DEBUG("server.interrealm", "[INTERREALM] Packet with Invalid IROpcode %u received !",recvPacket.GetOpcode());
 }
 
 void InterRealmSession::Handle_Hello(WorldPacket& packet)
 {
-    //sLog->outInterRealm("[INTERREALM] Received packet IR_SMSG_HELLO");
+    //TC_LOG_DEBUG("server.interrealm","[INTERREALM] Received packet IR_SMSG_HELLO");
 
     std::string _hello;
     uint8 _rand, _resp;
@@ -459,7 +459,7 @@ void InterRealmSession::Handle_Hello(WorldPacket& packet)
 
     if  (!m_force_stop && _resp == IR_HELO_RESP_OK)
     {
-        //sLog->outInterRealm("[INTERREALM] Hello was succeed. Sending id...");
+        //TC_LOG_DEBUG("server.interrealm","[INTERREALM] Hello was succeed. Sending id...");
 
         WorldPacket packet(IR_CMSG_WHO_AM_I, 4);
         packet << uint32(m_ir_id); // Realm Id
@@ -516,7 +516,7 @@ void InterRealmSession::Handle_WhoAmI(WorldPacket& packet)
 
 void InterRealmSession::Handle_CheckPlayers(WorldPacket& packet)
 {
-    //sLog->outInterRealm("misc", "[INTERREALM] Received a packet IR_SMSG_CHECK_PLAYERS");
+    //TC_LOG_DEBUG("server.interrealm","misc", "[INTERREALM] Received a packet IR_SMSG_CHECK_PLAYERS");
     
     uint32 num_players;
     std::vector<uint64> playerGuids;
@@ -585,7 +585,7 @@ void InterRealmSession::Handle_DebugArenaResp(WorldPacket& packet)
 
 void InterRealmSession::Handle_RegisterPlayerResp(WorldPacket& recvPacket)
 {
-    //sLog->outInterRealm("[INTERREALM] Received a packet IR_SMSG_REGISTER_PLAYER_RESP");
+    //TC_LOG_DEBUG("server.interrealm","[INTERREALM] Received a packet IR_SMSG_REGISTER_PLAYER_RESP");
     uint64 playerGuid;
     uint8 _valid;
 
@@ -594,7 +594,7 @@ void InterRealmSession::Handle_RegisterPlayerResp(WorldPacket& recvPacket)
 
     if (_valid != 0)
     {
-        //sLog->outInterRealm("[INTERREALM] Player registration was failed (%u)(loguid %u).", _valid, GUID_LOPART(playerGuid));
+        //TC_LOG_DEBUG("server.interrealm","[INTERREALM] Player registration was failed (%u)(loguid %u).", _valid, GUID_LOPART(playerGuid));
         if (Player* pPlayer = ObjectAccessor::FindPlayer(playerGuid))
         {
             switch (_valid)
@@ -675,7 +675,7 @@ void InterRealmSession::Handle_RegisterSpectatorResp(WorldPacket& packet)
 
 void InterRealmSession::Handle_UnRegisterPlayerResp(WorldPacket& recvPacket)
 {
-    //sLog->outInterRealm("[INTERREALM] Received a packet IR_SMSG_UNREGISTER_PLAYER_RESP");
+    //TC_LOG_DEBUG("server.interrealm","[INTERREALM] Received a packet IR_SMSG_UNREGISTER_PLAYER_RESP");
     
     uint8 reason;
     uint64 playerGuid;
@@ -689,7 +689,7 @@ void InterRealmSession::Handle_UnRegisterPlayerResp(WorldPacket& recvPacket)
 
 void InterRealmSession::Handle_BattlefieldPortResp(WorldPacket& packet)
 {
-    //sLog->outInterRealm("[INTERREALM] Received a packet IR_SMSG_BATTLEFIELD_PORT_RESP");
+    //TC_LOG_DEBUG("server.interrealm","[INTERREALM] Received a packet IR_SMSG_BATTLEFIELD_PORT_RESP");
 
     uint8 _valid;
     uint64 _playerGuid;
@@ -801,7 +801,7 @@ void InterRealmSession::SendPlayerTeleport(Player *player, uint32 zoneId, Player
 
 void InterRealmSession::Handle_BattlefieldLeave(WorldPacket& p_Packet)
 {
-    //sLog->outInterRealm("misc", "[INTERREALM] Received a packet IR_SMSG_BATTLEFIELD_LEAVE");
+    //TC_LOG_DEBUG("server.interrealm","misc", "[INTERREALM] Received a packet IR_SMSG_BATTLEFIELD_LEAVE");
 
     uint64 l_PlayerGuid;
     p_Packet >> l_PlayerGuid;
@@ -1946,7 +1946,7 @@ void InterRealmSession::Update(const uint32 diff)
         // Delete Packet from memory
         if (packet != NULL)
         {
-            //sLog->outInterRealm("misc", "[INTERREALM] Deleting packet");
+            //TC_LOG_DEBUG("server.interrealm","misc", "[INTERREALM] Deleting packet");
             delete packet;
         }
     }

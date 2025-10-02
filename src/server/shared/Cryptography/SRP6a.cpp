@@ -2,29 +2,27 @@
 #include "SRP6a.h"
 #include <algorithm>
 
-namespace BNet2 {
-
-    /// Constructor
+/// Constructor
     SRP6a::SRP6a(const std::string& p_Salt, const std::string& p_AccountName, const std::string p_PasswordVerifier)
     {
         Sha256(p_AccountName, I);
         ToByteArray(p_Salt, Salt);
 
-        N.SetBinary(BNet2::SRP6a_N, sizeof(BNet2::SRP6a_N));
-        G.SetBinary(BNet2::SRP6a_G, sizeof(BNet2::SRP6a_G));
+        N.SetBinary(SRP6a_N, sizeof(SRP6a_N));
+        G.SetBinary(SRP6a_G, sizeof(SRP6a_G));
 
         V = MakeBigNumber(p_PasswordVerifier);
 
         //////////////////////////////////////////////////////////////////////////
 
-        uint8_t* l_Buffer = new uint8_t[sizeof(BNet2::SRP6a_N) + sizeof(BNet2::SRP6a_G)];
+        uint8_t* l_Buffer = new uint8_t[sizeof(SRP6a_N) + sizeof(SRP6a_G)];
 
-        memcpy(l_Buffer, BNet2::SRP6a_N, sizeof(BNet2::SRP6a_N));
-        memcpy(l_Buffer + sizeof(BNet2::SRP6a_N), BNet2::SRP6a_G, sizeof(BNet2::SRP6a_G));
+        memcpy(l_Buffer, SRP6a_N, sizeof(SRP6a_N));
+        memcpy(l_Buffer + sizeof(SRP6a_N), SRP6a_G, sizeof(SRP6a_G));
 
         uint8_t l_KHash[SHA256_DIGEST_LENGTH];
 
-        Sha256(l_Buffer, sizeof(BNet2::SRP6a_N) + sizeof(BNet2::SRP6a_G), l_KHash);
+        Sha256(l_Buffer, sizeof(SRP6a_N) + sizeof(SRP6a_G), l_KHash);
         K.SetBinary(l_KHash, SHA256_DIGEST_LENGTH);
 
         delete[] l_Buffer;
@@ -118,8 +116,8 @@ namespace BNet2 {
         uint8_t l_N_Hash[SHA256_DIGEST_LENGTH];
         uint8_t l_G_Hash[SHA256_DIGEST_LENGTH];
 
-        Sha256(BNet2::SRP6a_N, sizeof(BNet2::SRP6a_N), l_N_Hash);
-        Sha256(BNet2::SRP6a_G, sizeof(BNet2::SRP6a_G), l_G_Hash);
+        Sha256(SRP6a_N, sizeof(SRP6a_N), l_N_Hash);
+        Sha256(SRP6a_G, sizeof(SRP6a_G), l_G_Hash);
 
         for (uint32_t l_I = 0; l_I < SHA256_DIGEST_LENGTH; l_I++)
             l_N_Hash[l_I] ^= l_G_Hash[l_I];
@@ -225,4 +223,3 @@ namespace BNet2 {
         SHA256_Update(&l_Context, p_Data, p_DataSize);
         SHA256_Final(p_Dest, &l_Context);
     }
-}
