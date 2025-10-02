@@ -13,7 +13,7 @@
 
 #include <map>
 #include <assert.h>
-#include <ace/Guard_T.h>
+#include <shared_mutex>
 
 #include "Common.h"
 
@@ -24,9 +24,9 @@ namespace ACE_Based
     {
         public:
 
-        typedef   ACE_RW_Thread_Mutex         LockType;
-        typedef   ACE_Read_Guard<LockType>     ReadGuard;
-        typedef   ACE_Write_Guard<LockType>    WriteGuard;
+        typedef   std::shared_mutex         LockType;
+        typedef   std::shared_lock<LockType>     ReadGuard;
+        typedef   std::unique_lock<LockType>    WriteGuard;
 
         typedef typename std::map<Key, T, Compare, Allocator>::iterator               iterator;
         typedef typename std::map<Key, T, Compare, Allocator>::const_iterator         const_iterator;
@@ -298,9 +298,9 @@ namespace ACE_Based
     {
         public:
 
-        typedef   ACE_RW_Thread_Mutex          LockType;
-        typedef   ACE_Read_Guard<LockType>     ReadGuard;
-        typedef   ACE_Write_Guard<LockType>    WriteGuard;
+        typedef   std::shared_mutex          LockType;
+        typedef   std::shared_lock<LockType>     ReadGuard;
+        typedef   std::unique_lock<LockType>    WriteGuard;
 
         typedef typename std::multimap<Key, T, Compare, Allocator>::iterator               iterator;
         typedef typename std::multimap<Key, T, Compare, Allocator>::const_iterator         const_iterator;
