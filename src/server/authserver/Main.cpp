@@ -16,44 +16,31 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ace/Dev_Poll_Reactor.h>
-#include <ace/TP_Reactor.h>
-#include <iostream>
-#include <cstdlib>
-#include <chrono>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
+/**
+* @file main.cpp
+* @brief Authentication Server main program
+*
+* This file contains the main program for the
+* authentication server
+*/
+
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
-#include <thread>
-#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
-#include <openssl/provider.h>
-#endif
-
-//#include <boost/dll/runtime_symbol_info.hpp>
-//#include <Reporting/Reporter.hpp>
+#include <iostream>
+#include <cstdlib>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "Common.h"
-#include "GitRevision.h"
-
 #include "Database/DatabaseEnv.h"
 #include "Configuration/Config.h"
 #include "Log.h"
+#include "SystemConfig.h"
 #include "Util.h"
 #include "RealmList.h"
 #include "AuthServer.h"
 
-#include "Bnet2/WoWModules/PasswordAuth.hpp"
-#include "Bnet2/WoWModules/RiskFingerprintAuth.hpp"
-#include "Bnet2/WoWModules/ThumbprintAuth.hpp"
-#include "Bnet2/WoWModules/SelectGameAccountAuth.hpp"
-#include "Bnet2/Session.hpp"
-
-#ifdef __linux__
-#include <sched.h>
-#include <sys/resource.h>
-#define PROCESS_HIGH_PRIORITY -15 // [-20, 19], default is 0
-#endif
 
 #ifndef _TRINITY_REALM_CONFIG
 # define _TRINITY_REALM_CONFIG  "authserver.conf"
@@ -63,184 +50,143 @@ bool StartDB();
 void StopDB();
 void SetProcessPriority();
 
-boost::asio::io_context _ioContext;
-boost::asio::steady_timer _dbPingTimer(_ioContext);
+boost::asio::io_context _ioService;
+boost::asio::deadline_timer _dbPingTimer(_ioService);
 uint32 _dbPingInterval;
 
-LoginDatabaseWorkerPool LoginDatabase;                      // Accessor to the authserver database
+LoginDatabaseWorkerPool LoginDatabase;                      // Accessor to the auth server database
 
 using boost::asio::ip::tcp;
 
-// Handle authserver's termination signals
 void SignalHandler(const boost::system::error_code& error, int signalNumber)
 {
-//TC_LOG_ERROR("server.authserver", "SIGNAL HANDLER WORKING");
-if (!error)
-{
-    switch (signalNumber)
+    TC_LOG_ERROR("authserver", "SIGNAL HANDLER WORKING");
+    if (!error)
     {
-    case SIGINT:
-    case SIGTERM:
-        _ioContext.stop();
-        break;
+        switch (signalNumber)
+        {
+        case SIGINT:
+        case SIGTERM:
+            _ioService.stop();
+            break;
+        }
     }
-}
 }
 
 void KeepDatabaseAliveHandler(const boost::system::error_code& error)
 {
     if (!error)
     {
-        TC_LOG_INFO("server.authserver", "Ping MySQL to keep connection alive");
+        TC_LOG_INFO("authserver", "Ping MySQL to keep connection alive");
         LoginDatabase.KeepAlive();
 
-        _dbPingTimer.expires_after(std::chrono::minutes(_dbPingInterval));
-        _dbPingTimer.async_wait(KeepDatabaseAliveHandler);
+        _dbPingTimer.expires_from_now(boost::posix_time::minutes(_dbPingInterval));
     }
 }
 
 /// Print out the usage string for this program on the console.
-void usage(const char* prog)
+void usage(const char *prog)
 {
-    TC_LOG_INFO("server.authserver", "Usage: \n %s [<options>]\n"
+    TC_LOG_INFO("authserver", "Usage: \n %s [<options>]\n"
         "    -c config_file           use config_file as configuration file\n\r",
         prog);
-}
-
-void RegisterBNet2Components()
-{
-    BNet2::AuthComponentManager::GetSingleton()->Allow(37165, BNet2::BATTLENET2_PROGRAM_BNET, BNet2::BATTLENET2_PROGRAM_ALL, BNet2::BATTLENET2_LOCALE_NONE);
-
-    QueryResult l_Result = LoginDatabase.PQuery("SELECT build, version FROM bnet_allowed_build");
-    if (l_Result)
-    {
-        do
-        {
-            Field* l_Fields = l_Result->Fetch();
-            uint32 l_AllowedBuild = l_Fields[0].GetUInt32();
-
-            BNet2::g_VersionStrByBuild[l_AllowedBuild] = l_Fields[1].GetString();
-
-            BNet2::AuthComponentManager::GetSingleton()->Allow(l_AllowedBuild, BNet2::BATTLENET2_PROGRAM_ALL_CLIENTS, BNet2::BATTLENET2_PLATFORM_ALL, BNet2::BATTLENET2_LOCALE_ALL);
-        }
-        while (l_Result->NextRow());
-    }
-}
-
-void RegisterBNet2WoWModules()
-{
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::PasswordAuthWin32));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::PasswordAuthWin64));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::PasswordAuthMac64));
-
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::RiskFingerprintAuthWin32));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::RiskFingerprintAuthWin64));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::RiskFingerprintAuthMac64));
-
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::ThumbprintAuthWin32));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::ThumbprintAuthWin64));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::ThumbprintAuthMac64));
-
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::SelectGameAccountAuthWin32));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::SelectGameAccountAuthWin64));
-    BNet2::ModuleManager::GetSingleton()->RegisterModule(BNet2::Module::Ptr(new BNet2::WoWModules::SelectGameAccountAuthMac64));
 }
 
 /// Launch the auth server
 int main(int argc, char** argv)
 {
-    ACE_Based::Thread::current()->setName("MainThread");
-
     // Command line parsing to get the configuration file name
-    char const* configFile = _TRINITY_REALM_CONFIG;
-    int count = 1;
-    while (count < argc)
+    char const* cfg_file = _TRINITY_REALM_CONFIG;
+    int c = 1;
+    while (c < argc)
     {
-        if (strcmp(argv[count], "-c") == 0)
+        if (strcmp(argv[c], "-c") == 0)
         {
-            if (++count >= argc)
+            if (++c >= argc)
             {
                 printf("Runtime-Error: -c option requires an input argument");
                 usage(argv[0]);
                 return 1;
             }
             else
-                configFile = argv[count];
+                cfg_file = argv[c];
         }
-        ++count;
+        ++c;
     }
 
-    if (!sConfigMgr->LoadInitial(configFile))
+    if (!sConfigMgr->LoadInitial(cfg_file))
     {
-        printf("Invalid or missing configuration file : %s", configFile);
+        printf("Invalid or missing configuration file : %s", cfg_file);
         printf("Verify that the file exists and has \'[authserver]\' written in the top of the file!");
         return 1;
     }
 
-    TC_LOG_INFO("server.authserver", "%s (authserver)", GitRevision::GetFullVersion());
-    TC_LOG_INFO("server.authserver", "<Ctrl-C> to stop.\n");
-    TC_LOG_INFO("server.authserver", "Using configuration file %s.", configFile);
+    TC_LOG_INFO("authserver", "%s (authserver)", _FULLVERSION);
+    TC_LOG_INFO("authserver", "<Ctrl-C> to stop.\n");
+    TC_LOG_INFO("authserver", "Using configuration file %s.", cfg_file);
 
-    TC_LOG_INFO("server.authserver", "%s (Library: %s)", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
+    TC_LOG_WARN("authserver", "%s (Library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
 
     // authserver PID file creation
-    std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");
-    if (!pidFile.empty())
+    std::string pidfile = sConfigMgr->GetStringDefault("PidFile", "");
+    if (!pidfile.empty())
     {
-        uint32 pid = CreatePIDFile(pidFile);
+        uint32 pid = CreatePIDFile(pidfile);
         if (!pid)
         {
-            TC_LOG_ERROR("server.authserver", "Cannot create PID file %s.\n", pidFile.c_str());
+            TC_LOG_ERROR("authserver", "Cannot create PID file %s.\n", pidfile.c_str());
             return 1;
         }
-        TC_LOG_INFO("server.authserver", "Daemon PID: %u\n", pid);
+        TC_LOG_INFO("authserver", "Daemon PID: %u\n", pid);
     }
 
     // Initialize the database connection
     if (!StartDB())
         return 1;
 
-    RegisterBNet2Components();
-    RegisterBNet2WoWModules();
-	
-    
+    sLog->SetRealmId(0);                                               // ensure we've set realm to 0 (authserver realmid)
+
     // Get the list of realms for the server
     sRealmList->Initialize(sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 20));
     if (sRealmList->size() == 0)
     {
-        TC_LOG_ERROR("server.authserver", "No valid realms specified.");
+        TC_LOG_ERROR("authserver", "No valid realms specified.");
         return 1;
     }
 
-    int32 rmport = sConfigMgr->GetIntDefault("RealmServerPort", 3724);
-    if (rmport < 0 || rmport > 0xFFFF)
+    // Launch the listening network socket
+
+    int32 port = sConfigMgr->GetIntDefault("RealmServerPort", 3724);
+    if (port < 0 || port > 0xFFFF)
     {
-        TC_LOG_ERROR("server.authserver", "Specified port out of allowed range (1-65535)");
+        TC_LOG_ERROR("authserver", "Specified port out of allowed range (1-65535)");
         return 1;
     }
 
     std::string bindIp = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
-    AuthServer authServer(_ioContext, bindIp, rmport);
+    AuthServer authServer(_ioService, bindIp, port);
 
     // Set signal handlers
-    boost::asio::signal_set signals(_ioContext, SIGINT, SIGTERM);
+    boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);
     signals.async_wait(SignalHandler);
 
     SetProcessPriority();
 
+
     _dbPingInterval = sConfigMgr->GetIntDefault("MaxPingTime", 30);
 
-    _dbPingTimer.expires_after(std::chrono::minutes(_dbPingInterval));
+    _dbPingTimer.expires_from_now(boost::posix_time::seconds(_dbPingInterval));
     _dbPingTimer.async_wait(KeepDatabaseAliveHandler);
 
-    // Start the io context
-    _ioContext.run();
+    // Start the io service
+    _ioService.run();
 
     // Close the Database Pool and library
     StopDB();
 
-    TC_LOG_INFO("server.authserver", "Halting process...");
+    TC_LOG_INFO("authserver", "Halting process...");
+    sLog->SetRealmId(0);
     return 0;
 }
 
@@ -252,33 +198,32 @@ bool StartDB()
     std::string dbstring = sConfigMgr->GetStringDefault("LoginDatabaseInfo", "");
     if (dbstring.empty())
     {
-        TC_LOG_ERROR("server.authserver", "Database not specified");
+        TC_LOG_ERROR("authserver", "Database not specified");
         return false;
     }
 
     int32 worker_threads = sConfigMgr->GetIntDefault("LoginDatabase.WorkerThreads", 1);
     if (worker_threads < 1 || worker_threads > 32)
     {
-        TC_LOG_ERROR("server.authserver", "Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
+        TC_LOG_ERROR("authserver", "Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
         worker_threads = 1;
     }
 
     int32 synch_threads = sConfigMgr->GetIntDefault("LoginDatabase.SynchThreads", 1);
     if (synch_threads < 1 || synch_threads > 32)
     {
-        TC_LOG_ERROR("server.authserver", "Improper value specified for LoginDatabase.SynchThreads, defaulting to 1.");
+        TC_LOG_ERROR("authserver", "Improper value specified for LoginDatabase.SynchThreads, defaulting to 1.");
         synch_threads = 1;
     }
 
     // NOTE: While authserver is singlethreaded you should keep synch_threads == 1. Increasing it is just silly since only 1 will be used ever.
     if (!LoginDatabase.Open(dbstring.c_str(), uint8(worker_threads), uint8(synch_threads)))
     {
-        TC_LOG_ERROR("server.authserver", "Cannot connect to database");
+        TC_LOG_ERROR("authserver", "Cannot connect to database");
         return false;
     }
 
-    TC_LOG_INFO("server.authserver", "Started auth database connection pool.");
-    sLog->SetRealmId(0); // Enables DB appenders when realm is set.
+    TC_LOG_INFO("authserver", "Started auth database connection pool.");
     return true;
 }
 
