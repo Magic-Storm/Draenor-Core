@@ -10,6 +10,8 @@
     \ingroup Trinityd
 */
 
+#include <thread>
+
 #include "Common.h"
 #include "ObjectAccessor.h"
 #include "World.h"
@@ -33,7 +35,7 @@ extern int m_ServiceStatus;
 #endif
 
 /// Heartbeat for the World
-void WorldRunnable::run()
+void WorldThread()
 {
     /// - Register signal handler for current thread
     //signal(SIGSEGV, &MS::SignalHandler::OnSignalReceive);
@@ -63,7 +65,7 @@ void WorldRunnable::run()
         if (diff <= WORLD_SLEEP_CONST+prevSleepTime)
         {
             prevSleepTime = WORLD_SLEEP_CONST+prevSleepTime-diff;
-            ACE_Based::Thread::Sleep(prevSleepTime);
+            std::this_thread::sleep_for(std::chrono::milliseconds(prevSleepTime));
         }
         else
             prevSleepTime = 0;

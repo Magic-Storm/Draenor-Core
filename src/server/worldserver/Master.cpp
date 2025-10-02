@@ -16,6 +16,8 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <thread>
+
 #include <ace/Sig_Handler.h>
 
 #include "Common.h"
@@ -105,324 +107,52 @@ class WorldServerSignalHandler : public Trinity::SignalHandler
         }
 };
 
-class FreezeDetectorRunnable : public ACE_Based::Runnable
+void FreezeDetectorThread(uint32 delayTime, uint32 fdpid)
 {
-private:
-    uint32 _loops;
-    uint32 _lastChange;
-    uint32 _delaytime;
-    bool _canstop;
-public:
-    FreezeDetectorRunnable()
+    if (!delayTime)
+        return;
+
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Starting up anti-freeze thread (%u seconds max stuck time)...", delayTime / 1000);
+    uint32 loops = 0;
+    uint32 lastChange = 0;
+
+    while (!World::IsStopped())
     {
-        _delaytime = 0;
-        _canstop = false;
-    }
-
-    void SetDelayTime(uint32 t) { _delaytime = t; }
-
-    void run() override
-    {
-        if (!_delaytime)
-            return;
-
-        TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", _delaytime/1000);
-        _loops = 0;
-        _lastChange = 0;
-
-        /// Protect against freeze in world loop
-        while (!World::IsStopped())
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        uint32 curtime = getMSTime();
+        // normal work
+        uint32 worldLoopCounter = World::m_worldLoopCounter.value();
+        if (loops != worldLoopCounter)
         {
-            ACE_Based::Thread::Sleep(1000);
-            uint32 curtime = getMSTime();
-            // normal work
-            uint32 worldLoopCounter = World::m_worldLoopCounter.value();
-            if (_loops != worldLoopCounter)
-            {
-                _lastChange = curtime;
-                _loops = worldLoopCounter;
-            }
-            // possible freeze
-            else if (getMSTimeDiff(_lastChange, curtime) > _delaytime)
-            {
-                TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
-                ABORT();
-                abort();
-            }
+            lastChange = curtime;
+            loops = worldLoopCounter;
         }
-
-        /// Protect against freeze on shutdown
-        uint32 l_WorldStopTime = time(nullptr);
-
-        while (!_canstop)
+#ifndef AMARU_DEBUG
+        // possible freeze
+        else if (getMSTimeDiff(lastChange, curtime) > delayTime)
         {
-            ACE_Based::Thread::Sleep(1000);
-
-            if ((time(nullptr) - l_WorldStopTime) > 60)
+            TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
+            if (fdpid)
             {
-                TC_LOG_ERROR("server.worldserver", "Freeze on shutdown, kill the server!");
-                ABORT();
-                abort();
+                char buffer[20];
+                sprintf(buffer, "kill -11 %s", fdpid);
+                system(buffer);
             }
+            else
+                ASSERT(false);
         }
-
-        TC_LOG_INFO("server.worldserver", "Anti-freeze thread exiting without problems.");
+#endif
     }
-};
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Anti-freeze thread exiting without problems.");
+}
 
-#ifndef CROSS
-class GmLogToDBRunnable : public ACE_Based::Runnable
+Master::Master()
 {
-public:
+}
 
-    void run ()
-    {
-        while (!World::IsStopped())
-        {
-            GmCommand * command;
-            while(!GmLogQueue.empty())
-            {
-                GmLogQueue.next(command);
-                CharacterDatabase.EscapeString(command->accountName[0]);
-                CharacterDatabase.EscapeString(command->accountName[1]);
-                CharacterDatabase.EscapeString(command->characterName[0]);
-                CharacterDatabase.EscapeString(command->characterName[1]);
-                CharacterDatabase.EscapeString(command->command);
-                //No sql injections. Strings are escaped.
-
-                //au cas ou on a pas les infos...
-                if (command->accountName[0] == "" && command->accountID[0] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", command->accountID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->accountName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->accountName[0]);
-                    }
-                }
-
-                if (command->accountName[1] == "" && command->accountID[1] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", command->accountID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->accountName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->accountName[1]);
-                    }
-                }
-
-                if (command->characterName[0] == "" && command->characterID[0] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->characterName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->characterName[0]);
-                    }
-                }
-
-                if (command->characterName[0] == "" && command->characterID[0] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->characterName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->characterName[0]);
-                    }
-                }
-
-                if (command->characterName[1] == "" && command->characterID[1] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->characterName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->characterName[1]);
-                    }
-                }
-
-                std::string last_ip = " ";
-
-                QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id = %u", command->accountID[0]);
-                if (result)
-                {
-                    Field *fields_ip = result->Fetch();
-                    last_ip = fields_ip[0].GetString();
-                }
-
-                if (command->accountID[1] == 0 && command->characterID == 0) ///< Comparison of array 'command->characterID' equal to a null pointer is always false
-                {
-                    command->accountID[1] = command->accountID[0];
-                    command->characterID[1] = command->characterID[0];
-                    command->accountName[1] = command->accountName[0];
-                    command->characterName[1] = command->characterName[0];
-                }
-
-                CharacterDatabase.PExecute( "INSERT INTO log_gm(`date`, "
-                    "`gm_account_id`, `gm_account_name`, `gm_character_id`, `gm_character_name`, `gm_last_ip`,"
-                    "`sc_account_id`, `sc_account_name`, `sc_character_id`, `sc_character_name`,"
-                    "`command`)"
-                    "VALUES(NOW(),"
-                    "%u,'%s',%u,'%s','%s',"
-                    "%u,'%s',%u,'%s',"
-                    "'%s')",
-                    command->accountID[0], command->accountName[0].c_str(), command->characterID[0], command->characterName[0].c_str(), last_ip.c_str(),
-                    command->accountID[1], command->accountName[1].c_str(), command->characterID[1], command->characterName[1].c_str(),
-                    command->command.c_str());
-                delete command;
-            }
-            ACE_Based::Thread::Sleep(1000);
-        }
-    }
-};
-
-class GmChatLogToDBRunnable : public ACE_Based::Runnable
+Master::~Master()
 {
-public:
-
-    void run ()
-    {
-        while (!World::IsStopped())
-        {
-            GmChat * ChatLog;
-            while(!GmChatLogQueue.empty())
-            {
-                GmChatLogQueue.next(ChatLog);
-                CharacterDatabase.EscapeString(ChatLog->accountName[0]);
-                CharacterDatabase.EscapeString(ChatLog->accountName[1]);
-                CharacterDatabase.EscapeString(ChatLog->characterName[0]);
-                CharacterDatabase.EscapeString(ChatLog->characterName[1]);
-                CharacterDatabase.EscapeString(ChatLog->message);
-                //No sql injections. Strings are escaped.
-
-                //au cas ou on a pas les infos...
-                if (ChatLog->accountName[0] == "" && ChatLog->accountID[0] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", ChatLog->accountID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->accountName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->accountName[0]);
-                    }
-                }
-
-                if (ChatLog->accountName[1] == "" && ChatLog->accountID[1] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", ChatLog->accountID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->accountName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->accountName[1]);
-                    }
-                }
-
-                if (ChatLog->characterName[0] == "" && ChatLog->characterID[0] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", ChatLog->characterID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->characterName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->characterName[0]);
-                    }
-                }
-
-                if (ChatLog->characterName[1] == "" && ChatLog->characterID[1] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", ChatLog->characterID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->characterName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->characterName[1]);
-                    }
-                }
-
-                CharacterDatabase.PExecute( "INSERT INTO log_gm_chat(`type`, `date`, "
-                    "`from_account_id`, `from_account_name`, `from_character_id`, `from_character_name`,"
-                    "`to_account_id`, `to_account_name`, `to_character_id`, `to_character_name`,"
-                    "`message`)"
-                    "VALUES(%u, NOW(),"
-                    "%u,'%s',%u,'%s',"
-                    "%u,'%s',%u,'%s',"
-                    "'%s')",
-                    ChatLog->type,
-                    ChatLog->accountID[0], ChatLog->accountName[0].c_str(), ChatLog->characterID[0], ChatLog->characterName[0].c_str(),
-                    ChatLog->accountID[1], ChatLog->accountName[1].c_str(), ChatLog->characterID[1], ChatLog->characterName[1].c_str(),
-                    ChatLog->message.c_str());
-                delete ChatLog;
-            }
-            ACE_Based::Thread::Sleep(1000);
-        }
-    }
-};
-
-class ArenaLogToDBRunnable : public ACE_Based::Runnable
-{
-public:
-    void run()
-    {
-        while (!World::IsStopped())
-        {
-            /*ArenaLog * log;
-            while(!ArenaLogQueue.empty())
-            {
-                ArenaLogQueue.next(log);
-                CharacterDatabase.EscapeString(log->str);
-                //No sql injections. Strings are escaped.
-
-                CharacterDatabase.PExecute("INSERT INTO log_arena (`id`, `timestamp`, `string`) VALUES (0, %u, '%s');", log->timestamp, log->str.c_str());
-                delete log;
-            }*/
-            ACE_Based::Thread::Sleep(1000);
-        }
-    }
-};
-
-#endif /* not CROSS */
-const char* dumpTables[32] =
-{
-    "characters",
-    "character_account_data",
-    "character_achievement",
-    "character_achievement_progress",
-    "character_action",
-    "character_aura",
-    "character_aura_effect",
-    "character_currency",
-    //{ "character_cuf_profiles",
-    "character_declinedname",
-    "character_equipmentsets",
-    "character_gifts",
-    "character_glyphs",
-    "character_homebind",
-    "character_inventory",
-    "character_pet",
-    "character_pet_declinedname",
-    "character_queststatus",
-    "character_queststatus_rewarded",
-    "character_rates",
-    "character_reputation",
-    "character_skills",
-    "character_spell",
-    "character_spell_cooldown",
-    "character_talent",
-    "character_void_storage",
-    "item_instance",
-    "mail",
-    "mail_items",
-    "pet_aura",
-    "pet_aura_effect",
-    "pet_spell",
-    "pet_spell_cooldown"
-};
+}
 
 /// Main function
 int Master::Run()
@@ -484,10 +214,9 @@ int Master::Run()
     #endif /* _WIN32 */
 
     ///- Launch WorldRunnable thread
-    ACE_Based::Thread worldThread(new WorldRunnable, "WorldRunnable");
-    worldThread.setPriority(ACE_Based::Highest);
+    std::thread worldThread(WorldThread);
 
-    ACE_Based::Thread* cliThread = NULL;
+    std::thread* cliThread = NULL;
 
 #ifdef _WIN32
     if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
@@ -496,15 +225,12 @@ int Master::Run()
 #endif
     {
         ///- Launch CliRunnable thread
-        cliThread = new ACE_Based::Thread(new CliRunnable, "CliRunnable");
+        cliThread = new std::thread(CliThread);
     }
 
-    ACE_Based::Thread rarThread(new RARunnable, "RARunnable");
-#ifndef CROSS
-    ACE_Based::Thread gmLogToDB_thread(new GmLogToDBRunnable, "GmLogToDBRunnable");
-    ACE_Based::Thread gmChatLogToDB_thread(new GmChatLogToDBRunnable, "GmChatLogToDBRunnable");
-    ACE_Based::Thread arenaLogToDB_thread(new ArenaLogToDBRunnable, "ArenaLogToDBRunnable");
-#endif /* not CROSS */
+    std::thread rarThread(RemoteAccessThread);
+
+#if defined(_WIN32) || defined(__linux__)
 
     ///- Handle affinity for multiple processors and process priority
     uint32 affinity = sConfigMgr->GetIntDefault("UseProcessors", 0);
@@ -572,23 +298,19 @@ int Master::Run()
 #endif
 
     //Start soap serving thread
-    ACE_Based::Thread* soapThread = NULL;
+    std::thread* soapThread = nullptr;
 
     if (sConfigMgr->GetBoolDefault("SOAP.Enabled", false))
     {
-        TCSoapRunnable* runnable = new TCSoapRunnable();
-        runnable->SetListenArguments(sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
-        soapThread = new ACE_Based::Thread(runnable, "SoapRunnable");
+        soapThread = new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
     }
+
+    std::thread* freezeDetectorThread = nullptr;
 
     ///- Start up freeze catcher thread
     if (uint32 freezeDelay = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
     {
-        FreezeDetectorRunnable* fdr = nullptr;
-        fdr = new FreezeDetectorRunnable();
-        fdr->SetDelayTime(freezeDelay * 1000);
-        ACE_Based::Thread freezeThread(fdr, "FreezeDetector");
-        freezeThread.setPriority(ACE_Based::Highest);
+        freezeDetectorThread = new std::thread(FreezeDetectorThread, freezeDelay, pid);
     }
 
 #ifndef CROSS
@@ -628,13 +350,12 @@ int Master::Run()
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
-    worldThread.wait();
-    rarThread.wait();
+    worldThread.join();
+    //rarThread.join();
 
     if (soapThread)
     {
-        soapThread->wait();
-        soapThread->destroy();
+        soapThread->join();
         delete soapThread;
     }
 
@@ -648,7 +369,7 @@ int Master::Run()
 
     TC_LOG_INFO("server.worldserver", "Halting process...");
 
-    if (cliThread)
+    if (cliThread != nullptr)
     {
         #ifdef _WIN32
 
@@ -687,16 +408,14 @@ int Master::Run()
         DWORD numb;
         WriteConsoleInput(hStdIn, b, 4, &numb);
 
-        cliThread->wait();
-
-        #else
-
-        cliThread->destroy();
+        cliThread->join();
 
         #endif
 
         delete cliThread;
     }
+
+    delete freezeDetectorThread;
 
     // for some unknown reason, unloading scripts here and not in worldrunnable
     // fixes a memory leak related to detaching threads from the module

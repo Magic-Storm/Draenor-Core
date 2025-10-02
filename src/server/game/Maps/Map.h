@@ -522,7 +522,8 @@ class Map : public GridRefManager<NGridType>
                 l_Grid->setUnloadReferenceLock(on);
         }
 
-        ACE_Thread_Mutex Lock;
+        std::mutex _mapLock;
+        std::mutex _gridLock;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;

@@ -94,17 +94,15 @@ public:
     //! Cancels the queue.
     void cancel()
     {
-        lock();
+        std::lock_guard<std::mutex> lock(_lock);
 
         _canceled = true;
-
-        unlock();
     }
 
     //! Checks if the queue is cancelled.
     bool cancelled()
     {
-        ACE_Guard<LockType> g(this->_lock);
+        std::lock_guard<std::mutex> lock(_lock);
         return _canceled;
     }
 

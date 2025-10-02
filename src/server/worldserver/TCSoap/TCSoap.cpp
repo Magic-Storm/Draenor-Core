@@ -20,7 +20,7 @@
 #include "soapH.h"
 #include "soapStub.h"
 
-void TCSoapRunnable::run()
+void TCSoapThread(const std::string& host, uint16 port)
 {
     struct soap soap;
     soap_init(&soap);
@@ -31,13 +31,13 @@ void TCSoapRunnable::run()
     soap.accept_timeout = 3;
     soap.recv_timeout = 5;
     soap.send_timeout = 5;
-    if (!soap_valid_socket(soap_bind(&soap, _host.c_str(), _port, 100)))
+    if (!soap_valid_socket(soap_bind(&soap, host.c_str(), port, 100)))
     {
-        TC_LOG_ERROR("server.worldserver", "TCSoap: couldn't bind to %s:%d", _host.c_str(), _port);
+        TC_LOG_ERROR("network.soap", "Couldn't bind to %s:%d", host.c_str(), port);
         exit(-1);
     }
 
-    TC_LOG_INFO("server.worldserver", "TCSoap: bound to http://%s:%d", _host.c_str(), _port);
+    TC_LOG_INFO("server.worldserver", "Bound to http://%s:%d", host.c_str(), port);
 
     while (!World::IsStopped())
     {
@@ -55,7 +55,7 @@ void TCSoapRunnable::run()
     soap_done(&soap);
 }
 
-void TCSoapRunnable::process_message(ACE_Message_Block* mb)
+void process_message(ACE_Message_Block* mb)
 {
     ACE_TRACE (ACE_TEXT ("SOAPWorkingThread::process_message"));
 

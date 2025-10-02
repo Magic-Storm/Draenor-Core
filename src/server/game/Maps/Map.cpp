@@ -2215,7 +2215,7 @@ bool InstanceMap::CanEnter(Player* player)
 bool InstanceMap::AddPlayerToMap(Player* player, bool p_Switched /*= false*/)
 {
     {
-        TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+        std::lock_guard<std::mutex> lock(_mapLock);
 
         // Dungeon only code
         if (IsDungeon())
@@ -2726,7 +2726,7 @@ bool BattlegroundMap::CanEnter(Player* player)
 bool BattlegroundMap::AddPlayerToMap(Player* player, bool /*p_Switched*/ /*= false*/)
 {
     {
-        TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+        std::lock_guard<std::mutex> lock(_mapLock);
         //Check moved to void WorldSession::HandleMoveWorldportAckOpcode()
         //if (!CanEnter(player))
             //return false;

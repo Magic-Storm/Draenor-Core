@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <mutex>
 #include "VMapManager2.h"
 #include "MapTree.h"
 #include "ModelInstance.h"
