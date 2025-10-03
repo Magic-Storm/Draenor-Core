@@ -18,6 +18,8 @@
 
 #include "ByteBuffer.h"
 #include "Common.h"
+
+#define LOG_FILTER_NETWORKIO "network"
 #include "Log.h"
 
 #include <sstream>

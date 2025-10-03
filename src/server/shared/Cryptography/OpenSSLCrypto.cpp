@@ -17,9 +17,9 @@
 
 #include <OpenSSLCrypto.h>
 #include <openssl/crypto.h>
-#include <ace/Thread_Mutex.h>
+#include <mutex>
 #include <vector>
-#include <ace/Thread.h>
+#include <thread>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/provider.h>
 OSSL_PROVIDER* LegacyProvider;

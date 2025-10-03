@@ -9,14 +9,15 @@
 #ifndef _IRSOCKET_H
 #define _IRSOCKET_H
 
-#include <ace/Basic_Types.h>
-#include <ace/Synch_Traits.h>
-#include <ace/Svc_Handler.h>
-#include <ace/SOCK_Stream.h>
-#include <ace/Thread_Mutex.h>
-#include <ace/Guard_T.h>
-#include <ace/Unbounded_Queue.h>
-#include <ace/Message_Block.h>
+// ACE dependencies temporarily disabled
+// #include <ace/Basic_Types.h>
+// #include <ace/Synch_Traits.h>
+// #include <ace/Svc_Handler.h>
+// #include <ace/SOCK_Stream.h>
+// #include <ace/Thread_Mutex.h>
+// #include <ace/Guard_T.h>
+// #include <ace/Unbounded_Queue.h>
+// #include <ace/Message_Block.h>
 
 #if !defined (ACE_LACKS_PRAGMA_ONCE)
 #pragma once
@@ -38,10 +39,10 @@ class InterRealmClient;
 struct z_stream_s;
 #endif
 
-/// Handler that can communicate over stream sockets.
-typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> IRHandler;
+// ACE functionality temporarily disabled
+// typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> IRHandler;
 
-class IRSocket : public IRHandler
+class IRSocket
 {
     public:
         IRSocket (void);

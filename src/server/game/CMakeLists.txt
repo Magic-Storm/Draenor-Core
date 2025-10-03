@@ -247,7 +247,6 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/SharedPtrs
   ${CMAKE_CURRENT_SOURCE_DIR}/Vignette
   ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
-  ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
   ${MSFRAMEWORK_INCLUDE_DIR}

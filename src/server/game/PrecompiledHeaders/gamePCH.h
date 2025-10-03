@@ -1,7 +1,7 @@
 //add here most rarely modified headers to speed up debug build compilation
 
 #include "Common.h"
-#include "WorldSocket.h"
+#include "WorldTcpSession.h"
 #include "MapManager.h"
 #include "Log.h"
 #include "ObjectAccessor.h"

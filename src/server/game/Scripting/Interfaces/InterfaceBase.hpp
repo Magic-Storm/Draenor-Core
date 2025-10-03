@@ -11,7 +11,7 @@
 #define SCRIPTING_INTERFACES_INTERFACEBASE_HPP_INCLUDED
 
 #include "Common.h"
-#include <ace/Atomic_Op.h>
+#include <atomic>
 
 #include "Player.h"
 #include "SharedDefines.h"
