@@ -156,6 +156,14 @@ WorldServerPort = 8085
 BindIP = "0.0.0.0"
 
 #
+#    ThreadPool
+#        Description: Number of threads to be used for the global thread pool 
+#                     The thread pool is currently used for the signal handler and remote access
+#        Default:     1
+
+ThreadPool = 1
+
+#
 ###################################################################################################
 
 ###################################################################################################
@@ -173,9 +181,10 @@ UseProcessors = 0
 #
 #    ProcessPriority
 #        Description: Process priority setting for Windows and Linux based systems.
-#        Details:     On Linux, a nice value of -15 is used. On Windows, process is set to HIGH class.
-#        Default:     1 - (High)
-#                     0 - (Normal)
+#        Details:     On Linux, a nice value of -15 is used. (requires superuser). 
+#                     On Windows, process is set to HIGH class.
+#        Default:     0 - (Normal)
+#                     1 - (High)
 
 ProcessPriority = 1
 
@@ -2840,8 +2849,10 @@ PlayerDump.DisallowOverwrite = 1
 #                         1 - Prefix Timestamp to the text
 #                         2 - Prefix Log Level to the text
 #                         4 - Prefix Log Filter type to the text
-#                         8 - Append timestamp to the log file name. Format: YYYY-MM-DD_HH-MM-SS (Only used with Type = 2)
-#                        16 - Make a backup of existing file before overwrite (Only used with Mode = w)
+#                         8 - Append timestamp to the log file name. Format: YYYY-MM-DD_HH-MM-SS 
+#                             (Only used with Type = 2)
+#                        16 - Make a backup of existing file before overwrite 
+#                             (Only used with Mode = w)
 #
 #                     Colors (read as optional1 if Type = Console)
 #                         Format: "fatal error warn info debug trace"
