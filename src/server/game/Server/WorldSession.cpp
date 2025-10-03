@@ -1641,7 +1641,7 @@ void WorldSession::ProcessQueryCallbacks()
     l_Times.push_back(getMSTime() - l_StartTime);
 
     //! HandleCharEnumOpcode
-    if (_charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    if (_charEnumCallback.valid() && _charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
         result = _charEnumCallback.get();
         HandleCharEnum(result);
@@ -1691,7 +1691,7 @@ void WorldSession::ProcessQueryCallbacks()
 #endif
 
     //! HandlePlayerLoginOpcode
-    if (_charLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    if (_charLoginCallback.valid() && _charLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
         SQLQueryHolder* param = _charLoginCallback.get();
         HandlePlayerLogin((LoginQueryHolder*)param);

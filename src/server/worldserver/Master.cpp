@@ -19,7 +19,7 @@
 #include <thread>
 
 
-#include "Common.h"
+#include "Master.h"
 #include "GitRevision.h"
 #include "SignalHandler.h"
 #include "World.h"
@@ -48,13 +48,13 @@
 #include "CliRunnable.h"
 #include "Log.h"
 #include "Master.h"
-#include "RARunnable.h"
 #include "TCSoap.h"
 #include "Timer.h"
 #include "Util.h"
 
 #include "OpenSSLCrypto.h"
 #include "BigNumber.h"
+#include "AsyncAcceptor.h"
 
 #ifdef CROSS
 #include "Cross/IRSocketMgr.h"
@@ -229,7 +229,10 @@ int Master::Run()
         cliThread = new std::thread(CliThread);
     }
 
-    std::thread rarThread(RemoteAccessThread);
+    AsyncAcceptor<RASession>* raAcceptor = nullptr;
+
+    if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
+        raAcceptor = StartRaSocketAcceptor(_ioService);
 
     ///- Handle affinity for multiple processors and process priority
     uint32 affinity = sConfigMgr->GetIntDefault("UseProcessors", 0);
@@ -354,13 +357,15 @@ int Master::Run()
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
     worldThread.join();
-    //rarThread.join();
 
     if (soapThread)
     {
         soapThread->join();
         delete soapThread;
     }
+
+    if (raAcceptor != nullptr)
+        delete raAcceptor;
 
     // set server offline
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, g_RealmID);
@@ -676,4 +681,12 @@ void Master::ExecutePendingRequests()
     }
     else
         TC_LOG_INFO("server.worldserver", "Unable to open " PENDING_SQL_FILENAME ", ignoring.");
+}
+
+AsyncAcceptor<RASession>* Master::StartRaSocketAcceptor(boost::asio::io_service& ioService)
+{
+    uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
+    std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
+
+    return new AsyncAcceptor<RASession>(ioService, raListener, raPort);
 }

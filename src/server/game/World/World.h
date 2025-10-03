@@ -712,7 +712,7 @@ struct MotdText
 class World
 {
     public:
-        static std::atomic<uint32> m_worldLoopCounter;
+        static std::atomic_uint32_t m_worldLoopCounter;
 
         World();
         ~World();

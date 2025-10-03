@@ -38,7 +38,7 @@ class MapUpdater
 {
     public:
 
-        MapUpdater() : _cancelationToken(false), pending_requests(0) {}
+        MapUpdater() : pending_requests(0), _cancelationToken(false) {}
         ~MapUpdater() { };
 
         friend class MapUpdaterTask;

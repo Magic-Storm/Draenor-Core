@@ -519,21 +519,20 @@ std::string MySQLPreparedStatement::getQueryString(const char *query)
 }
 
 //- Execution
-PreparedStatementTask::PreparedStatementTask(PreparedStatement* stmt) :
-m_stmt(stmt),
-m_has_result(false)
-{
+PreparedStatementTask::PreparedStatementTask(PreparedStatement* stmt, bool async) :
+m_stmt(stmt)
+{ 
+    m_has_result = async; // If it's async, then there's a result
+    if (async)
+        m_result = new PreparedQueryResultPromise();
 }
-
-PreparedStatementTask::PreparedStatementTask(PreparedStatement* stmt, PreparedQueryResultPromise& result) :
-m_stmt(stmt),
-m_has_result(true),
-m_result(std::move(result)) { }
 
 
 PreparedStatementTask::~PreparedStatementTask()
 {
     delete m_stmt;
+    if (m_has_result && m_result != nullptr)
+        delete m_result;
 }
 
 bool PreparedStatementTask::Execute()
@@ -544,10 +543,10 @@ bool PreparedStatementTask::Execute()
         if (!result || !result->GetRowCount())
         {
             delete result;
-            m_result.set_value(PreparedQueryResult(NULL));
+            m_result->set_value(PreparedQueryResult(NULL));
             return false;
         }
-        m_result.set_value(PreparedQueryResult(result));
+        m_result->set_value(PreparedQueryResult(result));
         return true;
     }
 

@@ -28,8 +28,6 @@
 #include <openssl/crypto.h>
 #include <iostream>
 #include <cstdlib>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "Common.h"
@@ -39,7 +37,8 @@
 #include "SystemConfig.h"
 #include "Util.h"
 #include "RealmList.h"
-#include "AuthServer.h"
+#include "AsyncAcceptor.h"
+#include "AuthSession.h"
 
 
 #ifndef _TRINITY_REALM_CONFIG
@@ -165,7 +164,7 @@ int main(int argc, char** argv)
 
     std::string bindIp = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
-    AuthServer authServer(_ioService, bindIp, port);
+    AsyncAcceptor<AuthSession> authServer(_ioService, bindIp, port);
 
     // Set signal handlers
     boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);

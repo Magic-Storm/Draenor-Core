@@ -47,27 +47,21 @@ void TCSoapThread(const std::string& host, uint16 port)
         TC_LOG_DEBUG("network", "TCSoap: accepted connection from IP=%d.%d.%d.%d", (int)(soap.ip>>24)&0xFF, (int)(soap.ip>>16)&0xFF, (int)(soap.ip>>8)&0xFF, (int)soap.ip&0xFF);
         struct soap* thread_soap = soap_copy(&soap);// make a safe copy
 
-        ACE_Message_Block* mb = new ACE_Message_Block(sizeof(struct soap*));
-        ACE_OS::memcpy(mb->wr_ptr(), &thread_soap, sizeof(struct soap*));
-        process_message(mb);
+        process_message(thread_soap);
     }
 
     soap_done(&soap);
 }
 
-void process_message(ACE_Message_Block* mb)
+void process_message(struct soap* soap_message)
 {
-    ACE_TRACE (ACE_TEXT ("SOAPWorkingThread::process_message"));
+    TC_LOG_TRACE("network.soap", "SOAPWorkingThread::process_message");
 
-    struct soap* soap;
-    ACE_OS::memcpy(&soap, mb->rd_ptr (), sizeof(struct soap*));
-    mb->release();
-
-    soap_serve(soap);
-    soap_destroy(soap); // dealloc C++ data
-    soap_end(soap); // dealloc data and clean up
-    soap_done(soap); // detach soap struct
-    free(soap);
+    soap_serve(soap_message);
+    soap_destroy(soap_message); // dealloc C++ data
+    soap_end(soap_message); // dealloc data and clean up
+    soap_done(soap_message); // detach soap struct
+    free(soap_message);
 }
 /*
 Code used for generating stubs:
@@ -110,18 +104,15 @@ int ns1__executeCommand(soap* soap, char* command, char** result)
 
     // commands are executed in the world thread. We have to wait for them to be completed
     {
-        // CliCommandHolder will be deleted from world, accessing after queueing is NOT save
+        // CliCommandHolder will be deleted from world, accessing after queueing is NOT safe
         CliCommandHolder* cmd = new CliCommandHolder(&connection, command, &SOAPCommand::print, &SOAPCommand::commandFinished);
         sWorld->QueueCliCommand(cmd);
     }
 
-    // wait for callback to complete command
+    // Wait until the command has finished executing
+    connection.finishedPromise.get_future().wait();
 
-    int acc = connection.pendingCommands.acquire();
-    if (acc)
-        TC_LOG_ERROR("server.worldserver", "TCSoap: Error while acquiring lock, acc = %i, errno = %u", acc, errno);
-
-    // alright, command finished
+    // The command has finished executing already
 
     char* printBuffer = soap_strdup(soap, connection.m_printBuffer.c_str());
     if (connection.hasCommandSucceeded())
@@ -137,7 +128,6 @@ void SOAPCommand::commandFinished(void* soapconnection, bool success)
 {
     SOAPCommand* con = (SOAPCommand*)soapconnection;
     con->setCommandSuccess(success);
-    con->pendingCommands.release();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

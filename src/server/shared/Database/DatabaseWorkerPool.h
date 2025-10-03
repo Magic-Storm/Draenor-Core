@@ -37,7 +37,7 @@ class DatabaseWorkerPool
 {
     public:
         /* Activity state */
-        DatabaseWorkerPool() : _connectionInfo(NULL)
+        DatabaseWorkerPool()
         {
             _messageQueue = new ACE_Message_Queue<ACE_SYNCH>(8 * 1024 * 1024, 8 * 1024 * 1024);
             _queue = new ProducerConsumerQueue<SQLOperation*>();
@@ -328,10 +328,9 @@ class DatabaseWorkerPool
         //! The return value is then processed in ProcessQueryCallback methods.
         QueryResultFuture AsyncQuery(const char* sql)
         {
-            QueryResultPromise res;
-            BasicStatementTask* task = new BasicStatementTask(sql, res);
+            BasicStatementTask* task = new BasicStatementTask(sql, true);
             Enqueue(task);
-            return res.get_future();         //! Actual return value has no use yet
+            return task->GetFuture();         //! Actual return value has no use yet
         }
 
         //! Enqueues a query in string format -with variable args- that will set the value of the QueryResultFuture return object as soon as the query is executed.
@@ -360,10 +359,9 @@ class DatabaseWorkerPool
                 return PreparedQueryResultFuture();
             }
 
-            PreparedQueryResultPromise res;
-            PreparedStatementTask* task = new PreparedStatementTask(stmt, res);
+            PreparedStatementTask* task = new PreparedStatementTask(stmt, true);
             Enqueue(task);
-            return res.get_future();
+            return task->GetFuture();
         }
 
         //! Enqueues a vector of SQL operations (can be both adhoc and prepared) that will set the value of the QueryResultHolderFuture
@@ -372,10 +370,9 @@ class DatabaseWorkerPool
         //! Any prepared statements added to this holder need to be prepared with the CONNECTION_ASYNC flag.
         QueryResultHolderFuture DelayQueryHolder(SQLQueryHolder* holder)
         {
-            QueryResultHolderPromise res;
-            SQLQueryHolderTask* task = new SQLQueryHolderTask(holder, res);
+            SQLQueryHolderTask* task = new SQLQueryHolderTask(holder);
             Enqueue(task);
-            return res.get_future();     //! Fool compiler, has no use yet
+            return task->GetFuture();
         }
 
         /**
@@ -576,7 +573,7 @@ class DatabaseWorkerPool
         ProducerConsumerQueue<SQLOperation*>*_queue;             //! Queue shared by async worker threads.
         std::vector< std::vector<T*> >        _connections;
         uint32                                _connectionCount[2];       //! Counter of MySQL connections;
-        MySQLConnectionInfo * _connectionInfo;
+        MySQLConnectionInfo _connectionInfo;
 };
 
 #endif

@@ -9,6 +9,7 @@
 #ifndef SC_SCRIPTMGR_H
 # define SC_SCRIPTMGR_H
 
+#include <atomic>
 #include "Common.h"
 #include "DBCStores.h"
 #include "Interfaces/Interfaces.hpp"
@@ -1029,8 +1030,8 @@ class ScriptMgr
     private:
         /// Registered script count
         uint32 m_ScriptCount;
-        /// Atomic op counter for active scripts amount
-        std::atomic<long> m_ScheduledScripts;
+        //atomic op counter for active scripts amount
+        std::atomic_long _scheduledScripts;
         /// Player condition scripts
         MS::Utilities::MutextedMap<uint32, PlayerConditionScript*> m_PlayerConditionScripts;
 #ifndef CROSS

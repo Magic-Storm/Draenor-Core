@@ -13,7 +13,12 @@
 #ifndef _MASTER_H
 #define _MASTER_H
 
+#include <boost/asio/io_service.hpp>
 #include "Common.h"
+#include "RASession.h"
+
+template<typename T>
+class AsyncAcceptor;
 
 /// Start the server
 class Master
@@ -36,6 +41,7 @@ class Master
         void _StopDB();
 
         void ClearOnlineAccounts();
+        AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_service& ioService);
         void ExecutePendingRequests();
 };
 

@@ -250,9 +250,9 @@ template<class TScript> class ScriptRegistry
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 /// Constructor
-ScriptMgr::ScriptMgr() : m_ScriptCount(0), m_ScheduledScripts(0)
+ScriptMgr::ScriptMgr() : m_ScriptCount(0)
 {
-
+    _scheduledScripts = 0;
 }
 
 /// Destructor

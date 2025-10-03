@@ -16,13 +16,15 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __AUTHSESSION_H__
-#define __AUTHSESSION_H__
+#ifndef __RASESSION_H__
+#define __RASESSION_H__
 
 #include <memory>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/streambuf.hpp>
 #include "Common.h"
-#include "BigNumber.h"
+
+#include <future>
 
 using boost::asio::ip::tcp;
 
@@ -30,55 +32,32 @@ const size_t bufferSize = 4096;
 
 #define BUFFER_SIZE 4096
 
-class AuthSession : public std::enable_shared_from_this < AuthSession >
+class RASession : public std::enable_shared_from_this <RASession>
 {
 public:
-    AuthSession(tcp::socket socket) : _socket(std::move(socket))
+    RASession(tcp::socket socket) : _socket(std::move(socket)), _commandExecuting(nullptr)
     {
-        N.SetHexStr("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
-        g.SetDword(7);
     }
 
-    void Start()
-    {
-        AsyncReadHeader();
-    }
-
-    bool _HandleLogonChallenge();
-    bool _HandleLogonProof();
-    bool _HandleReconnectChallenge();
-    bool _HandleReconnectProof();
-    bool _HandleRealmList();
+    void Start();
 
     const std::string GetRemoteIpAddress() const { return _socket.remote_endpoint().address().to_string(); };
     unsigned short GetRemotePort() const { return _socket.remote_endpoint().port(); }
 
 private:
-    void AsyncReadHeader();
-    void AsyncReadData(bool (AuthSession::*handler)(), size_t dataSize, size_t bufferOffset);
-    void AsyncWrite(size_t length);
+    int Send(const char* data);
+    std::string ReadString();
+    bool CheckAccessLevel(const std::string& user);
+    bool CheckPassword(const std::string& user, const std::string& pass);
+    bool ProcessCommand(std::string& command);
 
-
-    void SetVSFields(const std::string& rI);
-
-    BigNumber N, s, g, v;
-    BigNumber b, B;
-    BigNumber K;
-    BigNumber _reconnectProof;
+    static void CommandPrint(void* callbackArg, const char* text);
+    static void CommandFinished(void* callbackArg, bool success);
 
     tcp::socket _socket;
-    char _readBuffer[BUFFER_SIZE];
-    char _writeBuffer[BUFFER_SIZE];
-
-    bool _isAuthenticated;
-    std::string _tokenKey;
-    std::string _login;
-    std::string _localizationName;
-    std::string _os;
-    uint16 _build;
-    uint8 _expversion;
-
-    AccountTypes _accountSecurityLevel;
+    boost::asio::streambuf _readBuffer;
+    boost::asio::streambuf _writeBuffer;
+    std::promise<void>* _commandExecuting;
 };
 
 #endif
