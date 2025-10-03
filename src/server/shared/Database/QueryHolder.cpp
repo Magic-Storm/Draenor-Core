@@ -189,6 +189,6 @@ bool SQLQueryHolderTask::Execute()
         }
     }
 
-    m_result.set(m_holder);
+    m_result.set_value(m_holder);
     return true;
 }

@@ -1196,7 +1196,7 @@ class World
 
 
         void ProcessQueryCallbacks();
-        std::vector<std::future<PreparedQueryResult>> m_realmCharCallbacks;
+        std::deque<std::future<PreparedQueryResult>> m_realmCharCallbacks;
         PreparedQueryResultFuture m_transfersDumpCallbacks;
         PreparedQueryResultFuture m_transfersLoadCallbacks;
         PreparedQueryResultFuture m_transfersExpLoadCallback;

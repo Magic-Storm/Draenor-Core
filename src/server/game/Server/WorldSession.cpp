@@ -1641,11 +1641,10 @@ void WorldSession::ProcessQueryCallbacks()
     l_Times.push_back(getMSTime() - l_StartTime);
 
     //! HandleCharEnumOpcode
-    if (m_CharEnumCallback.ready())
+    if (_charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
-        m_CharEnumCallback.get(result);
+        result = _charEnumCallback.get();
         HandleCharEnum(result);
-        m_CharEnumCallback.cancel();
     }
 
     l_Times.push_back(getMSTime() - l_StartTime);
@@ -1654,7 +1653,6 @@ void WorldSession::ProcessQueryCallbacks()
     {
         _charCreateCallback.GetResult(result);
         HandleCharCreateCallback(result, _charCreateCallback.GetParam());
-        // Don't call FreeResult() here, the callback handler will do that depending on the events in the callback chain
     }
 
     l_Times.push_back(getMSTime() - l_StartTime);
@@ -1693,19 +1691,10 @@ void WorldSession::ProcessQueryCallbacks()
 #endif
 
     //! HandlePlayerLoginOpcode
-    if (m_CharacterLoginCallback.ready() && m_CharacterLoginDBCallback.ready())
+    if (_charLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
-        SQLQueryHolder* l_Param;
-        SQLQueryHolder* l_Param2;
-        m_CharacterLoginCallback.get(l_Param);
-        m_CharacterLoginDBCallback.get(l_Param2);
-#ifndef CROSS
-        HandlePlayerLogin((LoginQueryHolder*)l_Param, (LoginDBQueryHolder*)l_Param2);
-#else /* CROSS */
-        LoadCharacterDone((LoginQueryHolder*)l_Param, (LoginDBQueryHolder*)l_Param2);
-#endif
-        m_CharacterLoginCallback.cancel();
-        m_CharacterLoginDBCallback.cancel();
+        SQLQueryHolder* param = _charLoginCallback.get();
+        HandlePlayerLogin((LoginQueryHolder*)param);
     }
 
     //- SendStabledPet
