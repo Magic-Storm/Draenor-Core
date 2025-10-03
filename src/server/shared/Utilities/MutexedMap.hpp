@@ -21,7 +21,7 @@ namespace MS { namespace Utilities
             using KeyType       = Left;
             using ElementType   = Right;
             using MapType       = std::map<Left, ElementType>;
-            using LockType      = ACE_RW_Thread_Mutex;
+            using LockType      = std::shared_mutex;
 
         public:
             /// Constructor

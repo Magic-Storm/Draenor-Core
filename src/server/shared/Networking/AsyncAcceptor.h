@@ -26,7 +26,7 @@ template <class T>
 class AsyncAcceptor
 {
 public:
-    AsyncAcceptor(boost::asio::io_service& ioService, std::string bindIp, int port) : 
+    AsyncAcceptor(boost::asio::io_context& ioService, std::string bindIp, int port) : 
         _socket(ioService), 
         _acceptor(ioService, tcp::endpoint(boost::asio::ip::address::from_string(bindIp), port))
     {

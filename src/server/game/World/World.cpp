@@ -4657,3 +4657,11 @@ void World::SendRaidQueueInfo(Player* player)
                 sendInfo(plr);
     }
 }
+
+// Global World instance
+World* sWorldInstance = nullptr;
+
+World* World::instance()
+{
+    return sWorldInstance;
+}

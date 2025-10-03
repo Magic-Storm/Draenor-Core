@@ -31,7 +31,7 @@
 #include "ConditionMgr.h"
 #include <functional>
 #include "PhaseMgr.h"
-#include <ace/Thread_Mutex.h>
+#include <mutex>
 #include <unordered_set>
 
 class Item;

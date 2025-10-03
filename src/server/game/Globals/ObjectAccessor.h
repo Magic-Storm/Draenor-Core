@@ -12,8 +12,9 @@
 #include <mutex>
 #include <set>
 #include <unordered_map>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
+// #include <boost/thread/locks.hpp>  // Temporarily disabled
+// #include <boost/thread/shared_mutex.hpp>  // Temporarily disabled
+#include <shared_mutex>
 
 #include "Common.h"
 #include "Define.h"
@@ -63,14 +64,14 @@ class HashMapHolder
 
         static MapType& GetContainer() { return _objectMap; }
 
-        static boost::shared_mutex* GetLock() { return &_lock; }
+        static std::shared_mutex* GetLock() { return &_lock; }
 
     private:
 
         //Non instanceable only static
         HashMapHolder() {}
 
-        static boost::shared_mutex _lock;
+        static std::shared_mutex _lock;
         static MapType _objectMap;
 };
 
@@ -324,7 +325,7 @@ class ObjectAccessor
         Player2CorpsesMapType i_player2corpse;
 
         std::mutex _objectLock;
-        boost::shared_mutex _corpseLock;
+        std::shared_mutex _corpseLock;
 
         static uint32 k_PlayerCacheMaxGuid;
         static Player** m_PlayersCache;

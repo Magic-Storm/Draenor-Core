@@ -202,9 +202,7 @@ class DatabaseWorkerPool
         {
             if (stmt->getIndex() == 0)
             {
-                ACE_Stack_Trace l_Stack;
                 TC_LOG_ERROR("server.worldserver", "DatabaseWorkerPool::DirectExecute: Statement index 0");
-                TC_LOG_ERROR("server.worldserver", l_Stack.c_str());
                 return;
             }
 
@@ -296,9 +294,7 @@ class DatabaseWorkerPool
         {
             if (stmt->getIndex() == 0)
             {
-                ACE_Stack_Trace l_Stack;
                 TC_LOG_ERROR("server.worldserver", "DatabaseWorkerPool::Query: Statement index 0");
-                TC_LOG_ERROR("server.worldserver", l_Stack.c_str());
                 return PreparedQueryResult(NULL);
             }
 

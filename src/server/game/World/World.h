@@ -688,7 +688,7 @@ struct QueryHolderCallback
 {
     QueryHolderCallback(QueryResultHolderFuture p_QueryResultHolderFuture, std::function<void(SQLQueryHolder*)> p_Callback)
     {
-        m_QueryResultHolderFuture = p_QueryResultHolderFuture;
+        m_QueryResultHolderFuture = std::move(p_QueryResultHolderFuture);
         m_Callback = p_Callback;
     }
 
@@ -1227,6 +1227,9 @@ class World
         std::unique_ptr<PreparedStatementCallbacks> m_PreparedStatementCallbacks;
         std::unique_ptr<PreparedStatementCallbacks> m_PreparedStatementCallbacksBuffer;
         std::mutex m_PreparedStatementCallbackLock;
+    public:
+        // Singleton instance
+        static World* instance();
 };
 
 extern uint32 g_RealmID;

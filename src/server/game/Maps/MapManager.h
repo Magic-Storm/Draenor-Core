@@ -139,9 +139,8 @@ class MapManager
 
         void AddCriticalOperation(std::function<bool()> const&& p_Function)
         {
-            m_CriticalOperationLock.acquire();
+            std::lock_guard<std::mutex> lock(m_CriticalOperationLock);
             m_CriticalOperation.push(std::function<bool()>(p_Function));
-            m_CriticalOperationLock.release();
         }
 
         void RegisterMapDelay(uint32 p_MapId, uint32 p_Delay)

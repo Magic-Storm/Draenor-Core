@@ -20,7 +20,7 @@
 #ifndef SF_LFGMGR_H
 #define SF_LFGMGR_H
 
-#include <ace/Singleton.h>
+// #include <ace/Singleton.h>  // Temporarily disabled
 #include "DBCStructure.h"
 #include "Field.h"
 #include "LFG.h"

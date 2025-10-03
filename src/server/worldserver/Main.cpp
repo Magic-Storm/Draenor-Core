@@ -59,11 +59,14 @@ int m_ServiceStatus = -1;
 extern "C" { FILE __iob_func[3]{ *stdin, *stdout,  *stderr };  }
 #endif
 
-boost::asio::io_service _ioService;
+boost::asio::io_context _ioService;
 WorldDatabaseWorkerPool WorldDatabase;                      ///< Accessor to the world database
 CharacterDatabaseWorkerPool CharacterDatabase;              ///< Accessor to the character database
 LoginDatabaseWorkerPool LoginDatabase;                      ///< Accessor to the realm/login database
 uint32 realmID;                                             ///< Id of the realm
+
+// Forward declaration
+extern World* sWorldInstance;
 
 void usage(const char* prog);
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
@@ -178,10 +181,13 @@ extern int main(int argc, char** argv)
         numThreads = 1;
 
     for (int i = 0; i < numThreads; ++i)
-        threadPool.push_back(std::thread(boost::bind(&boost::asio::io_service::run, &_ioService)));
+        threadPool.push_back(std::thread(boost::bind(&boost::asio::io_context::run, &_ioService)));
 
     // Set process priority according to configuration settings
     SetProcessPriority("server.worldserver");
+
+    // Create World instance
+    sWorldInstance = new World();
 
     // Start the databases
     if (!StartDB())
@@ -436,7 +442,7 @@ void FreezeDetectorThread(uint32 delayTime)
     TC_LOG_INFO("server.worldserver", "Anti-freeze thread exiting without problems.");
 }
 
-AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_service& ioService)
+AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_context& ioService)
 {
     uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");

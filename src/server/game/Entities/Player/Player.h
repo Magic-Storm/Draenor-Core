@@ -2582,7 +2582,7 @@ class Player : public Unit, public GridObject<Player>
             if (p_Value > 3500)
             {
                 // Stack trace removed - ACE dependency
-                TC_LOG_ERROR("server.worldserver", "Suspiciously high personal rating. Rating: %u, Slot: %u, Player: %u, Trace log: %s", p_Value, p_Slot, GUID_LOPART(GetGUID()), trace.c_str());
+                TC_LOG_ERROR("server.worldserver", "Suspiciously high personal rating. Rating: %u, Slot: %u, Player: %u", p_Value, p_Slot, GUID_LOPART(GetGUID()));
             }
 
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, p_Value, Arena::GetTypeBySlot(p_Slot));
@@ -2602,7 +2602,7 @@ class Player : public Unit, public GridObject<Player>
             if (value > 3500)
             {
                 // Stack trace removed - ACE dependency
-                TC_LOG_ERROR("server.worldserver", "Suspiciously high match maker rating. Rating: %u, Slot: %u, Player: %u, Trace log: %s", value, slot, GUID_LOPART(GetGUID()), trace.c_str());
+                TC_LOG_ERROR("server.worldserver", "Suspiciously high match maker rating. Rating: %u, Slot: %u, Player: %u", value, slot, GUID_LOPART(GetGUID()));
             }
 
             m_ArenaMatchMakerRating[slot] = value;
@@ -3747,9 +3747,8 @@ class Player : public Unit, public GridObject<Player>
 
         void AddCriticalOperation(std::function<bool()> const&& p_Function)
         {
-            m_CriticalOperationLock.acquire();
+            std::lock_guard<std::mutex> lock(m_CriticalOperationLock);
             m_CriticalOperation.push(std::function<bool()>(p_Function));
-            m_CriticalOperationLock.release();
         }
 
         static void HandleFactionChangeActions(char const* p_KnownTitle, uint64 p_PlayerGUID, uint8 p_Race, bool p_AtFactionChange);

@@ -54,7 +54,7 @@ void SignalHandler(const boost::system::error_code& error, int signalNumber);
 void KeepDatabaseAliveHandler(const boost::system::error_code& error);
 void usage(const char* prog);
 
-boost::asio::io_service _ioService;
+boost::asio::io_context _ioService;
 boost::asio::deadline_timer _dbPingTimer(_ioService);
 uint32 _dbPingInterval;
 LoginDatabaseWorkerPool LoginDatabase;
@@ -81,7 +81,8 @@ int main(int argc, char** argv)
         ++c;
     }
 
-    if (!sConfigMgr->LoadInitial(cfg_file))
+    std::string error;
+    if (!sConfigMgr->LoadInitial(cfg_file, error))
     {
         printf("Invalid or missing configuration file : %s", cfg_file);
         printf("Verify that the file exists and has \'[authserver]\' written in the top of the file!");
