@@ -11,7 +11,6 @@
 */
 
 #ifndef CROSS
-# include "WorldSocket.h"
 # include "GarrisonMgr.hpp"
 # include "InterRealmOpcodes.h"
 # include "Channel.h"
@@ -20,6 +19,7 @@
 #endif
 
 #include <zlib.h>
+#include "WorldTcpSession.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "Log.h"
@@ -99,7 +99,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 
 /// WorldSession constructor
 #ifndef CROSS
-WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, bool ispremium, uint8 premiumType, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, uint32 p_VoteRemainingTime, uint32 p_ServiceFlags, uint32 p_CustomFlags)
+WorldSession::WorldSession(uint32 id, WorldTcpSession* sock, AccountTypes sec, bool ispremium, uint8 premiumType, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, uint32 p_VoteRemainingTime, uint32 p_ServiceFlags, uint32 p_CustomFlags)
 #else /* CROSS */
 WorldSession::WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, bool ispremium, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, std::string p_ServerName)
 #endif /* CROSS */
@@ -195,8 +195,7 @@ WorldSession::WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, b
 
     if (sock)
     {
-        m_Address = sock->GetRemoteAddress();
-        sock->AddReference();
+        m_Address = sock->GetRemoteIpAddress();
         ResetTimeOutTime();
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());     // One-time query
     }

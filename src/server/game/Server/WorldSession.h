@@ -35,7 +35,7 @@ class SpellCastTargets;
 class Unit;
 class Warden;
 class WorldPacket;
-class WorldSocket;
+class WorldTcpSession;
 struct AreaTableEntry;
 struct AuctionEntry;
 struct DeclinedName;
@@ -405,7 +405,7 @@ class WorldSession
 {
     public:
 #ifndef CROSS
-        WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, bool ispremium, uint8 premiumType, uint8 expansion, time_t mute_time, LocaleConstant locale,
+        WorldSession(uint32 id, WorldTcpSession* sock, AccountTypes sec, bool ispremium, uint8 premiumType, uint8 expansion, time_t mute_time, LocaleConstant locale,
                      uint32 recruiter, bool isARecruiter, uint32 p_VoteRemainingTime, uint32 p_ServiceFlags, uint32 p_CustomFlags);
 #else /* CROSS */
         WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, bool ispremium, uint8 expansion, time_t mute_time, LocaleConstant locale,
@@ -1585,7 +1585,7 @@ class WorldSession
         uint64 m_GUID;
         uint64 m_RealGUID; 
 #else
-        WorldSocket* m_Socket;
+        WorldTcpSession* m_Socket;
 
 #endif
 

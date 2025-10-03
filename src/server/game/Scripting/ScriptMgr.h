@@ -430,34 +430,34 @@ class ScriptMgr
 
     /// ServerScript
     public:
-        /// Called when reactive socket I/O is started (WorldSocketMgr).
+        /// Called when reactive socket I/O is started (WorldTcpSessionMgr).
         void OnNetworkStart();
         /// Called when reactive I/O is stopped.
         void OnNetworkStop();
 
         /// Called when a remote socket establishes a connection to the server. Do not store the socket object.
         /// @p_Socket : Opened socket
-        void OnSocketOpen(WorldSocket* p_Socket);
+        void OnSocketOpen(WorldTcpSession* p_Socket);
         /// Called when a socket is closed. Do not store the socket object, and do not rely on the connection being open; it is not.
         /// @p_Socket : Closed socket
         /// @p_WasNew : Was new ?
-        void OnSocketClose(WorldSocket* p_Socket, bool p_WasNew);
+        void OnSocketClose(WorldTcpSession* p_Socket, bool p_WasNew);
 
         /// Called when a packet is sent to a client. The packet object is a copy of the original packet, so reading and modifying it is safe.
         /// @p_Socket  : Socket who send the packet
         /// @p_Packet  : Sent packet
         /// @p_Session : Session who receive the packet /!\ CAN BE NULLPTR
-        void OnPacketReceive(WorldSocket* p_Socket, WorldPacket p_Packet, WorldSession* p_Session = nullptr);
+        void OnPacketReceive(WorldTcpSession* p_Socket, WorldPacket p_Packet);
 
         /// Called when a (valid) packet is received by a client. The packet object is a copy of the original packet, so reading and modifying it is safe.
         /// @p_Socket : Socket who received the packet
         /// @p_Packet : Received packet
-        void OnPacketSend(WorldSocket* p_Socket, WorldPacket p_Packet);
+        void OnPacketSend(WorldTcpSession* p_Socket, WorldPacket p_Packet);
         /// Called when an invalid (unknown opcode) packet is received by a client. The packet is a reference to the original packet; not a copy.
         /// This allows you to actually handle unknown packets (for whatever purpose).
         /// @p_Socket : Socket who received the packet
         /// @p_Packet : Received packet
-        void OnUnknownPacketReceive(WorldSocket* p_Socket, WorldPacket p_Packet);
+        void OnUnknownPacketReceive(WorldTcpSession* p_Socket, WorldPacket p_Packet);
 
     /// WorldScript
     public:

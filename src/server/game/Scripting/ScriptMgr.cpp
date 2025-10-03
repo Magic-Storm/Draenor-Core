@@ -1388,7 +1388,7 @@ void ScriptMgr::OnNetworkStop()
 
 /// Called when a remote socket establishes a connection to the server. Do not store the socket object.
 /// @p_Socket : Opened socket
-void ScriptMgr::OnSocketOpen(WorldSocket* p_Socket)
+void ScriptMgr::OnSocketOpen(WorldTcpSession* p_Socket)
 {
     ASSERT(p_Socket);
 
@@ -1398,7 +1398,7 @@ void ScriptMgr::OnSocketOpen(WorldSocket* p_Socket)
 /// Called when a socket is closed. Do not store the socket object, and do not rely on the connection being open; it is not.
 /// @p_Socket : Closed socket
 /// @p_WasNew : Was new ?
-void ScriptMgr::OnSocketClose(WorldSocket* p_Socket, bool p_WasNew)
+void ScriptMgr::OnSocketClose(WorldTcpSession* p_Socket, bool p_WasNew)
 {
     ASSERT(p_Socket);
 
@@ -1408,17 +1408,17 @@ void ScriptMgr::OnSocketClose(WorldSocket* p_Socket, bool p_WasNew)
 /// Called when a packet is sent to a client. The packet object is a copy of the original packet, so reading and modifying it is safe.
 /// @p_Socket : Socket who send the packet
 /// @p_Packet : Sent packet
-void ScriptMgr::OnPacketReceive(WorldSocket* p_Socket, WorldPacket p_Packet, WorldSession* p_Session)
+void ScriptMgr::OnPacketReceive(WorldTcpSession* p_Socket, WorldPacket p_Packet)
 {
     ASSERT(p_Socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(p_Socket, p_Packet, p_Session);
+    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(p_Socket, p_Packet);
 }
 
 /// Called when a (valid) packet is received by a client. The packet object is a copy of the original packet, so reading and modifying it is safe.
 /// @p_Socket : Socket who received the packet
 /// @p_Packet : Received packet
-void ScriptMgr::OnPacketSend(WorldSocket* p_Socket, WorldPacket p_Packet)
+void ScriptMgr::OnPacketSend(WorldTcpSession* p_Socket, WorldPacket p_Packet)
 {
     ASSERT(p_Socket);
 
@@ -1429,7 +1429,7 @@ void ScriptMgr::OnPacketSend(WorldSocket* p_Socket, WorldPacket p_Packet)
 /// This allows you to actually handle unknown packets (for whatever purpose).
 /// @p_Socket : Socket who received the packet
 /// @p_Packet : Received packet
-void ScriptMgr::OnUnknownPacketReceive(WorldSocket* p_Socket, WorldPacket p_Packet)
+void ScriptMgr::OnUnknownPacketReceive(WorldTcpSession* p_Socket, WorldPacket p_Packet)
 {
     ASSERT(p_Socket);
 
