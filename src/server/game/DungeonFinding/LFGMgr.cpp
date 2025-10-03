@@ -37,7 +37,6 @@
 #include "ReputationMgr.h"
 #include "Config.h"
 #include "Guild.h"
-#include <ace/Stack_Trace.h>
 #include "Guild.h"
 #include "Chat.h"
 #include "GridNotifiers.h"

@@ -27,7 +27,6 @@
 #include "openssl/crypto.h"
 #include "Configuration/Config.h"
 #include "RealmList.h"
-#include <ace/INET_Addr.h>
 
 using boost::asio::ip::tcp;
 

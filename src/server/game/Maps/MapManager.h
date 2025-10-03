@@ -11,6 +11,7 @@
 
 #include "Define.h"
 #include "Common.h"
+#include <mutex>
 #include "Map.h"
 #include "GridStates.h"
 #include "MapUpdater.h"
@@ -20,7 +21,6 @@ struct TransportCreatureProto;
 
 class MapManager
 {
-    friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
 
     public:
         Map* CreateBaseMap(uint32 mapId);
@@ -186,10 +186,10 @@ class MapManager
         bool m_mapDiffLimit;
 
         std::queue<std::function<bool()>> m_CriticalOperation;
-        ACE_Thread_Mutex m_CriticalOperationLock;
+        std::mutex m_CriticalOperationLock;
 
         std::multimap<uint32, uint32> m_MapsDelay;
 
 };
-#define sMapMgr ACE_Singleton<MapManager, ACE_Thread_Mutex>::instance()
+#define sMapMgr MapManager::instance()
 #endif

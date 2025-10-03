@@ -10,7 +10,6 @@
 #define _PREPAREDSTATEMENT_H
 
 #include "SQLOperation.h"
-#include <ace/Future.h>
 
 //- Union for data buffer (upper-level bind -> queue -> lower-level bind)
 union PreparedStatementDataUnion

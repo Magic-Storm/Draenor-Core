@@ -19,18 +19,12 @@
 //typedef struct sockaddr_in SOCKADDR_IN;
 //typedef struct sockaddr SOCKADDR;
 
-#include <ace/Reactor.h>
-#include <ace/Reactor_Impl.h>
-#include <ace/TP_Reactor.h>
-#include <ace/Dev_Poll_Reactor.h>
-#include <ace/Acceptor.h>
-#include <ace/SOCK_Acceptor.h>
-#include <ace/Connector.h>
-#include <ace/SOCK_Connector.h>
 
 #include "IRSocketConnector.h"
 
 #include "SharedDefines.h"
+#include <queue>
+#include <vector>
 
 #define IR_PROTOCOL_VERSION     1
 #define IR_PROTOCOL_SUBVERSION  0
@@ -90,12 +84,11 @@ struct IROutPktHeader
 };
 
 class IRReactorRunnable;
-class ACE_Event_Handler;
 class Player;
 class Group;
 class ByteBuffer;
 
-class InterRealmSession: public ACE_Based::Runnable
+class InterRealmSession
 {
     public:
         InterRealmSession();
@@ -229,7 +222,7 @@ class InterRealmSession: public ACE_Based::Runnable
 
         uint8 m_rand;
 
-        ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _queue; 
+        std::queue<WorldPacket*> _queue; 
 
         /// here are stored the fragments of the received data
         WorldPacket* m_RecvWPct;
@@ -237,17 +230,17 @@ class InterRealmSession: public ACE_Based::Runnable
         /// This block actually refers to m_RecvWPct contents,
         /// which allows easy and safe writing to it.
         /// It wont free memory when its deleted. m_RecvWPct takes care of freeing.
-        ACE_Message_Block m_RecvPct;
+        std::vector<uint8> m_RecvPct;
 
         /// Fragment of the received header.
-        ACE_Message_Block m_Header;
+        std::vector<uint8> m_Header;
 
         int handle_input_header (void);
         int handle_input_payload (void);
         int handle_input_missing_data (void);
 };
 
-#define sIRTunnel ACE_Singleton<InterRealmSession, ACE_Null_Mutex>::instance()
+#define sIRTunnel InterRealmSession::instance()
 
 #endif
 #endif

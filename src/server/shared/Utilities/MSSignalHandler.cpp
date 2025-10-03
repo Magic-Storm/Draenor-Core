@@ -8,7 +8,6 @@
 
 #include "MSSignalHandler.h"
 #include "Log.h"
-#include "ace/Stack_Trace.h"
 
 namespace MS
 {

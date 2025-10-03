@@ -9,34 +9,34 @@
 #ifndef _TRINITY_AUTO_PTR_H
 #define _TRINITY_AUTO_PTR_H
 
-#include <ace/Bound_Ptr.h>
+#include <memory>
+
 
 namespace Trinity
 {
     template <class Pointer, class Lock>
-    class AutoPtr : public ACE_Strong_Bound_Ptr<Pointer, Lock>
+    class AutoPtr : public std::shared_ptr<Pointer>
     {
         public:
-            AutoPtr() : ACE_Strong_Bound_Ptr<Pointer, Lock>() {}
+            AutoPtr() : std::shared_ptr<Pointer>() {}
 
-            AutoPtr(Pointer* x)
+            AutoPtr(Pointer* x) : std::shared_ptr<Pointer>(x)
             {
-                ACE_Strong_Bound_Ptr<Pointer, Lock>::reset(x);
             }
 
             operator bool() const
             {
-                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() != NULL;
+                return std::shared_ptr<Pointer>::get() != nullptr;
             }
 
             bool operator !() const
             {
-                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() == NULL;
+                return std::shared_ptr<Pointer>::get() == nullptr;
             }
 
             bool operator !=(Pointer* x) const
             {
-                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() != x;
+                return std::shared_ptr<Pointer>::get() != x;
             }
     };
 }

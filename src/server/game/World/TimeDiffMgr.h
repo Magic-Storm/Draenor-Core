@@ -44,6 +44,6 @@ private:
     PerfLog m_prevLog[INTERVAL_MAX];
 };
 
-#define sTimeDiffMgr ACE_Singleton<TimeDiffMgr, ACE_Null_Mutex>::instance()
+#define sTimeDiffMgr TimeDiffMgr::instance()
 
 #endif // TIMEDIFFMGR_H

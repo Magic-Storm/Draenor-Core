@@ -847,8 +847,6 @@ const static PetBattleMembersPositions gPetBattlePositions[7] =
 /// Pet battle system main class (singleton)
 class PetBattleSystem
 {
-    /// ACE_Singleton class constructor/destructor access
-    friend class ACE_Singleton<PetBattleSystem, ACE_Null_Mutex>;
 
     private:
         /// Constructor
@@ -907,6 +905,6 @@ class PetBattleSystem
 };
 
 /// Pet battle system class singleton init
-#define sPetBattleSystem (ACE_Singleton<PetBattleSystem, ACE_Null_Mutex>::instance())
+#define sPetBattleSystem (PetBattleSystem::instance())
 
 #endif

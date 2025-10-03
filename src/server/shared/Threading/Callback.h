@@ -9,12 +9,10 @@
 #ifndef _CALLBACK_H
 #define _CALLBACK_H
 
-#include <ace/Future.h>
-#include <ace/Future_Set.h>
 #include "QueryResult.h"
 
-typedef ACE_Future<QueryResult> QueryResultFuture;
-typedef ACE_Future<PreparedQueryResult> PreparedQueryResultFuture;
+typedef std::future<QueryResult> QueryResultFuture;
+typedef std::future<PreparedQueryResult> PreparedQueryResultFuture;
 
 /*! A simple template using ACE_Future to manage callbacks from the thread and object that
     issued the request. <ParamType> is variable type of parameter that is used as parameter

@@ -11,8 +11,6 @@
 
 #include "LogOperation.h"
 
-#include <ace/Task.h>
-#include <ace/Activation_Queue.h>
 
 class LogWorker: protected ACE_Task_Base
 {

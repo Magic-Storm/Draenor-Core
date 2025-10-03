@@ -9,7 +9,6 @@
 #ifndef __SIGNAL_HANDLER_H__
 #define __SIGNAL_HANDLER_H__
 
-#include <ace/Event_Handler.h>
 
 namespace Trinity
 {

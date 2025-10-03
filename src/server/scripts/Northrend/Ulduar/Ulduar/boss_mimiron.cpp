@@ -16,7 +16,6 @@
 #include "GridNotifiers.h"
 #include "Common.h"
 
-#include "ace/Mutex.h"
 
 enum Yells
 {
@@ -825,7 +824,7 @@ class boss_mimiron : public CreatureScript
             }
 
             private:
-                ACE_Mutex _mapMutex;
+                std::mutex _mapMutex;
                 std::map<uint32, bool> _isSelfRepairing;
                 std::map<BombIndices, bool> _setUpUsTheBomb;
                 Phases _phase;

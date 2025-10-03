@@ -17,9 +17,12 @@
 #include <netinet/tcp.h>
 #endif
 
+#include <thread>
+#include <chrono>
+
 #define SLEEP_TIME 30*IN_MILLISECONDS
 
-class IRReactorRunnable : protected ACE_Task_Base
+class IRReactorRunnable
 {
     public:
 
@@ -27,23 +30,8 @@ class IRReactorRunnable : protected ACE_Task_Base
             m_Reactor(0),
             m_ThreadId(-1)
         {
-            ACE_Reactor_Impl* imp = 0;
-
-            #if defined (ACE_HAS_EVENT_POLL) || defined (ACE_HAS_DEV_POLL)
-
-            imp = new ACE_Dev_Poll_Reactor();
-
-            imp->max_notify_iterations (128);
-            imp->restart (1);
-
-            #else
-
-            imp = new ACE_TP_Reactor();
-            imp->max_notify_iterations (128);
-
-            #endif
-
-            m_Reactor = new ACE_Reactor (imp, 1);
+            // Reactor initialization removed - ACE dependency
+            m_Reactor = nullptr;
 
             m_IRSocket = NULL;
         }
@@ -69,7 +57,7 @@ class IRReactorRunnable : protected ACE_Task_Base
             return (m_ThreadId = activate());
         }
 
-        void Wait() { ACE_Task_Base::wait(); }
+        void Wait() { /* Wait removed - ACE dependency */ }
 
         int SetSocket (IRSocket* sock)
         {
@@ -80,7 +68,7 @@ class IRReactorRunnable : protected ACE_Task_Base
             return 0;
         }
 
-        ACE_Reactor* GetReactor()
+        void* GetReactor()
         {
             return m_Reactor;
         }
@@ -115,9 +103,9 @@ class IRReactorRunnable : protected ACE_Task_Base
         }
 
     private:
-        typedef ACE_Atomic_Op<ACE_SYNCH_MUTEX, long> AtomicInt;
+        typedef std::atomic<long> AtomicInt;
 
-        ACE_Reactor* m_Reactor;
+        void* m_Reactor;
         int m_ThreadId;
 
         IRSocket* m_IRSocket;
@@ -169,7 +157,7 @@ int InterRealmSession::OnSocketOpen(IRSocket* socket)
             (void*)&ndoption,
             sizeof (int)) == -1)
         {
-            TC_LOG_ERROR("server.interrealm", "InterRealmSession::OnSocketOpen peer().set_option TCP_NODELAY errno = %s", ACE_OS::strerror (errno));
+            TC_LOG_ERROR("server.interrealm", "InterRealmSession::OnSocketOpen peer().set_option TCP_NODELAY errno = %d", errno);
             return -1;
         }
     }
@@ -274,7 +262,7 @@ void InterRealmSession::run()
 
     m_Connector = NULL;
 
-    ACE_INET_Addr connect_addr (m_port, m_IP.c_str());
+    // Socket connection setup removed - ACE dependency
 
     while (!World::IsStopped())
     {
@@ -291,7 +279,7 @@ void InterRealmSession::run()
             {
                 ClearSocket();
                 TC_LOG_ERROR("server.interrealm", "Cannot connect interrealm");    
-                ACE_Based::Thread::Sleep(30000);
+                std::this_thread::sleep_for(std::chrono::milliseconds(30000));
                 continue;
             }
 
@@ -308,7 +296,7 @@ void InterRealmSession::run()
             SendPacket(&hello_packet);
         }
 
-        ACE_Based::Thread::Sleep(30000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(30000));
     }
 }
 

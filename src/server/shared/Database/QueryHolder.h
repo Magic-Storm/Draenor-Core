@@ -9,7 +9,6 @@
 #ifndef _QUERYHOLDER_H
 #define _QUERYHOLDER_H
 
-#include <ace/Future.h>
 
 class SQLQueryHolder
 {

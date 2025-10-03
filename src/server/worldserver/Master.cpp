@@ -18,7 +18,6 @@
 
 #include <thread>
 
-#include <ace/Sig_Handler.h>
 
 #include "Common.h"
 #include "GitRevision.h"

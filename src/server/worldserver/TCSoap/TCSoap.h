@@ -18,10 +18,8 @@
 #include "soapStub.h"
 #include "stdsoap2.h"
 
-#include <ace/Semaphore.h>
-#include <ace/Task.h>
 
-void process_message(ACE_Message_Block* mb);
+void process_message(std::vector<uint8>* mb);
 void TCSoapThread(const std::string& host, uint16 port);
 
 class SOAPCommand
