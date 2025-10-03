@@ -24,6 +24,8 @@
 #include "Timer.h"
 #include "Log.h"
 
+#include "ProducerConsumerQueue.h"
+
 MySQLConnection::MySQLConnection(MySQLConnectionInfo& connInfo) :
 m_reconnecting(false),
 m_prepareError(false),
@@ -35,7 +37,7 @@ m_connectionFlags(CONNECTION_SYNCH)
 {
 }
 
-MySQLConnection::MySQLConnection(ACE_Activation_Queue* queue, MySQLConnectionInfo& connInfo) :
+MySQLConnection::MySQLConnection(ProducerConsumerQueue<SQLOperation*>* queue, MySQLConnectionInfo& connInfo) :
 m_reconnecting(false),
 m_prepareError(false),
 m_queue(queue),
@@ -507,8 +509,8 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
             }
 
             uint32 lErrno = mysql_errno(GetHandle());   // It's possible this attempted reconnect throws 2006 at us. To prevent crazy recursive calls, sleep here.
-            ACE_OS::sleep(3);                           // Sleep 3 seconds
-            return _HandleMySQLErrno(lErrno);           // Call self (recursive)
+            std::this_thread::sleep_for(std::chrono::seconds(3)); // Sleep 3 seconds
+            return _HandleMySQLErrno(lErrno);                     // Call self (recursive)
         }
 
         case ER_LOCK_DEADLOCK:
@@ -522,12 +524,12 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
         case ER_BAD_FIELD_ERROR:
         case ER_NO_SUCH_TABLE:
             TC_LOG_ERROR("sql.sql", "Your database structure is not up to date. Please make sure you've executed all queries in the sql/updates folders.");
-            ACE_OS::sleep(10);
+            std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();
             return false;
         case ER_PARSE_ERROR:
             TC_LOG_ERROR("sql.sql", "Error while parsing SQL. Core fix required.");
-            ACE_OS::sleep(10);
+            std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();
             return false;
         default:

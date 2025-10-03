@@ -1405,10 +1405,16 @@ typedef std::unordered_map<uint32, ObjectList*> ObjectListMap;
 
 class SmartWaypointMgr
 {
-    friend class ACE_Singleton<SmartWaypointMgr, ACE_Null_Mutex>;
-    SmartWaypointMgr() {}
-    public:
+    private:
+        SmartWaypointMgr() { }
         ~SmartWaypointMgr();
+
+    public:
+        static SmartWaypointMgr* instance()
+        {
+            static SmartWaypointMgr* instance = new SmartWaypointMgr();
+            return instance;
+        }
 
         void LoadFromDB();
 
@@ -1431,10 +1437,16 @@ typedef std::unordered_map<int32, SmartAIEventList> SmartAIEventMap;
 
 class SmartAIMgr
 {
-    friend class ACE_Singleton<SmartAIMgr, ACE_Null_Mutex>;
-    SmartAIMgr(){};
+    private:
+        SmartAIMgr() { }
+        ~SmartAIMgr() { }
+
     public:
-        ~SmartAIMgr(){};
+        static SmartAIMgr* instance()
+        {
+            static SmartAIMgr* instance = new SmartAIMgr();
+            return instance;
+        }
 
         void LoadSmartAIFromDB();
 
@@ -1591,6 +1603,6 @@ class SmartAIMgr
         //bool IsTextValid(SmartScriptHolder const& e, uint32 id);
 };
 
-#define sSmartScriptMgr ACE_Singleton<SmartAIMgr, ACE_Null_Mutex>::instance()
-#define sSmartWaypointMgr ACE_Singleton<SmartWaypointMgr, ACE_Null_Mutex>::instance()
+#define sSmartScriptMgr SmartAIMgr::instance()
+#define sSmartWaypointMgr SmartWaypointMgr::instance()
 #endif

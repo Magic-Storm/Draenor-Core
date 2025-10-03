@@ -32,7 +32,7 @@ public:
 
     /// Constructors for sync and async connections
     HotfixDatabaseConnection(MySQLConnectionInfo& p_ConnectionInfo) : MySQLConnection(p_ConnectionInfo) { }
-    HotfixDatabaseConnection(ACE_Activation_Queue* p_Queue, MySQLConnectionInfo& p_ConnectionInfo) : MySQLConnection(p_Queue, p_ConnectionInfo) { }
+    HotfixDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* p_Queue, MySQLConnectionInfo& p_ConnectionInfo) : MySQLConnection(p_Queue, p_ConnectionInfo) { }
 
     /// Loads database type specific prepared statements
     void DoPrepareStatements() override;

@@ -10,7 +10,6 @@
 #define BATTLEFIELD_MGR_H_
 
 #include "Battlefield.h"
-#include "ace/Singleton.h"
 
 class Player;
 class GameObject;

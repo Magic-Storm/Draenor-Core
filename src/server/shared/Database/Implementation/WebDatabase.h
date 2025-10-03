@@ -35,7 +35,7 @@ public:
 
     /// Constructors for sync and async connections
     WebDatabaseConnection(MySQLConnectionInfo& p_ConnectionInfo) : MySQLConnection(p_ConnectionInfo) { }
-    WebDatabaseConnection(ACE_Activation_Queue* p_Queue, MySQLConnectionInfo& p_ConnectionInfo) : MySQLConnection(p_Queue, p_ConnectionInfo) { }
+    WebDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* p_Queue, MySQLConnectionInfo& p_ConnectionInfo) : MySQLConnection(p_Queue, p_ConnectionInfo) { }
 
     /// Loads database type specific prepared statements
     void DoPrepareStatements() override;

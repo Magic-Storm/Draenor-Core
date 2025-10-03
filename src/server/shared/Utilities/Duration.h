@@ -35,6 +35,9 @@ typedef std::chrono::minutes Minutes;
 /// Hours shorthand typedef.
 typedef std::chrono::hours Hours;
 
+/// The system-wide real time wall clock typedef.
+typedef std::chrono::system_clock SystemClock;
+
 /// Makes std::chrono_literals globally available.
 // ToDo: Enable this when TC supports C++14.
 // using namespace std::chrono_literals;

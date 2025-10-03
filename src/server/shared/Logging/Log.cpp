@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "Config.h"
 #include "Util.h"
+#include "Duration.h"
 #include "AppenderConsole.h"
 #include "AppenderFile.h"
 #include "AppenderDB.h"
@@ -28,6 +29,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <chrono>
 #include <future>
 
 Log::Log() : worker(NULL)
@@ -304,10 +306,11 @@ void Log::write(LogMessage* msg) const
 
 std::string Log::GetTimestampStr()
 {
-    time_t tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    time_t tt = SystemClock::to_time_t(SystemClock::now());
 
     std::tm aTm;
     localtime_r(&tt, &aTm);
+
     //       YYYY   year
     //       MM     month (2 digits 01-12)
     //       DD     day (2 digits 01-31)
