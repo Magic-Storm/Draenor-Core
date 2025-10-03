@@ -74,6 +74,12 @@ class PlayerDumpWriter : public PlayerDump
 {
 public:
     PlayerDumpWriter() {}
+    
+    static PlayerDumpWriter* instance()
+    {
+        static PlayerDumpWriter* instance = new PlayerDumpWriter();
+        return instance;
+    }
 
     bool GetDump(uint32 guid, uint32 account, std::string& dump, bool ashran);
     DumpReturn WriteDump(const std::string& file, uint32 guid, uint32 account, bool ashran = false);
@@ -94,12 +100,18 @@ class PlayerDumpReader : public PlayerDump
 {
 public:
     PlayerDumpReader() {}
+    
+    static PlayerDumpReader* instance()
+    {
+        static PlayerDumpReader* instance = new PlayerDumpReader();
+        return instance;
+    }
 
     DumpReturn LoadDump(const std::string& p_File, uint32 p_Account, std::string p_Name, uint32 p_Guid, bool p_OnlyBoundedItems = false, uint32 p_AtLogin = 1);
 };
 
-#define sInterRealmTransfertReader ACE_Singleton<PlayerDumpReader, ACE_Thread_Mutex>::instance()
-#define sInterRealmTransfertWriter ACE_Singleton<PlayerDumpWriter, ACE_Thread_Mutex>::instance()
+#define sInterRealmTransfertReader PlayerDumpReader::instance()
+#define sInterRealmTransfertWriter PlayerDumpWriter::instance()
 
 #endif
 #endif

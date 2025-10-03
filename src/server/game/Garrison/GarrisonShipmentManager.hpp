@@ -17,9 +17,6 @@ namespace MS { namespace Garrison
     /// Shipment manager class
     class ShipmentManager
     {
-        /// Grant access to ACE_Singleton class
-        friend class ACE_Singleton<ShipmentManager, ACE_Null_Mutex>;
-
         private:
             /// Constructor
             ShipmentManager();
@@ -27,6 +24,11 @@ namespace MS { namespace Garrison
             ~ShipmentManager();
 
         public:
+            static ShipmentManager* instance()
+            {
+                static ShipmentManager* instance = new ShipmentManager();
+                return instance;
+            }
             /// Init shipment manager
             void Init();
 
@@ -42,7 +44,7 @@ namespace MS { namespace Garrison
 }   ///< namespace Garrison
 }   ///< namespace MS
 
-#define sGarrisonShipmentManager ACE_Singleton<MS::Garrison::ShipmentManager, ACE_Null_Mutex>::instance()
+#define sGarrisonShipmentManager MS::Garrison::ShipmentManager::instance()
 
 #endif  ///< GARRISON_SHIPMENT_MANAGER_HPP_GARRISON
 #endif

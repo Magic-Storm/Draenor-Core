@@ -9,7 +9,11 @@
 #ifndef TRINITY_CONDITIONMGR_H
 #define TRINITY_CONDITIONMGR_H
 
-#include "Common.h"
+#include "LootMgr.h"
+#include "Define.h"
+#include "Errors.h"
+#include <list>
+#include <map>
 
 class Creature;
 class Player;
@@ -219,13 +223,17 @@ typedef std::unordered_map<uint32, ConditionContainer> ConditionReferenceContain
 
 class ConditionMgr
 {
-    friend class ACE_Singleton<ConditionMgr, ACE_Null_Mutex>;
-
     private:
         ConditionMgr();
         ~ConditionMgr();
 
     public:
+
+        static ConditionMgr* instance()
+        {
+            static ConditionMgr* instance = new ConditionMgr();
+            return instance;
+        }
         void LoadConditions(bool isReload = false);
         bool isConditionTypeValid(Condition* cond) const;
 
@@ -287,6 +295,6 @@ template <class T> bool CompareValues(ComparisionType type,  T val1, T val2)
     }
 }
 
-#define sConditionMgr ACE_Singleton<ConditionMgr, ACE_Null_Mutex>::instance()
+#define sConditionMgr ConditionMgr::instance()
 
 #endif

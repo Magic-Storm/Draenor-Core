@@ -16,14 +16,20 @@
 class AddonHandler
 {
     /* Construction */
-    friend class ACE_Singleton<AddonHandler, ACE_Null_Mutex>;
-    AddonHandler();
+    private:
+        AddonHandler();
 
     public:
         ~AddonHandler();
+        
+        static AddonHandler* instance()
+        {
+            static AddonHandler* instance = new AddonHandler();
+            return instance;
+        }
                                                             //build addon packet
         bool BuildAddonPacket(WorldPacket* Source, WorldPacket* Target);
 };
-#define sAddOnHandler ACE_Singleton<AddonHandler, ACE_Null_Mutex>::instance()
+#define sAddOnHandler AddonHandler::instance()
 #endif
 

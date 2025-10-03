@@ -96,7 +96,7 @@ struct AreaTableEntry
     {
         if (ContinentID == 609 || ID == 4522 || ID == 41 || ID == 2401)
             return true;
-        return (Flags & AREA_FLAG_SANCTUARY);
+        return (Flags & AREA_FLAG_SANCTUARY) != 0;
     }
 };
 

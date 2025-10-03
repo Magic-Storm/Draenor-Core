@@ -201,6 +201,11 @@ namespace Battlepay
     class Manager
     {
         public:
+            static Manager* instance()
+            {
+                static Manager* instance = new Manager();
+                return instance;
+            }
 
             Manager()
             {
@@ -390,6 +395,6 @@ namespace Battlepay
     };
 }
 
-#define sBattlepayMgr ACE_Singleton<Battlepay::Manager, ACE_Null_Mutex>::instance()
+#define sBattlepayMgr Battlepay::Manager::instance()
 #endif
 #endif

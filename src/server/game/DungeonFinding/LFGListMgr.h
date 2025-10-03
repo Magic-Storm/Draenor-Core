@@ -97,6 +97,11 @@ struct LFGListEntry
 class LFGListMgr
 {
 public:
+    static LFGListMgr* instance()
+    {
+        static LFGListMgr* instance = new LFGListMgr();
+        return instance;
+    }
 
     enum LFGListActivityCategory
     {
@@ -173,4 +178,4 @@ private:
     uint32 m_ApplicantIDCounter;
 };
 
-#define sLFGListMgr ACE_Singleton<LFGListMgr, ACE_Null_Mutex>::instance()
+#define sLFGListMgr LFGListMgr::instance()

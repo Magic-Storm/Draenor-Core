@@ -119,13 +119,16 @@ class PlayerSocial
 
 class SocialMgr
 {
-    friend class ACE_Singleton<SocialMgr, ACE_Null_Mutex>;
-
     private:
         SocialMgr();
         ~SocialMgr();
 
     public:
+        static SocialMgr* instance()
+        {
+            static SocialMgr* instance = new SocialMgr();
+            return instance;
+        }
         // Misc
         void RemovePlayerSocial(uint32 guid) { m_socialMap.erase(guid); }
 
@@ -139,6 +142,6 @@ class SocialMgr
         SocialMap m_socialMap;
 };
 
-#define sSocialMgr ACE_Singleton<SocialMgr, ACE_Null_Mutex>::instance()
+#define sSocialMgr SocialMgr::instance()
 #endif
 

@@ -35,14 +35,18 @@ class CinematicSequence
 /// Cinematic sequence Mgr
 class CinematicSequenceMgr
 {
-    /// Singleton access
-    friend class ACE_Singleton<CinematicSequenceMgr, ACE_Null_Mutex>;
-    /// Constructor
-    CinematicSequenceMgr();
-    /// Destructor
-    ~CinematicSequenceMgr();
+    private:
+        /// Constructor
+        CinematicSequenceMgr();
+        /// Destructor
+        ~CinematicSequenceMgr();
 
     public:
+        static CinematicSequenceMgr* instance()
+        {
+            static CinematicSequenceMgr* instance = new CinematicSequenceMgr();
+            return instance;
+        }
         /// Load all sequence
         size_t Load();
 
@@ -54,6 +58,6 @@ class CinematicSequenceMgr
 };
 
 /// Singleton
-#define sCinematicSequenceMgr ACE_Singleton<CinematicSequenceMgr, ACE_Null_Mutex>::instance()
+#define sCinematicSequenceMgr CinematicSequenceMgr::instance()
 
 #endif /* MIGHT4_CINEMATIC_SEQUENCE_MGR */

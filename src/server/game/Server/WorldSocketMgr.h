@@ -25,9 +25,17 @@ class ACE_Event_Handler;
 /// Manages all sockets connected to peers and network threads
 class WorldSocketMgr
 {
-public:
+private:
     friend class WorldSocket;
-    friend class ACE_Singleton<WorldSocketMgr, ACE_Thread_Mutex>;
+    WorldSocketMgr();
+    virtual ~WorldSocketMgr();
+
+public:
+    static WorldSocketMgr* instance()
+    {
+        static WorldSocketMgr* instance = new WorldSocketMgr();
+        return instance;
+    }
 
     /// Start network, listen at address:port .
     int StartNetwork(ACE_UINT16 port, const char* address);
@@ -43,10 +51,6 @@ private:
 
     int StartReactiveIO(ACE_UINT16 port, const char* address);
 
-private:
-    WorldSocketMgr();
-    virtual ~WorldSocketMgr();
-
     ReactorRunnable* m_NetThreads;
     size_t m_NetThreadsCount;
 
@@ -57,7 +61,7 @@ private:
     class WorldSocketAcceptor* m_Acceptor;
 };
 
-#define sWorldSocketMgr ACE_Singleton<WorldSocketMgr, ACE_Thread_Mutex>::instance()
+#define sWorldSocketMgr WorldSocketMgr::instance()
 
 #endif
 /// @}

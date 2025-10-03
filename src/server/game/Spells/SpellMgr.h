@@ -615,7 +615,6 @@ using SpellUpgradeItemStages = std::map<uint32, std::vector<SpellUpgradeItemStag
 
 class SpellMgr
 {
-    friend class ACE_Singleton<SpellMgr, ACE_Null_Mutex>;
     // Constructors
     private:
         SpellMgr();
@@ -623,6 +622,11 @@ class SpellMgr
 
     // Accessors (const or static functions)
     public:
+        static SpellMgr* instance()
+        {
+            static SpellMgr* instance = new SpellMgr();
+            return instance;
+        }
         // Spell correctness for client using
         static bool IsSpellValid(SpellInfo const* spellInfo, Player* player = NULL, bool msg = true);
         bool IsSpellForbidden(uint32 spellid);
@@ -867,7 +871,7 @@ class SpellMgr
         std::set<uint32>           m_SpellAurasNotSave;
 };
 
-#define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()
+#define sSpellMgr SpellMgr::instance()
 
 bool IsCCSpell(SpellInfo const* p_SpellProto);
 

@@ -68,6 +68,12 @@ class WildBattlePetMgr
 {
     public:
         WildBattlePetMgr();
+        
+        static WildBattlePetMgr* instance()
+        {
+            static WildBattlePetMgr* instance = new WildBattlePetMgr();
+            return instance;
+        }
 
         void Load();
 
@@ -78,6 +84,6 @@ class WildBattlePetMgr
         std::map<uint32, WildBattlePetZonePools>  m_PoolsByMap;
 };
 
-#define sWildBattlePetMgr ACE_Singleton<WildBattlePetMgr, ACE_Null_Mutex>::instance()
+#define sWildBattlePetMgr WildBattlePetMgr::instance()
 
 #endif

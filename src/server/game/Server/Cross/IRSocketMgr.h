@@ -14,9 +14,17 @@ class ACE_Event_Handler;
 /// Manages all sockets connected to peers and network threads
 class IRSocketMgr
 {
-public:
+private:
     friend class IRSocket;
-    friend class ACE_Singleton<IRSocketMgr, ACE_Thread_Mutex>;
+    IRSocketMgr();
+    virtual ~IRSocketMgr();
+
+public:
+    static IRSocketMgr* instance()
+    {
+        static IRSocketMgr* instance = new IRSocketMgr();
+        return instance;
+    }
 
     /// Start network, listen at address:port .
     int StartNetwork(ACE_UINT16 port);
@@ -46,7 +54,7 @@ private:
     IRSocketAcceptor* m_Acceptor;
 };
 
-#define sIRSocketMgr ACE_Singleton<IRSocketMgr, ACE_Thread_Mutex>::instance()
+#define sIRSocketMgr IRSocketMgr::instance()
 
 #endif
 /// @}

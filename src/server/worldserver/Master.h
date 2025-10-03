@@ -18,7 +18,17 @@
 /// Start the server
 class Master
 {
+    private:
+        Master();
+        ~Master();
+
     public:
+        static Master* instance()
+        {
+            static Master* instance = new Master();
+            return instance;
+        }
+        
         int Run();
 
     private:
@@ -29,7 +39,7 @@ class Master
         void ExecutePendingRequests();
 };
 
-#define sMaster ACE_Singleton<Master, ACE_Null_Mutex>::instance()
+#define sMaster Master::instance()
 
 #endif
 

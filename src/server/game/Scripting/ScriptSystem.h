@@ -60,11 +60,15 @@ struct StringTextData
 
 class SystemMgr
 {
-        friend class ACE_Singleton<SystemMgr, ACE_Null_Mutex>;
         SystemMgr() {}
         ~SystemMgr() {}
 
     public:
+        static SystemMgr* instance()
+        {
+            static SystemMgr* instance = new SystemMgr();
+            return instance;
+        }
         //Maps and lists
         typedef std::unordered_map<int32, StringTextData> TextDataMap;
         typedef std::unordered_map<uint32, ScriptPointVector> PointMoveMap;
@@ -103,6 +107,6 @@ class SystemMgr
         static ScriptPointVector const _empty;
 };
 
-#define sScriptSystemMgr ACE_Singleton<SystemMgr, ACE_Null_Mutex>::instance()
+#define sScriptSystemMgr SystemMgr::instance()
 
 #endif

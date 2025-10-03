@@ -53,9 +53,6 @@ namespace MS { namespace Garrison
     /// Building manager class
     class BuildingManager
     {
-        /// Grant access to ACE_Singleton class
-        friend class ACE_Singleton<BuildingManager, ACE_Null_Mutex>;
-
         private:
             /// Constructor
             BuildingManager();
@@ -63,6 +60,11 @@ namespace MS { namespace Garrison
             ~BuildingManager();
 
         public:
+            static BuildingManager* instance()
+            {
+                static BuildingManager* instance = new BuildingManager();
+                return instance;
+            }
             /// Learn allowed building blue prints
             /// @p_Player     : Target player
             /// @p_Garrison   : Target garrison
@@ -85,7 +87,7 @@ namespace MS { namespace Garrison
 }   ///< namespace Garrison
 }   ///< namespace MS
 
-#define sGarrisonBuildingManager ACE_Singleton<MS::Garrison::BuildingManager, ACE_Null_Mutex>::instance()
+#define sGarrisonBuildingManager MS::Garrison::BuildingManager::instance()
 
 #endif  ///< GARRISON_BUILDING_MANAGER_HPP_GARRISON
 #endif

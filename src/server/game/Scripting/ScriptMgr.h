@@ -15,12 +15,11 @@
 #include "MutexedMap.hpp"
 
 /// Placed here due to ScriptRegistry::AddScript dependency.
-#define sScriptMgr ACE_Singleton<ScriptMgr, ACE_Null_Mutex>::instance()
+#define sScriptMgr ScriptMgr::instance()
 
 /// Manages registration, loading, and execution of scripts.
 class ScriptMgr
 {
-    friend class ACE_Singleton<ScriptMgr, ACE_Null_Mutex>;
     friend class ScriptObjectImpl<true>;
     friend class ScriptObjectImpl<false>;
 
@@ -31,6 +30,11 @@ class ScriptMgr
         virtual ~ScriptMgr();
 
     public:
+        static ScriptMgr* instance()
+        {
+            static ScriptMgr* instance = new ScriptMgr();
+            return instance;
+        }
         /// Initialize Script Mgr and bind all script
         void Initialize();
         /// Unload all script

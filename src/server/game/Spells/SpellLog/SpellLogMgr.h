@@ -23,6 +23,12 @@ enum SpellLogOutputFlags
 class SpellLogMgr
 {
 public:
+    static SpellLogMgr* instance()
+    {
+        static SpellLogMgr* instance = new SpellLogMgr();
+        return instance;
+    }
+    
     void AddOrSetListener(Player* p_Player, uint32 p_SpellID);
     void RemoveListener(Player* p_Player);
     void RemoveSpellFromListener(Player* p_Player, uint32 p_SpellID);
@@ -34,7 +40,7 @@ private:
     void PrintToConsole(char* p_Str);
 };
 
-#define sSpellLogMgr ACE_Singleton<SpellLogMgr, ACE_Null_Mutex>::instance()
+#define sSpellLogMgr SpellLogMgr::instance()
 
 #define LOG_SPELL(c, s, ...) sSpellLogMgr->LogSpell(c, s, __VA_ARGS__)
 #define LOG_SPELL_DOUBLE(c, s1, s2, fmt, ...) sSpellLogMgr->LogSpell(c, s1, s2, __VA_ARGS__)

@@ -14,7 +14,6 @@
 # include "Battleground.h"
 # include "Object.h"
 # include "ObjectAccessor.h"
-# include <ace/Singleton.h>
 # include <array>
 
 # include "BattlegroundScheduler.hpp"
@@ -83,8 +82,6 @@ namespace MS
 
         class BattlegroundMgr
         {
-            friend class ACE_Singleton<BattlegroundMgr, ACE_Null_Mutex>;
-
         private:
             /// Constructor.
             BattlegroundMgr();
@@ -93,6 +90,11 @@ namespace MS
             ~BattlegroundMgr();
 
         public:
+            static BattlegroundMgr* instance()
+            {
+                static BattlegroundMgr* instance = new BattlegroundMgr();
+                return instance;
+            }
 
             /// Updates the manager.
             /// @p_Diff : The time diff with the previous update.
@@ -269,6 +271,6 @@ namespace MS
     } ///< namespace Battlegrounds.
 } ///< namespace MS.
 
-# define sBattlegroundMgr ACE_Singleton<MS::Battlegrounds::BattlegroundMgr, ACE_Null_Mutex>::instance() ///< The singleton of the battleground manager.
+# define sBattlegroundMgr MS::Battlegrounds::BattlegroundMgr::instance() ///< The singleton of the battleground manager.
 
 #endif ///< BATTLEGROUND_MGR_HPP
