@@ -12,7 +12,7 @@
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 
 #include "Common.h"
 #include "DatabaseEnv.h"
@@ -71,7 +71,7 @@ extern World* sWorldInstance;
 void usage(const char* prog);
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
 void FreezeDetectorThread(uint32 delayTime, uint32 pid);
-AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_service& ioService);
+AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_context& ioService);
 bool StartDB();
 void StopDB();
 void WorldUpdateLoop();
