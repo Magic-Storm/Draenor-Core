@@ -146,7 +146,6 @@ class Channel
 
     typedef     ACE_Based::LockedMap<uint64, PlayerInfo> PlayerList;
     PlayerList  m_Players;
-    mutable ACE_Thread_Mutex m_Lock;
     typedef     std::set<uint64> BannedList;
     BannedList  banned;
     bool        m_announce;

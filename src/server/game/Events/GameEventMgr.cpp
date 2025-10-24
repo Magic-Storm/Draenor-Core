@@ -1618,7 +1618,7 @@ void GameEventMgr::RunSmartAIScripts(uint16 event_id, bool activate)
     //! Iterate over every supported source type (creature and gameobject)
     //! Not entirely sure how this will affect units in non-loaded grids.
     {
-        boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+        std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
         HashMapHolder<Creature>::MapType const& m = ObjectAccessor::GetCreatures();
         for (HashMapHolder<Creature>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
         {
@@ -1631,7 +1631,7 @@ void GameEventMgr::RunSmartAIScripts(uint16 event_id, bool activate)
         }
     }
     {
-        boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+        std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
         HashMapHolder<GameObject>::MapType const& m = ObjectAccessor::GetGameObjects();
         for (HashMapHolder<GameObject>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
         {

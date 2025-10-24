@@ -19,15 +19,20 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <string>
-#include <list>
+#include "Config.h"
+#include "Log.h"
+#include <boost/property_tree/ini_parser.hpp>
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
 #include <mutex>
-#include <boost/property_tree/ptree.hpp>
+
+namespace bpt = boost::property_tree;
 
 class ConfigMgr
 {
-    ConfigMgr() { }
-    ~ConfigMgr() { }
+    ConfigMgr() {}
+    ~ConfigMgr() {}
 
 public:
     /// Method used only for loading main configuration files (authserver.conf and worldserver.conf)
@@ -51,7 +56,7 @@ public:
 
 private:
     std::string _filename;
-    boost::property_tree::ptree _config;
+    bpt::ptree _config;
     std::mutex _configLock;
 
     ConfigMgr(ConfigMgr const&);

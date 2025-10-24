@@ -210,7 +210,7 @@ Unit* ObjectAccessor::FindUnit(uint64 guid)
 
 Player* ObjectAccessor::FindPlayerByName(const char* name)
 {
-    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     std::string nameStr = name;
     std::transform(nameStr.begin(), nameStr.end(), nameStr.begin(), ::tolower);
     HashMapHolder<Player>::MapType const& m = GetPlayers();
@@ -280,7 +280,7 @@ GameObject* ObjectAccessor::FindGameObject(uint64 p_Guid)
 #endif /* CROSS */
 void ObjectAccessor::SaveAllPlayers()
 {
-    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& m = GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
         itr->second->SaveToDB();
@@ -288,7 +288,7 @@ void ObjectAccessor::SaveAllPlayers()
 
 Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 {
-    boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
+    std::shared_lock<std::shared_mutex> lock(_corpseLock);
 
     Player2CorpsesMapType::iterator iter = i_player2corpse.find(guid);
     if (iter == i_player2corpse.end())
@@ -343,7 +343,7 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
 
     // Critical section
     {
-        boost::unique_lock<boost::shared_mutex> lock(_corpseLock);
+        std::unique_lock<std::shared_mutex> lock(_corpseLock);
 
         ASSERT(i_player2corpse.find(corpse->GetOwnerGUID()) == i_player2corpse.end());
         i_player2corpse[corpse->GetOwnerGUID()] = corpse;
@@ -356,7 +356,7 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
 
 void ObjectAccessor::AddCorpsesToGrid(GridCoord const& gridpair, GridType& grid, Map* map)
 {
-    boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
+    std::shared_lock<std::shared_mutex> lock(_corpseLock);
 
     for (Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
     {

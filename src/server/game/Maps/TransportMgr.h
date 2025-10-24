@@ -130,8 +130,6 @@ class TransportMgr
         }
 
     private:
-        TransportMgr();
-        ~TransportMgr();
         TransportMgr(TransportMgr const&);
         TransportMgr& operator=(TransportMgr const&);
 

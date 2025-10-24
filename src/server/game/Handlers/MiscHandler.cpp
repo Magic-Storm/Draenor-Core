@@ -293,7 +293,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& p_RecvData)
     WorldPacket l_Data(SMSG_WHO, 5 * 1024);
     ByteBuffer l_Buffer(5 * 1024);
 
-    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
 
     HashMapHolder<Player>::MapType const& l_PlayersMap = sObjectAccessor->GetPlayers();
     for (HashMapHolder<Player>::MapType::const_iterator l_It = l_PlayersMap.begin(); l_It != l_PlayersMap.end(); ++l_It)
