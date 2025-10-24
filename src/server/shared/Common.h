@@ -88,12 +88,17 @@
 
 #include <atomic>
 #include <mutex>
+#include <shared_mutex>
 #include <thread>
 #include <array>
 #include <vector>
 #include "Threading/LockedQueue.h"
 #include "Threading/LockedMap.h"
 #include "Threading/LockedVector.h"
+
+// Locking guard macros for read-write locks
+#define TRINITY_READ_GUARD(LockType, Lock) std::shared_lock<LockType> Trinity_ReadGuard(Lock)
+#define TRINITY_WRITE_GUARD(LockType, Lock) std::unique_lock<LockType> Trinity_WriteGuard(Lock)
 
 /// MSVC 18 (2013) have only partial support of thread_local (c++11)
 #ifdef __GNUC__

@@ -51,7 +51,6 @@ find_package(Boost ${BOOST_REQUIRED_VERSION}
     system
     thread
     serialization
-    property_tree
   CONFIG
   HINTS
     ${BOOST_SEARCH_HINTS})

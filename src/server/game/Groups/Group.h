@@ -477,7 +477,7 @@ class Group
 
         MemberSlotList      m_memberSlots;
         GroupRefManager     m_memberMgr;
-        mutable ACE_Thread_Mutex    m_inviteesLock;
+        mutable std::mutex  m_inviteesLock;
         InvitesList         m_invitees;
         uint64              m_leaderGuid;
         std::string         m_leaderName;

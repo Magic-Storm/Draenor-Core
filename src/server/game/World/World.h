@@ -1034,17 +1034,17 @@ class World
             m_TransactionCallbackLock.unlock();
         }
 
-        void AddPrepareStatementCallback(std::pair<std::function<void(PreparedQueryResult)>, PreparedQueryResultFuture> p_Callback)
+        void AddPrepareStatementCallback(std::pair<std::function<void(PreparedQueryResult)>, PreparedQueryResultFuture>&& p_Callback)
         {
             m_PreparedStatementCallbackLock.lock();
-            m_PreparedStatementCallbacksBuffer->push_front(p_Callback);
+            m_PreparedStatementCallbacksBuffer->push_front(std::move(p_Callback));
             m_PreparedStatementCallbackLock.unlock();
         }
 
-        void AddQueryHolderCallback(QueryHolderCallback p_QueryHolderCallback)
+        void AddQueryHolderCallback(QueryHolderCallback&& p_QueryHolderCallback)
         {
             m_QueryHolderCallbackLock.lock();
-            m_QueryHolderCallbacksBuffer->push_front(p_QueryHolderCallback);
+            m_QueryHolderCallbacksBuffer->push_front(std::move(p_QueryHolderCallback));
             m_QueryHolderCallbackLock.unlock();
         }
 

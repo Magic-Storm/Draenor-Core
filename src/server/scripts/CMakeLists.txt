@@ -164,6 +164,11 @@ add_library(scripts STATIC
 add_definitions("-DGAME_SERVER_PROJECTS")
 set_property(TARGET scripts PROPERTY FOLDER "server")
 
+target_link_libraries(scripts
+  shared
+  boost
+)
+
 add_dependencies(scripts revision.h)
 
 # Generate precompiled header
