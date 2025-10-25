@@ -1921,17 +1921,15 @@ void Player::Update(uint32 p_time)
     {
         PreparedQueryResult result;
 
-        if (_petPreloadCallback.ready())
+        if (_petPreloadCallback.valid() && _petPreloadCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         {
-            _petPreloadCallback.get(result);
+            result = _petPreloadCallback.get();
             LoadPet(result);
-            _petPreloadCallback.cancel();
         }
 
-        if (_petLoginCallback.ready())
+        if (_petLoginCallback.valid() && _petLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         {
-            SQLQueryHolder* param;
-            _petLoginCallback.get(param);
+            SQLQueryHolder* param = _petLoginCallback.get();
 
             Pet* pet = new Pet(this);
             pet->LoadPetFromDB(this, 0, 0, true, PET_SLOT_ACTUAL_PET_SLOT, false, (PetQueryHolder*)param, [param](Pet* p_Pet, bool p_Result) -> void
@@ -1941,8 +1939,6 @@ void Player::Update(uint32 p_time)
 
                 delete param;
             });
-
-            _petLoginCallback.cancel();
         }
     }
 
@@ -2418,7 +2414,7 @@ void Player::Update(uint32 p_time)
 
 sScriptMgr->OnPlayerUpdate(this, p_time);
 
-m_CriticalOperationLock.acquire();
+m_CriticalOperationLock.lock();
 
 std::queue<std::function<bool()>> l_CriticalOperationFallBack;
 while (!m_CriticalOperation.empty())
@@ -2438,7 +2434,7 @@ while (!l_CriticalOperationFallBack.empty())
 	l_CriticalOperationFallBack.pop();
 }
 
-m_CriticalOperationLock.release();
+m_CriticalOperationLock.unlock();
 #ifdef CROSS
 
 while (!m_ItemToGuidSync.empty())
@@ -31714,7 +31710,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
 
         auto l_QueryHolderResultFuture = l_Database->DelayQueryHolder(l_PetHolder);
 
-        sWorld->AddQueryHolderCallback(QueryHolderCallback(l_QueryHolderResultFuture, [l_NewPet, l_PlayerGUID, l_PetNumber](SQLQueryHolder* p_QueryHolder) -> void
+        sWorld->AddQueryHolderCallback(QueryHolderCallback(std::move(l_QueryHolderResultFuture), [l_NewPet, l_PlayerGUID, l_PetNumber](SQLQueryHolder* p_QueryHolder) -> void
         {
             Player* l_Player = sObjectAccessor->FindPlayer(l_PlayerGUID);
             if (!l_Player || !p_QueryHolder || l_Player != l_NewPet->GetOwner())
@@ -35913,7 +35909,7 @@ void Player::ApplyWargameItemModifications()
 #ifndef CROSS
 void Player::RewardCompletedAchievementsIfNeeded()
 {
-    GetAchievementMgr().GetCompletedAchievementLock().acquire();
+    GetAchievementMgr().GetCompletedAchievementLock().lock();
     for (auto l_Iterator : GetAchievementMgr().GetCompletedAchivements())
     {
         AchievementEntry const* l_Achievement = sAchievementMgr->GetAchievement(l_Iterator.first);
@@ -36035,7 +36031,7 @@ void Player::RewardCompletedAchievementsIfNeeded()
         }
     }
 
-    GetAchievementMgr().GetCompletedAchievementLock().release();
+    GetAchievementMgr().GetCompletedAchievementLock().unlock();
 }
 
 #endif /* not CROSS */

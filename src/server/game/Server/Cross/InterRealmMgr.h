@@ -71,7 +71,7 @@ class InterRealmMgr
     private:
 
         void Lock() { m_Mutex.lock(); }
-        void Unlock() { m_Mutex.release(); }
+        void Unlock() { m_Mutex.unlock(); }
 
     private:
 

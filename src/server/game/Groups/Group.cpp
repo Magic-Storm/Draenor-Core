@@ -391,9 +391,9 @@ bool Group::AddInvite(Player* player)
 
     RemoveInvite(player);
 
-    m_inviteesLock.acquire();
+    m_inviteesLock.lock();
     m_invitees.insert(player->GetGUID());
-    m_inviteesLock.release();
+    m_inviteesLock.unlock();
 
     player->SetGroupInvite(this->GetGUID());
 
@@ -417,22 +417,22 @@ void Group::RemoveInvite(Player* player)
 {
     if (player)
     {
-        m_inviteesLock.acquire();
+        m_inviteesLock.lock();
         m_invitees.erase(player->GetGUID());
-        m_inviteesLock.release();
+        m_inviteesLock.unlock();
         player->SetGroupInvite(0);
     }
 }
 
 void Group::RemoveAllInvites()
 {
-    m_inviteesLock.acquire();
+    m_inviteesLock.lock();
     for (InvitesList::iterator itr=m_invitees.begin(); itr != m_invitees.end(); ++itr)
         if (Player* plr = sObjectAccessor->FindPlayer(*itr))
             plr->SetGroupInvite(0);
 
     m_invitees.clear();
-    m_inviteesLock.release();
+    m_inviteesLock.unlock();
 }
 
 Player* Group::GetInvited(uint64 guid) const
@@ -447,7 +447,7 @@ Player* Group::GetInvited(uint64 guid) const
 
 Player* Group::GetInvited(const std::string& name) const
 {
-    m_inviteesLock.acquire();
+    m_inviteesLock.lock();
     for (InvitesList::const_iterator itr = m_invitees.begin(); itr != m_invitees.end(); ++itr)
     {
         Player* plr = sObjectAccessor->FindPlayer(*itr);
@@ -456,11 +456,11 @@ Player* Group::GetInvited(const std::string& name) const
 
         if (plr->GetName() == name)
         {
-            m_inviteesLock.release();
+            m_inviteesLock.unlock();
             return plr;
         }
     }
-    m_inviteesLock.release();
+    m_inviteesLock.unlock();
     return NULL;
 }
 

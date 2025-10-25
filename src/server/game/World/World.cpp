@@ -3444,7 +3444,7 @@ void World::UpdateSessions(uint32 diff)
         }
     }
 
-    playersLock.release();
+    playersLock.unlock();
 #else
     ///- Add new sessions
     WorldSession* sess = NULL;
@@ -4238,7 +4238,7 @@ void World::AddPlayer(Player* player)
 
     m_players[player->GetGUID()] = player;
 
-    playersLock.release();
+    playersLock.unlock();
 }
 
 bool World::HasPlayer(uint64 guid) const
@@ -4279,7 +4279,7 @@ void World::UpdateInterRealmStat()
         }
     }
 
-    playersLock.release();
+    playersLock.unlock();
 
     uint32 uptimeDiff = uint32(m_gameTime - m_startTime);
 

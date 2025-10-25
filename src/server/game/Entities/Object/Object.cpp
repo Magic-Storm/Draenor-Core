@@ -3158,7 +3158,7 @@ void Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
             auto l_QueryHolderResultFuture = l_Database->DelayQueryHolder(l_PetHolder);
 
-            sWorld->AddQueryHolderCallback(QueryHolderCallback(l_QueryHolderResultFuture, [entry, x, y, z, ang, petType, duration, l_LoadPetSlotID, slotID, stampeded, p_Callback, l_Pet, currentPet, l_PlayerGUID](SQLQueryHolder* p_QueryHolder) -> void
+            sWorld->AddQueryHolderCallback(QueryHolderCallback(std::move(l_QueryHolderResultFuture), [entry, x, y, z, ang, petType, duration, l_LoadPetSlotID, slotID, stampeded, p_Callback, l_Pet, currentPet, l_PlayerGUID](SQLQueryHolder* p_QueryHolder) -> void
             {
                 Player* l_Player = sObjectAccessor->FindPlayer(l_PlayerGUID);
                 if (!l_Player || !p_QueryHolder)

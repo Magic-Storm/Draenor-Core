@@ -525,241 +525,149 @@ void AchievementMgr<T>::SaveToDB(SQLTransaction& /*trans*/)
 template<>
 void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
 {
-    m_CompletedAchievementsLock.acquire();
     if (!m_completedAchievements.empty())
     {
         bool need_execute = false;
+        bool need_execute_acc = false;
 
-        std::ostringstream ssAccDel;
         std::ostringstream ssAccIns;
-
-        std::ostringstream ssCharDel;
         std::ostringstream ssCharIns;
-        std::ostringstream sscount;
-
-        uint32 points = 0;
-
-        for (CompletedAchievementMap::iterator itr =  m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
-            if (AchievementEntry const* pAchievement = sAchievementStore.LookupEntry(itr->first))
-                points += pAchievement->Points;
-
-        if (points)
-        {
-            sscount << "REPLACE INTO character_achievement_count (guid, count) VALUES (" << GetOwner()->GetRealGUIDLow() << "," << points << ");";
-            trans->Append(sscount.str().c_str());
-        }
 
         for (CompletedAchievementMap::iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
         {
             if (!iter->second.changed)
                 continue;
 
-            bool mustSaveForCharacter = iter->second.completedByThisCharacter;
-
-            // First new/changed record prefix
+            /// first new/changed record prefix
             if (!need_execute)
             {
-                ssAccDel << "DELETE FROM account_achievement WHERE account = " << GetOwner()->GetSession()->GetAccountId() << " AND achievement IN (";
-                ssAccIns << "INSERT INTO account_achievement (account, first_guid, achievement, date) VALUES ";
-
-                if (mustSaveForCharacter)
-                {
-                    ssCharDel << "DELETE FROM character_achievement WHERE guid = " << GetOwner()->GetRealGUIDLow() << " AND achievement IN (";
-                    ssCharIns << "INSERT INTO character_achievement (guid, achievement) VALUES ";
-                }
+                ssCharIns << "REPLACE INTO character_achievement (guid, achievement, date) VALUES ";
                 need_execute = true;
             }
-            // Next new/changed record prefix
+            /// next new/changed record prefix
             else
+                ssCharIns << ',';
+
+            if (!need_execute_acc)
             {
-                ssAccDel << ',';
+                ssAccIns << "REPLACE INTO account_achievement (account, first_guid, achievement, date) VALUES ";
+                need_execute_acc = true;
+            }
+            else
                 ssAccIns << ',';
 
-                if (mustSaveForCharacter)
-                {
-                    ssCharDel << ',';
-                    ssCharIns << ',';
-                }
-            }
+            // new/changed record data
+            ssAccIns << '(' << GetOwner()->GetSession()->GetAccountId() << ',' << iter->second.first_guid << ',' << iter->first << ',' << iter->second.date << ')';
+            ssCharIns << '(' << GetOwner()->GetGUIDLow() << ',' << iter->first << ',' << iter->second.date << ')';
 
-            // New/changed record data
-            ssAccDel << iter->first;
-            ssAccIns << '(' << GetOwner()->GetSession()->GetAccountId() << ',' << GUID_LOPART(iter->second.first_guid) << ',' << iter->first << ',' << iter->second.date << ')';
-
-            if (mustSaveForCharacter)
-            {
-                ssCharDel << iter->first;
-                ssCharIns << '(' << GetOwner()->GetRealGUIDLow() << ',' << iter->first << ')';
-            }
-
-            /// Mark as saved in db
+            /// mark as saved in db
             iter->second.changed = false;
         }
 
         if (need_execute)
-        {
-            ssAccDel  << ')';
-            ssCharDel << ')';
-            trans->Append(ssAccDel.str().c_str());
-            trans->Append(ssAccIns.str().c_str());
-
-            trans->Append(ssCharDel.str().c_str());
             trans->Append(ssCharIns.str().c_str());
-        }
-    }
-    
-    m_CompletedAchievementsLock.release();
 
-    CriteriaProgressMap* progressMap = GetCriteriaProgressMap();
-    if (!progressMap)
+        if (need_execute_acc)
+            trans->Append(ssAccIns.str().c_str());
+    }
+
+    if (m_achievementProgress.empty())
         return;
 
-    if (!progressMap->empty())
+    for (AchievementProgressMap::iterator itr = m_achievementProgress.begin(); itr != m_achievementProgress.end(); ++itr)
     {
-        // Prepare deleting and insert
-        bool need_execute_del       = false;
-        bool need_execute_ins       = false;
-        bool need_execute_account   = false;
-
-        bool isAccountAchievement   = false;
-
-        bool alreadyOneCharDelLine  = false;
-        bool alreadyOneAccDelLine   = false;
-        bool alreadyOneCharInsLine  = false;
-        bool alreadyOneAccInsLine   = false;
-
-        std::ostringstream ssAccdel;
-        std::ostringstream ssAccins;
-        std::ostringstream ssChardel;
-        std::ostringstream ssCharins;
-
-        uint64 guid = GetOwner()->GetRealGUIDLow();
-
-        uint32 accountId = GetOwner()->GetSession()->GetAccountId();
-
-        for (CriteriaProgressMap::iterator iter = progressMap->begin(); iter != progressMap->end(); ++iter)
+        if (CriteriaProgressMap* progressMap = &itr->second)
         {
-            if (!iter->second.changed)
-                continue;
+            /// prepare deleting and insert
+            bool need_execute_ins = false;
+            bool need_execute_account = false;
 
-            CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(iter->first);
-            if (!criteria)
-                continue;
+            bool isAccountAchievement = false;
 
-            AchievementEntry const* l_Achievement = nullptr;
-            AchievementCriteriaTreeList const& criteriaTreeList = sAchievementMgr->GetAchievementCriteriaTreeList(criteria);
-            for (AchievementCriteriaTreeList::const_iterator l_Iter = criteriaTreeList.begin(); l_Iter != criteriaTreeList.end(); ++l_Iter)
+            bool alreadyOneCharInsLine = false;
+            bool alreadyOneAccInsLine = false;
+
+            std::ostringstream ssAccins;
+            std::ostringstream ssCharins;
+
+            uint64 guid = GetOwner()->GetGUIDLow();
+            uint32 accountId = GetOwner()->GetSession()->GetAccountId();
+
+            for (CriteriaProgressMap::iterator iter = progressMap->begin(); iter != progressMap->end(); ++iter)
             {
-                CriteriaTreeEntry const* l_CriteriaTree = *l_Iter;
-                l_Achievement = sAchievementMgr->GetAchievementEntryByCriteriaTree(l_CriteriaTree);
-            }
+                if (iter->second.deactiveted || (!iter->second.changed && !iter->second.updated))
+                    continue;
 
-            if (l_Achievement == nullptr)
-                continue;
+                //disable? active before test achivement system
+                AchievementEntry const* achievement = iter->second.achievement;
+                if (!achievement)
+                    continue;
 
-            if (l_Achievement->Flags & ACHIEVEMENT_FLAG_ACCOUNT)
-            {
-                isAccountAchievement = true;
-                need_execute_account = true;
-            }
-            else
-                isAccountAchievement = false;
-
-            // Deleted data (including 0 progress state)
-            {
-                // First new/changed record prefix (for any counter value)
-                if (!need_execute_del)
+                if (achievement->Flags & ACHIEVEMENT_FLAG_ACCOUNT)
                 {
-                    ssAccdel  << "DELETE FROM account_achievement_progress   WHERE account = " << accountId << " AND criteria IN (";
-                    ssChardel << "DELETE FROM character_achievement_progress WHERE guid    = " << guid      << " AND criteria IN (";
-                    need_execute_del = true;
-                }
-                // Next new/changed record prefix
-                else
-                {
-                    if (isAccountAchievement)
-                    {
-                        if (alreadyOneAccDelLine)
-                            ssAccdel  << ',';
-                    }
-                    else
-                    {
-                        if (alreadyOneCharDelLine)
-                            ssChardel << ',';
-                    }
-                }
-
-                // New/changed record data
-                if (isAccountAchievement)
-                {
-                    ssAccdel << iter->first;
-                    alreadyOneAccDelLine  = true;
+                    isAccountAchievement = true;
+                    need_execute_account = true;
                 }
                 else
-                {
-                    ssChardel << iter->first;
-                    alreadyOneCharDelLine = true;
-                }
-            }
+                    isAccountAchievement = false;
 
-            // Store data only for real progress
-            if (iter->second.counter != 0)
-            {
-                /// First new/changed record prefix
-                if (!need_execute_ins)
+                // store data only for real progress
+                bool hasAchieve = HasAchieved(achievement->ID, GetOwner()->GetGUIDLow()) || (achievement->Supercedes && !HasAchieved(achievement->Supercedes, GetOwner()->GetGUIDLow()));
+                if (iter->second.counter != 0 && !hasAchieve)
                 {
-                    ssAccins  << "INSERT INTO account_achievement_progress   (account, criteria, counter, date) VALUES ";
-                    ssCharins << "INSERT INTO character_achievement_progress (guid,    criteria, counter, date) VALUES ";
-                    need_execute_ins = true;
-                }
-                // Next new/changed record prefix
-                else
-                {
-                    if (isAccountAchievement)
+                    uint32 achievID = iter->second.achievement ? iter->second.achievement->ID : 0;
+                    if (iter->second.changed)
                     {
-                        if (alreadyOneAccInsLine)
-                            ssAccins  << ',';
+                        /// first new/changed record prefix
+                        if (!need_execute_ins)
+                        {
+                            ssAccins << "REPLACE INTO account_achievement_progress   (account, criteria, counter, date, achievID, completed) VALUES ";
+                            ssCharins << "REPLACE INTO character_achievement_progress (guid,    criteria, counter, date, achievID, completed) VALUES ";
+                            need_execute_ins = true;
+                        }
+                        /// next new/changed record prefix
+                        else
+                        {
+                            if (isAccountAchievement)
+                            {
+                                if (alreadyOneAccInsLine)
+                                    ssAccins << ',';
+                            }
+                            else
+                            {
+                                if (alreadyOneCharInsLine)
+                                    ssCharins << ',';
+                            }
+                        }
+
+                        // new/changed record data
+                        if (isAccountAchievement)
+                        {
+                            ssAccins << '(' << accountId << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ',' << achievID << ',' << (iter->second.CompletedGUID != 0) << ')';
+                            alreadyOneAccInsLine = true;
+                        }
+                        else
+                        {
+                            ssCharins << '(' << guid << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ',' << achievID << ',' << (iter->second.CompletedGUID != 0) << ')';
+                            alreadyOneCharInsLine = true;
+                        }
                     }
-                    else
+                    else if (iter->second.updated)
                     {
-                        if (alreadyOneCharInsLine)
-                            ssCharins << ',';
+                        std::ostringstream ssUpd;
+                        if (isAccountAchievement)
+                            ssUpd << "UPDATE account_achievement_progress SET counter = " << iter->second.counter << ", date = " << iter->second.date << ", achievID = " << achievID << ", completed = " << (iter->second.CompletedGUID != 0) << " WHERE account = " << accountId << " AND criteria = " << iter->first << ';';
+                        else
+                            ssUpd << "UPDATE character_achievement_progress SET counter = " << iter->second.counter << ", date = " << iter->second.date << ", achievID = " << achievID << ", completed = " << (iter->second.CompletedGUID != 0) << " WHERE guid = " << guid << " AND criteria = " << iter->first << ';';
+                        trans->Append(ssUpd.str().c_str());
                     }
                 }
 
-                // New/changed record data
-                if (isAccountAchievement)
-                {
-                    ssAccins  << '(' << accountId << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ')';
-                    alreadyOneAccInsLine  = true;
-                }
-                else
-                {
-                    ssCharins << '(' << guid      << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ')';
-                    alreadyOneCharInsLine = true;
-                }
+                /// mark as updated in db
+                iter->second.changed = false;
+                iter->second.updated = false;
             }
 
-            // Mark as updated in db
-            iter->second.changed = false;
-        }
-
-        if (need_execute_del)                                // DELETE ... IN (.... _)_
-        {
-            ssAccdel  << ')';
-            ssChardel << ')';
-        }
-
-        if (need_execute_del || need_execute_ins)
-        {
-            if (need_execute_del)
-            {
-                if (need_execute_account && alreadyOneAccDelLine)
-                    trans->Append(ssAccdel.str().c_str());
-
-                if (alreadyOneCharDelLine)
-                    trans->Append(ssChardel.str().c_str());
-            }
 
             if (need_execute_ins)
             {
@@ -861,13 +769,13 @@ void AchievementMgr<Player>::LoadFromDB(Player* /*p_Player*/, Guild* /*p_Guild*/
             if (achievement->Flags & ACHIEVEMENT_FLAG_GUILD)
                 continue;
 
-            m_CompletedAchievementsLock.acquire();
+            m_CompletedAchievementsLock.lock();
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.date = time_t(fields[2].GetUInt32());
             ca.changed = false;
             ca.first_guid = MAKE_NEW_GUID(first_guid, 0, HIGHGUID_PLAYER);
             ca.completedByThisCharacter = first_guid == GetOwner()->GetGUIDLow();
-            m_CompletedAchievementsLock.release();
+            m_CompletedAchievementsLock.unlock();
 
             _achievementPoints += achievement->Points;
 
@@ -942,19 +850,19 @@ void AchievementMgr<Player>::LoadFromDB(Player* /*p_Player*/, Guild* /*p_Guild*/
             if (!achievement)
                 continue;
                 
-            m_CompletedAchievementsLock.acquire();
+            m_CompletedAchievementsLock.lock();
 
             // Achievement in character_achievement but not in account_achievement, there is a problem.
             if (m_completedAchievements.find(achievementid) == m_completedAchievements.end())
             {
-                m_CompletedAchievementsLock.release();
+                m_CompletedAchievementsLock.unlock();
                 continue;
             }
 
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.completedByThisCharacter = true;
             
-            m_CompletedAchievementsLock.release();
+            m_CompletedAchievementsLock.unlock();
             _achievementPoints += achievement->Points;
 
             if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
@@ -1088,7 +996,7 @@ void AchievementMgr<T>::Reset()
 template<>
 void AchievementMgr<Player>::Reset()
 {
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
         WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4);
@@ -1096,7 +1004,7 @@ void AchievementMgr<Player>::Reset()
         data << uint32(0);
         SendPacket(&data);
     }
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     CriteriaProgressMap* criteriaProgress = GetCriteriaProgressMap();
 
@@ -1110,9 +1018,9 @@ void AchievementMgr<Player>::Reset()
         SendPacket(&data);
     }
 
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     m_completedAchievements.clear();
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     _achievementPoints = 0;
     criteriaProgress->clear();
@@ -2331,11 +2239,11 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* p_Achieveme
 
     if (HasAccountAchieved(p_Achievement->ID))
     {
-        m_CompletedAchievementsLock.acquire();
+        m_CompletedAchievementsLock.lock();
         CompletedAchievementData& l_Data = m_completedAchievements[p_Achievement->ID];
         l_Data.completedByThisCharacter = true;
         l_Data.changed = true;
-        m_CompletedAchievementsLock.release();
+        m_CompletedAchievementsLock.unlock();
 
         /// Rewards must be handled too in this case
         RewardAchievement(p_Achievement);
@@ -2343,13 +2251,13 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* p_Achieveme
         return;
     }
 
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     CompletedAchievementData& l_Data = m_completedAchievements[p_Achievement->ID];
     l_Data.completedByThisCharacter = true;
     l_Data.date = time(NULL);
     l_Data.first_guid = MAKE_NEW_GUID(GetOwner()->GetGUIDLow(), 0, HIGHGUID_PLAYER);
     l_Data.changed = true;
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     sAchievementMgr->SetRealmCompleted(p_Achievement, GetInstanceId(GetOwner()));
 
@@ -2374,9 +2282,9 @@ void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achieve
     if (achievement->Flags & ACHIEVEMENT_FLAG_COUNTER || HasAchieved(achievement->ID)  || !(achievement->Flags & ACHIEVEMENT_FLAG_GUILD))
         return;
 
-    /*if (achievement->flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_NEWS)
+    /*if (achievement->Flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_NEWS)
         if (Guild* guild = sGuildMgr->GetGuildById(referencePlayer->GetGuildId()))
-            guild->GetNewsLog().AddNewEvent(GUILD_NEWS_GUILD_ACHIEVEMENT, time(NULL), 0, achievement->flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_HEADER, achievement->ID);*/
+            guild->GetNewsLog().AddNewEvent(GUILD_NEWS_GUILD_ACHIEVEMENT, time(NULL), 0, achievement->Flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_HEADER, achievement->ID);*/
 
     SendAchievementEarned(achievement);
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
@@ -2498,7 +2406,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     VisibleAchievementPred l_IsVisible;
     size_t l_CriteriaCount = l_ProgressMap->size();
     
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     size_t l_AchievementCount = std::count_if(m_completedAchievements.begin(), m_completedAchievements.end(), l_IsVisible);
 
     WorldPacket data(SMSG_ALL_ACHIEVEMENT_DATA, 200 * 1024);
@@ -2517,7 +2425,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data << uint32(g_RealmID);                                              ///< Virtual Realm Address
         data << uint32(g_RealmID);                                              ///< Native Realm Address
     }
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     for (CriteriaProgressMap::const_iterator itr = l_ProgressMap->begin(); itr != l_ProgressMap->end(); ++itr)
     {
@@ -2571,7 +2479,7 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* p_Receiver, uint32 /*p_
 
     VisibleAchievementPred l_IsVisible;
     size_t l_CriteriaCount = l_ProgressMap->size();
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     size_t l_AchievementCount = std::count_if(m_completedAchievements.begin(), m_completedAchievements.end(), l_IsVisible);
 
     WorldPacket l_Data(SMSG_RESPOND_INSPECT_ACHIEVEMENTS, 80 * 1024);
@@ -2591,7 +2499,7 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* p_Receiver, uint32 /*p_
         l_Data << uint32(g_RealmID);
         l_Data << uint32(g_RealmID);
     }
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     for (CriteriaProgressMap::const_iterator l_Iter = l_ProgressMap->begin(); l_Iter != l_ProgressMap->end(); ++l_Iter)
     {
@@ -2657,9 +2565,9 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* p_Receiver, uint32 p_Ach
 template<class T>
 bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
 {
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     bool l_Result = m_completedAchievements.find(achievementId) != m_completedAchievements.end();
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
     
     return l_Result;
 }
@@ -2667,15 +2575,15 @@ bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
 template<>
 bool AchievementMgr<Player>::HasAchieved(uint32 achievementId) const
 {
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
 
     if (itr == m_completedAchievements.end())
     {
-        m_CompletedAchievementsLock.release();
+        m_CompletedAchievementsLock.unlock();
         return false;
     }
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     return (*itr).second.completedByThisCharacter;
 }
@@ -2683,9 +2591,9 @@ bool AchievementMgr<Player>::HasAchieved(uint32 achievementId) const
 template<class T>
 bool AchievementMgr<T>::HasAccountAchieved(uint32 achievementId) const
 {
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     bool l_Result = m_completedAchievements.find(achievementId) != m_completedAchievements.end();
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
     
     return l_Result;
 }
@@ -2693,16 +2601,16 @@ bool AchievementMgr<T>::HasAccountAchieved(uint32 achievementId) const
 template<class T>
 uint64 AchievementMgr<T>::GetFirstAchievedCharacterOnAccount(uint32 achievementId) const
 {
-    m_CompletedAchievementsLock.acquire();
+    m_CompletedAchievementsLock.lock();
     CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
 
     if (itr == m_completedAchievements.end())
     {
-        m_CompletedAchievementsLock.release();
+        m_CompletedAchievementsLock.unlock();
         return 0LL;
     }
         
-    m_CompletedAchievementsLock.release();
+    m_CompletedAchievementsLock.unlock();
 
     return (*itr).second.first_guid;
 }
@@ -2842,13 +2750,13 @@ bool AchievementMgr<T>::RequirementsSatisfied(CriteriaEntry const* p_Criteria, u
         case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_TOYS:
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
-            m_CompletedAchievementsLock.acquire();
+            m_CompletedAchievementsLock.lock();
             if (m_completedAchievements.find(p_Criteria->complete_achievement.linkedAchievement) == m_completedAchievements.end())
             {
-                m_CompletedAchievementsLock.release();
+                m_CompletedAchievementsLock.unlock();
                 return false;
             }
-            m_CompletedAchievementsLock.release();
+            m_CompletedAchievementsLock.unlock();
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
             if (!p_MiscValue1 || !p_ReferencePlayer || p_Criteria->win_bg.MapID != p_ReferencePlayer->GetMapId())
@@ -4222,8 +4130,12 @@ void AchievementGlobalMgr::PrepareCriteriaUpdateTaskThread()
     AchievementCriteriaUpdateTask l_Task;
     for (auto l_Iterator = m_LockedPlayersAchievementCriteriaTask.begin(); l_Iterator != m_LockedPlayersAchievementCriteriaTask.end(); l_Iterator++)
     {
-        while ((*l_Iterator).second.next(l_Task))
+        while (!(*l_Iterator).second.empty())
+        {
+            l_Task = (*l_Iterator).second.front();
+            (*l_Iterator).second.pop();
             m_PlayersAchievementCriteriaTask[(*l_Iterator).first].push(l_Task);
+        }
     }
 }
 

@@ -231,9 +231,9 @@ void Channel::Join(uint64 p, const char *pass)
         pinfo.LocaleFilter = 1 << (player->GetSession()->GetSessionDbLocaleIndex() + 1);
     }
 
-    m_Lock.acquire();
+    m_Players.GetLock().lock();
     m_Players[p] = pinfo;
-    m_Lock.release();
+    m_Players.GetLock().unlock();
 
     MakeYouJoined(&data);
     SendToOne(&data, p);
@@ -294,9 +294,9 @@ void Channel::Leave(uint64 p, bool send)
 
         bool changeowner = m_Players[p].IsOwner();
 
-        m_Lock.acquire();
+        m_Players.GetLock().lock();
         m_Players.erase(p);
-        m_Lock.release();
+        m_Players.GetLock().unlock();
 
         if (m_announce && (!player || !AccountMgr::IsModeratorAccount(player->GetSession()->GetSecurity()) || !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
         {
@@ -856,7 +856,7 @@ void Channel::SetOwner(uint64 guid, bool exclaim)
 
 void Channel::SendToAll(WorldPacket* data, uint64 p, uint64 p_SenderGUID)
 {
-    m_Lock.acquire();
+    m_Players.GetLock().lock();
     for (PlayerList::const_iterator i = m_Players.begin(); i != m_Players.end(); ++i)
     {
         Player* player = ObjectAccessor::FindPlayer(i->first);
@@ -876,12 +876,12 @@ void Channel::SendToAll(WorldPacket* data, uint64 p, uint64 p_SenderGUID)
 #endif /* CROSS */
         }
     }
-    m_Lock.release();
+    m_Players.GetLock().unlock();
 }
 
 void Channel::SendToAllButOne(WorldPacket* data, uint64 who)
 {
-    m_Lock.acquire();
+    m_Players.GetLock().lock();
     for (PlayerList::const_iterator i = m_Players.begin(); i != m_Players.end(); ++i)
     {
         if (i->first != who)
@@ -891,7 +891,7 @@ void Channel::SendToAllButOne(WorldPacket* data, uint64 who)
                 player->GetSession()->SendPacket(data);
         }
     }
-    m_Lock.release();
+    m_Players.GetLock().unlock();
 }
 
 void Channel::SendToOne(WorldPacket* data, uint64 who)

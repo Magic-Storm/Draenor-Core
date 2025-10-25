@@ -37,6 +37,9 @@ struct CriteriaProgress
     time_t date;                                            // latest update time.
     uint64 CompletedGUID;                                   // GUID of the player that completed this criteria (guild achievements)
     bool changed;
+    bool updated;
+    bool deactiveted;
+    AchievementEntry const* achievement;
 };
 
 enum AchievementCriteriaDataType
