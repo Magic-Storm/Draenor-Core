@@ -286,6 +286,17 @@ extern LockedQueue<ArenaLog*> ArenaLogQueue;
 
 #define MAX_QUERY_LEN 32*1024
 
+#include <memory>
+
+namespace Trinity
+{
+    template<typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args&&... args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+}
+
 namespace std
 {
     template<class K, class V>

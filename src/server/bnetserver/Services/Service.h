@@ -29,7 +29,7 @@ namespace Battlenet
     class Service : public T
     {
     public:
-        Service(Session* session) : T(true), _session(session) { }
+        Service(Session* session) : T(typename T::OriginalHash()), _session(session) { }
 
     protected:
         void SendRequest(uint32 serviceHash, uint32 methodId, google::protobuf::Message const* request, std::function<void(MessageBuffer)> callback) override { _session->SendRequest(serviceHash, methodId, request, std::move(callback)); }

@@ -257,6 +257,17 @@ uint32 CreatePIDFile(const std::string& filename)
     return (uint32)pid;
 }
 
+uint32 GetPID()
+{
+#ifdef _WIN32
+    DWORD pid = GetCurrentProcessId();
+#else
+    pid_t pid = getpid();
+#endif
+
+    return uint32(pid);
+}
+
 size_t utf8length(std::string& utf8str)
 {
     try
@@ -503,6 +514,17 @@ void vutf8printf(FILE* out, const char *str, va_list* ap)
 #else
     vfprintf(out, str, *ap);
 #endif
+}
+
+bool Utf8ToUpperOnlyLatin(std::string& utf8String)
+{
+    std::wstring wstr;
+    if (!Utf8toWStr(utf8String, wstr))
+        return false;
+
+    std::transform(wstr.begin(), wstr.end(), wstr.begin(), wcharToUpperOnlyLatin);
+
+    return WStrToUtf8(wstr, utf8String);
 }
 
 std::string ByteArrayToHexStr(uint8 const* bytes, uint32 arrayLen, bool reverse /* = false */)

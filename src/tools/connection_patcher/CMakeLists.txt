@@ -29,6 +29,7 @@ set(SRC_FILES
 include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/shared
   ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${OPENSSL_INCLUDE_DIR}

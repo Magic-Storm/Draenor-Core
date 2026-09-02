@@ -24,6 +24,7 @@
 #include "RealmList.h"
 #include "ServiceDispatcher.h"
 #include "RealmList.pb.h"
+#include "StringFormat.h"
 #include <zlib.h>
 
 void Battlenet::Session::AccountInfo::LoadResult(PreparedQueryResult result)

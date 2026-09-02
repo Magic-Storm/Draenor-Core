@@ -954,6 +954,16 @@ extern intmax_t __strtoull(const char*, char**, int);
 # include <openssl/rand.h>
 # include <openssl/ssl.h>
 # include <openssl/x509v3.h>
+# if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#  ifndef RAND_pseudo_bytes
+#   define RAND_pseudo_bytes(buf, num) RAND_bytes((buf), (num))
+#  endif
+# endif
+# if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#  ifndef ASN1_STRING_data
+#   define ASN1_STRING_data(x) ASN1_STRING_get0_data(x)
+#  endif
+# endif
 # ifndef ALLOW_OLD_VERSIONS
 #  if (OPENSSL_VERSION_NUMBER < 0x00905100L)
 #   error "Must use OpenSSL 0.9.6 or later"

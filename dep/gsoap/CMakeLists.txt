@@ -12,10 +12,12 @@ set(gsoap_STAT_SRCS
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${OPENSSL_INCLUDE_DIR}
 )
 
 # Little fix for MSVC / Windows platforms
 add_definitions(-D_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=0)
+add_definitions(-DWITH_OPENSSL)
 
 add_library(gsoap STATIC ${gsoap_STAT_SRCS})
 

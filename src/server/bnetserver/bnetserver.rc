@@ -17,7 +17,7 @@
  */
 
 #include "resource.h"
-#include "revision_data.h"
+#include "revision.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////

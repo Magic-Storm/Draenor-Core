@@ -8,9 +8,9 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-file(GLOB_RECURSE sources_Client Client/*.cpp Client/*.h)
-file(GLOB_RECURSE sources_Login Login/*.cpp Login/*.h)
-file(GLOB_RECURSE sources_RealmList RealmList/*.cpp RealmList/*.h)
+file(GLOB_RECURSE sources_Client Client/*.cpp Client/*.cc Client/*.h)
+file(GLOB_RECURSE sources_Login Login/*.cpp Login/*.cc Login/*.h)
+file(GLOB_RECURSE sources_RealmList RealmList/*.cpp RealmList/*.cc RealmList/*.h)
 
 if (MSVC)
   add_definitions(/W0)

@@ -36,7 +36,7 @@
 #include "Util.h"
 #include <iostream>
 #include <boost/program_options.hpp>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 #include <google/protobuf/stubs/common.h>
 
 using boost::asio::ip::tcp;

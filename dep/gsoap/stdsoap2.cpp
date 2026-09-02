@@ -4373,6 +4373,7 @@ ssl_auth_init(struct soap *soap)
 #endif
   if ((soap->ssl_flags & SOAP_SSL_RSA))
   {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
     if (SSL_CTX_need_tmp_RSA(soap->ctx))
 #endif
@@ -4386,6 +4387,7 @@ ssl_auth_init(struct soap *soap)
       }
       RSA_free(rsa);
     }
+#endif
   }
   else if (soap->dhfile)
   {
@@ -5835,7 +5837,7 @@ again:
       }
       if (!(soap->ssl_flags & SOAP_SSL_SKIP_HOST_CHECK))
       {
-        X509_NAME *subj;
+        X509_NAME const *subj;
         STACK_OF(CONF_VALUE) *val = NULL;
 #if (OPENSSL_VERSION_NUMBER >= 0x0090800fL)
         GENERAL_NAMES *names = NULL;
@@ -5951,7 +5953,7 @@ again:
           int i = -1;
           do
           {
-            ASN1_STRING *name;
+            ASN1_STRING const *name;
             i = X509_NAME_get_index_by_NID(subj, NID_commonName, i);
             if (i == -1)
               break;

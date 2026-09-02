@@ -28,7 +28,7 @@
 #include <set>
 #include <string>
 #include <stdexcept>
-#include <SHA256.h>
+#include "Cryptography/SHA256.h"
 #include <Util.h>
 
 namespace Connection_Patcher
