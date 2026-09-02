@@ -1467,7 +1467,7 @@ public:
                             go->SetObjectScale(2.0f);
                             sObjectMgr->AddGameobjectToGrid(guid, &data);
                         }
-                        if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HighGuid::GameObject>())
+                        if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HIGHGUID_GAMEOBJECT>())
                         {
                             GameObjectData& data = sObjectMgr->NewGOData(guid);
                             data.id = 204458;
@@ -1480,7 +1480,7 @@ public:
                             sObjectMgr->AddGameobjectToGrid(guid, &data);
                         }
                         //
-                        if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HighGuid::GameObject>())
+                        if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HIGHGUID_GAMEOBJECT>())
                         {
                             GameObjectData& data = sObjectMgr->NewGOData(guid);
                             data.id = 204458;
@@ -1502,7 +1502,7 @@ public:
                 case EVENT_SPAWN_OBJECT: // spawn orc and let him walk to us..
                 {
                     if (Transport* trans = me->GetTransport())
-                        if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HighGuid::Creature>())
+                        if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HIGHGUID_UNIT>())
                         {
                             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
                             data.id = 43567;
@@ -1587,7 +1587,7 @@ public:
                     for (auto player : pList)
                     {
                         if (Transport* trans = me->GetTransport())
-                            if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HighGuid::GameObject>())
+                            if (ObjectGuid::LowType guid = me->GetMap()->GenerateLowGuid<HIGHGUID_GAMEOBJECT>())
                             {
                                 CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
                                 data.id = 43713;

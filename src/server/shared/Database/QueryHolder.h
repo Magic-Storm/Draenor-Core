@@ -10,6 +10,7 @@
 #define _QUERYHOLDER_H
 
 #include <future>
+#include "QueryResult.h"
 
 class SQLQueryHolder
 {
@@ -30,7 +31,7 @@ class SQLQueryHolder
         void SetPreparedResult(size_t index, PreparedResultSet* result);
 };
 
-typedef std::future<SQLQueryHolder*> QueryResultHolderFuture;
+typedef QueryFuture<SQLQueryHolder*> QueryResultHolderFuture;
 typedef std::promise<SQLQueryHolder*> QueryResultHolderPromise;
 
 class SQLQueryHolderTask : public SQLOperation

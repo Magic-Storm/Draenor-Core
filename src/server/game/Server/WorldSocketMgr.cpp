@@ -62,7 +62,7 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_context& service, std::string 
 {
     _tcpNoDelay = sConfigMgr->GetBoolDefault("Network.TcpNodelay", true);
 
-    int const max_connections = boost::asio::socket_base::max_connections;
+    int const max_connections = boost::asio::socket_base::max_listen_connections;
     TC_LOG_DEBUG("misc", "Max allowed socket connections %d", max_connections);
 
     // -1 means use default

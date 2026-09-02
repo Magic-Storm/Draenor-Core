@@ -929,45 +929,45 @@ void InstanceScript::SendEncounterUnit(uint32 p_Type, Unit* p_Unit /*= NULL*/, u
         case EncounterFrameType::ENCOUNTER_FRAME_UPDATE_PRIORITY:
             if (!p_Unit)
                 return;
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_CHANGE_PRIORITY, 8 + 1);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_CHANGE_PRIORITY, 8 + 1);
             l_Data.append(p_Unit->GetPackGUID());
             l_Data << uint8(p_Param1);  // TargetFramePriority
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_START_TIMER:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_TIMER_START, 4);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_TIMER_START, 4);
             l_Data << int32(0);         // TimeRemaining
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_START_OBJECTIVE:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_START, 4);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_START, 4);
             l_Data << int32(0);         // ObjectiveID
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_COMPLETE_OBJECTIVE:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_COMPLETE, 4);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_COMPLETE, 4);
             l_Data << int32(0);         // ObjectiveID
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_START:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_START, 4 * 4);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_START, 4 * 4);
             l_Data << uint32(m_InCombatResCount);
             l_Data << int32(m_MaxInCombatResCount);
             l_Data << int32(m_CombatResChargeTime);
             l_Data << uint32(m_NextCombatResChargeTime);
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_UPDATE_OBJECTIVE:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_UPDATE, 4 * 2);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_UPDATE, 4 * 2);
             l_Data << int32(0);         // ProgressAmount
             l_Data << int32(0);         // ObjectiveID
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_END:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_END, 0);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_END, 0);
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_IN_COMBAT_RESURRECTION:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_IN_COMBAT_RESURRECTION, 0);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_IN_COMBAT_RESURRECTION, 0);
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_PHASE_SHIFT_CHANGED:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_PHASE_SHIFT_CHANGED, 0);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_PHASE_SHIFT_CHANGED, 0);
             break;
         case EncounterFrameType::ENCOUNTER_FRAME_GAIN_COMBAT_RESURRECTION_CHARGE:
-            l_Data.Initialize(Opcodes::SMSG_INSTANCE_ENCOUNTER_GAIN_COMBAT_RESURRECTION_CHARGE, 4 * 2);
+            l_Data.Initialize(SMSG_INSTANCE_ENCOUNTER_GAIN_COMBAT_RESURRECTION_CHARGE, 4 * 2);
             l_Data << int32(m_InCombatResCount);
             l_Data << uint32(m_CombatResChargeTime);
             break;
@@ -1463,7 +1463,7 @@ void InstanceScript::RewardNewRealmRecord(RealmCompletedChallenge* p_OldChalleng
                 PreparedStatement* l_Statement = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_TITLES);
                 l_Statement->setUInt32(0, l_LowGuid);
 
-                PreparedQueryResult l_Result = AsyncQuery(CharacterDatabase, l_Statement, [l_Index, l_Flag, l_LowGuid](PreparedQueryResult const& p_Result) -> void
+                AsyncQuery(CharacterDatabase, l_Statement, [l_Index, l_Flag, l_LowGuid](PreparedQueryResult const& p_Result) -> void
                 {
                     if (!p_Result)
                         return;
@@ -1645,7 +1645,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType p_Type, uint32 p_C
             if (p_Source != nullptr)
                 SendEncounterUnit(EncounterFrameType::ENCOUNTER_FRAME_END, p_Source);
 
-            WorldPacket l_Data(Opcodes::SMSG_BOSS_KILL_CREDIT, 4);
+            WorldPacket l_Data(SMSG_BOSS_KILL_CREDIT, 4);
             l_Data << int32((*l_Iter)->dbcEntry->ID);
             instance->SendToPlayers(&l_Data);
 
@@ -1662,7 +1662,7 @@ void InstanceScript::SendEncounterStart(uint32 p_EncounterID)
     if (!p_EncounterID)
         return;
 
-    WorldPacket l_Data(Opcodes::SMSG_ENCOUNTER_START);
+    WorldPacket l_Data(SMSG_ENCOUNTER_START);
     l_Data << uint32(p_EncounterID);
     l_Data << uint32(instance->GetDifficultyID());
     l_Data << uint32(instance->GetPlayers().getSize());
@@ -1716,7 +1716,7 @@ void InstanceScript::SendEncounterEnd(uint32 p_EncounterID, bool p_Success)
     if (!p_EncounterID)
         return;
 
-    WorldPacket l_Data(Opcodes::SMSG_ENCOUNTER_END);
+    WorldPacket l_Data(SMSG_ENCOUNTER_END);
     l_Data << uint32(p_EncounterID);
     l_Data << uint32(instance->GetDifficultyID());
     l_Data << uint32(instance->GetPlayers().getSize());

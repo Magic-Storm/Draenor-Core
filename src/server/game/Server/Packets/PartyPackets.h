@@ -22,6 +22,10 @@
 #include "ObjectGuid.h"
 #include "Group.h"
 
+#ifndef TARGET_ICONS_COUNT
+#define TARGET_ICONS_COUNT TARGETICONCOUNT
+#endif
+
 namespace WorldPackets
 {
     namespace Party
@@ -592,6 +596,12 @@ namespace WorldPackets
             void Read() override;
 
             uint8 MarkerId = 0u;
+        };
+
+        struct RaidMarker
+        {
+            ObjectGuid TransportGUID;
+            WorldLocation Location;
         };
 
         class RaidMarkersChanged final : public ServerPacket

@@ -398,7 +398,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
     WorldPacket packet(opcode, std::move(_packetBuffer), GetConnectionType());
 
     if (sPacketLog->CanLogPacket())
-        sPacketLog->LogPacket(packet, CLIENT_TO_SERVER, GetRemoteIpAddress(), GetRemotePort(), GetConnectionType());
+        sPacketLog->LogPacket(packet, CLIENT_TO_SERVER);
 
     std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
 
@@ -494,7 +494,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
                 return ReadDataHandlerResult::Error;
             }
 
-            OpcodeHandler const* handler = opcodeTable[opcode];
+            OpcodeHandler const* handler = g_OpcodeTable[WOW_CLIENT_TO_SERVER][uint32(opcode) & 0x7FFF];
             if (!handler)
             {
                 TC_LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode())).c_str(), _worldSession->GetPlayerInfo().c_str());
@@ -539,7 +539,7 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
         return;
 
     if (sPacketLog->CanLogPacket())
-        sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort(), GetConnectionType());
+        sPacketLog->LogPacket(packet, SERVER_TO_CLIENT);
 
     _bufferQueue.Enqueue(new EncryptablePacket(packet, _authCrypt.IsInitialized()));
 }
@@ -1010,7 +1010,7 @@ bool WorldSocket::HandlePing(WorldPackets::Auth::Ping& ping)
             {
                 std::unique_lock<std::mutex> sessionGuard(_worldSessionLock);
 
-                if (_worldSession && !_worldSession->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_OVERSPEED_PING))
+                if (_worldSession && _worldSession->GetSecurity() == SEC_PLAYER)
                 {
                     TC_LOG_ERROR("network", "WorldSocket::HandlePing: %s kicked for over-speed pings (address: %s)",
                         _worldSession->GetPlayerInfo().c_str(), GetRemoteIpAddress().to_string().c_str());

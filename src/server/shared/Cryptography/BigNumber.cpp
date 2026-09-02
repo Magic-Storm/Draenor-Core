@@ -157,6 +157,11 @@ bool BigNumber::isZero() const
     return BN_is_zero(_bn);
 }
 
+bool BigNumber::IsNegative() const
+{
+    return BN_is_negative(_bn) != 0;
+}
+
 
 std::unique_ptr<uint8> BigNumber::AsByteArray(int32 minSize, bool littleEndian)
 {

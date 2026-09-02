@@ -2170,7 +2170,7 @@ void Guild::SendBankList(WorldSession* p_Session, uint8 p_TabID, bool p_WithCont
     if (!l_CurrTab && p_TabID > 0)
         return;
 
-    WorldPacket l_Data(Opcodes::SMSG_GUILD_BANK_QUERY_RESULTS, 6 * 1024);
+    WorldPacket l_Data(SMSG_GUILD_BANK_QUERY_RESULTS, 6 * 1024);
 
     uint32 l_ItemCount = 0;
 

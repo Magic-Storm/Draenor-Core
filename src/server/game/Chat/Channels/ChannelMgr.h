@@ -28,7 +28,7 @@ class ChannelMgr
 
         Channel* GetJoinChannel(std::string name, uint32 channel_id);
         Channel* GetChannel(std::string name, Player* p, bool pkt = true);
-        void LeftChannel(std::string name);
+        void LeftChannel(std::string const& name);
     private:
         ChannelMgr() { team = 0; }
         ChannelMap channels;

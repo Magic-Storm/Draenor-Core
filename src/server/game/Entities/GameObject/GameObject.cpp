@@ -2573,7 +2573,7 @@ void GameObject::SendGameObjectActivateAnimKit(uint32 p_AnimKitID, bool p_Mainta
     /// It'll be sent in CreateObject
     SetAIAnimKitId(p_AnimKitID, false);
 
-    WorldPacket l_Data(Opcodes::SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT, 16 + 4 + 1);
+    WorldPacket l_Data(SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT, 16 + 4 + 1);
     l_Data.appendPackGUID(GetGUID());
     l_Data << uint32(p_AnimKitID);
     l_Data.WriteBit(p_Maintain);

@@ -91,7 +91,7 @@ WorldPacket const* WorldPackets::Spells::SendUnlearnSpells::Write()
 void WorldPackets::Spells::SpellCastLogData::Initialize(Unit const* unit)
 {
     Health = unit->GetHealth();
-    AttackPower = unit->GetTotalAttackPowerValue(unit->getClass() == CLASS_HUNTER ? RANGED_ATTACK : BASE_ATTACK);
+    AttackPower = unit->GetTotalAttackPowerValue(unit->getClass() == CLASS_HUNTER ? WeaponAttackType::RangedAttack : WeaponAttackType::BaseAttack);
     SpellPower = unit->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SPELL);
     PowerData.emplace_back(int32(unit->getPowerType()), unit->GetPower(unit->getPowerType()));
 }
@@ -162,7 +162,7 @@ WorldPacket const* WorldPackets::Spells::AuraUpdate::Write()
 
 ByteBuffer& operator>>(ByteBuffer& buffer, Optional<WorldPackets::Spells::TargetLocation>& location)
 {
-    location = boost::in_place();
+    location.emplace();
     buffer >> location->Transport;
     buffer >> location->Location.m_positionX;
     buffer >> location->Location.m_positionY;

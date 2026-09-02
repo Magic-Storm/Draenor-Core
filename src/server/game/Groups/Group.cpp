@@ -1524,7 +1524,7 @@ void Group::MasterLoot(Loot* loot, WorldObject* p_LootedObject)
     uint64 l_LootedGUID = p_LootedObject->GetGUID();
     sObjectMgr->setLootViewGUID(l_LootedGUID, p_LootedObject->GetGUID());
 
-    WorldPacket l_Data(Opcodes::SMSG_MASTER_LOOT_CANDIDATE_LIST);
+    WorldPacket l_Data(SMSG_MASTER_LOOT_CANDIDATE_LIST);
     l_Data.appendPackGUID(MAKE_NEW_GUID(p_LootedObject->GetGUIDLow(), 0, HIGHGUID_LOOT));
     l_Data << uint32(l_Count);
 
@@ -2952,7 +2952,7 @@ uint32 Group::CountActiveMarkers() const
 void Group::SendRaidMarkersUpdate()
 {
     std::vector<RaidMarker> const& l_RaidMarkers = GetRaidMarkers();
-    WorldPacket l_Data(Opcodes::SMSG_RAID_MARKERS_CHANGED, 10);
+    WorldPacket l_Data(SMSG_RAID_MARKERS_CHANGED, 10);
 
     l_Data << uint8(0); ///< PartyIndex
     l_Data << uint32(GetActiveMarkers());

@@ -11,6 +11,7 @@
 
 #include "Define.h"
 #include <string>
+#include <type_traits>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 
@@ -19,6 +20,8 @@ class BigNumber;
 class SHA1Hash
 {
 public:
+    using DigestLength = std::integral_constant<size_t, SHA_DIGEST_LENGTH>;
+
     SHA1Hash();
     SHA1Hash(SHA1Hash const& other);     // copy
     SHA1Hash(SHA1Hash&& other);          // move

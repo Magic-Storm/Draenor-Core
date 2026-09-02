@@ -571,12 +571,11 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
             trans->Append(ssAccIns.str().c_str());
     }
 
-    if (m_achievementProgress.empty())
+    if (m_criteriaProgress.empty())
         return;
 
-    for (AchievementProgressMap::iterator itr = m_achievementProgress.begin(); itr != m_achievementProgress.end(); ++itr)
     {
-        if (CriteriaProgressMap* progressMap = &itr->second)
+        CriteriaProgressMap* progressMap = &m_criteriaProgress;
         {
             /// prepare deleting and insert
             bool need_execute_ins = false;
@@ -612,7 +611,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
                     isAccountAchievement = false;
 
                 // store data only for real progress
-                bool hasAchieve = HasAchieved(achievement->ID, GetOwner()->GetGUIDLow()) || (achievement->Supercedes && !HasAchieved(achievement->Supercedes, GetOwner()->GetGUIDLow()));
+                bool hasAchieve = HasAchieved(achievement->ID) || (achievement->Supercedes && !HasAchieved(achievement->Supercedes));
                 if (iter->second.counter != 0 && !hasAchieve)
                 {
                     uint32 achievID = iter->second.achievement ? iter->second.achievement->ID : 0;

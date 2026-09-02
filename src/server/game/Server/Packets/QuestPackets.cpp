@@ -142,7 +142,7 @@ WorldPacket const* WorldPackets::Quest::QueryQuestInfoResponse::Write()
         {
             _worldPacket << uint32(questObjective.ID);
             _worldPacket << uint8(questObjective.Type);
-            _worldPacket << int8(questObjective.StorageIndex);
+            _worldPacket << int8(questObjective.Index);
             _worldPacket << int32(questObjective.ObjectID);
             _worldPacket << int32(questObjective.Amount);
             _worldPacket << uint32(questObjective.Flags);

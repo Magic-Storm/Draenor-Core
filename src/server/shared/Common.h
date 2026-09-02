@@ -297,6 +297,13 @@ namespace Trinity
     }
 }
 
+class ACE_Stack_Trace
+{
+public:
+    ACE_Stack_Trace() = default;
+    char const* c_str() const { return "<stack trace unavailable>"; }
+};
+
 namespace std
 {
     template<class K, class V>

@@ -441,25 +441,25 @@ void ScriptMgr::FillSpellSummary()
 /// Increase scheduled script count
 uint32 ScriptMgr::IncreaseScheduledScriptsCount()
 {
-    return ++m_ScheduledScripts;
+    return uint32(++_scheduledScripts);
 }
 
 /// Decrease scheduled script count
 uint32 ScriptMgr::DecreaseScheduledScriptCount()
 {
-    return --m_ScheduledScripts;
+    return uint32(--_scheduledScripts);
 }
 
 /// Decrease scheduled script count
 uint32 ScriptMgr::DecreaseScheduledScriptCount(size_t count)
 {
-    return m_ScheduledScripts -= count;
+    return uint32(_scheduledScripts -= long(count));
 }
 
 /// Is script scheduled
 bool ScriptMgr::IsScriptScheduled() const
 {
-    return m_ScheduledScripts > 0;
+    return _scheduledScripts > 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1422,7 +1422,7 @@ void ScriptMgr::OnPacketReceive(WorldTcpSession* p_Socket, WorldPacket p_Packet)
 {
     ASSERT(p_Socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(p_Socket, p_Packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(p_Socket, p_Packet, nullptr);
 }
 
 /// Called when a (valid) packet is received by a client. The packet object is a copy of the original packet, so reading and modifying it is safe.

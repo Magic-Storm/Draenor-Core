@@ -594,10 +594,10 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/) override
+        void JustDied(Unit* killer) override
         {
             // Give buff to killer if they're in vision phase
-            if (Unit* killer = me->GetKiller())
+            if (killer)
             {
                 if (Player* player = killer->ToPlayer())
                 {

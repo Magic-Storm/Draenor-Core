@@ -28,12 +28,13 @@
 #include "ObjectAccessor.h"
 #include "ScriptMgr.h"
 #include "OutdoorPvP/OutdoorPvPMgr.h"
-#include "BattlegroundMgr.h"
+#include "BattlegroundMgr.hpp"
 #include "TCSoap.h"
 #include "CliRunnable.h"
 #include "SystemConfig.h"
 #include "WorldSocketMgr.h"
-#include "Realm.h"
+#include "Log.h"
+#include <boost/filesystem/path.hpp>
 
 #define TRINITY_CORE_CONFIG  "worldserver.conf"
 #define WORLD_SLEEP_CONST 50
@@ -64,6 +65,9 @@ boost::asio::io_context _ioService;
 WorldDatabaseWorkerPool WorldDatabase;                      ///< Accessor to the world database
 CharacterDatabaseWorkerPool CharacterDatabase;              ///< Accessor to the character database
 LoginDatabaseWorkerPool LoginDatabase;                      ///< Accessor to the realm/login database
+HotfixDatabaseWorkerPool HotfixDatabase;                    ///< Accessor to the hotfix database
+LoginMopDatabaseWorkerPool LoginMopDatabase;                ///< Accessor to the mop login database
+WebDatabaseWorkerPool WebDatabase;                          ///< Accessor to the web database
 uint32 realmID;                                             ///< Id of the realm
 
 // Forward declaration
@@ -71,7 +75,7 @@ extern World* sWorldInstance;
 
 void usage(const char* prog);
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
-void FreezeDetectorThread(uint32 delayTime, uint32 pid);
+void FreezeDetectorThread(uint32 delayTime);
 AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_context& ioService);
 bool StartDB();
 void StopDB();
@@ -134,28 +138,22 @@ extern int main(int argc, char** argv)
         ++c;
     }
 
-    if (!sConfigMgr->LoadInitial(cfg_file))
+    std::string configError;
+    if (!sConfigMgr->LoadInitial(cfg_file, configError))
     {
-        printf("Invalid or missing configuration file : %s", cfg_file);
-        printf("Verify that the file exists and has \'[worldserver]' written in the top of the file!");
+        printf("Invalid or missing configuration file : %s\n%s\n", cfg_file, configError.c_str());
+        printf("Verify that the file exists and has '[worldserver]' written in the top of the file!");
         return 1;
     }
+    sLog->LoadFromConfig();
     TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", _FULLVERSION);
     TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
-    TC_LOG_INFO("server.worldserver", " ______                       __");
-    TC_LOG_INFO("server.worldserver", "/\\__  _\\       __          __/\\ \\__");
-    TC_LOG_INFO("server.worldserver", "\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\, _\\  __  __");
-    TC_LOG_INFO("server.worldserver", "   \\ \\ \\/\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
-    TC_LOG_INFO("server.worldserver", "    \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
-    TC_LOG_INFO("server.worldserver", "     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\\");
-    TC_LOG_INFO("server.worldserver", "      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\\");
-    TC_LOG_INFO("server.worldserver", "                                 C O R E  /\\___/");
-    TC_LOG_INFO("server.worldserver", "http://TrinityCore.org                    \\/__/\n");
+    TC_LOG_INFO("server.worldserver", "Draenor-Core 6.2.4.21742");
     TC_LOG_INFO("server.worldserver", "Using configuration file %s.", cfg_file);
     TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
     TC_LOG_INFO("server.worldserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
 
-    OpenSSLCrypto::threadsSetup();
+    OpenSSLCrypto::threadsSetup(boost::filesystem::path());
 
     /// worldserver PID file creation
     std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");
@@ -226,7 +224,7 @@ extern int main(int argc, char** argv)
     // Start up freeze catcher thread
     std::thread* freezeDetectorThread = nullptr;
     if (uint32 freezeDelay = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
-        freezeDetectorThread = new std::thread(FreezeDetectorThread, freezeDelay, pid);
+        freezeDetectorThread = new std::thread(FreezeDetectorThread, freezeDelay);
 
     // Launch the worldserver listener socket
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
@@ -437,7 +435,7 @@ void FreezeDetectorThread(uint32 delayTime)
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         uint32 curtime = getMSTime();
         // normal work
-        uint32 worldLoopCounter = World::m_worldLoopCounter;
+        uint32 worldLoopCounter = World::m_worldLoopCounter.load();
         if (loops != worldLoopCounter)
         {
             lastChange = curtime;
@@ -543,6 +541,33 @@ bool StartDB()
         return false;
     }
 
+    dbString = sConfigMgr->GetStringDefault("HotfixDatabaseInfo", "");
+    if (!dbString.empty())
+    {
+        asyncThreads = uint8(sConfigMgr->GetIntDefault("hotfixDatabase.WorkerThreads", 1));
+        synchThreads = uint8(sConfigMgr->GetIntDefault("HotfixDatabase.SynchThreads", 1));
+        if (!HotfixDatabase.Open(dbString, asyncThreads, synchThreads))
+        {
+            TC_LOG_ERROR("server.worldserver", "Cannot connect to hotfix database %s", dbString.c_str());
+            return false;
+        }
+    }
+
+    if (sConfigMgr->GetBoolDefault("WebDatabase.enable", false))
+    {
+        dbString = sConfigMgr->GetStringDefault("WebDatabaseInfo", "");
+        if (!dbString.empty())
+        {
+            asyncThreads = uint8(sConfigMgr->GetIntDefault("WebDatabaseInfo.WorkerThreads", 1));
+            synchThreads = uint8(sConfigMgr->GetIntDefault("WebDatabaseInfo.SynchThreads", 1));
+            if (!WebDatabase.Open(dbString, asyncThreads, synchThreads))
+            {
+                TC_LOG_ERROR("server.worldserver", "Cannot connect to web database %s", dbString.c_str());
+                return false;
+            }
+        }
+    }
+
     ///- Get the realm Id from the configuration file
     realmID = sConfigMgr->GetIntDefault("RealmID", 0);
     if (!realmID)
@@ -571,6 +596,8 @@ void StopDB()
     CharacterDatabase.Close();
     WorldDatabase.Close();
     LoginDatabase.Close();
+    HotfixDatabase.Close();
+    WebDatabase.Close();
 
     MySQL::Library_End();
 }

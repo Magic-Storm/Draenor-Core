@@ -23,7 +23,11 @@
 #include "ItemPackets.h"
 
 class Player;
+#ifndef CROSS
+#include "BlackMarketMgr.h"
+#else
 class BlackMarketEntry;
+#endif
 
 namespace WorldPackets
 {

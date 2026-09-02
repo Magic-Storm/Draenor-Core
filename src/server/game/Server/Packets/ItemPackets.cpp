@@ -177,7 +177,7 @@ ByteBuffer& operator>>(ByteBuffer& data, Optional<WorldPackets::Item::ItemBonusI
 {
     uint32 bonusListIdSize;
 
-    itemBonusInstanceData = boost::in_place();
+    itemBonusInstanceData.emplace();
 
     data >> itemBonusInstanceData->Context;
     data >> bonusListIdSize;
@@ -250,21 +250,21 @@ void WorldPackets::Item::ItemInstance::Initialize(::Item const* item)
     ItemID               = item->GetEntry();
     RandomPropertiesSeed = item->GetItemSuffixFactor();
     RandomPropertiesID   = item->GetItemRandomPropertyId();
-    std::vector<uint32> const& bonusListIds = item->GetDynamicValues(ITEM_DYNAMIC_FIELD_BONUSLIST_IDS);
+    std::vector<uint32> const& bonusListIds = item->GetDynamicValues(ITEM_DYNAMIC_FIELD_BONUS_LIST_IDS);
     if (!bonusListIds.empty())
     {
-        ItemBonus = boost::in_place();
+        ItemBonus.emplace();
         ItemBonus->BonusListIDs.insert(ItemBonus->BonusListIDs.end(), bonusListIds.begin(), bonusListIds.end());
         ItemBonus->Context = item->GetUInt32Value(ITEM_FIELD_CONTEXT);
     }
 
     if (uint32 mask = item->GetUInt32Value(ITEM_FIELD_MODIFIERS_MASK))
     {
-        Modifications = boost::in_place();
+        Modifications.emplace();
 
         for (size_t i = 0; mask != 0; mask >>= 1, ++i)
             if ((mask & 1) != 0)
-                Modifications->Insert(i, item->GetModifier(ItemModifier(i)));
+                Modifications->Insert(i, item->GetModifier(eItemModifiers(i)));
     }
 }
 
@@ -273,17 +273,11 @@ void WorldPackets::Item::ItemInstance::Initialize(::LootItem const& lootItem)
     ItemID               = lootItem.itemid;
     RandomPropertiesSeed = lootItem.randomSuffix;
     RandomPropertiesID   = lootItem.randomPropertyId;
-    if (!lootItem.BonusListIDs.empty())
+    if (!lootItem.itemBonuses.empty())
     {
-        ItemBonus = boost::in_place();
-        ItemBonus->BonusListIDs = lootItem.BonusListIDs;
+        ItemBonus.emplace();
+        ItemBonus->BonusListIDs.assign(lootItem.itemBonuses.begin(), lootItem.itemBonuses.end());
         ItemBonus->Context = 0; /// @todo
-    }
-
-    if (lootItem.upgradeId)
-    {
-        Modifications = boost::in_place();
-        Modifications->Insert(ITEM_MODIFIER_UPGRADE_ID, lootItem.upgradeId);
     }
 }
 
@@ -292,16 +286,10 @@ void WorldPackets::Item::ItemInstance::Initialize(::VoidStorageItem const* voidI
     ItemID = voidItem->ItemEntry;
     RandomPropertiesID = voidItem->ItemRandomPropertyId;
     RandomPropertiesSeed = voidItem->ItemSuffixFactor;
-    if (voidItem->ItemUpgradeId)
+    if (!voidItem->Bonuses.empty())
     {
-        Modifications = boost::in_place();
-        Modifications->Insert(ITEM_MODIFIER_UPGRADE_ID, voidItem->ItemUpgradeId);
-    }
-
-    if (!voidItem->BonusListIDs.empty())
-    {
-        ItemBonus = boost::in_place();
-        ItemBonus->BonusListIDs = voidItem->BonusListIDs;
+        ItemBonus.emplace();
+        ItemBonus->BonusListIDs.assign(voidItem->Bonuses.begin(), voidItem->Bonuses.end());
     }
 }
 
@@ -335,7 +323,7 @@ WorldPacket const* WorldPackets::Item::InventoryChangeFailure::Write()
         case EQUIP_ERR_PURCHASE_LEVEL_TOO_LOW:
             _worldPacket << int32(Level);
             break;
-        case EQUIP_ERR_EVENT_AUTOEQUIP_BIND_CONFIRM:
+        case EQUIP_ERR_INTERNAL_BAG_ERROR:
             _worldPacket << SrcContainer;
             _worldPacket << int32(SrcSlot);
             _worldPacket << DstContainer;
@@ -503,10 +491,10 @@ WorldPacket const* WorldPackets::Item::ItemEnchantTimeUpdate::Write()
 ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Item::TransmogrifyItem& transmogItem)
 {
     if (data.ReadBit())
-        transmogItem.SrcItemGUID = boost::in_place();
+        transmogItem.SrcItemGUID.emplace();
 
     if (data.ReadBit())
-        transmogItem.SrcVoidItemGUID = boost::in_place();
+        transmogItem.SrcVoidItemGUID.emplace();
 
     data >> transmogItem.Item;
     data >> transmogItem.Slot;

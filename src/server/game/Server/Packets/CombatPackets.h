@@ -36,6 +36,14 @@ namespace WorldPackets
             ObjectGuid Victim;
         };
 
+        enum AttackSwingErr
+        {
+            ATTACKSWINGERR_CANT_ATTACK = 0,
+            ATTACKSWINGERR_BAD_FACING = 1,
+            ATTACKSWINGERR_NOT_IN_RANGE = 2,
+            ATTACKSWINGERR_DEAD_TARGET = 3
+        };
+
         class AttackSwingError final : public ServerPacket
         {
         public:

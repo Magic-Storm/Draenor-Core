@@ -603,6 +603,15 @@ namespace WorldPackets
             uint32 NewFace = 0;
         };
 
+        enum BarberShopResult
+        {
+            BARBER_SHOP_RESULT_SUCCESS = 0,
+            BARBER_SHOP_RESULT_NOT_ENOUGH_MONEY = 1,
+            BARBER_SHOP_RESULT_MUST_SIT = 2,
+            BARBER_SHOP_RESULT_NOT_ON_CHAIR = 3,
+            BARBER_SHOP_RESULT_NO_MORE_DO = 4
+        };
+
         class BarberShopResultServer final : public ServerPacket
         {
         public:

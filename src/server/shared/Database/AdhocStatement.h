@@ -12,8 +12,6 @@
 #include <future>
 #include "SQLOperation.h"
 
-typedef std::future<QueryResult> QueryResultFuture;
-typedef std::promise<QueryResult> QueryResultPromise;
 /*! Raw, ad-hoc query. */
 class BasicStatementTask : public SQLOperation
 {

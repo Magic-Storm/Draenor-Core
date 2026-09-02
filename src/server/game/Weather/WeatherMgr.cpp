@@ -15,13 +15,14 @@
 #include "Log.h"
 #include "ObjectMgr.h"
 #include "AutoPtr.h"
+#include <mutex>
 
 namespace WeatherMgr
 {
 
 namespace
 {
-    typedef std::unordered_map<uint32, Trinity::AutoPtr<Weather, ACE_Null_Mutex> > WeatherMap;
+    typedef std::unordered_map<uint32, Trinity::AutoPtr<Weather, std::mutex> > WeatherMap;
     typedef std::unordered_map<uint32, WeatherData> WeatherZoneMap;
 
     WeatherMap m_weathers;

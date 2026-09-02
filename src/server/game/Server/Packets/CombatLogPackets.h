@@ -110,6 +110,42 @@ namespace WorldPackets
             int32 Absorbed = 0;
         };
 
+        struct SpellLogEffectPowerDrainParams
+        {
+            ObjectGuid Victim;
+            uint32 Points = 0;
+            uint32 PowerType = 0;
+            float Amplitude = 0.0f;
+        };
+
+        struct SpellLogEffectExtraAttacksParams
+        {
+            ObjectGuid Victim;
+            uint32 NumAttacks = 0;
+        };
+
+        struct SpellLogEffectDurabilityDamageParams
+        {
+            ObjectGuid Victim;
+            int32 ItemID = 0;
+            int32 Amount = 0;
+        };
+
+        struct SpellLogEffectGenericVictimParams
+        {
+            ObjectGuid Victim;
+        };
+
+        struct SpellLogEffectTradeSkillItemParams
+        {
+            int32 ItemID = 0;
+        };
+
+        struct SpellLogEffectFeedPetParams
+        {
+            int32 ItemID = 0;
+        };
+
         class SpellExecuteLog final : public CombatLogServerPacket
         {
         public:

@@ -483,6 +483,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& p_Packet)
 						{
 							instance->SetData64(8 /*DATA_PLAYER_UNDER_MAP*/, l_PlayerMover->GetGUID());
 							//NOTE Send befor we get outa here
+							WorldPacket data(l_OpCode);
 							WriteMovementInfo(data, &l_MovementInfo);
 							l_Mover->SendMessageToSet(&data, m_Player);
 							return;

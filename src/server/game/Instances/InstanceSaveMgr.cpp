@@ -690,20 +690,6 @@ uint32 InstanceSaveManager::GetNumBoundGroupsTotal()
     return ret;
 }
 
-bool InstanceSave::RemovePlayer(Player* player)
-{
-    _playerListLock.lock();
-    m_playerList.remove(player);
-    bool isStillValid = UnloadIfEmpty();
-    _playerListLock.unlock();
-
-    // delete here if needed, after releasing the lock
-    if (m_toDelete)
-        delete this;
-
-    return isStillValid;
-}
-
 bool InstanceSave::RemoveGroup(Group* group)
 {
     m_groupList.remove(group);

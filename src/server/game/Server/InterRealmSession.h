@@ -26,8 +26,10 @@
 #include <queue>
 #include <vector>
 
-// Forward declarations
 class IRSocket;
+class Player;
+class Group;
+class WorldPacket;
 
 #define IR_PROTOCOL_VERSION     1
 #define IR_PROTOCOL_SUBVERSION  0

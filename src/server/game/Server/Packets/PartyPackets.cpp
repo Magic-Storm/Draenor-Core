@@ -24,6 +24,7 @@
 #include "SpellAuraEffects.h"
 #include "ObjectMgr.h"
 #include "Realm.h"
+#include "World.h"
 
 WorldPacket const* WorldPackets::Party::PartyCommandResult::Write()
 {
@@ -118,7 +119,7 @@ void WorldPackets::Party::PartyInviteResponse::Read()
     bool hasRolesDesired = _worldPacket.ReadBit();
     if (hasRolesDesired)
     {
-        RolesDesired = boost::in_place();
+        RolesDesired.emplace();
         _worldPacket >> *RolesDesired;
     }
 }
@@ -424,13 +425,13 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player const* player)
 
     if (!player->IsAlive())
     {
-        if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+        if (player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
             MemberStats.Status |= MEMBER_STATUS_GHOST;
         else
             MemberStats.Status |= MEMBER_STATUS_DEAD;
     }
 
-    if (player->IsFFAPvP())
+    if (player->pvpInfo.inFFAPvPArea || sWorld->IsFFAPvPRealm())
         MemberStats.Status |= MEMBER_STATUS_PVP_FFA;
 
     if (player->isAFK())
@@ -468,12 +469,12 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player const* player)
 
     // Vehicle
     if (player->GetVehicle() && player->GetVehicle()->GetVehicleInfo())
-        MemberStats.VehicleSeat = player->GetVehicle()->GetVehicleInfo()->SeatID[player->m_movementInfo.t_seat];
+        MemberStats.VehicleSeat = player->GetVehicle()->GetVehicleInfo()->m_seatID[player->GetTransSeat() >= 0 ? player->GetTransSeat() : 0];
 
     // Auras
     for (uint8 i = 0; i < MAX_AURAS; ++i)
     {
-        if (AuraApplication const* aurApp = player->GetVisibleAura(i))
+            if (AuraApplication const* aurApp = const_cast<Player*>(player)->GetVisibleAura(i))
         {
             WorldPackets::Party::GroupAura aura;
 
@@ -481,9 +482,9 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player const* player)
             aura.EffectMask = aurApp->GetEffectMask();
             aura.Scalings = aurApp->GetFlags(); // ??
 
-            if (aurApp->GetFlags() & AFLAG_SCALABLE)
+            if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
             {
-                for (uint32 e = 0; e < MAX_SPELL_EFFECTS; ++e)
+                for (uint32 e = 0; e < SpellEffIndex::MAX_EFFECTS; ++e)
                 {
                     float scale = 0.0f;
                     if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(e))
@@ -497,23 +498,15 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player const* player)
     }
 
     // Phases
-    std::set<uint32> const& phases = player->GetPhases();
-    MemberStats.Phases.PhaseShiftFlags = 0x08 | (phases.size() ? 0x10 : 0);
+    MemberStats.Phases.PhaseShiftFlags = 0x08;
     MemberStats.Phases.PersonalGUID = ObjectGuid::Empty;
-    for (uint32 phaseId : phases)
-    {
-        WorldPackets::Party::GroupPhase phase;
-        phase.Id = phaseId;
-        phase.Flags = 1;
-        MemberStats.Phases.List.push_back(phase);
-    }
 
     // Pet
     if (player->GetPet())
     {
         ::Pet* pet = player->GetPet();
 
-        MemberStats.PetStats = boost::in_place();
+        MemberStats.PetStats.emplace();
 
         MemberStats.PetStats->GUID = pet->GetGUID();
         MemberStats.PetStats->Name = pet->GetName();
@@ -532,9 +525,9 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player const* player)
                 aura.EffectMask = aurApp->GetEffectMask();
                 aura.Scalings = aurApp->GetFlags(); // ??
 
-                if (aurApp->GetFlags() & AFLAG_SCALABLE)
+                if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                 {
-                    for (uint32 e = 0; e < MAX_SPELL_EFFECTS; ++e)
+                    for (uint32 e = 0; e < SpellEffIndex::MAX_EFFECTS; ++e)
                     {
                         float scale = 0.0f;
                         if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(e))

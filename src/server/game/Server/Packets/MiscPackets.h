@@ -18,6 +18,10 @@
 #ifndef MiscPackets_h__
 #define MiscPackets_h__
 
+#ifndef TUTORIAL_ACTION_UPDATE
+#define TUTORIAL_ACTION_UPDATE 0
+#endif
+
 #include "Packet.h"
 #include "ObjectGuid.h"
 #include "WorldSession.h"
@@ -27,6 +31,7 @@
 #include "Player.h"
 #include "Weather.h"
 #include "CollectionMgr.h"
+#include "CUFProfiles.h"
 
 namespace WorldPackets
 {

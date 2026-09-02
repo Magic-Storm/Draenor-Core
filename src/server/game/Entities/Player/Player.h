@@ -882,6 +882,11 @@ struct EquipmentSet
 
 typedef std::map<uint32, EquipmentSet> EquipmentSets;
 
+struct EquipmentSetInfo
+{
+    using EquipmentSetData = EquipmentSet;
+};
+
 struct ItemPosCount
 {
     ItemPosCount(uint16 _pos, uint32 _count) : pos(_pos), count(_count) {}
@@ -1628,6 +1633,7 @@ class Player : public Unit, public GridObject<Player>
         bool isAFK() const { return HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_AFK); }
         bool isDND() const { return HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_DND); }
         uint8 GetChatTag() const;
+        uint8 GetChatFlags() const { return GetChatTag(); }
         std::string afkMsg;
         std::string dndMsg;
 
@@ -3659,7 +3665,7 @@ class Player : public Unit, public GridObject<Player>
             auto l_Itr = m_CategoryCharges.find(p_ChargeCategoryEntry->Id);
             if (l_Itr != m_CategoryCharges.end())
             {
-                WorldPacket l_Data(Opcodes::SMSG_CLEAR_SPELL_CHARGES);
+                WorldPacket l_Data(SMSG_CLEAR_SPELL_CHARGES);
                 l_Data << int32(p_ChargeCategoryEntry->Id);
                 l_Data.WriteBit(false); ///< IsPet
                 l_Data.FlushBits();

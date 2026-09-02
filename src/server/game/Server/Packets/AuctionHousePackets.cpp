@@ -90,7 +90,7 @@ void WorldPackets::AuctionHouse::AuctionBidderNotification::Initialize(::Auction
 {
     AuctionItemID = auction->Id;
     Item.Initialize(item);
-    Bidder = ObjectGuid::Create<HighGuid::Player>(auction->bidder);
+    Bidder = ObjectGuid::Create<HIGHGUID_PLAYER>(auction->bidder);
 }
 
 void WorldPackets::AuctionHouse::AuctionHelloRequest::Read()
@@ -117,7 +117,7 @@ void WorldPackets::AuctionHouse::AuctionCommandResult::InitializeAuction(::Aucti
         AuctionItemID   = auction->Id;
         Money           = auction->bid == auction->buyout ? 0 : auction->bid;
         MinIncrement    = auction->bid == auction->buyout ? 0 : auction->GetAuctionOutBid();
-        Guid            = ObjectGuid::Create<HighGuid::Player>(auction->bidder);
+        Guid            = ObjectGuid::Create<HIGHGUID_PLAYER>(auction->bidder);
     }
 }
 

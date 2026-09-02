@@ -27,6 +27,7 @@
 #include "GarrisonMgr.hpp"
 #endif /* not CROSS */
 #include "SpellPackets.h"
+#include "MovementPackets.h"
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& p_RecvPacket)
 {
@@ -498,7 +499,8 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& p_RecvPacket)
     if (cast.MoveUpdate)
     {
         WorldPacket movePkt(CMSG_MOVE_HEARTBEAT);
-        movePkt << *cast.MoveUpdate;
+        MovementInfo moveInfo = *cast.MoveUpdate;
+        movePkt << moveInfo;
         movePkt.rpos(0);
         HandleMovementOpcodes(movePkt);
     }

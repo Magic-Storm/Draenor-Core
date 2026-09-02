@@ -2734,7 +2734,7 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
             {
                 if (Player* l_CharmerPlayer = l_Charmer->ToPlayer())
                 {
-                    WorldPacket data(Opcodes::SMSG_SPELL_COOLDOWN, 16 + 2 + 1 + 4 + 4 + 4);
+                    WorldPacket data(SMSG_SPELL_COOLDOWN, 16 + 2 + 1 + 4 + 4 + 4);
                     data.appendPackGUID(GetGUID());
                     data << uint8(CooldownFlags::CooldownFlagNone);
                     data << uint32(1);

@@ -21,29 +21,30 @@
 
 void WorldPackets::BlackMarket::BlackMarketItem::Initialize(BlackMarketEntry *const entry, Player* player)
 {
-    BlackMarketTemplate const* templ = entry->GetTemplate();
+    BlackMarketTemplate const* templ = entry->bm_template;
+    if (!templ)
+        return;
 
-    MarketID = entry->GetMarketId();
-    SellerNPC = templ->SellerNPC;
-    Item = templ->Item;
-    Quantity = templ->Quantity;
+    MarketID = int32(entry->id);
+    SellerNPC = int32(templ->seller);
+    Item.ItemID = int32(templ->itemEntry);
+    Quantity = int32(templ->itemCount);
 
-    // No bids yet
-    if (!entry->GetNumBids())
+    if (!entry->bidderCount)
     {
-        MinBid = templ->MinBid;
+        MinBid = templ->startBid;
         MinIncrement = 1;
     }
     else
     {
-        MinIncrement = entry->GetMinIncrement(); // 5% increment minimum
-        MinBid = entry->GetCurrentBid() + MinIncrement;
+        MinIncrement = std::max<uint64>(1, entry->bid / 20);
+        MinBid = entry->bid + MinIncrement;
     }
 
-    CurrentBid = entry->GetCurrentBid();
-    SecondsRemaining = entry->GetSecondsRemaining();
-    HighBid = (entry->GetBidder() == player->GetGUID().GetCounter());
-    NumBids = entry->GetNumBids();
+    CurrentBid = entry->bid;
+    SecondsRemaining = int32(entry->TimeLeft());
+    HighBid = (entry->bidder == player->GetGUIDLow());
+    NumBids = int32(entry->bidderCount);
 }
 
 void WorldPackets::BlackMarket::BlackMarketOpen::Read()

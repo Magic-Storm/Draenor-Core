@@ -157,7 +157,7 @@ void WorldSession::HandleChallengeModeRequestMapStats(WorldPacket& /*p_RecvData*
 
 void WorldSession::SendChallengeModeMapStatsUpdate(uint32 p_MapID)
 {
-    WorldPacket l_Data(Opcodes::SMSG_CHALLENGE_MODE_MAP_STATS_UPDATE, 6 * 4);
+    WorldPacket l_Data(SMSG_CHALLENGE_MODE_MAP_STATS_UPDATE, 6 * 4);
 
     for (auto l_ChallengeData : m_Player->m_CompletedChallenges)
     {

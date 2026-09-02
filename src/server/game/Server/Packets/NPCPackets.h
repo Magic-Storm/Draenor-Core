@@ -18,6 +18,10 @@
 #ifndef NPCPackets_h__
 #define NPCPackets_h__
 
+#ifndef MAX_TRAINERSPELL_ABILITY_REQS
+#define MAX_TRAINERSPELL_ABILITY_REQS 3
+#endif
+
 #include "Packet.h"
 #include "ItemPackets.h"
 #include "Creature.h"

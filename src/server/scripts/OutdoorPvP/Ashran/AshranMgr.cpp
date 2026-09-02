@@ -774,7 +774,7 @@ void OutdoorPvPAshran::HandlePlayerEnterMap(Player* p_Player, uint32 p_MapID)
    // }
 
     /// Sending the packet to player
-    WorldPacket l_Data(Opcodes::SMSG_BFMGR_ENTRY_INVITE);
+    WorldPacket l_Data(SMSG_BFMGR_ENTRY_INVITE);
     l_Data << uint64(m_Guid);                                           ///< QueueID
     l_Data << uint32(eAshranDatas::AshranZoneID);                       ///< Zone Id
     l_Data << uint32(time(NULL) + eAshranDatas::AshranTimeForInvite);   ///< Invite lasts until

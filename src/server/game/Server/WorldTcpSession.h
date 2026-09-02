@@ -4,6 +4,6 @@
 #include "WorldSocket.h"
 
 /// Draenor historically used WorldTcpSession; 6.2.4.21742 uses TrinityCore WorldSocket (realm + instance).
-using WorldTcpSession = WorldSocket;
+/// The WorldTcpSession alias is declared in WorldSession.h.
 
 #endif

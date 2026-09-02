@@ -96,6 +96,7 @@
 #endif
  
 #define UI64FMTD PRIu64
+#define SZFMTD "%zu"
 #define UI64LIT(N) UINT64_C(N)
 
 #define SI64FMTD PRId64

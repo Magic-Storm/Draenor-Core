@@ -472,7 +472,8 @@ void World::LoadConfigSettings(bool reload)
 {
     if (reload)
     {
-        if (!sConfigMgr->Reload())
+        std::string error;
+        if (!sConfigMgr->Reload(error))
         {
             TC_LOG_ERROR("server.worldserver", "World settings reload fail: can't read settings from %s.", sConfigMgr->GetFilename().c_str());
             return;
@@ -4144,7 +4145,7 @@ void World::ProcessQueryCallbacks()
     /// - Update querys holders callbacks
     if (!m_QueryHolderCallbacks->empty())
     {
-        m_QueryHolderCallbacks->remove_if([](QueryHolderCallback const& p_Callback) -> bool
+        m_QueryHolderCallbacks->remove_if([](QueryHolderCallback& p_Callback) -> bool
         {
             if (p_Callback.m_QueryResultHolderFuture.ready())
             {
@@ -4162,7 +4163,7 @@ void World::ProcessQueryCallbacks()
     /// - Add querys holders callbacks in buffer queue to real queue
     while (!m_QueryHolderCallbacksBuffer->empty())
     {
-        m_QueryHolderCallbacks->push_front(m_QueryHolderCallbacksBuffer->front());
+        m_QueryHolderCallbacks->push_front(std::move(m_QueryHolderCallbacksBuffer->front()));
         m_QueryHolderCallbacksBuffer->pop_front();
     }
 
@@ -4189,7 +4190,7 @@ void World::ProcessQueryCallbacks()
     /// - Update prepared statements callbacks
     if (!m_PreparedStatementCallbacks->empty())
     {
-        m_PreparedStatementCallbacks->remove_if([](PrepareStatementCallback const& p_Callback) -> bool
+        m_PreparedStatementCallbacks->remove_if([](PrepareStatementCallback& p_Callback) -> bool
         {
             /// If the query result is avaiable ...
             if (p_Callback.second.ready())
@@ -4213,7 +4214,7 @@ void World::ProcessQueryCallbacks()
     /// - Add prepared statements in buffer queue to real queue
     while (!m_PreparedStatementCallbacksBuffer->empty())
     {
-        m_PreparedStatementCallbacks->push_front(m_PreparedStatementCallbacksBuffer->front());
+        m_PreparedStatementCallbacks->push_front(std::move(m_PreparedStatementCallbacksBuffer->front()));
         m_PreparedStatementCallbacksBuffer->pop_front();
     }
 }
@@ -4457,14 +4458,12 @@ void World::_updateTransfers()
                     stmt->setString(0, l_Dump);
                     stmt->setUInt32(1, l_Transaction);
 
-                    if (LoginDatabase.DirectExecuteWithReturn(stmt))
-                    {
-                        l_Error = false;
+                    LoginDatabase.DirectExecute(stmt);
+                    l_Error = false;
 
-                        CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%u'", l_CharGUID);
-                        CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", l_CharGUID);
-                        CharacterDatabase.PExecute("UPDATE characters SET deleteInfos_Name=name, deleteInfos_Account=account, deleteDate='" UI64FMTD "', name='', account=0 WHERE guid=%u", uint64(time(NULL)), l_CharGUID);
-                    }
+                    CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%u'", l_CharGUID);
+                    CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", l_CharGUID);
+                    CharacterDatabase.PExecute("UPDATE characters SET deleteInfos_Name=name, deleteInfos_Account=account, deleteDate='" UI64FMTD "', name='', account=0 WHERE guid=%u", uint64(time(NULL)), l_CharGUID);
                 }
 
                 if (l_Error)

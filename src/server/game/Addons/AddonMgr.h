@@ -36,6 +36,18 @@ struct SavedAddon
     uint32 CRC;
 };
 
+#ifndef MD5_DIGEST_LENGTH
+#define MD5_DIGEST_LENGTH 16
+#endif
+
+struct BannedAddon
+{
+    uint32 Id = 0;
+    uint8 NameMD5[MD5_DIGEST_LENGTH] = {};
+    uint8 VersionMD5[MD5_DIGEST_LENGTH] = {};
+    uint32 Timestamp = 0;
+};
+
 #define STANDARD_ADDON_CRC 0x4c1c776d
 
 namespace AddonMgr

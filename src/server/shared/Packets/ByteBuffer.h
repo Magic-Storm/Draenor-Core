@@ -21,6 +21,7 @@
 #include <vector>
 #include <cstring>
 #include "Guid.h"
+#include "MessageBuffer.h"
 #include <G3D/Vector2.h>
 #include <G3D/Vector3.h>
 
@@ -29,6 +30,8 @@
 struct ObjectGuid
 {
     public:
+        using LowType = uint32;
+
         ObjectGuid() { _data.u64 = 0LL; }
         ObjectGuid(uint64 guid) { _data.u64 = guid; }
         ObjectGuid(ObjectGuid const& other) { _data.u64 = other._data.u64; }
@@ -96,6 +99,8 @@ struct ObjectGuid
         uint64 GetRawValue() const { return _data.u64; }
         uint32 GetCounter() const { return GUID_LOPART(_data.u64); }
 
+        static ObjectGuid const Empty;
+
     private:
         union
         {
@@ -104,18 +109,24 @@ struct ObjectGuid
         } _data;
 };
 
-class ByteBufferException
+class ByteBufferException : public std::exception
 {
     public:
+        ByteBufferException() : Pos(0), Size(0), ValueSize(0) { }
         ByteBufferException(size_t pos, size_t size, size_t valueSize)
             : Pos(pos), Size(size), ValueSize(valueSize)
         {
         }
 
+        std::string& message() { return _message; }
+        std::string const& message() const { return _message; }
+        char const* what() const noexcept override { return _message.c_str(); }
+
     protected:
         size_t Pos;
         size_t Size;
         size_t ValueSize;
+        std::string _message;
 };
 
 class ByteBufferPositionException : public ByteBufferException
@@ -304,6 +315,16 @@ class ByteBuffer
             m_BaseSize = reserve;
         }
 
+#ifndef CROSS
+        explicit ByteBuffer(MessageBuffer&& buffer) : _rpos(0), _wpos(0), _wbitpos(8), _rbitpos(8), _curbitval(0), _storage(buffer.Move())
+#else
+        explicit ByteBuffer(MessageBuffer&& buffer) : _rpos(0), _wpos(0), _wbitpos(8), _rbitpos(8), _curbitval(0), _storage(buffer.Move()), isTunneled(false)
+#endif
+        {
+            _wpos = _storage.size();
+            m_BaseSize = _storage.size();
+        }
+
         // copy constructor
         ByteBuffer(const ByteBuffer &buf) : _rpos(buf._rpos), _wpos(buf._wpos),
 #ifndef CROSS
@@ -352,6 +373,11 @@ class ByteBuffer
         void ResetBitReading()
         {
             _rbitpos = 8;
+        }
+
+        void ResetBitPos()
+        {
+            ResetBitReading();
         }
 
         void FlushBits()

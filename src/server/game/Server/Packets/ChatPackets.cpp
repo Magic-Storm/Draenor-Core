@@ -146,7 +146,7 @@ void WorldPackets::Chat::Chat::SetSender(WorldObject const* sender, LocaleConsta
         SenderAccountGUID = playerSender->GetSession()->GetAccountGUID();
         _ChatFlags = playerSender->GetChatFlags();
 
-        SenderGuildGUID = ObjectGuid::Create<HighGuid::Guild>(playerSender->GetGuildId());
+        SenderGuildGUID = ObjectGuid::Create<HIGHGUID_GUILD>(playerSender->GetGuildId());
 
         if (Group const* group = playerSender->GetGroup())
             PartyGUID = group->GetGUID();

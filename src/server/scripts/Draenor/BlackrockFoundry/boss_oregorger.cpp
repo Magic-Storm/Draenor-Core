@@ -952,7 +952,7 @@ class boss_oregorger : public CreatureScript
 
                     if (l_FirstPath.empty() || l_SecondPath.empty())
                     {
-                        ACE_ASSERT (false && "boss_oregorgerAI::GetRandomCollisionPoint => RollingPath found is empty");
+                        ASSERT (false && "boss_oregorgerAI::GetRandomCollisionPoint => RollingPath found is empty");
                         return m_PointID;
                     }
 
@@ -1045,7 +1045,7 @@ class boss_oregorger : public CreatureScript
 
                 if (l_Path.empty())
                 {
-                    ACE_ASSERT (false && "boss_oregorgerAI::SelectPath => RollingPath found is empty");
+                    ASSERT (false && "boss_oregorgerAI::SelectPath => RollingPath found is empty");
                     return;
                 }
 

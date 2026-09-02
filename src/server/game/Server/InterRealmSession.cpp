@@ -22,92 +22,41 @@
 
 #define SLEEP_TIME 30*IN_MILLISECONDS
 
+class IRSocket
+{
+public:
+    bool IsClosed() const { return true; }
+    void CloseSocket() { }
+    long AddReference() { return 1; }
+    long RemoveReference() { return 0; }
+    int Update() { return -1; }
+    int SendPacket(WorldPacket const*) { return -1; }
+    size_t m_OutBufferSize = 0;
+
+    struct DummyPeer
+    {
+        int set_option(int, int, void*, int) { return -1; }
+    };
+
+    DummyPeer& peer() { return _peer; }
+
+private:
+    DummyPeer _peer;
+};
+
 class IRReactorRunnable
 {
     public:
+        IRReactorRunnable() : m_IRSocket(nullptr) { }
+        ~IRReactorRunnable() { Stop(); }
 
-        IRReactorRunnable() :
-            m_Reactor(0),
-            m_ThreadId(-1)
-        {
-            // Reactor initialization removed - ACE dependency
-            m_Reactor = nullptr;
-
-            m_IRSocket = NULL;
-        }
-
-        virtual ~IRReactorRunnable()
-        {
-            Stop();
-            Wait();
-
-            delete m_Reactor;
-        }
-
-        void Stop()
-        {
-            m_Reactor->end_reactor_event_loop();
-        }
-
-        int Start()
-        {
-            if (m_ThreadId != -1)
-                return -1;
-
-            return (m_ThreadId = activate());
-        }
-
-        void Wait() { /* Wait removed - ACE dependency */ }
-
-        int SetSocket (IRSocket* sock)
-        {
-            sock->AddReference();
-            sock->reactor(m_Reactor);
-            m_IRSocket = sock;
-
-            return 0;
-        }
-
-        void* GetReactor()
-        {
-            return m_Reactor;
-        }
-
-    protected:
-
-        virtual int svc()
-        {
-            ACE_ASSERT (m_Reactor);
-
-            while (!m_Reactor->reactor_event_loop_done())
-            {
-                // dont be too smart to move this outside the loop
-                // the run_reactor_event_loop will modify interval
-                ACE_Time_Value interval (0, 10000);
-
-                if (m_Reactor->run_reactor_event_loop (interval) == -1)
-                    break;
-
-                if (m_IRSocket)
-                {
-                    if (m_IRSocket->Update() == -1)
-                    {
-                        m_IRSocket->CloseSocket();
-                        m_IRSocket->RemoveReference();
-                        m_IRSocket = NULL;
-                    }
-                }
-            }
-
-            return 0;
-        }
+        void Stop() { }
+        int Start() { return 0; }
+        void Wait() { }
+        int SetSocket(IRSocket* sock) { m_IRSocket = sock; return 0; }
+        void* GetReactor() { return nullptr; }
 
     private:
-        typedef std::atomic<long> AtomicInt;
-
-        void* m_Reactor;
-        int m_ThreadId;
-
         IRSocket* m_IRSocket;
 };
 
@@ -131,40 +80,10 @@ InterRealmSession::~InterRealmSession()
 
 int InterRealmSession::OnSocketOpen(IRSocket* socket)
 {
-    m_SockOutKBuff = sConfigMgr->GetIntDefault ("Network.OutKBuff", -1);
-    m_SockOutUBuff = sConfigMgr->GetIntDefault ("Network.OutUBuff", 65536);
+    if (!m_Reactor || !socket)
+        return -1;
 
-    // set some options here
-    if (m_SockOutKBuff >= 0)
-    {
-        if (socket->peer().set_option (SOL_SOCKET,
-            SO_SNDBUF,
-            (void*) & m_SockOutKBuff,
-            sizeof (int)) == -1 && errno != ENOTSUP)
-        {
-            TC_LOG_ERROR("server.interrealm", "InterRealmSession::OnSocketOpen set_option SO_SNDBUF");
-            return -1;
-        }
-    }
-
-    static const int ndoption = 1;
-
-    // Set TCP_NODELAY.
-    if (m_UseNoDelay)
-    {
-        if (socket->peer().set_option (ACE_IPPROTO_TCP,
-            TCP_NODELAY,
-            (void*)&ndoption,
-            sizeof (int)) == -1)
-        {
-            TC_LOG_ERROR("server.interrealm", "InterRealmSession::OnSocketOpen peer().set_option TCP_NODELAY errno = %d", errno);
-            return -1;
-        }
-    }
-
-    socket->m_OutBufferSize = static_cast<size_t> (m_SockOutUBuff);
-
-
+    socket->m_OutBufferSize = static_cast<size_t>(m_SockOutUBuff);
     return m_Reactor->SetSocket(socket);
 }
 
@@ -274,14 +193,10 @@ void InterRealmSession::run()
             m_Reactor = new IRReactorRunnable();
             m_Connector = new IRSocketConnector();
 
-            int ret = m_Connector->connect(m_IRSocket, connect_addr);
-            if (ret != 0)
-            {
-                ClearSocket();
-                TC_LOG_ERROR("server.interrealm", "Cannot connect interrealm");    
-                std::this_thread::sleep_for(std::chrono::milliseconds(30000));
-                continue;
-            }
+            TC_LOG_ERROR("server.interrealm", "InterRealm ACE connector is disabled; tunnel not started.");
+            ClearSocket();
+            std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+            continue;
 
             m_Reactor->Start();
 
@@ -1888,7 +1803,7 @@ void InterRealmSession::SendGuild(uint64 guildGuid)
 
 void InterRealmSession::AddPacket(WorldPacket* new_packet)
 {
-    _queue.add(new_packet);
+    _queue.push(new_packet);
 }
 
 void InterRealmSession::Update(const uint32 diff)
@@ -1902,7 +1817,7 @@ void InterRealmSession::Update(const uint32 diff)
     /*if (sBattlegroundMgr->HaveSpectatorData() && (!m_IRSocket || m_IRSocket && m_IRSocket->IsClosed()))
         sBattlegroundMgr->ClearSpectatorData();*/
 
-    while (m_IRSocket && !m_IRSocket->IsClosed() && !_queue.empty() && _queue.next(packet))
+    while (m_IRSocket && !m_IRSocket->IsClosed() && !_queue.empty() && ((packet = _queue.front()), _queue.pop(), packet))
     {
         // Handle Packet
         if (packet->GetOpcode() < IR_NUM_MSG_TYPES)

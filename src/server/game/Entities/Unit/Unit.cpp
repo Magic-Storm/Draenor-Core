@@ -14958,7 +14958,7 @@ void Unit::SetSpeed(UnitMoveType p_MovementType, float rate, bool forced)
 
 void Unit::SendAdjustSplineDuration(float p_Scale)
 {
-    WorldPacket l_Data(Opcodes::SMSG_ADJUST_SPLINE_DURATION);
+    WorldPacket l_Data(SMSG_ADJUST_SPLINE_DURATION);
     l_Data.appendPackGUID(GetGUID());
     l_Data << float(p_Scale);
     SendMessageToSetInRange(&l_Data, GetMap()->GetVisibilityRange(), false);
@@ -14966,7 +14966,7 @@ void Unit::SendAdjustSplineDuration(float p_Scale)
 
 void Unit::SendFlightSplineSync(float p_SplineDist)
 {
-    WorldPacket l_Data(Opcodes::SMSG_FLIGHT_SPLINE_SYNC);
+    WorldPacket l_Data(SMSG_FLIGHT_SPLINE_SYNC);
     l_Data.appendPackGUID(GetGUID());
     l_Data << float(p_SplineDist);
     SendMessageToSetInRange(&l_Data, GetMap()->GetVisibilityRange(), false);
@@ -17688,7 +17688,7 @@ void Unit::SendPetAIReaction(uint64 p_Guid)
 
 void Unit::SendItemBonusDebug(uint32 p_Quantity, std::string p_Text, Player* p_Target /*= nullptr*/)
 {
-    WorldPacket l_Data(Opcodes::SMSG_ITEM_BONUS_DEBUG);
+    WorldPacket l_Data(SMSG_ITEM_BONUS_DEBUG);
 
     l_Data.appendPackGUID(GetGUID());
     l_Data << int32(p_Quantity);
@@ -18634,7 +18634,7 @@ void Unit::PlayOneShotAnimKit(uint32 id)
 
 void Unit::PlayOrphanSpellVisual(G3D::Vector3 p_Source, G3D::Vector3 p_Orientation, G3D::Vector3 p_Target, int32 p_Visual, float p_TravelSpeed, uint64 p_TargetGuid, bool p_SpeedAsTime)
 {
-    WorldPacket l_Data(Opcodes::SMSG_PLAY_ORPHAN_SPELL_VISUAL, 100);
+    WorldPacket l_Data(SMSG_PLAY_ORPHAN_SPELL_VISUAL, 100);
 
     l_Data.WriteVector3(p_Source);
     l_Data.WriteVector3(p_Orientation);
@@ -18653,7 +18653,7 @@ void Unit::PlayOrphanSpellVisual(G3D::Vector3 p_Source, G3D::Vector3 p_Orientati
 
 void Unit::CancelOrphanSpellVisual(int32 p_SpellVisualID)
 {
-    WorldPacket l_Data(Opcodes::SMSG_CANCEL_ORPHAN_SPELL_VISUAL, 4);
+    WorldPacket l_Data(SMSG_CANCEL_ORPHAN_SPELL_VISUAL, 4);
     l_Data << int32(p_SpellVisualID);
     SendMessageToSetInRange(&l_Data, GetMap()->GetVisibilityRange(), false);
 }
@@ -20043,7 +20043,7 @@ void Unit::SendPlaySpellVisualKit(uint32 p_KitRecID, uint32 p_KitType, int32 p_D
 
 void Unit::CancelSpellVisualKit(int32 p_SpellVisualKitID)
 {
-    WorldPacket l_Data(Opcodes::SMSG_CANCEL_SPELL_VISUAL_KIT, 16 + 2 + 4);
+    WorldPacket l_Data(SMSG_CANCEL_SPELL_VISUAL_KIT, 16 + 2 + 4);
     l_Data.appendPackGUID(GetGUID());
     l_Data << int32(p_SpellVisualKitID);
     SendMessageToSetInRange(&l_Data, GetMap()->GetVisibilityRange(), true);
@@ -20086,7 +20086,7 @@ void Unit::SendPlaySpellVisual(uint32 p_ID, Unit* p_Target, float p_Speed, float
 
 void Unit::CancelSpellVisual(int32 p_SpellVisualID)
 {
-    WorldPacket l_Data(Opcodes::SMSG_CANCEL_SPELL_VISUAL);
+    WorldPacket l_Data(SMSG_CANCEL_SPELL_VISUAL);
     l_Data.appendPackGUID(GetGUID());
     l_Data << int32(p_SpellVisualID);
     SendMessageToSetInRange(&l_Data, GetMap()->GetVisibilityRange(), false);

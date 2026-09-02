@@ -546,7 +546,7 @@ void AreaTrigger::SendAreaTriggerRePath(uint32 p_TimeToTarget, uint32 p_OldTime)
     G3D::Vector3 l_ActualPos = G3D::Vector3(m_positionX, m_positionY, m_positionZ);
     G3D::Vector3 l_NewDest = G3D::Vector3(m_Destination.m_positionX, m_Destination.m_positionY, m_Destination.m_positionZ);
 
-    WorldPacket l_Data(Opcodes::SMSG_AREA_TRIGGER_RE_PATH);
+    WorldPacket l_Data(SMSG_AREA_TRIGGER_RE_PATH);
     l_Data.appendPackGUID(GetGUID());
     l_Data << uint32(p_TimeToTarget);
     l_Data << uint32(p_OldTime);

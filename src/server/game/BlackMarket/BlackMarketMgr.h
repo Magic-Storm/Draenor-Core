@@ -79,6 +79,8 @@ struct BMAuctionEntry
 
 typedef struct BMAuctionTemplate BMAuctionTemplate;
 typedef struct BMAuctionEntry BMAuctionEntry;
+using BlackMarketTemplate = BMAuctionTemplate;
+using BlackMarketEntry = BMAuctionEntry;
 
 class BlackMarketMgr
 {

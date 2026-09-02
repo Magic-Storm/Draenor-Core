@@ -42,6 +42,7 @@ struct FriendInfo
     uint8 Level;
     uint8 Class;
     std::string Note;
+    uint64 WowAccountGuid = 0;
 
     FriendInfo() : Status(FRIEND_STATUS_OFFLINE), Flags(0), Area(0), Level(0), Class(0), Note()
     {
@@ -58,7 +59,7 @@ typedef std::map<uint32, FriendInfo> PlayerSocialMap;
 typedef std::map<uint32, PlayerSocial> SocialMap;
 
 /// Results of friend related commands
-enum FriendsResult
+enum FriendsResult : uint8
 {
     FRIEND_DB_ERROR         = 0x00,
     FRIEND_LIST_FULL        = 0x01,

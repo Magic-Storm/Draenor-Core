@@ -16,6 +16,10 @@ public:
     IRSocketConnector(void) { }
     virtual ~IRSocketConnector(void) { }
 
+    int close() { return 0; }
+    template<typename Socket, typename Addr>
+    int connect(Socket&, Addr const&) { return -1; }
+
 protected:
     // ACE functionality temporarily disabled
     // virtual int handle_timeout(const ACE_Time_Value& /*current_time*/, const void* /*act = 0*/) { return 0; }

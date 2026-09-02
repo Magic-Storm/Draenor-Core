@@ -49,7 +49,8 @@ class TransactionTask : public SQLOperation
     friend class DatabaseWorker;
 
     public:
-        TransactionTask(SQLTransaction trans, MS::Utilities::CallBackPtr p_Callback) : m_trans(trans), m_Callback(p_Callback) {};
+        explicit TransactionTask(SQLTransaction trans, MS::Utilities::CallBackPtr p_Callback = nullptr)
+            : m_trans(trans), m_Callback(p_Callback) {}
         ~TransactionTask(){};
 
     protected:

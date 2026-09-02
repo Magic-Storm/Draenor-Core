@@ -87,7 +87,7 @@ void WorldSession::SendAuctionBidderNotification(AuctionEntry* p_Auction, uint64
     /// Buyout
     if (!p_BidSum)
     {
-        WorldPacket l_Data(Opcodes::SMSG_AUCTION_BUYOUT_NOTIFICATION, 2048);
+        WorldPacket l_Data(SMSG_AUCTION_BUYOUT_NOTIFICATION, 2048);
         l_Data << uint32(p_Auction->Id);
         l_Data.appendPackGUID(l_BidderGuid);
         p_Auction->BuildAuctionInfo(l_Data);
@@ -95,7 +95,7 @@ void WorldSession::SendAuctionBidderNotification(AuctionEntry* p_Auction, uint64
     }
     else
     {
-        WorldPacket l_Data(Opcodes::SMSG_AUCTION_BIDDER_NOTIFICATION, 2048);
+        WorldPacket l_Data(SMSG_AUCTION_BIDDER_NOTIFICATION, 2048);
         l_Data << uint32(p_Auction->Id);
         l_Data.appendPackGUID(l_BidderGuid);
         p_Auction->BuildAuctionInfo(l_Data);

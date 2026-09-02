@@ -2035,12 +2035,10 @@ void Player::Update(uint32 p_time)
     if (now > m_Last_tick + 1000)
         UpdateSoulboundTradeItems();
 
-    if (_petBattleJournalCallback.ready())
+    if (_petBattleJournalCallback.valid() && _petBattleJournalCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
-        PreparedQueryResult l_Result;
-        _petBattleJournalCallback.get(l_Result);
+        PreparedQueryResult l_Result = _petBattleJournalCallback.get();
         bool l_ResultRes = _LoadPetBattles(std::move(l_Result));
-        _petBattleJournalCallback.cancel();
 
         if (!l_ResultRes)
             ReloadPetBattles();
@@ -3006,7 +3004,7 @@ bool Player::TeleportTo(uint32 p_MapID, float p_X, float p_Y, float p_Z, float p
             /// Send transfer packets
             bool l_TransferSpellID = false;
 
-            WorldPacket l_Data(Opcodes::SMSG_TRANSFER_PENDING, 50);
+            WorldPacket l_Data(SMSG_TRANSFER_PENDING, 50);
 
             l_Data << uint32(p_MapID);
             l_Data.WriteBit(m_transport != nullptr);
@@ -3047,7 +3045,7 @@ bool Player::TeleportTo(uint32 p_MapID, float p_X, float p_Y, float p_Z, float p
         /// This will be used instead of the current location in SaveToDB
         if (!GetSession()->PlayerLogout())
         {
-            WorldPacket l_Data(Opcodes::SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4 + 4);
+            WorldPacket l_Data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4 + 4);
             l_Data << uint32(p_MapID);                                  ///< uint32
             l_Data << float(m_teleport_dest.GetPositionX());            ///< float
             l_Data << float(m_teleport_dest.GetPositionY());            ///< float
@@ -6018,7 +6016,7 @@ void Player::ReduceSpellCooldown(uint32 p_SpellID, time_t p_ModifyTime)
         return;
 
     uint64 currTime = 0;
-    ACE_OS::gettimeofday().msec(currTime);
+    currTime = getMSTime();
     if ((itr->second.end - uint64(p_ModifyTime)) > currTime)
         itr->second.end -= uint64(p_ModifyTime);
     else
@@ -6157,7 +6155,7 @@ void Player::_LoadSpellCooldowns(PreparedQueryResult result)
     if (result)
     {
         uint64 curTime = 0;
-        ACE_OS::gettimeofday().msec(curTime);
+        curTime = getMSTime();
 
         do
         {
@@ -6189,7 +6187,7 @@ void Player::_LoadChargesCooldowns(PreparedQueryResult p_Result)
     if (p_Result)
     {
         uint64 l_CurrTime = 0;
-        ACE_OS::gettimeofday().msec(l_CurrTime);
+        l_CurrTime = getMSTime();
 
         do
         {
@@ -6221,7 +6219,7 @@ void Player::_SaveSpellCooldowns(SQLTransaction& trans)
     trans->Append(stmt);
 
     uint64 curTime = 0;
-    ACE_OS::gettimeofday().msec(curTime);
+    curTime = getMSTime();
     uint64 infTime = curTime + infinityCooldownDelayCheck;
 
     bool first_round = true;
@@ -18220,7 +18218,7 @@ void Player::SendNewItem(Item* p_Item, uint32 p_Quantity, bool p_Received, bool 
 
     sScriptMgr->OnPlayerItemLooted(this, p_Item);
 
-    WorldPacket l_Data(Opcodes::SMSG_ITEM_PUSH_RESULT, 16 + 2 + 1 + 4 + 100 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 16 + 2 + 1);
+    WorldPacket l_Data(SMSG_ITEM_PUSH_RESULT, 16 + 2 + 1 + 4 + 100 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 16 + 2 + 1);
 
     l_Data.appendPackGUID(GetGUID());                               ///< Player GUID
     l_Data << uint8(p_Item->GetBagSlot());                          ///< Slot
@@ -27616,7 +27614,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* p_SpellInfo, uint32 p
     }
 
     uint64 l_CurTime = 0;
-    ACE_OS::gettimeofday().msec(l_CurTime);
+    l_CurTime = getMSTime();
 
     uint64 l_CooldownTime;
     uint64 l_CategoryCooldownTime;
@@ -27727,7 +27725,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* p_SpellInfo, uint32 p
 void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, uint64 end_time, bool p_send /* = false */)
 {
     uint64 curTime = 0;
-    ACE_OS::gettimeofday().msec(curTime);
+    curTime = getMSTime();
 
     SpellCooldown sc;
     sc.end = curTime + end_time;
@@ -28502,7 +28500,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 void Player::SendSpellHistory()
 {
     uint64 l_CurTime = 0;
-    ACE_OS::gettimeofday().msec(l_CurTime);
+    l_CurTime = getMSTime();
 
     WorldPacket l_HistoryData(SMSG_SEND_SPELL_HISTORY, 2 * 1024);
     l_HistoryData << uint32(GetSpellCooldownMap().size());
@@ -28745,7 +28743,7 @@ void Player::SendRaidInstanceMessage(uint32 p_MapID, Difficulty p_Difficulty, ui
 
 void Player::SendInstanceGroupSizeChanged(uint32 p_Size)
 {
-    WorldPacket l_Data(Opcodes::SMSG_INSTANCE_GROUP_SIZE_CHANGED, 4);
+    WorldPacket l_Data(SMSG_INSTANCE_GROUP_SIZE_CHANGED, 4);
     l_Data << uint32(p_Size);
     GetSession()->SendPacket(&l_Data);
 }
@@ -29995,7 +29993,7 @@ void Player::ResurrectUsingRequestData()
 
 void Player::SendForcedDeathUpdate()
 {
-    WorldPacket l_Data(Opcodes::SMSG_FORCED_DEATH_UPDATE, 0);
+    WorldPacket l_Data(SMSG_FORCED_DEATH_UPDATE, 0);
     GetSession()->SendPacket(&l_Data);
 }
 
@@ -31833,7 +31831,7 @@ void Player::SendTalentsInfoData(bool pet)
 
 void Player::SendTalentsInvoluntarilyReset(bool p_IsPet /*= false*/)
 {
-    WorldPacket l_Data(Opcodes::SMSG_TALENTS_INVOLUNTARILY_RESET, 1);
+    WorldPacket l_Data(SMSG_TALENTS_INVOLUNTARILY_RESET, 1);
     l_Data.WriteBit(p_IsPet);
     l_Data.FlushBits();
     GetSession()->SendPacket(&l_Data);
@@ -32654,7 +32652,7 @@ Item* Player::AddItem(uint32 p_ItemId, uint32 p_Count, std::list<uint32> p_Bonus
 
 void Player::SendItemRefundResult(Item* p_Item, ItemExtendedCostEntry const* p_ExtendedCost, uint8 p_Error)
 {
-    WorldPacket l_Data(Opcodes::SMSG_ITEM_PURCHASE_REFUND_RESULT);
+    WorldPacket l_Data(SMSG_ITEM_PURCHASE_REFUND_RESULT);
     l_Data.appendPackGUID(p_Item->GetGUID());
     l_Data << uint8(p_Error);
     l_Data.WriteBit(!p_Error);

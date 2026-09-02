@@ -2,9 +2,11 @@
 #define _CUFPROFILES_H
 
 #include "Common.h"
+#include <bitset>
 
 // 5 hardcoded in Script_GetMaxNumCUFProfiles
 #define MAX_CUF_PROFILES                5
+#define CUF_BOOL_OPTIONS_COUNT          25
 // 32 utf8 hardcoded in Script_CreateNewRaidProfile, 128 everywhere else
 #define MAX_CUF_PROFILE_NAME_LENGTH     128
 
@@ -57,7 +59,20 @@ struct CUFProfile
 
     uint32 l_NameLen;
     std::string Name;
+    std::string ProfileName;
     CUFProfileData data;
+
+    std::bitset<CUF_BOOL_OPTIONS_COUNT> BoolOptions;
+    uint16 FrameHeight = 0;
+    uint16 FrameWidth = 0;
+    uint8 SortBy = 0;
+    uint8 HealthText = 0;
+    uint8 TopPoint = 0;
+    uint8 BottomPoint = 0;
+    uint8 LeftPoint = 0;
+    uint16 TopOffset = 0;
+    uint16 BottomOffset = 0;
+    uint16 LeftOffset = 0;
 };
 
 typedef std::vector<CUFProfile> CUFProfiles;

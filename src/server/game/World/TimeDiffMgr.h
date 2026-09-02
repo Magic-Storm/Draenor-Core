@@ -30,6 +30,12 @@ struct PerfLog
 class TimeDiffMgr
 {
 public:
+    static TimeDiffMgr* instance()
+    {
+        static TimeDiffMgr instance;
+        return &instance;
+    }
+
     TimeDiffMgr() {}
     void Initialize();
     void Update(uint32 diff);

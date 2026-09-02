@@ -143,20 +143,17 @@ WorldPacket const* WorldPackets::Auth::AuthResponse::Write()
 
         for (auto& templat : SuccessInfo->Templates)
         {
-            _worldPacket << uint32(templat.TemplateSetId);
-            _worldPacket << uint32(templat.Classes.size());
-            for (auto& templateClass : templat.Classes)
-            {
-                _worldPacket << uint8(templateClass.ClassID);
-                _worldPacket << uint8(templateClass.FactionGroup);
-            }
+            _worldPacket << uint32(templat.m_ID);
+            _worldPacket << uint32(1);
+            _worldPacket << uint8(templat.m_PlayerClass);
+            _worldPacket << uint8(0);
 
-            _worldPacket.WriteBits(templat.Name.length(), 7);
-            _worldPacket.WriteBits(templat.Description.length(), 10);
+            _worldPacket.WriteBits(templat.m_Name.length(), 7);
+            _worldPacket.WriteBits(templat.m_Description.length(), 10);
             _worldPacket.FlushBits();
 
-            _worldPacket.WriteString(templat.Name);
-            _worldPacket.WriteString(templat.Description);
+            _worldPacket.WriteString(templat.m_Name);
+            _worldPacket.WriteString(templat.m_Description);
         }
 
         _worldPacket.WriteBit(SuccessInfo->IsExpansionTrial);
@@ -345,7 +342,7 @@ WorldPacket const* WorldPackets::Auth::ConnectTo::Write()
         addressType = 2;
     }
 
-    HmacHash hmacHash(64, WherePacketHmac);
+    HmacHash hmacHash(64, const_cast<uint8*>(WherePacketHmac));
     hmacHash.UpdateData(address, 16);
     hmacHash.UpdateData(&addressType, 1);
     hmacHash.UpdateData((uint8* const)&port, 2);

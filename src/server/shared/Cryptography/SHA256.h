@@ -11,6 +11,7 @@
 
 #include "Define.h"
 #include <string>
+#include <type_traits>
 #include <openssl/sha.h>
 
 class BigNumber;
@@ -18,6 +19,8 @@ class BigNumber;
 class SHA256Hash
 {
     public:
+        using DigestLength = std::integral_constant<size_t, SHA256_DIGEST_LENGTH>;
+
         SHA256Hash();
         ~SHA256Hash();
 

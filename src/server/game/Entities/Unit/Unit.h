@@ -340,6 +340,7 @@ enum HitInfo
     HITINFO_RAGE_GAIN           = 0x00800000,
     /// 0x01000000
     /// 0x02000000
+    HITINFO_UNK12               = 0x00001000,
     HITINFO_MULTISTRIKE         = 0x04000000
     /// 0x08000000
     /// 0x10000000
@@ -1613,6 +1614,7 @@ class Unit : public WorldObject
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool isAttackingPlayer() const;
         Unit* getVictim() const { return m_attacking; }
+        Unit* GetVictim() const { return m_attacking; }
         // Use this only when 100% sure there is a victim
         Unit* EnsureVictim() const
         {

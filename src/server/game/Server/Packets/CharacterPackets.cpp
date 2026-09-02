@@ -33,7 +33,7 @@ WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Fiel
     //  16 pet.entry, 17 pet.modelid, 18 pet.level, 19 equipmentCache, 20 banned.guid, 21 slot
     //  22 declined genitive (optional)
 
-    Guid              = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt32());
+    Guid              = ObjectGuid::Create<HIGHGUID_PLAYER>(fields[0].GetUInt32());
     Name              = fields[1].GetString();
     Race              = fields[2].GetUInt8();
     Class             = fields[3].GetUInt8();
@@ -54,7 +54,7 @@ WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Fiel
     PreLoadPosition.z = fields[12].GetFloat();
 
     if (uint32 guildId = fields[13].GetUInt32())
-        GuildGuid = ObjectGuid::Create<HighGuid::Guild>(guildId);
+        GuildGuid = ObjectGuid::Create<HIGHGUID_GUILD>(guildId);
 
     uint32 playerFlags  = fields[14].GetUInt32();
     uint32 atLoginFlags = fields[15].GetUInt16();

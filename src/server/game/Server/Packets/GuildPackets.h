@@ -18,6 +18,17 @@
 #ifndef GuildPackets_h__
 #define GuildPackets_h__
 
+#ifndef GUILD_CHALLENGES_TYPES
+#define GUILD_CHALLENGES_TYPES 6
+#endif
+
+#include "Packet.h"
+#include "ObjectGuid.h"
+#include "Guild.h"
+#include "ItemPackets.h"
+
+using GuidList = std::vector<ObjectGuid>;
+
 #include "Packet.h"
 #include "ObjectGuid.h"
 #include "Guild.h"

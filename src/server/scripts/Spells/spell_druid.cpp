@@ -2615,7 +2615,7 @@ class spell_dru_eclipse : public PlayerScript
             l_EclipseData.m_EclipseCycleActive = true;
             l_EclipseData.m_EclipseFinishingCount = -1;
 
-            ACE_OS::gettimeofday().msec(l_EclipseData.m_LastEclipseCheck);
+            l_EclipseData.m_LastEclipseCheck = getMSTime();
        }
 
         /// Override
@@ -2647,7 +2647,7 @@ class spell_dru_eclipse : public PlayerScript
                 return;
 
             uint64 l_ActualTime = 0;
-            ACE_OS::gettimeofday().msec(l_ActualTime);
+            l_ActualTime = getMSTime();
 
             uint32 l_PowerIndex = p_Player->GetPowerIndex(Powers::POWER_ECLIPSE, p_Player->getClass());
             if (l_PowerIndex == MAX_POWERS)

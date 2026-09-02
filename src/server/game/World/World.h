@@ -21,10 +21,6 @@
 #include "TimeDiffMgr.h"
 #include "DatabaseWorkerPool.h"
 
-#ifndef CROSS
-# include "InterRealmSession.h"
-#endif
-
 #include <atomic>
 #include <mutex>
 #include <future>
@@ -38,6 +34,11 @@ class Player;
 class WorldSocket;
 class SystemMgr;
 class LexicsCutter;
+class InterRealmSession;
+
+#ifndef CROSS
+# include "InterRealmSession.h"
+#endif
 
 // ServerMessages.dbc
 enum ServerMessageType
@@ -539,6 +540,11 @@ enum BillingPlanFlags
 };
 
 /// Type of server, this is values from second column of Cfg_Configs.dbc
+#ifndef TRINITY_REALM_TYPE_DEFINED
+#define TRINITY_REALM_TYPE_DEFINED
+#ifndef MAX_CLIENT_REALM_TYPE
+#define MAX_CLIENT_REALM_TYPE 14
+#endif
 enum RealmType
 {
     REALM_TYPE_NORMAL = 0,
@@ -549,6 +555,7 @@ enum RealmType
     REALM_TYPE_FFA_PVP = 16                                 // custom, free for all pvp mode like arena PvP in all zones except rest activated places and sanctuaries
                                                             // replaced by REALM_PVP in realm list
 };
+#endif
 
 enum RealmZone
 {
@@ -1251,7 +1258,8 @@ PreparedQueryResultFuture AsyncQuery(T& on, PreparedStatement* stmt, std::functi
     if (index != 0)
     {
         # ifdef GAME_SERVER_PROJECTS
-            sWorld->AddPrepareStatementCallback(std::make_pair(p_Callback, res));
+            sWorld->AddPrepareStatementCallback({ std::move(p_Callback), std::move(res) });
+            return PreparedQueryResultFuture();
         # endif
     }
 

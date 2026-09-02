@@ -200,7 +200,7 @@ WorldSession::WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, b
 
     if (sock)
     {
-        m_Address = sock->GetRemoteIpAddress();
+        m_Address = sock->GetRemoteIpAddress().to_string();
         ResetTimeOutTime();
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());     // One-time query
     }
@@ -578,7 +578,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     }
                     else if (m_Player->IsInWorld())
                     {
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet), this);
+                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle->handler)(*packet);
                         if (sLog->ShouldLog("network", LogLevel::LOG_LEVEL_TRACE) && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
@@ -658,7 +658,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else
                     {
                         // not expected _player or must checked in packet hanlder
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet), this);
+                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle->handler)(*packet);
                         if (sLog->ShouldLog("network", LogLevel::LOG_LEVEL_TRACE) && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
@@ -671,7 +671,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         LogUnexpectedOpcode(packet, "STATUS_TRANSFER", "the player is still in world");
                     else
                     {
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet), this);
+                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle->handler)(*packet);
                         if (sLog->ShouldLog("network", LogLevel::LOG_LEVEL_TRACE) && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
@@ -690,7 +690,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     if (packet->GetOpcode() == CMSG_ENUM_CHARACTERS)
                         m_playerRecentlyLogout = false;
 
-                    sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet), this);
+                    sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
                     (this->*opHandle->handler)(*packet);
                     if (sLog->ShouldLog("network", LogLevel::LOG_LEVEL_TRACE) && packet->rpos() < packet->wpos())
                         LogUnprocessedTail(packet);
@@ -972,7 +972,7 @@ void WorldSession::LogoutPlayer(bool p_Save, bool p_AfterInterRealm)
         {
             WorldPacket tunPacket(IR_CMSG_PLAYER_LOGOUT, 8);
             tunPacket << uint64(m_Player->GetGUID());
-            sIRTunnel->SendPacket(&tunPacket);
+            sWorld->GetInterRealmSession()->SendPacket(&tunPacket);
             m_InterRealmZoneId = 0;
         }
 #else /* CROSS */
@@ -1655,10 +1655,11 @@ void WorldSession::ProcessQueryCallbacks()
     l_Times.push_back(getMSTime() - l_StartTime);
 
     //! HandleCharEnumOpcode
-    if (_charEnumCallback.valid() && _charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    if (m_CharEnumCallback.ready())
     {
-        result = _charEnumCallback.get();
+        m_CharEnumCallback.get(result);
         HandleCharEnum(result);
+        m_CharEnumCallback.cancel();
     }
 
     l_Times.push_back(getMSTime() - l_StartTime);
@@ -1705,10 +1706,15 @@ void WorldSession::ProcessQueryCallbacks()
 #endif
 
     //! HandlePlayerLoginOpcode
-    if (_charLoginCallback.valid() && _charLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    if (m_CharacterLoginCallback.ready() && m_CharacterLoginDBCallback.ready())
     {
-        SQLQueryHolder* param = _charLoginCallback.get();
-        HandlePlayerLogin((LoginQueryHolder*)param);
+        SQLQueryHolder* charHolder = nullptr;
+        SQLQueryHolder* loginHolder = nullptr;
+        m_CharacterLoginCallback.get(charHolder);
+        m_CharacterLoginDBCallback.get(loginHolder);
+        HandlePlayerLogin((LoginQueryHolder*)charHolder, (LoginDBQueryHolder*)loginHolder);
+        m_CharacterLoginCallback.cancel();
+        m_CharacterLoginDBCallback.cancel();
     }
 
     //- SendStabledPet

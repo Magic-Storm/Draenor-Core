@@ -41,6 +41,7 @@ class HashMapHolder
     public:
 
         typedef std::unordered_map<uint64, T*> MapType;
+        typedef std::shared_mutex LockType;
 
         static void Insert(T* o)
         {

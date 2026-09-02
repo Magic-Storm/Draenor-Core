@@ -4170,7 +4170,7 @@ void WorldObject::SetAIAnimKitId(uint16 p_AnimKitID, bool p_Packet /*= true*/)
 
     if (p_Packet)
     {
-        WorldPacket l_Data(Opcodes::SMSG_SET_AI_ANIM_KIT, 16 + 2 + 2);
+        WorldPacket l_Data(SMSG_SET_AI_ANIM_KIT, 16 + 2 + 2);
         l_Data.appendPackGUID(GetGUID());
         l_Data << uint16(p_AnimKitID);
         SendMessageToSet(&l_Data, true);
@@ -4213,7 +4213,7 @@ void WorldObject::SetMeleeAnimKitId(uint16 p_AnimKitID)
 
 void WorldObject::SetAnimTier(uint32 p_Tier)
 {
-    WorldPacket l_Data(Opcodes::SMSG_SET_ANIM_TIER);
+    WorldPacket l_Data(SMSG_SET_ANIM_TIER);
     l_Data.appendPackGUID(GetGUID());
     l_Data << int32(p_Tier);
     SendMessageToSet(&l_Data, true);
@@ -4221,7 +4221,7 @@ void WorldObject::SetAnimTier(uint32 p_Tier)
 
 void WorldObject::SetPlayerHoverAnim(bool p_Apply)
 {
-    WorldPacket l_Data(Opcodes::SMSG_SET_ANIM_TIER);
+    WorldPacket l_Data(SMSG_SET_ANIM_TIER);
     l_Data.appendPackGUID(GetGUID());
     l_Data.WriteBit(p_Apply);
     l_Data.FlushBits();

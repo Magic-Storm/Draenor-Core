@@ -73,7 +73,7 @@ void RASession::Start()
     TC_LOG_INFO("commands.ra", "User %s (IP: %s) authenticated correctly to RA", username.c_str(), GetRemoteIpAddress().c_str());
 
     // Authentication successful, send the motd
-    Send(std::string(std::string(sWorld->GetMotd()) + "\r\n").c_str());
+    Send(std::string(sWorld->GetMotd().Text + "\r\n").c_str());
 
     // Read commands
     while (true)

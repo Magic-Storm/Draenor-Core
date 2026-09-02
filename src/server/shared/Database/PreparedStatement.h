@@ -145,9 +145,6 @@ class MySQLPreparedStatement
         MYSQL_BIND* m_bind;
 };
 
-typedef std::future<PreparedQueryResult> PreparedQueryResultFuture;
-typedef std::promise<PreparedQueryResult> PreparedQueryResultPromise;
-
 //- Lower-level class, enqueuable operation
 class PreparedStatementTask : public SQLOperation
 {

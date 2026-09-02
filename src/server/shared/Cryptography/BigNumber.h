@@ -66,6 +66,7 @@ class BigNumber
         }
 
         bool isZero() const;
+        bool IsNegative() const;
 
         BigNumber ModExp(BigNumber const& bn1, BigNumber const& bn2);
         BigNumber Exp(BigNumber const&);

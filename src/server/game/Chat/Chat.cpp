@@ -29,7 +29,6 @@
 #ifndef CROSS
 #include "Guild.h"
 #endif /* not CROSS */
-#include "Threading.h"
 #include "MSSignalHandler.h"
 
 bool ChatHandler::load_command_table = true;

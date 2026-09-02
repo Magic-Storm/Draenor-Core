@@ -67,6 +67,11 @@ namespace Battlenet
 #pragma pack(pop)
 
 /// Type of server, this is values from second column of Cfg_Configs.dbc
+#ifndef TRINITY_REALM_TYPE_DEFINED
+#define TRINITY_REALM_TYPE_DEFINED
+#ifndef MAX_CLIENT_REALM_TYPE
+#define MAX_CLIENT_REALM_TYPE 14
+#endif
 enum RealmType
 {
     REALM_TYPE_NORMAL       = 0,
@@ -74,12 +79,10 @@ enum RealmType
     REALM_TYPE_NORMAL2      = 4,
     REALM_TYPE_RP           = 6,
     REALM_TYPE_RPPVP        = 8,
-
-    MAX_CLIENT_REALM_TYPE   = 14,
-
     REALM_TYPE_FFA_PVP      = 16                            // custom, free for all pvp mode like arena PvP in all zones except rest activated places and sanctuaries
                                                             // replaced by REALM_PVP in realm list
 };
+#endif
 
 // Storage object for a realm
 struct TC_SHARED_API Realm

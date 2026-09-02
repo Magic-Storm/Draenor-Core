@@ -29,6 +29,10 @@ class WorldPacket : public ByteBuffer
         WorldPacket(uint32 opcode, size_t res = 200, ConnectionType connection = CONNECTION_TYPE_DEFAULT) : ByteBuffer(res), m_opcode(opcode), _connection(connection)
         {
         }
+
+        WorldPacket(uint32 opcode, MessageBuffer&& buffer, ConnectionType connection) : ByteBuffer(std::move(buffer)), m_opcode(opcode), _connection(connection)
+        {
+        }
                                                             // copy constructor
         WorldPacket(WorldPacket const& packet) : ByteBuffer(packet), m_opcode(packet.m_opcode), _connection(packet._connection)
         {

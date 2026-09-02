@@ -13,6 +13,7 @@
 #include "Common.h"
 
 #include <cctype>
+#include <cstring>
 #include <iomanip>
 #include <sstream>
 #include <functional>
@@ -373,6 +374,27 @@ uint32 CreatePIDFile(const std::string& filename);
 uint32 GetPID();
 
 std::string ByteArrayToHexStr(uint8 const* bytes, uint32 length, bool reverse = false);
+
+template<size_t N>
+inline void HexStrToByteArray(char const* hex, uint8 (&out)[N])
+{
+    std::memset(out, 0, N);
+    if (!hex)
+        return;
+
+    size_t hexLen = std::strlen(hex);
+    for (size_t i = 0; i + 1 < hexLen && (i / 2) < N; i += 2)
+    {
+        auto nibble = [](char c) -> uint8
+        {
+            if (c >= '0' && c <= '9') return uint8(c - '0');
+            if (c >= 'a' && c <= 'f') return uint8(c - 'a' + 10);
+            if (c >= 'A' && c <= 'F') return uint8(c - 'A' + 10);
+            return 0;
+        };
+        out[i / 2] = uint8((nibble(hex[i]) << 4) | nibble(hex[i + 1]));
+    }
+}
 
 inline std::string UrlEncode(const std::string & p_Value)
 {

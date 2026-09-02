@@ -676,6 +676,9 @@ class AchievementMgr
         bool m_NeedDBSync;
 };
 
+template<>
+bool AchievementMgr<Player>::HasAchieved(uint32 achievementId) const;
+
 struct AchievementCriteriaUpdateTask
 {
     uint64 PlayerGUID;

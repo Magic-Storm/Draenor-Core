@@ -24,6 +24,8 @@
 
 #include <sstream>
 
+ObjectGuid const ObjectGuid::Empty;
+
 ByteBufferPositionException::ByteBufferPositionException(bool add, size_t pos, size_t size, size_t valueSize)
     : ByteBufferException(pos, size, valueSize), _add(add)
 {

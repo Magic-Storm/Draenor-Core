@@ -1131,10 +1131,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& p_File, uint32 p_Accoun
 
     fclose(fin);
 
-    if (!CharacterDatabase.DirectCommitTransaction(l_CharTransaction))
-    {
-        return DUMP_FILE_BROKEN;
-    }
+    CharacterDatabase.DirectCommitTransaction(l_CharTransaction);
 
     LoginDatabase.DirectCommitTransaction(l_AccTransaction);
 

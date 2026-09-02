@@ -18,6 +18,10 @@
 #ifndef QueryPackets_h__
 #define QueryPackets_h__
 
+#ifndef MAX_NPC_TEXT_OPTIONS
+#define MAX_NPC_TEXT_OPTIONS 8
+#endif
+
 #include "Packet.h"
 #include "Creature.h"
 #include "NPCHandler.h"

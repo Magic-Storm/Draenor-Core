@@ -23,11 +23,11 @@
 WorldPackets::Mail::MailAttachedItem::MailAttachedItem(::Item const* item, uint8 pos)
 {
     Position = pos;
-    AttachID = item->GetGUID().GetCounter();
+    AttachID = item->GetGUIDLow();
     Item.Initialize(item);
     Count = item->GetCount();
     Charges = item->GetSpellCharges();
-    MaxDurability = item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
+    MaxDurability = item->GetUInt32Value(ITEM_FIELD_MAX_DURABILITY);
     Durability = item->GetUInt32Value(ITEM_FIELD_DURABILITY);
     Unlocked = !item->IsLocked(); //TODO: Check
 
@@ -70,7 +70,7 @@ WorldPackets::Mail::MailListEntry::MailListEntry(::Mail const* mail, ::Player* p
     switch (mail->messageType)
     {
         case MAIL_NORMAL:
-            SenderCharacter = ObjectGuid::Create<HighGuid::Player>(mail->sender);
+            SenderCharacter = ObjectGuid::Create<HIGHGUID_PLAYER>(mail->sender);
             break;
         case MAIL_CREATURE:
         case MAIL_GAMEOBJECT:
@@ -232,7 +232,7 @@ WorldPackets::Mail::MailQueryNextTimeResult::MailNextTimeEntry::MailNextTimeEntr
     switch (mail->messageType)
     {
         case MAIL_NORMAL:
-            SenderGuid = ObjectGuid::Create<HighGuid::Player>(mail->sender);
+            SenderGuid = ObjectGuid::Create<HIGHGUID_PLAYER>(mail->sender);
             break;
         case MAIL_AUCTION:
         case MAIL_CREATURE:

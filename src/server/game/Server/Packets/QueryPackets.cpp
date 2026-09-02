@@ -140,8 +140,8 @@ bool WorldPackets::Query::PlayerGuidLookupData::Initialize(ObjectGuid const& gui
         uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(uint64(guid));
         uint32 bnetAccountId = ::Battlenet::AccountMgr::GetIdByGameAccount(accountId);
 
-        AccountID     = ObjectGuid::Create<HighGuid::WowAccount>(accountId);
-        BnetAccountID = ObjectGuid::Create<HighGuid::BNetAccount>(bnetAccountId);
+        AccountID     = ObjectGuid::Create<HIGHGUID_WOW_ACCOUNT>(accountId);
+        BnetAccountID = ObjectGuid::Create<HIGHGUID_BNET_ACCOUNT>(bnetAccountId);
         Name          = characterInfo->Name;
         Race          = characterInfo->Race;
         Sex           = characterInfo->Sex;
@@ -272,9 +272,9 @@ WorldPacket const* WorldPackets::Query::DBReply::Write()
 WorldPacket const* WorldPackets::Query::HotfixNotifyBlob::Write()
 {
     _worldPacket << uint32(Hotfixes->size());
-    for (HotfixNotify const& hotfix : *Hotfixes)
+    for (HotfixInfo const& hotfix : *Hotfixes)
     {
-        _worldPacket << uint32(hotfix.TableHash);
+        _worldPacket << uint32(hotfix.Type);
         _worldPacket << int32(hotfix.Entry);
         _worldPacket << uint32(hotfix.Timestamp);
     }

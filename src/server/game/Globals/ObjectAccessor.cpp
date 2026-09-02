@@ -303,7 +303,7 @@ void ObjectAccessor::RemoveCorpse(Corpse* corpse)
 {
     ASSERT(corpse && corpse->GetType() != CORPSE_BONES);
 
-    boost::upgrade_lock<boost::shared_mutex> lock(_corpseLock);
+    std::unique_lock<std::shared_mutex> lock(_corpseLock);
 
     /// @todo more works need to be done for corpse and other world object
     if (Map* map = corpse->FindMap())
@@ -323,8 +323,6 @@ void ObjectAccessor::RemoveCorpse(Corpse* corpse)
 
     // Critical section
     {
-        boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-
         Player2CorpsesMapType::iterator iter = i_player2corpse.find(corpse->GetOwnerGUID());
         if (iter == i_player2corpse.end()) // TODO: Fix this
             return;
@@ -492,7 +490,7 @@ void ObjectAccessor::UnloadAll()
 /// Define the static members of HashMapHolder
 
 template <class T> std::unordered_map< uint64, T* > HashMapHolder<T>::_objectMap;
-template <class T> boost::shared_mutex HashMapHolder<T>::_lock;
+template <class T> std::shared_mutex HashMapHolder<T>::_lock;
 
 /// Global definitions for the hashmap storage
 

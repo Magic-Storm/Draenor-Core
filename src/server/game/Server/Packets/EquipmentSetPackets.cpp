@@ -32,18 +32,18 @@ WorldPacket const* WorldPackets::EquipmentSet::LoadEquipmentSet::Write()
     for (EquipmentSetInfo::EquipmentSetData const* equipSet : SetData)
     {
         _worldPacket << uint64(equipSet->Guid);
-        _worldPacket << uint32(equipSet->SetID);
+        _worldPacket << uint32(0);
         _worldPacket << uint32(equipSet->IgnoreMask);
 
-        for (ObjectGuid const& guid : equipSet->Pieces)
-            _worldPacket << guid;
+        for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+            _worldPacket << ObjectGuid(uint64(equipSet->Items[i]));
 
-        _worldPacket.WriteBits(equipSet->SetName.length(), 8);
-        _worldPacket.WriteBits(equipSet->SetIcon.length(), 9);
+        _worldPacket.WriteBits(equipSet->Name.length(), 8);
+        _worldPacket.WriteBits(equipSet->IconName.length(), 9);
         _worldPacket.FlushBits();
 
-        _worldPacket.WriteString(equipSet->SetName);
-        _worldPacket.WriteString(equipSet->SetIcon);
+        _worldPacket.WriteString(equipSet->Name);
+        _worldPacket.WriteString(equipSet->IconName);
     }
 
     return &_worldPacket;
@@ -52,17 +52,22 @@ WorldPacket const* WorldPackets::EquipmentSet::LoadEquipmentSet::Write()
 void WorldPackets::EquipmentSet::SaveEquipmentSet::Read()
 {
     _worldPacket >> Set.Guid;
-    _worldPacket >> Set.SetID;
+    uint32 setId = 0;
+    _worldPacket >> setId;
     _worldPacket >> Set.IgnoreMask;
 
     for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
-        _worldPacket >> Set.Pieces[i];
+    {
+        ObjectGuid itemGuid;
+        _worldPacket >> itemGuid;
+        Set.Items[i] = itemGuid.GetCounter();
+    }
 
     uint32 setNameLength = _worldPacket.ReadBits(8);
     uint32 setIconLength = _worldPacket.ReadBits(9);
 
-    Set.SetName = _worldPacket.ReadString(setNameLength);
-    Set.SetIcon = _worldPacket.ReadString(setIconLength);
+    Set.Name = _worldPacket.ReadString(setNameLength);
+    Set.IconName = _worldPacket.ReadString(setIconLength);
 }
 
 void WorldPackets::EquipmentSet::DeleteEquipmentSet::Read()

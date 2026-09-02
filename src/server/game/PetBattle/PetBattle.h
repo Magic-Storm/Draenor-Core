@@ -855,6 +855,12 @@ class PetBattleSystem
         ~PetBattleSystem();
 
     public:
+        static PetBattleSystem* instance()
+        {
+            static PetBattleSystem* instance = new PetBattleSystem();
+            return instance;
+        }
+
         /// Create a new battle with an unique auto incremented ID
         PetBattle* CreateBattle();
         /// Create a new pet battle request (actually we use requested guid (player guid) as request id)
