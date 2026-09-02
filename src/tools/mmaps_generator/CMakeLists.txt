@@ -78,6 +78,10 @@ target_link_libraries(mmaps_generator
   ${MYSQL_LIBRARY}
 )
 
+if(WIN32)
+  target_link_libraries(mmaps_generator ws2_32)
+endif()
+
 if( UNIX )
   install(TARGETS mmaps_generator DESTINATION bin)
 elseif( WIN32 )

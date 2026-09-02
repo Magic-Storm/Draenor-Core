@@ -26,6 +26,7 @@
 
 #include <map>
 #include <fstream>
+#include <string>
 
 //From Extractor
 #include "adtfile.h"
@@ -64,16 +65,35 @@ bool preciseVectorData = false;
 const char* szWorkDirWmo = "./Buildings";
 const char* szRawVMAPMagic = "VMAP043";
 
+static std::string StripTrailingSlash(std::string path)
+{
+    while (!path.empty() && (path.back() == '/' || path.back() == '\\'))
+        path.pop_back();
+    return path;
+}
+
 bool OpenCascStorage()
 {
-    if (!CascOpenStorage("./Data", 0, &CascStorage))
+    std::string const base = StripTrailingSlash(input_path);
+    std::string const candidates[] =
     {
-        printf("Error %d\n", GetLastError());
-        return false;
+        base + "/Data",
+        base,
+        std::string("./Data")
+    };
+
+    for (std::string const& path : candidates)
+    {
+        if (CascOpenStorage(path.c_str(), 0, &CascStorage))
+        {
+            printf("opened casc storage '%s'\n\n", path.c_str());
+            return true;
+        }
     }
 
-    printf("\n");
-    return true;
+    printf("Unable to open CASC storage. Use -d <WoW 6.2.4 folder> (the folder that contains Wow.exe and Data\\).\n");
+    printf("Last error: %d\n", GetLastError());
+    return false;
 }
 
 // Local testing functions
@@ -264,15 +284,6 @@ void ParsMapFiles()
     }
 }
 
-void getGamePath()
-{
-#ifdef _WIN32
-    strcpy(input_path,"Data\\");
-#else
-    strcpy(input_path,"Data/");
-#endif
-}
-
 bool processArgv(int argc, char ** argv, const char *versionString)
 {
     bool result = true;
@@ -323,12 +334,12 @@ bool processArgv(int argc, char ** argv, const char *versionString)
         printf("%s [-?][-s][-l][-d <path>]\n", argv[0]);
         printf("   -s : (default) small size (data size optimization), ~500MB less vmap data.\n");
         printf("   -l : large size, ~500MB more vmap data. (might contain more details)\n");
-        printf("   -d <path>: Path to the vector data source folder.\n");
+        printf("   -d <path>: Path to the WoW 6.2.4.21742 client folder (Wow.exe + Data\\).\n");
         printf("   -? : This message.\n");
     }
 
-    if(!hasInputPathParam)
-        getGamePath();
+    if (!hasInputPathParam)
+        strcpy(input_path, ".");
 
     return result;
 }
