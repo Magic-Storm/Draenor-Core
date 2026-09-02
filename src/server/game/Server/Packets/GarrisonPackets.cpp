@@ -68,8 +68,8 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Garrison::GarrisonFollowe
     data << uint32(follower.CurrentMissionID);
     data << uint32(follower.AbilityID.size());
     data << uint32(follower.FollowerStatus);
-    for (GarrAbilityEntry const* ability : follower.AbilityID)
-        data << uint32(ability->ID);
+    for (uint32 ability : follower.AbilityID)
+        data << uint32(ability);
 
     data.WriteBits(follower.CustomName.length(), 7);
     data.FlushBits();
@@ -226,15 +226,13 @@ WorldPacket const* WorldPackets::Garrison::GarrisonUnlearnBlueprintResult::Write
 
 WorldPacket const* WorldPackets::Garrison::GarrisonRequestBlueprintAndSpecializationDataResult::Write()
 {
-    _worldPacket << uint32(BlueprintsKnown ? BlueprintsKnown->size() : 0);
-    _worldPacket << uint32(SpecializationsKnown ? SpecializationsKnown->size() : 0);
-    if (BlueprintsKnown)
-        for (uint32 blueprint : *BlueprintsKnown)
-            _worldPacket << uint32(blueprint);
+    _worldPacket << uint32(BlueprintsKnown.size());
+    _worldPacket << uint32(SpecializationsKnown.size());
+    for (uint32 blueprint : BlueprintsKnown)
+        _worldPacket << uint32(blueprint);
 
-    if (SpecializationsKnown)
-        for (uint32 specialization : *SpecializationsKnown)
-            _worldPacket << uint32(specialization);
+    for (uint32 specialization : SpecializationsKnown)
+        _worldPacket << uint32(specialization);
 
     return &_worldPacket;
 }
@@ -292,4 +290,202 @@ WorldPacket const* WorldPackets::Garrison::GarrisonBuildingActivated::Write()
     _worldPacket << uint32(GarrPlotInstanceID);
 
     return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonIsUpgradeableResult::Write()
+{
+    _worldPacket << uint32(Result);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonUpgradeResult::Write()
+{
+    _worldPacket << uint32(Result);
+    _worldPacket << uint32(GarrSiteLevelID);
+    return &_worldPacket;
+}
+
+void WorldPackets::Garrison::UpgradeGarrison::Read()
+{
+    _worldPacket >> NpcGUID;
+}
+
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Garrison::Shipment const& shipment)
+{
+    data << uint32(shipment.ShipmentRecID);
+    data << uint64(shipment.ShipmentID);
+    data << uint64(shipment.AssignedFollowerDBID);
+    data << uint32(shipment.CreationTime);
+    data << uint32(shipment.ShipmentDuration);
+    data << uint32(shipment.RewardedXP);
+    return data;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonLandingPage::Write()
+{
+    _worldPacket << uint32(Shipments.size());
+    for (Shipment const& shipment : Shipments)
+        _worldPacket << shipment;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GetShipmentInfoResponse::Write()
+{
+    _worldPacket.WriteBit(Success);
+    _worldPacket.FlushBits();
+
+    _worldPacket << uint32(ShipmentID);
+    _worldPacket << uint32(MaxShipments);
+    _worldPacket << uint32(Shipments.size());
+    _worldPacket << uint32(PlotInstanceID);
+
+    for (Shipment const& shipment : Shipments)
+        _worldPacket << shipment;
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::CreateShipmentResponse::Write()
+{
+    _worldPacket << uint64(ShipmentID);
+    _worldPacket << uint32(Result);
+    _worldPacket << uint32(ShipmentRecID);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonOpenArchitect::Write()
+{
+    _worldPacket << NpcGUID;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonOpenMissionNpc::Write()
+{
+    _worldPacket << NpcGUID;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonAssignFollowerToBuildingResult::Write()
+{
+    _worldPacket << uint64(FollowerDBID);
+    _worldPacket << int32(Result);
+    _worldPacket << int32(PlotInstanceID);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonRemoveFollowerFromBuildingResult::Write()
+{
+    _worldPacket << uint64(FollowerDBID);
+    _worldPacket << int32(Result);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonAddMissionResult::Write()
+{
+    _worldPacket << uint32(Result);
+    _worldPacket << MissionData;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonStartMissionResult::Write()
+{
+    _worldPacket << uint32(Result);
+    _worldPacket << MissionData;
+    _worldPacket << uint32(FollowerDBIDs.size());
+    for (uint64 followerDbId : FollowerDBIDs)
+        _worldPacket << uint64(followerDbId);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonCompleteMissionResult::Write()
+{
+    _worldPacket << uint32(Result);
+    _worldPacket << MissionData;
+    _worldPacket << uint32(MissionRecID);
+    _worldPacket << uint32(0);
+    _worldPacket.WriteBit(Succeeded);
+    _worldPacket.FlushBits();
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonMissionBonusRollResult::Write()
+{
+    _worldPacket << MissionData;
+    _worldPacket << uint32(MissionRecID);
+    _worldPacket << uint32(Result);
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonFollowerChangedItemLevel::Write()
+{
+    _worldPacket << Follower;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonFollowerChangedXP::Write()
+{
+    _worldPacket << uint32(TotalXp);
+    _worldPacket << uint32(Result);
+    _worldPacket << Follower;
+    _worldPacket << Follower2;
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Garrison::GarrisonNumFollowerActivationsRemaining::Write()
+{
+    _worldPacket << uint32(Amount);
+    return &_worldPacket;
+}
+
+void WorldPackets::Garrison::GarrisonStartMission::Read()
+{
+    _worldPacket >> NpcGUID;
+    uint32 followerCount = 0;
+    _worldPacket >> followerCount;
+    _worldPacket >> MissionRecID;
+    FollowerDBIDs.resize(followerCount);
+    for (uint32 i = 0; i < followerCount; ++i)
+        _worldPacket >> FollowerDBIDs[i];
+}
+
+void WorldPackets::Garrison::GarrisonCompleteMission::Read()
+{
+    _worldPacket >> NpcGUID;
+    _worldPacket >> MissionRecID;
+}
+
+void WorldPackets::Garrison::GarrisonMissionBonusRoll::Read()
+{
+    _worldPacket >> NpcGUID;
+    _worldPacket >> MissionRecID;
+}
+
+void WorldPackets::Garrison::GarrisonAssignFollowerToBuilding::Read()
+{
+    _worldPacket >> NpcGUID;
+    _worldPacket >> PlotInstanceID;
+    _worldPacket >> FollowerDBID;
+}
+
+void WorldPackets::Garrison::GarrisonRemoveFollowerFromBuilding::Read()
+{
+    _worldPacket >> NpcGUID;
+    _worldPacket >> FollowerDBID;
+}
+
+void WorldPackets::Garrison::GarrisonSetFollowerInactive::Read()
+{
+    _worldPacket >> FollowerDBID;
+    Inactive = _worldPacket.ReadBit();
+}
+
+void WorldPackets::Garrison::CreateShipment::Read()
+{
+    _worldPacket >> NpcGUID;
+    _worldPacket >> Count;
+}
+
+void WorldPackets::Garrison::GarrisonRequestShipmentInfo::Read()
+{
+    _worldPacket >> NpcGUID;
 }

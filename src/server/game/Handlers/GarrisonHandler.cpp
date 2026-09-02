@@ -16,11 +16,75 @@
 #include "Group.h"
 #include "MapManager.h"
 #include "GarrisonMgr.hpp"
+#include "GarrisonPackets.h"
+#include "DB2Stores.h"
 #include "CreatureAI.h"
 #include "Chat.h"
 #include "ScriptMgr.h"
 #include "../../../scripts/Draenor/Garrison/GarrisonScriptData.hpp"
 #include "../../scripts/Draenor/Garrison/GarrisonNPC.hpp"
+
+namespace
+{
+    WorldPackets::Garrison::GarrisonBuildingInfo ToPacketBuilding(MS::Garrison::GarrisonBuilding const& building)
+    {
+        WorldPackets::Garrison::GarrisonBuildingInfo packet;
+        packet.GarrPlotInstanceID = building.PlotInstanceID;
+        packet.GarrBuildingID = building.BuildingID;
+        packet.TimeBuilt = time_t(building.TimeBuiltStart);
+        packet.CurrentGarSpecID = building.SpecID;
+        packet.TimeSpecCooldown = time_t(building.TimeBuiltEnd);
+        packet.Active = building.Active;
+        return packet;
+    }
+
+    WorldPackets::Garrison::GarrisonFollower ToPacketFollower(MS::Garrison::GarrisonFollower const& follower)
+    {
+        WorldPackets::Garrison::GarrisonFollower packet;
+        packet.DbID = follower.DatabaseID;
+        packet.GarrFollowerID = follower.FollowerID;
+        packet.Quality = follower.Quality;
+        packet.FollowerLevel = uint32(follower.Level);
+        packet.ItemLevelWeapon = uint32(follower.ItemLevelWeapon);
+        packet.ItemLevelArmor = uint32(follower.ItemLevelArmor);
+        packet.Xp = follower.XP;
+        packet.CurrentBuildingID = follower.CurrentBuildingID;
+        packet.CurrentMissionID = follower.CurrentMissionID;
+        packet.AbilityID = follower.Abilities;
+        packet.FollowerStatus = follower.Flags;
+        packet.CustomName = follower.ShipName;
+        return packet;
+    }
+
+    WorldPackets::Garrison::GarrisonMission ToPacketMission(MS::Garrison::GarrisonMission const& mission, MS::Garrison::Manager* garrison)
+    {
+        WorldPackets::Garrison::GarrisonMission packet;
+        packet.DbID = mission.DatabaseID;
+        packet.MissionRecID = mission.MissionID;
+        packet.OfferTime = time_t(mission.OfferTime);
+        packet.OfferDuration = mission.OfferMaxDuration;
+        packet.StartTime = time_t(mission.StartTime);
+        if (mission.State == MS::Garrison::Mission::State::InProgress && sGarrMissionStore.LookupEntry(mission.MissionID))
+        {
+            packet.TravelDuration = garrison->GetMissionTravelDuration(mission.MissionID);
+            packet.MissionDuration = garrison->GetMissionDuration(mission.MissionID);
+        }
+        packet.MissionState = mission.State;
+        return packet;
+    }
+
+    WorldPackets::Garrison::Shipment ToPacketShipment(MS::Garrison::Manager* garrison, MS::Garrison::GarrisonWorkOrder const& order, bool includeAssignedFollower)
+    {
+        WorldPackets::Garrison::Shipment packet;
+        packet.ShipmentRecID = order.ShipmentID;
+        packet.ShipmentID = order.DatabaseID;
+        if (includeAssignedFollower)
+            packet.AssignedFollowerDBID = garrison->GetBuilding(order.PlotInstanceID).FollowerAssigned;
+        packet.CreationTime = order.CreationTime;
+        packet.ShipmentDuration = order.CompleteTime > order.CreationTime ? (order.CompleteTime - order.CreationTime) : 0;
+        return packet;
+    }
+}
 
 void WorldSession::HandleGetGarrisonInfoOpcode(WorldPacket& /*p_RecvData*/)
 {
@@ -31,123 +95,90 @@ void WorldSession::HandleGetGarrisonInfoOpcode(WorldPacket& /*p_RecvData*/)
 
     if (!l_Garrison || !l_Garrison->GetGarrisonSiteLevelEntry())
         return;
-    
-    std::vector<MS::Garrison::GarrisonPlotInstanceInfoLocation>   l_Plots             = l_Garrison->GetPlots();
-    std::vector<MS::Garrison::GarrisonMission>                    l_CompletedMission  = l_Garrison->GetCompletedMissions();
-    std::vector<MS::Garrison::GarrisonMission>                    l_Missions          = l_Garrison->GetMissions();
-    std::vector<MS::Garrison::GarrisonBuilding>                   l_Buildings         = l_Garrison->GetBuildings();
-    std::vector<MS::Garrison::GarrisonFollower>                   l_Followers         = l_Garrison->GetFollowers();
 
-    /// @TODO: Update it to 6.1.2
+    std::vector<MS::Garrison::GarrisonPlotInstanceInfoLocation> l_Plots = l_Garrison->GetPlots();
+    std::vector<MS::Garrison::GarrisonMission> l_CompletedMission = l_Garrison->GetCompletedMissions();
+    std::vector<MS::Garrison::GarrisonMission> l_Missions = l_Garrison->GetMissions();
+    std::vector<MS::Garrison::GarrisonBuilding> l_Buildings = l_Garrison->GetBuildings();
+    std::vector<MS::Garrison::GarrisonFollower> l_Followers = l_Garrison->GetFollowers();
+
     if (!m_Player->IsInGarrison())
     {
-        WorldPacket l_Data(SMSG_GARRISON_REMOTE_INFO, 200);
-
-        l_Data << uint32(1);                                                        ///< @TODO Site Count
-
-        /// For
-        /// {
-            l_Data << int32(l_Garrison->GetGarrisonSiteLevelEntry()->SiteLevelID);      ///< Site Level ID
-            l_Data << uint32(l_Buildings.size());                                       ///< Buildings
-
-            for (uint32 l_I = 0; l_I < l_Buildings.size(); ++l_I)
-            {
-                l_Data << uint32(l_Buildings[l_I].PlotInstanceID);                      ///< Garr Plot Instance ID
-                l_Data << uint32(l_Buildings[l_I].BuildingID);                          ///< Garr Building ID
-            }
-        /// }
-
-        SendPacket(&l_Data);
+        WorldPackets::Garrison::GarrisonRemoteInfo remoteInfo;
+        WorldPackets::Garrison::GarrisonRemoteSiteInfo site;
+        site.GarrSiteLevelID = l_Garrison->GetGarrisonSiteLevelEntry()->SiteLevelID;
+        site.Buildings.reserve(l_Buildings.size());
+        for (MS::Garrison::GarrisonBuilding const& building : l_Buildings)
+            site.Buildings.emplace_back(building.PlotInstanceID, building.BuildingID);
+        remoteInfo.Sites.push_back(std::move(site));
+        SendPacket(remoteInfo.Write());
     }
 
-    WorldPacket l_Infos(SMSG_GET_GARRISON_INFO_RESULT, 5 * 1024);
+    std::vector<WorldPackets::Garrison::GarrisonBuildingInfo> buildings;
+    std::vector<WorldPackets::Garrison::GarrisonPlotInfo> plots;
+    std::vector<WorldPackets::Garrison::GarrisonFollower> followers;
+    std::vector<WorldPackets::Garrison::GarrisonMission> missions;
 
-    l_Infos << int32(l_Garrison->GetGarrisonSiteLevelEntry()->SiteID);          ///< Site ID
-    l_Infos << int32(l_Garrison->GetGarrisonSiteLevelEntry()->SiteLevelID);     ///< Site Level ID
-    l_Infos << int32(l_Garrison->GetGarrisonFactionIndex());                    ///< Faction Index
-    
-    l_Infos << uint32(l_Buildings.size());
-    l_Infos << uint32(l_Plots.size());
-    l_Infos << uint32(l_Followers.size());
-    l_Infos << uint32(l_Missions.size());
-    l_Infos << uint32(0);                                                       ///< Uint32 loop - ship related ? 6.2
-    l_Infos << uint32(l_Missions.size());                                       ///< 6.2.0 IsMissionNavel ????
-    l_Infos << uint32(l_CompletedMission.size());
+    buildings.reserve(l_Buildings.size());
+    for (MS::Garrison::GarrisonBuilding const& building : l_Buildings)
+        buildings.push_back(ToPacketBuilding(building));
 
-    l_Infos << int32(l_Garrison->GetNumFollowerActivationsRemaining());
-
-    for (uint32 l_I = 0; l_I < l_Buildings.size(); ++l_I)
+    plots.reserve(l_Plots.size());
+    for (MS::Garrison::GarrisonPlotInstanceInfoLocation const& plot : l_Plots)
     {
-        l_Infos << uint32(l_Buildings[l_I].PlotInstanceID);
-        l_Infos << uint32(l_Buildings[l_I].BuildingID);
-        l_Infos << uint32(l_Buildings[l_I].TimeBuiltStart);
-        l_Infos << uint32(l_Buildings[l_I].SpecID);
-        l_Infos << uint32(l_Buildings[l_I].TimeBuiltEnd);
-
-        l_Infos.WriteBit(l_Buildings[l_I].Active);
-        l_Infos.FlushBits();
+        WorldPackets::Garrison::GarrisonPlotInfo packetPlot;
+        packetPlot.GarrPlotInstanceID = plot.PlotInstanceID;
+        packetPlot.PlotPos.Relocate(plot.X, plot.Y, plot.Z, plot.O);
+        packetPlot.PlotType = l_Garrison->GetPlotType(plot.PlotInstanceID);
+        plots.push_back(packetPlot);
     }
 
-    for (uint32 l_I = 0; l_I < l_Plots.size(); ++l_I)
+    followers.reserve(l_Followers.size());
+    for (MS::Garrison::GarrisonFollower const& follower : l_Followers)
+        followers.push_back(ToPacketFollower(follower));
+
+    missions.reserve(l_Missions.size());
+    for (MS::Garrison::GarrisonMission const& mission : l_Missions)
+        missions.push_back(ToPacketMission(mission, l_Garrison));
+
+    WorldPackets::Garrison::GetGarrisonInfoResult garrisonInfo;
+    garrisonInfo.GarrSiteID = l_Garrison->GetGarrisonSiteLevelEntry()->SiteID;
+    garrisonInfo.GarrSiteLevelID = l_Garrison->GetGarrisonSiteLevelEntry()->SiteLevelID;
+    garrisonInfo.FactionIndex = l_Garrison->GetGarrisonFactionIndex();
+    garrisonInfo.NumFollowerActivationsRemaining = l_Garrison->GetNumFollowerActivationsRemaining();
+
+    garrisonInfo.Buildings.reserve(buildings.size());
+    for (WorldPackets::Garrison::GarrisonBuildingInfo const& building : buildings)
+        garrisonInfo.Buildings.push_back(&building);
+
+    garrisonInfo.Plots.reserve(plots.size());
+    for (WorldPackets::Garrison::GarrisonPlotInfo& plot : plots)
+        garrisonInfo.Plots.push_back(&plot);
+
+    garrisonInfo.Followers.reserve(followers.size());
+    for (WorldPackets::Garrison::GarrisonFollower const& follower : followers)
+        garrisonInfo.Followers.push_back(&follower);
+
+    garrisonInfo.Missions.reserve(missions.size());
+    garrisonInfo.CanStartMission.reserve(missions.size());
+    for (WorldPackets::Garrison::GarrisonMission const& mission : missions)
     {
-        l_Infos << int32(l_Plots[l_I].PlotInstanceID);
-        l_Infos << float(l_Plots[l_I].X);
-        l_Infos << float(l_Plots[l_I].Y);
-        l_Infos << float(l_Plots[l_I].Z);
-        l_Infos << float(l_Plots[l_I].O);
-        l_Infos << uint32(l_Garrison->GetPlotType(l_Plots[l_I].PlotInstanceID));
+        garrisonInfo.Missions.push_back(&mission);
+        garrisonInfo.CanStartMission.push_back(mission.MissionState == MS::Garrison::Mission::State::Available);
     }
 
-    for (uint32 l_I = 0; l_I < l_Followers.size(); ++l_I)
-    {
-        l_Followers[l_I].Write(l_Infos);
-    }
+    garrisonInfo.ArchivedMissions.reserve(l_CompletedMission.size());
+    for (MS::Garrison::GarrisonMission const& mission : l_CompletedMission)
+        garrisonInfo.ArchivedMissions.push_back(int32(mission.MissionID));
 
-    for (uint32 l_I = 0; l_I < l_Missions.size(); ++l_I)
-    {
-        uint32 l_TravelDuration     = 0;
-        uint32 l_MissionDuration    = 0;
+    SendPacket(garrisonInfo.Write());
 
-        if (l_Missions[l_I].State == MS::Garrison::Mission::State::InProgress && sGarrMissionStore.LookupEntry(l_Missions[l_I].MissionID))
-        {
-            l_TravelDuration    = l_Garrison->GetMissionTravelDuration(l_Missions[l_I].MissionID);
-            l_MissionDuration   = l_Garrison->GetMissionDuration(l_Missions[l_I].MissionID);
-        }
-
-        l_Infos << uint64(l_Missions[l_I].DatabaseID);
-        l_Infos << uint32(l_Missions[l_I].MissionID);
-        l_Infos << uint32(l_Missions[l_I].OfferTime);
-        l_Infos << uint32(l_Missions[l_I].OfferMaxDuration);
-        l_Infos << uint32(l_Missions[l_I].StartTime);
-        l_Infos << uint32(l_TravelDuration);
-        l_Infos << uint32(l_MissionDuration);
-        l_Infos << uint32(l_Missions[l_I].State);
-    }
-
-    for (uint32 l_I = 0; l_I < l_CompletedMission.size(); ++l_I)
-        l_Infos << int32(l_CompletedMission[l_I].MissionID);
-
-    for (uint32 l_I = 0; l_I < l_Missions.size(); ++l_I)
-        l_Infos.WriteBit(0);
-
-    l_Infos.FlushBits();
-    SendPacket(&l_Infos);
-
-    std::vector<int32> l_KnownBlueprints        = l_Garrison->GetKnownBlueprints();
-    std::vector<int32> l_KnownSpecializations   = l_Garrison->GetKnownSpecializations();
-
-    WorldPacket l_Data(SMSG_GARRISON_BLUEPRINT_AND_SPECIALIZATION_DATA, 500);
-
-    l_Data << uint32(l_KnownBlueprints.size());
-    l_Data << uint32(l_KnownSpecializations.size());
-
-    for (uint32 l_I = 0; l_I < l_KnownBlueprints.size(); ++l_I)
-        l_Data << int32(l_KnownBlueprints[l_I]);
-
-    for (uint32 l_I = 0; l_I < l_KnownSpecializations.size(); ++l_I)
-        l_Data << int32(l_KnownSpecializations[l_I]);
-
-    SendPacket(&l_Data);
+    WorldPackets::Garrison::GarrisonRequestBlueprintAndSpecializationDataResult blueprintData;
+    for (int32 blueprint : l_Garrison->GetKnownBlueprints())
+        blueprintData.BlueprintsKnown.push_back(uint32(blueprint));
+    for (int32 specialization : l_Garrison->GetKnownSpecializations())
+        blueprintData.SpecializationsKnown.push_back(uint32(specialization));
+    SendPacket(blueprintData.Write());
 }
 
 void WorldSession::HandleRequestGarrisonUpgradeableOpcode(WorldPacket& /*p_RecvData*/)
@@ -162,11 +193,9 @@ void WorldSession::HandleRequestGarrisonUpgradeableOpcode(WorldPacket& /*p_RecvD
 
     bool l_CanUpgrade = l_Garrison->CanUpgrade();
 
-    WorldPacket l_Data(SMSG_GARRISON_REQUEST_UPGRADEABLE_RESULT, 4);
-
-    l_Data << uint32(!l_CanUpgrade);
-
-    SendPacket(&l_Data);
+    WorldPackets::Garrison::GarrisonIsUpgradeableResult packet;
+    packet.Result = uint32(!l_CanUpgrade);
+    SendPacket(packet.Write());
 }
 
 void WorldSession::HandleUpgradeGarrisonOpcode(WorldPacket& p_RecvData)
@@ -212,28 +241,12 @@ void WorldSession::HandleRequestLandingPageShipmentInfoOpcode(WorldPacket& /*p_R
 
     std::vector<MS::Garrison::GarrisonWorkOrder> l_WorkOrders = l_Garrison->GetWorkOrders();
 
-    WorldPacket l_Data(SMSG_GARRISON_LANDING_PAGE_SHIPMENT_INFO, 1024);
-    l_Data << uint32(l_WorkOrders.size());
+    WorldPackets::Garrison::GarrisonLandingPage packet;
+    packet.Shipments.reserve(l_WorkOrders.size());
+    for (MS::Garrison::GarrisonWorkOrder const& order : l_WorkOrders)
+        packet.Shipments.push_back(ToPacketShipment(l_Garrison, order, true));
 
-    for (uint32 l_I = 0; l_I < l_WorkOrders.size(); ++l_I)
-    {
-        uint32 l_Duration = 0;
-
-        CharShipmentEntry const* l_Entry = sCharShipmentStore.LookupEntry(l_WorkOrders[l_I].ShipmentID);
-
-        if (l_Entry)
-            l_Duration = l_Entry->Duration;
-
-        /// @TODO http://www.mmo-champion.com/content/4662-Patch-6-1-Iron-Horde-Scrap-Meltdown-Garrison-Vendor-Rush-Orders-Blue-Posts
-        l_Data << uint32(l_WorkOrders[l_I].ShipmentID);
-        l_Data << uint64(l_WorkOrders[l_I].DatabaseID);
-        l_Data << uint64(l_Garrison->GetBuilding(l_WorkOrders[l_I].PlotInstanceID).FollowerAssigned);
-        l_Data << uint32(l_WorkOrders[l_I].CreationTime);
-        l_Data << uint32(l_WorkOrders[l_I].CompleteTime - l_WorkOrders[l_I].CreationTime);
-        l_Data << uint32(0);                                    ///< Rewarded XP
-    }
-
-    SendPacket(&l_Data);
+    SendPacket(packet.Write());
 }
 
 void WorldSession::HandleGarrisonMissionNPCHelloOpcode(WorldPacket& p_RecvData)
@@ -301,8 +314,8 @@ void WorldSession::HandleGarrisonRequestBuildingsOpcode(WorldPacket& /*p_RecvDat
 
     std::vector<MS::Garrison::GarrisonBuilding> l_Buildings = l_Garrison->GetBuildings();
 
-    WorldPacket l_Data(SMSG_GARRISON_GET_BUILDINGS_DATA, 200);
-    l_Data << uint32(l_Buildings.size());
+    WorldPackets::Garrison::GarrisonBuildingLandmarks packet;
+    packet.Landmarks.reserve(l_Buildings.size());
 
     for (uint32 l_I = 0; l_I < l_Buildings.size(); ++l_I)
     {
@@ -332,13 +345,12 @@ void WorldSession::HandleGarrisonRequestBuildingsOpcode(WorldPacket& /*p_RecvDat
             }
         }
 
-        l_Data << uint32(l_BuildingPlotInstanceID);
-        l_Data << float(l_PlotLocation.X);
-        l_Data << float(l_PlotLocation.Y);
-        l_Data << float(l_PlotLocation.Z);
+        Position pos;
+        pos.Relocate(l_PlotLocation.X, l_PlotLocation.Y, l_PlotLocation.Z);
+        packet.Landmarks.emplace_back(l_BuildingPlotInstanceID, pos);
     }
 
-    SendPacket(&l_Data);
+    SendPacket(packet.Write());
 }
 
 void WorldSession::HandleGarrisonPurchaseBuildingOpcode(WorldPacket& p_RecvData)
@@ -418,36 +430,12 @@ void WorldSession::HandleGarrisonPurchaseBuildingOpcode(WorldPacket& p_RecvData)
         SendPacket(&l_Data);
     }
 
-    WorldPacket l_PlaceResult(SMSG_GARRISON_PLACE_BUILDING_RESULT, 26);
-    l_PlaceResult << uint32(l_Result);
-
+    WorldPackets::Garrison::GarrisonPlaceBuildingResult placeResult;
+    placeResult.Result = l_Result;
     if (l_Result == MS::Garrison::PurchaseBuildingResults::Ok)
-    {
-        MS::Garrison::GarrisonBuilding l_Building = l_Garrison->PurchaseBuilding(l_BuildingID, l_PlotInstanceID);
-
-        l_PlaceResult << uint32(l_PlotInstanceID);
-        l_PlaceResult << uint32(l_BuildingID);
-        l_PlaceResult << uint32(l_Building.TimeBuiltStart);
-        l_PlaceResult << uint32(l_Building.SpecID);
-        l_PlaceResult << uint32(l_Building.TimeBuiltEnd);
-        l_PlaceResult.WriteBit(l_Building.Active);
-        l_PlaceResult.FlushBits();
-    }
-    else
-    {
-        l_PlaceResult << uint32(0);
-        l_PlaceResult << uint32(0);
-        l_PlaceResult << uint32(0);
-        l_PlaceResult << uint32(0);
-        l_PlaceResult << uint32(0);
-        l_PlaceResult.WriteBit(false);
-        l_PlaceResult.FlushBits();
-    }
-
-    l_PlaceResult.WriteBit(false);                      ///< Unk bit
-    l_PlaceResult.FlushBits();
-
-    SendPacket(&l_PlaceResult);
+        placeResult.BuildingInfo = ToPacketBuilding(l_Garrison->PurchaseBuilding(l_BuildingID, l_PlotInstanceID));
+    placeResult.PlayActivationCinematic = false;
+    SendPacket(placeResult.Write());
 }
 
 void WorldSession::HandleGarrisonCancelConstructionOpcode(WorldPacket& p_RecvData)
@@ -729,15 +717,11 @@ void WorldSession::HandleGarrisonAssignFollowerToBuilding(WorldPacket& p_RecvDat
     {
         l_GarrisonMgr->AssignFollowerToBuilding(l_FollowerDBID, (uint32)l_PlotInstanceID);
 
-        WorldPacket l_Response(SMSG_GARRISON_ASSIGN_FOLLOWER_TO_BUILDING_RESULT, 1024);
-
-        uint8 l_Result = 0; ///< Always 0 ?
-
-        l_Response << uint64(l_FollowerDBID);
-        l_Response << int32(l_Result);
-        l_Response << int32(l_PlotInstanceID);
-
-        SendPacket(&l_Response);
+        WorldPackets::Garrison::GarrisonAssignFollowerToBuildingResult packet;
+        packet.FollowerDBID = l_FollowerDBID;
+        packet.Result = 0;
+        packet.PlotInstanceID = l_PlotInstanceID;
+        SendPacket(packet.Write());
     }
 }
 
@@ -767,14 +751,10 @@ void WorldSession::HandleGarrisonRemoveFollowerFromBuilding(WorldPacket& p_RecvD
 
     l_GarrisonMgr->AssignFollowerToBuilding(l_FollowerDBID, 0);
 
-    WorldPacket l_Response(SMSG_GARRISON_REMOVE_FOLLOWER_FROM_BUILDING_RESULT, 1024);
-
-    uint8 l_Result = 0; ///< Always 0 ?
-
-    l_Response << uint64(l_FollowerDBID);
-    l_Response << int32(l_Result);
-
-    SendPacket(&l_Response);
+    WorldPackets::Garrison::GarrisonRemoveFollowerFromBuildingResult packet;
+    packet.FollowerDBID = l_FollowerDBID;
+    packet.Result = 0;
+    SendPacket(packet.Write());
 }
 
 void WorldSession::HandleGarrisonGetShipmentInfoOpcode(WorldPacket& p_RecvData)
@@ -823,47 +803,23 @@ void WorldSession::HandleGarrisonGetShipmentInfoOpcode(WorldPacket& p_RecvData)
 
     bool l_Success = !!l_ShipmentID && !!l_PlotInstanceID;
 
-    WorldPacket l_Response(SMSG_GET_SHIPMENT_INFO_RESPONSE, 1024);
-    l_Response.WriteBit(l_Success);
-    l_Response.FlushBits();
-
+    WorldPackets::Garrison::GetShipmentInfoResponse response;
+    response.Success = l_Success;
     if (l_Success)
     {
         std::vector<MS::Garrison::GarrisonWorkOrder> l_WorkOrders = l_Garrison->GetWorkOrders();
-
-        uint32 l_PendingWorkOrderCount = std::count_if(l_WorkOrders.begin(), l_WorkOrders.end(), [l_PlotInstanceID](const MS::Garrison::GarrisonWorkOrder & p_Order) -> bool
+        response.ShipmentID = l_ShipmentID;
+        response.MaxShipments = l_OrderAvailable;
+        response.PlotInstanceID = l_PlotInstanceID;
+        for (MS::Garrison::GarrisonWorkOrder const& order : l_WorkOrders)
         {
-            return p_Order.PlotInstanceID == l_PlotInstanceID;
-        });
-
-
-        l_Response << uint32(l_ShipmentID);
-        l_Response << uint32(l_OrderAvailable);
-        l_Response << uint32(l_PendingWorkOrderCount);
-        l_Response << uint32(l_PlotInstanceID);
-
-        for (uint32 l_I = 0; l_I < l_WorkOrders.size(); ++l_I)
-        {
-            if (l_WorkOrders[l_I].PlotInstanceID != l_PlotInstanceID)
+            if (order.PlotInstanceID != l_PlotInstanceID)
                 continue;
-
-            l_Response << uint32(l_WorkOrders[l_I].ShipmentID);
-            l_Response << uint64(l_WorkOrders[l_I].DatabaseID);
-            l_Response << uint64(0);                                    ///< 6.1.x FollowerID
-            l_Response << uint32(l_WorkOrders[l_I].CreationTime);
-            l_Response << uint32(l_WorkOrders[l_I].CompleteTime - l_WorkOrders[l_I].CreationTime);
-            l_Response << uint32(0);                                    ///< 6.1.x Rewarded XP
+            response.Shipments.push_back(ToPacketShipment(l_Garrison, order, false));
         }
     }
-    else
-    {
-        l_Response << uint32(0);
-        l_Response << uint32(0);
-        l_Response << uint32(0);
-        l_Response << uint32(0);
-    }
 
-    SendPacket(&l_Response);
+    SendPacket(response.Write());
 }
 
 void WorldSession::HandleGarrisonCreateShipmentOpcode(WorldPacket& p_RecvData)
@@ -873,12 +829,11 @@ void WorldSession::HandleGarrisonCreateShipmentOpcode(WorldPacket& p_RecvData)
         if (m_Player->GetSession()->GetSecurity() > SEC_PLAYER)
             ChatHandler(m_Player).PSendSysMessage("HandleGarrisonCreateShipmentOpcode => %s", p_Message.c_str());
 
-        WorldPacket l_Ack(SMSG_CREATE_SHIPMENT_RESPONSE, 16);
-        l_Ack << uint64(0);
-        l_Ack << uint32(0);
-        l_Ack << uint32(1); ///< 0 = success & 1 = error
-
-        m_Player->SendDirectMessage(&l_Ack);
+        WorldPackets::Garrison::CreateShipmentResponse ack;
+        ack.ShipmentID = 0;
+        ack.ShipmentRecID = 0;
+        ack.Result = 1;
+        SendPacket(ack.Write());
     };
 
     if (!m_Player)
@@ -1006,12 +961,11 @@ void WorldSession::HandleGarrisonCreateShipmentOpcode(WorldPacket& p_RecvData)
 
         uint64 l_DatabaseID = l_Garrison->StartWorkOrder(l_PlotInstanceID, l_ShipmentID);
 
-        WorldPacket l_Ack(SMSG_CREATE_SHIPMENT_RESPONSE, 16);
-        l_Ack << uint64(l_DatabaseID);
-        l_Ack << uint32(l_ShipmentID);
-        l_Ack << uint32(l_DatabaseID != 0);
-
-        m_Player->SendDirectMessage(&l_Ack);
+        WorldPackets::Garrison::CreateShipmentResponse ack;
+        ack.ShipmentID = l_DatabaseID;
+        ack.ShipmentRecID = l_ShipmentID;
+        ack.Result = l_DatabaseID ? 0 : 1;
+        SendPacket(ack.Write());
     }
 }
 
@@ -1100,26 +1054,20 @@ void WorldSession::SendGarrisonOpenArchitect(uint64 p_CreatureGUID)
     if (!l_Garrison)
         return;
 
-    WorldPacket l_Data(SMSG_GARRISON_OPEN_ARCHITECT, 18);
-    l_Data.appendPackGUID(p_CreatureGUID);
-
-    SendPacket(&l_Data);
+    WorldPackets::Garrison::GarrisonOpenArchitect packet;
+    packet.NpcGUID = ObjectGuid(p_CreatureGUID);
+    SendPacket(packet.Write());
 }
-void WorldSession::SendGarrisonOpenMissionNpc(uint64 /*p_CreatureGUID*/)
+void WorldSession::SendGarrisonOpenMissionNpc(uint64 p_CreatureGUID)
 {
     MS::Garrison::Manager* l_Garrison = m_Player->GetGarrison();
 
     if (!l_Garrison)
         return;
 
-    WorldPacket l_Data(SMSG_GARRISON_OPEN_MISSION_NPC, 9);
-
-    l_Data << uint32(0);
-    l_Data << uint32(0);
-    l_Data.WriteBit(false);
-    l_Data.FlushBits();
-
-    SendPacket(&l_Data);
+    WorldPackets::Garrison::GarrisonOpenMissionNpc packet;
+    packet.NpcGUID = ObjectGuid(p_CreatureGUID);
+    SendPacket(packet.Write());
 }
 
 void WorldSession::SendGarrisonSetMissionNpc(uint64 p_CreatureGUID)
