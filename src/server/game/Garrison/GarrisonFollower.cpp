@@ -11,6 +11,7 @@
 #include "GarrisonMgrConstants.hpp"
 #include "DB2Stores.h"
 #include "GarrisonMgr.hpp"
+#include "GarrisonPackets.h"
 #include "Player.h"
 #include "Object.h"
 

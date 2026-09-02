@@ -22,19 +22,31 @@ class WorldPacket : public ByteBuffer
 {
     public:
                                                             // just container for later use
-        WorldPacket() : ByteBuffer(0), m_opcode((uint16)UNKNOWN_OPCODE)
+        WorldPacket() : ByteBuffer(0), m_opcode((uint32)UNKNOWN_OPCODE), _connection(CONNECTION_TYPE_DEFAULT)
         {
         }
 
-        WorldPacket(uint16 opcode, size_t res = 200) : ByteBuffer(res), m_opcode(opcode)
+        WorldPacket(uint32 opcode, size_t res = 200, ConnectionType connection = CONNECTION_TYPE_DEFAULT) : ByteBuffer(res), m_opcode(opcode), _connection(connection)
         {
         }
                                                             // copy constructor
-        WorldPacket(WorldPacket const& packet) : ByteBuffer(packet), m_opcode(packet.m_opcode)
+        WorldPacket(WorldPacket const& packet) : ByteBuffer(packet), m_opcode(packet.m_opcode), _connection(packet._connection)
         {
         }
 
-        void Initialize(uint16 opcode, size_t newres = 200)
+        WorldPacket(WorldPacket&& packet) : ByteBuffer(std::move(packet)), m_opcode(packet.m_opcode), _connection(packet._connection)
+        {
+        }
+
+        WorldPacket& operator=(WorldPacket const& packet)
+        {
+            ByteBuffer::operator=(packet);
+            m_opcode = packet.m_opcode;
+            _connection = packet._connection;
+            return *this;
+        }
+
+        void Initialize(uint32 opcode, size_t newres = 200)
         {
             clear();
             _storage.reserve(newres);
@@ -44,13 +56,16 @@ class WorldPacket : public ByteBuffer
 
         void OnSend();
 
-        uint16 GetOpcode() const { return m_opcode; }
-        void SetOpcode(uint16 opcode) { m_opcode = opcode; }
+        uint32 GetOpcode() const { return m_opcode; }
+        void SetOpcode(uint32 opcode) { m_opcode = opcode; }
+        ConnectionType GetConnection() const { return _connection; }
+        void SetConnection(ConnectionType connection) { _connection = connection; }
         void Compress(z_stream_s* compressionStream);
         void Compress(z_stream_s* compressionStream, WorldPacket const* source);
 
     protected:
-        uint16 m_opcode;
+        uint32 m_opcode;
+        ConnectionType _connection;
         void Compress(void* dst, uint32 *dst_size, const void* src, int src_size);
         z_stream_s* _compressionStream;
 };

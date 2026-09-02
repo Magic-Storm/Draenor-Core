@@ -84,6 +84,16 @@
  #else
  #  define TC_SHARED_API TC_API_IMPORT
 #endif
+
+#ifndef TC_GAME_API
+#  define TC_GAME_API
+#endif
+#ifndef TC_COMMON_API
+#  define TC_COMMON_API
+#endif
+#ifndef TC_DATABASE_API
+#  define TC_DATABASE_API
+#endif
  
 #define UI64FMTD PRIu64
 #define UI64LIT(N) UINT64_C(N)

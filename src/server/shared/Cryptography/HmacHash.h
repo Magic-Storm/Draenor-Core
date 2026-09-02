@@ -1,0 +1,4 @@
+#ifndef TRINITY_HMAC_HASH_COMPAT_H
+#define TRINITY_HMAC_HASH_COMPAT_H
+#include "HMACSHA1.h"
+#endif

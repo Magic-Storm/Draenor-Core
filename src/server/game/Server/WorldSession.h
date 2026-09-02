@@ -24,6 +24,12 @@
 #include "Cross/InterRealmClient.h"
 #endif /* CROSS */
 
+namespace WorldPackets
+{
+    namespace Auth { enum class ConnectToSerial : uint32; }
+    namespace Character { enum class LoginFailureReason : uint8; }
+}
+
 class Creature;
 class GameObject;
 class InstanceSave;
@@ -448,7 +454,7 @@ class WorldSession
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
         bool PlayerRecentlyLoggedOut() const { return m_playerRecentlyLogout; }
 
-        void ReadAddonsInfo(WorldPacket& data);
+        void ReadAddonsInfo(ByteBuffer& data);
         void SendAddonsInfo();
         void SendFeatureSystemStatus();
         void SendTimeZoneInformations();
@@ -475,6 +481,7 @@ class WorldSession
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return m_Player; }
         std::string GetPlayerName(bool simple = true) const;
+        std::string GetPlayerInfo() const { return GetPlayerName(false); }
         uint32 GetGuidLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() { return m_Address; }
@@ -482,6 +489,23 @@ class WorldSession
         uint8 Expansion() const { return m_expansion; }
 
         void InitWarden(BigNumber* k, std::string os);
+
+        union ConnectToKey
+        {
+            struct
+            {
+                uint64 AccountId : 32;
+                uint64 ConnectionType : 1;
+                uint64 Key : 31;
+            } Fields;
+            uint64 Raw;
+        };
+
+        uint64 GetConnectToInstanceKey() const { return _instanceConnectKey.Raw; }
+        void SetInstanceSocket(WorldTcpSession* sock) { m_instanceSocket = sock; }
+
+        void SendConnectToInstance(WorldPackets::Auth::ConnectToSerial serial);
+        void AbortLogin(WorldPackets::Character::LoginFailureReason reason);
 
         /// Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
@@ -1586,6 +1610,8 @@ class WorldSession
         uint64 m_RealGUID; 
 #else
         WorldTcpSession* m_Socket;
+        WorldTcpSession* m_instanceSocket;
+        ConnectToKey _instanceConnectKey;
 
 #endif
 

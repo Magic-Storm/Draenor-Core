@@ -47,6 +47,8 @@
 #include "SkillExtraItems.h"
 #include "SkillDiscovery.h"
 #include "World.h"
+#include "WorldSocket.h"
+#include "Realm.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
 #include "ObjectMgr.h"
@@ -99,6 +101,7 @@
 #include "../scripts/Custom/SpellRegulator.h"
 
 uint32 gOnlineGameMaster = 0;
+uint32 g_RealmID = 0;
 
 
 std::atomic<bool> World::m_stopEvent(false);
@@ -282,6 +285,11 @@ bool World::RemoveSession(uint32 id)
 void World::AddSession(WorldSession* s)
 {
     addSessQueue.add(s);
+}
+
+void World::AddInstanceSocket(std::shared_ptr<WorldSocket> sock, uint64 connectToKey)
+{
+    _linkSocketQueue.add(std::make_pair(std::move(sock), connectToKey));
 }
 
 void World::AddSession_(WorldSession* s)
@@ -703,6 +711,8 @@ void World::LoadConfigSettings(bool reload)
     }
     else
         m_int_configs[CONFIG_PORT_WORLD] = sConfigMgr->GetIntDefault("WorldServerPort", 8085);
+
+    m_int_configs[CONFIG_PORT_INSTANCE] = sConfigMgr->GetIntDefault("InstanceServerPort", 8086);
 
     m_int_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfigMgr->GetIntDefault("SocketTimeOutTime", 900000);
     m_int_configs[CONFIG_SESSION_ADD_DELAY] = sConfigMgr->GetIntDefault("SessionAddDelay", 10000);
@@ -1156,7 +1166,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_PVP_ITEM_LEVEL_MAX]                         = sConfigMgr->GetIntDefault("PvP.Item.Level.Max", 690);
     m_int_configs[CONFIG_CHALLENGE_MODE_ITEM_LEVEL_MAX]              = sConfigMgr->GetIntDefault("Challenge.Mode.Item.Level.Max", 630);
 
-    m_int_configs[CONFIG_LAST_CLIENT_BUILD]                          = sConfigMgr->GetIntDefault("LastClientBuild", 20726);
+    m_int_configs[CONFIG_LAST_CLIENT_BUILD]                          = sConfigMgr->GetIntDefault("LastClientBuild", 21742);
     m_bool_configs[CONFIG_OFFHAND_CHECK_AT_SPELL_UNLEARN]            = sConfigMgr->GetBoolDefault("OffhandCheckAtSpellUnlearn", true);
 
     /// BattlePay configs
@@ -3452,6 +3462,24 @@ void World::UpdateSessions(uint32 diff)
     {
         AddSession_(sess);
         AddNewSession(sess->GetAccountId());
+    }
+
+    std::pair<std::shared_ptr<WorldSocket>, uint64> link;
+    while (_linkSocketQueue.next(link))
+    {
+        if (!link.first)
+            continue;
+
+        WorldSession::ConnectToKey key;
+        key.Raw = link.second;
+        if (WorldSession* session = FindSession(uint32(key.Fields.AccountId)))
+        {
+            if (session->GetConnectToInstanceKey() == key.Raw)
+            {
+                session->SetInstanceSocket(link.first.get());
+                link.first->SetWorldSession(session);
+            }
+        }
     }
 
     ///- Then send an update signal to remaining ones

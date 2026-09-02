@@ -8,6 +8,7 @@
 
 #ifndef CROSS
 #include "GarrisonMgr.hpp"
+#include "GarrisonPackets.h"
 #include "../../../scripts/Draenor/Garrison/GarrisonScriptData.hpp"
 #include "Player.h"
 #include "DatabaseEnv.h"

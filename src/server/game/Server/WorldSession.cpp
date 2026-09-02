@@ -45,6 +45,9 @@
 #include "AccountMgr.h"
 #include "PetBattle.h"
 #include "Chat.h"
+#include "AuthenticationPackets.h"
+#include "CharacterPackets.h"
+#include "Realm.h"
 
 bool MapSessionFilter::Process(WorldPacket* packet)
 {
@@ -192,6 +195,8 @@ WorldSession::WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, b
     m_VoteRemainingTime = p_VoteRemainingTime;
 
     m_Socket = sock;
+    m_instanceSocket = nullptr;
+    _instanceConnectKey.Raw = 0;
 
     if (sock)
     {
@@ -248,6 +253,12 @@ WorldSession::~WorldSession()
         m_Socket->CloseSocket();
         m_Socket->RemoveReference();
         m_Socket = NULL;
+    }
+    if (m_instanceSocket)
+    {
+        m_instanceSocket->CloseSocket();
+        m_instanceSocket->RemoveReference();
+        m_instanceSocket = nullptr;
     }
 
     if (m_VoteTimePassed)
@@ -355,8 +366,12 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     m_ir_socket->SendTunneledPacket(m_Player->GetRealGUID(), packet);
 #else
-    if (m_Socket->SendPacket(*packet) == -1)
-        m_Socket->CloseSocket();
+    WorldTcpSession* sock = m_Socket;
+    if (packet->GetConnection() == CONNECTION_TYPE_INSTANCE && m_instanceSocket)
+        sock = m_instanceSocket;
+    if (!sock)
+        return;
+    sock->SendPacket(*packet);
 #endif
 }
 
@@ -1238,7 +1253,7 @@ void WorldSession::SaveTutorialsData(SQLTransaction &trans)
     m_TutorialsChanged = false;
 }
 
-void WorldSession::ReadAddonsInfo(WorldPacket &data)
+void WorldSession::ReadAddonsInfo(ByteBuffer &data)
 {
     if (data.rpos() + 4 > data.size())
         return;
@@ -2230,5 +2245,30 @@ void WorldSession::RestoreSpecialChannels()
     }
 
     m_SpecialChannelsSave.clear();
+}
+
+void WorldSession::SendConnectToInstance(WorldPackets::Auth::ConnectToSerial serial)
+{
+    boost::system::error_code ignored_error;
+    boost::asio::ip::tcp::endpoint instanceAddress = realm.GetAddressForClient(boost::asio::ip::make_address(GetRemoteAddress(), ignored_error));
+    instanceAddress.port(uint16(sWorld->getIntConfig(CONFIG_PORT_INSTANCE)));
+
+    _instanceConnectKey.Fields.AccountId = GetAccountId();
+    _instanceConnectKey.Fields.ConnectionType = CONNECTION_TYPE_INSTANCE;
+    _instanceConnectKey.Fields.Key = urand(0, 0x7FFFFFFF);
+
+    WorldPackets::Auth::ConnectTo connectTo;
+    connectTo.Key = _instanceConnectKey.Raw;
+    connectTo.Serial = serial;
+    connectTo.Payload.Where = instanceAddress;
+    connectTo.Con = uint8(CONNECTION_TYPE_INSTANCE);
+
+    SendPacket(connectTo.Write());
+}
+
+void WorldSession::AbortLogin(WorldPackets::Character::LoginFailureReason reason)
+{
+    WorldPackets::Character::CharacterLoginFailed failed(reason);
+    SendPacket(failed.Write());
 }
 #endif /* not CROSS */

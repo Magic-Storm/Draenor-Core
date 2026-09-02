@@ -158,6 +158,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
   ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
   ${CMAKE_SOURCE_DIR}/src/server/shared/Reporting
+  ${CMAKE_SOURCE_DIR}/src/server/shared/Realm
+  ${CMAKE_SOURCE_DIR}/src/server/shared/JSON
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/Accounts
   ${CMAKE_CURRENT_SOURCE_DIR}/Anticheat
@@ -231,6 +233,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Scripting
   ${CMAKE_CURRENT_SOURCE_DIR}/Server/Cross
   ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
+  ${CMAKE_CURRENT_SOURCE_DIR}/Server/Packets
   ${CMAKE_CURRENT_SOURCE_DIR}/Server
   ${CMAKE_CURRENT_SOURCE_DIR}/Skills
   ${CMAKE_CURRENT_SOURCE_DIR}/Spells

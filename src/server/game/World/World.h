@@ -29,6 +29,7 @@
 #include <mutex>
 #include <future>
 #include <vector>
+#include <memory>
 
 class Object;
 class WorldPacket;
@@ -265,6 +266,7 @@ enum WorldIntConfigs
     CONFIG_INTERVAL_CHANGEWEATHER,
     CONFIG_INTERVAL_DISCONNECT_TOLERANCE,
     CONFIG_PORT_WORLD,
+    CONFIG_PORT_INSTANCE,
     CONFIG_SOCKET_TIMEOUTTIME,
     CONFIG_SESSION_ADD_DELAY,
     CONFIG_GAME_TYPE,
@@ -732,6 +734,7 @@ class World
 #ifndef CROSS
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession* s);
+        void AddInstanceSocket(std::shared_ptr<WorldSocket> sock, uint64 connectToKey);
         bool RemoveSession(uint32 id);
 
         /// Increase/Decrease number of players
@@ -1129,6 +1132,7 @@ class World
         // sessions that are added async
         void AddSession_(WorldSession* s);
         LockedQueue<WorldSession*> addSessQueue;
+        LockedQueue<std::pair<std::shared_ptr<WorldSocket>, uint64>> _linkSocketQueue;
 #endif
 
 #ifdef CROSS

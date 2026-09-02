@@ -149,6 +149,13 @@ MaxPingTime = 30
 WorldServerPort = 8085
 
 #
+#    InstanceServerPort
+#        Description: TCP port to reach the world server instance connection (6.2.4 ConnectTo).
+#        Default:     8086
+#
+InstanceServerPort = 8086
+
+#
 #    BindIP
 #        Description: Bind world server to IP/hostname
 #        Default:     "0.0.0.0" - (Bind to all IPs on the system)
@@ -3213,7 +3220,7 @@ DisableRestart = 1
 #        Default:     1 - (Enable)
 
 LootAoe.Enabled = 1
-LastClientBuild = 20779
+LastClientBuild = 21742
 
 #   LogPackets
 #        Description: Print packet exchange (sent/received) to stdout, only works on Windows

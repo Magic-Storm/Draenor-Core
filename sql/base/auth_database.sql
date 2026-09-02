@@ -54,6 +54,6 @@ CREATE TABLE IF NOT EXISTS `account_last_played_character` (
   PRIMARY KEY(`accountId`, `region`, `battlegroup`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Update realmlist for 6.2.4
-UPDATE `realmlist` SET `gamebuild`=21355 WHERE `gamebuild`=20726;
+-- Update realmlist for 6.2.4.21742
+UPDATE `realmlist` SET `gamebuild`=21742 WHERE `gamebuild` IN (20726, 21355);
 

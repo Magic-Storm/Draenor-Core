@@ -22,7 +22,7 @@
 #include "OpenSSLCrypto.h"
 #include "ProcessPriority.h"
 #include "BigNumber.h"
-#include "RealmList.h"
+#include "Realm.h"
 #include "World.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
@@ -32,7 +32,8 @@
 #include "TCSoap.h"
 #include "CliRunnable.h"
 #include "SystemConfig.h"
-#include "WorldTcpSession.h"
+#include "WorldSocketMgr.h"
+#include "Realm.h"
 
 #define TRINITY_CORE_CONFIG  "worldserver.conf"
 #define WORLD_SLEEP_CONST 50
@@ -71,7 +72,7 @@ extern World* sWorldInstance;
 void usage(const char* prog);
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
 void FreezeDetectorThread(uint32 delayTime, uint32 pid);
-AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_context& ioService);
+AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_context& ioService);
 bool StartDB();
 void StopDB();
 void WorldUpdateLoop();
@@ -211,7 +212,7 @@ extern int main(int argc, char** argv)
     }
 
     // Start the Remote Access port (acceptor) if enabled
-    AsyncAcceptor<RASession>* raAcceptor = nullptr;
+    AsyncAcceptor* raAcceptor = nullptr;
     if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
         raAcceptor = StartRaSocketAcceptor(_ioService);
 
@@ -230,8 +231,13 @@ extern int main(int argc, char** argv)
     // Launch the worldserver listener socket
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
     std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
+    int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
 
-    AsyncAcceptor<WorldTcpSession> worldAcceptor(_ioService, worldListener, worldPort);
+    if (!sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort, networkThreads))
+    {
+        TC_LOG_ERROR("server.worldserver", "Failed to initialize network");
+        return 1;
+    }
 
     sScriptMgr->OnStartup();
 
@@ -252,6 +258,8 @@ extern int main(int argc, char** argv)
     }
 
     sScriptMgr->OnShutdown();
+
+    sWorldSocketMgr.StopNetwork();
 
     sWorld->KickAll();                                       // save and kick all players
     sWorld->UpdateSessions(1);                             // real players unload required UpdateSessions call
@@ -275,7 +283,10 @@ extern int main(int argc, char** argv)
     }
 
     if (raAcceptor != nullptr)
+    {
+        raAcceptor->Close();
         delete raAcceptor;
+    }
 
     ///- Clean database before leaving
     ClearOnlineAccounts();
@@ -442,12 +453,14 @@ void FreezeDetectorThread(uint32 delayTime)
     TC_LOG_INFO("server.worldserver", "Anti-freeze thread exiting without problems.");
 }
 
-AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_context& ioService)
+AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_context& ioService)
 {
     uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
 
-    return new AsyncAcceptor<RASession>(ioService, raListener, raPort);
+    AsyncAcceptor* acceptor = new AsyncAcceptor(ioService, raListener, raPort);
+    acceptor->AsyncAccept<RASession>();
+    return acceptor;
 }
 
 /// Initialize connection to the databases
@@ -538,6 +551,8 @@ bool StartDB()
         return false;
     }
     TC_LOG_INFO("server.worldserver", "Realm running as realm ID %d", realmID);
+    g_RealmID = realmID;
+    realm.Id.Realm = realmID;
 
     ///- Clean the database before starting
     ClearOnlineAccounts();

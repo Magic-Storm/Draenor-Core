@@ -60,6 +60,11 @@ struct ObjectGuid
             return _data.u64;
         }
 
+        operator uint64() const
+        {
+            return _data.u64;
+        }
+
         ObjectGuid& operator=(uint64 guid)
         {
             _data.u64 = guid;
@@ -845,6 +850,7 @@ class ByteBuffer
         }
 
         const uint8 *contents() const { return &_storage[0]; }
+        uint8 *contents() { return &_storage[0]; }
 
         size_t size() const { return _storage.size(); }
 #ifndef CROSS

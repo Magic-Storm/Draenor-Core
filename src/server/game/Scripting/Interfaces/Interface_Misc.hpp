@@ -76,6 +76,16 @@ class ServerScript : public ScriptObjectImpl<false>
             UNUSED(p_Packet);
         }
 
+        virtual void OnAccountLogin(uint32 accountId)
+        {
+            UNUSED(accountId);
+        }
+
+        virtual void OnFailedAccountLogin(uint32 accountId)
+        {
+            UNUSED(accountId);
+        }
+
 };
 
 /// World server script interface

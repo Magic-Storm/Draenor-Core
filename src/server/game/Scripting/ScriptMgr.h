@@ -459,6 +459,9 @@ class ScriptMgr
         /// @p_Packet : Received packet
         void OnUnknownPacketReceive(WorldTcpSession* p_Socket, WorldPacket p_Packet);
 
+        void OnAccountLogin(uint32 accountId);
+        void OnFailedAccountLogin(uint32 accountId);
+
     /// WorldScript
     public:
         /// Called when the open/closed state of the world changes.

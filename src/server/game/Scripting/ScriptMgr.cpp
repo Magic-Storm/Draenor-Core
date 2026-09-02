@@ -1405,6 +1405,16 @@ void ScriptMgr::OnSocketClose(WorldTcpSession* p_Socket, bool p_WasNew)
     FOREACH_SCRIPT(ServerScript)->OnSocketClose(p_Socket, p_WasNew);
 }
 
+void ScriptMgr::OnAccountLogin(uint32 accountId)
+{
+    FOREACH_SCRIPT(ServerScript)->OnAccountLogin(accountId);
+}
+
+void ScriptMgr::OnFailedAccountLogin(uint32 accountId)
+{
+    FOREACH_SCRIPT(ServerScript)->OnFailedAccountLogin(accountId);
+}
+
 /// Called when a packet is sent to a client. The packet object is a copy of the original packet, so reading and modifying it is safe.
 /// @p_Socket : Socket who send the packet
 /// @p_Packet : Sent packet

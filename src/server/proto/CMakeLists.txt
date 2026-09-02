@@ -9,6 +9,8 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 file(GLOB_RECURSE sources_Client Client/*.cpp Client/*.h)
+file(GLOB_RECURSE sources_Login Login/*.cpp Login/*.h)
+file(GLOB_RECURSE sources_RealmList RealmList/*.cpp RealmList/*.h)
 
 if (MSVC)
   add_definitions(/W0)
@@ -21,9 +23,12 @@ if (USE_COREPCH)
   set(PRIVATE_PCH_SOURCE PrecompiledHeaders/protoPCH.cpp)
 endif()
 
-set(shared_STAT_SRCS
-  ${shared_STAT_SRCS}
+set(proto_SRCS
   ${sources_Client}
+  ${sources_Login}
+  ${sources_RealmList}
+  ServiceBase.h
+  BattlenetRpcErrorCodes.h
 )
 
 include_directories(
@@ -67,7 +72,7 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DTRINITY_API_EXPORT_SHARED)
 
 add_library(proto STATIC
-  ${PRIVATE_SOURCES}
+  ${proto_SRCS}
   ${PRIVATE_PCH_SOURCE}
 )
 
