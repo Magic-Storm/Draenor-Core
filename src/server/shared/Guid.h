@@ -39,6 +39,26 @@ enum HighGuid
     HIGHGUID_MAIL               = 0x800,                        // Custom, used for cross <-> local realm sync
     HIGHGUID_PET_NUMBER         = 0x900,                        // Custom, used for cross <-> local realm sync
     HIGHGUID_EQUIPMENT_SET      = 0x700,
+
+    // TrinityCore 6.2.4 ObjectGuid::Create<HighGuid::Type>() aliases
+    Item                = HIGHGUID_ITEM,
+    Container           = HIGHGUID_CONTAINER,
+    Player              = HIGHGUID_PLAYER,
+    Gameobject          = HIGHGUID_GAMEOBJECT,
+    Transport           = HIGHGUID_TRANSPORT,
+    Unit                = HIGHGUID_UNIT,
+    Pet                 = HIGHGUID_PET,
+    Vehicle             = HIGHGUID_VEHICLE,
+    Dynamicobject       = HIGHGUID_DYNAMICOBJECT,
+    Corpse              = HIGHGUID_CORPSE,
+    AreaTrigger         = HIGHGUID_AREATRIGGER,
+    MoTransport         = HIGHGUID_MO_TRANSPORT,
+    Group               = HIGHGUID_GROUP,
+    Guild               = HIGHGUID_GUILD,
+    BattlePet           = HIGHGUID_BATTLE_PET,
+    Conversation        = HIGHGUID_CONVERSATION,
+    WowAccount          = HIGHGUID_WOW_ACCOUNT,
+    BNetAccount         = HIGHGUID_BNET_ACCOUNT,
 };
 
 # define IS_EMPTY_GUID(Guid)          (Guid == 0)

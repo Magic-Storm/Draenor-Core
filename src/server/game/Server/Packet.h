@@ -20,6 +20,7 @@
 
 #include "WorldPacket.h"
 #include "Optional.h"
+#include "ObjectGuid.h"
 
 namespace WorldPackets
 {

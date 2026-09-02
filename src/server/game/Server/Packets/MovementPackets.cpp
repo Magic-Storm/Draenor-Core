@@ -16,6 +16,7 @@
  */
 
 #include "MovementPackets.h"
+#include "ObjectGuid.h"
 #include "MoveSpline.h"
 #include "MoveSplineFlag.h"
 #include "MovementTypedefs.h"
@@ -24,12 +25,12 @@
 
 ByteBuffer& operator<<(ByteBuffer& data, MovementInfo& movementInfo)
 {
-    bool hasTransportData = !movementInfo.transport.guid.IsEmpty();
+    bool hasTransportData = movementInfo.t_guid != 0;
     bool hasFallDirection = movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
-    bool hasFallData = hasFallDirection || movementInfo.jump.fallTime != 0;
-    bool hasSpline = false; // todo 6.x send this infos
+    bool hasFallData = hasFallDirection || movementInfo.fallTime != 0;
+    bool hasSpline = false;
 
-    data << movementInfo.guid;
+    data << ObjectGuid(movementInfo.guid);
     data << movementInfo.time;
     data << movementInfo.pos.PositionXYZOStream();
     data << movementInfo.pitch;
@@ -40,11 +41,6 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo& movementInfo)
 
     uint32 int168 = 0;
     data << int168;
-
-    /*for (uint32 i = 0; i < removeMovementForcesCount; ++i)
-    {
-        data << ObjectGuid;
-    }*/
 
     data.WriteBits(movementInfo.flags, 30);
     data.WriteBits(movementInfo.flags2, 16);
@@ -59,20 +55,38 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo& movementInfo)
     data.FlushBits();
 
     if (hasTransportData)
-        data << movementInfo.transport;
+    {
+        bool hasPrevTime = movementInfo.PrevMoveTime != 0;
+        bool hasVehicleId = movementInfo.VehicleRecID != 0;
+
+        data << ObjectGuid(movementInfo.t_guid);
+        data << movementInfo.t_pos.GetPositionX();
+        data << movementInfo.t_pos.GetPositionY();
+        data << movementInfo.t_pos.GetPositionZ();
+        data << movementInfo.t_pos.GetOrientation();
+        data << movementInfo.t_seat;
+        data << movementInfo.t_time;
+        data.WriteBit(hasPrevTime);
+        data.WriteBit(hasVehicleId);
+        data.FlushBits();
+        if (hasPrevTime)
+            data << movementInfo.PrevMoveTime;
+        if (hasVehicleId)
+            data << movementInfo.VehicleRecID;
+    }
 
     if (hasFallData)
     {
-        data << movementInfo.jump.fallTime;
-        data << movementInfo.jump.zspeed;
+        data << movementInfo.fallTime;
+        data << movementInfo.JumpVelocity;
 
         data.WriteBit(hasFallDirection);
         data.FlushBits();
         if (hasFallDirection)
         {
-            data << movementInfo.jump.sinAngle;
-            data << movementInfo.jump.cosAngle;
-            data << movementInfo.jump.xyspeed;
+            data << movementInfo.j_sinAngle;
+            data << movementInfo.j_cosAngle;
+            data << movementInfo.j_xyspeed;
         }
     }
 
@@ -81,9 +95,9 @@ ByteBuffer& operator<<(ByteBuffer& data, MovementInfo& movementInfo)
 
 ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
 {
-    //bool hasSpline = false;
-
-    data >> movementInfo.guid;
+    ObjectGuid guid;
+    data >> guid;
+    movementInfo.guid = uint64(guid);
     data >> movementInfo.time;
     data >> movementInfo.pos.PositionXYZOStream();
     data >> movementInfo.pitch;
@@ -97,8 +111,8 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
 
     for (uint32 i = 0; i < removeMovementForcesCount; ++i)
     {
-        ObjectGuid guid;
-        data >> guid;
+        ObjectGuid forceGuid;
+        data >> forceGuid;
     }
 
     movementInfo.flags = data.ReadBits(30);
@@ -106,75 +120,40 @@ ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo)
 
     bool hasTransport = data.ReadBit();
     bool hasFall = data.ReadBit();
-    /*hasSpline = */data.ReadBit(); // todo 6.x read this infos
-
+    data.ReadBit(); // spline
     data.ReadBit(); // HeightChangeFailed
     data.ReadBit(); // RemoteTimeValid
 
     if (hasTransport)
-        data >> movementInfo.transport;
+    {
+        ObjectGuid tguid;
+        data >> tguid;
+        movementInfo.t_guid = uint64(tguid);
+        data >> movementInfo.t_pos.PositionXYZOStream();
+        data >> movementInfo.t_seat;
+        data >> movementInfo.t_time;
+        bool hasPrevTime = data.ReadBit();
+        bool hasVehicleId = data.ReadBit();
+        if (hasPrevTime)
+            data >> movementInfo.PrevMoveTime;
+        if (hasVehicleId)
+            data >> movementInfo.VehicleRecID;
+    }
 
     if (hasFall)
     {
-        data >> movementInfo.jump.fallTime;
-        data >> movementInfo.jump.zspeed;
-
-        // ResetBitReader
-
+        data >> movementInfo.fallTime;
+        data >> movementInfo.JumpVelocity;
         bool hasFallDirection = data.ReadBit();
         if (hasFallDirection)
         {
-            data >> movementInfo.jump.sinAngle;
-            data >> movementInfo.jump.cosAngle;
-            data >> movementInfo.jump.xyspeed;
+            data >> movementInfo.j_sinAngle;
+            data >> movementInfo.j_cosAngle;
+            data >> movementInfo.j_xyspeed;
         }
+        movementInfo.hasFallDirection = hasFallDirection;
+        movementInfo.HasFallData = true;
     }
-
-    return data;
-}
-
-ByteBuffer& operator>>(ByteBuffer& data, MovementInfo::TransportInfo& transportInfo)
-{
-    data >> transportInfo.guid;                 // Transport Guid
-    data >> transportInfo.pos.PositionXYZOStream();
-    data >> transportInfo.seat;                 // VehicleSeatIndex
-    data >> transportInfo.time;                 // MoveTime
-
-    bool hasPrevTime = data.ReadBit();
-    bool hasVehicleId = data.ReadBit();
-
-    if (hasPrevTime)
-        data >> transportInfo.prevTime;         // PrevMoveTime
-
-    if (hasVehicleId)
-        data >> transportInfo.vehicleId;        // VehicleRecID
-
-    return data;
-}
-
-ByteBuffer& operator<<(ByteBuffer& data, MovementInfo::TransportInfo const& transportInfo)
-{
-    bool hasPrevTime = transportInfo.prevTime != 0;
-    bool hasVehicleId = transportInfo.vehicleId != 0;
-
-    data << transportInfo.guid;                 // Transport Guid
-    data << transportInfo.pos.GetPositionX();
-    data << transportInfo.pos.GetPositionY();
-    data << transportInfo.pos.GetPositionZ();
-    data << transportInfo.pos.GetOrientation();
-    data << transportInfo.seat;                 // VehicleSeatIndex
-    data << transportInfo.time;                 // MoveTime
-
-    data.WriteBit(hasPrevTime);
-    data.WriteBit(hasVehicleId);
-
-    data.FlushBits();
-
-    if (hasPrevTime)
-        data << transportInfo.prevTime;         // PrevMoveTime
-
-    if (hasVehicleId)
-        data << transportInfo.vehicleId;        // VehicleRecID
 
     return data;
 }

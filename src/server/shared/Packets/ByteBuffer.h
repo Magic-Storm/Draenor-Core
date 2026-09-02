@@ -84,8 +84,17 @@ struct ObjectGuid
 
         bool IsEmpty() const
         {
-            return bool(_data.u64);
+            return _data.u64 == 0;
         }
+
+        template<HighGuid high>
+        static ObjectGuid Create(uint64 low, uint64 entry = 0)
+        {
+            return ObjectGuid(MAKE_NEW_GUID(low, entry, uint64(high)));
+        }
+
+        uint64 GetRawValue() const { return _data.u64; }
+        uint32 GetCounter() const { return GUID_LOPART(_data.u64); }
 
     private:
         union

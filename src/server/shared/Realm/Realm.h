@@ -105,4 +105,9 @@ struct TC_SHARED_API Realm
 
 extern TC_SHARED_API Realm realm;
 
+inline uint32 GetVirtualRealmAddress()
+{
+    return realm.Id.GetAddress();
+}
+
 #endif // Realm_h__

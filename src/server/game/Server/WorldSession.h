@@ -448,6 +448,8 @@ class WorldSession
         {
             return MAKE_NEW_GUID(GetAccountId(), 0, HIGHGUID_BNET_ACCOUNT);
         }
+        ObjectGuid GetAccountGUID() { return ObjectGuid(GetWoWAccountGUID()); }
+        ObjectGuid GetBattlenetAccountGUID() { return ObjectGuid(GetBNetAccountGUID()); }
 
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }

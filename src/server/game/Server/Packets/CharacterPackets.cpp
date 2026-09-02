@@ -1,61 +1,63 @@
-/*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "CharacterPackets.h"
 #include "ObjectMgr.h"
 #include "PacketUtilities.h"
 #include "World.h"
+#include "DBCStores.h"
+#include "Item.h"
+
+enum CharacterFlags
+{
+    CHARACTER_FLAG_NONE                 = 0x00000000,
+    CHARACTER_LOCKED_FOR_TRANSFER       = 0x00000004,
+    CHARACTER_FLAG_HIDE_HELM            = 0x00000400,
+    CHARACTER_FLAG_HIDE_CLOAK           = 0x00000800,
+    CHARACTER_FLAG_GHOST                = 0x00002000,
+    CHARACTER_FLAG_RENAME               = 0x00004000,
+    CHARACTER_FLAG_LOCKED_BY_BILLING    = 0x01000000,
+    CHARACTER_FLAG_DECLINED             = 0x02000000
+};
+
+enum CharacterCustomizeFlags
+{
+    CHAR_CUSTOMIZE_FLAG_NONE            = 0x00000000,
+    CHAR_CUSTOMIZE_FLAG_CUSTOMIZE       = 0x00000001,
+    CHAR_CUSTOMIZE_FLAG_FACTION         = 0x00010000,
+    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000
+};
 
 WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Field* fields)
 {
-    //         0                1                2                3                 4                  5                6                7
-    // "SELECT characters.guid, characters.name, characters.race, characters.class, characters.gender, characters.skin, characters.face, characters.hairStyle, "
-    //  8                     9                       10                11               12              13                     14                     15
-    // "characters.hairColor, characters.facialStyle, characters.level, characters.zone, characters.map, characters.position_x, characters.position_y, characters.position_z, "
-    //  16                    17                      18                   19                   20                     21                   22
-    // "guild_member.guildid, characters.playerFlags, characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level, characters.equipmentCache, "
-    //  23                     24               25                      26
-    // "character_banned.guid, characters.slot, characters.logout_time, character_declinedname.genitive"
+    // Draenor CHAR_SEL_ENUM / CHAR_SEL_ENUM_DECLINED_NAME:
+    //  0 guid, 1 name, 2 race, 3 class, 4 gender, 5 playerBytes, 6 playerBytes2, 7 level,
+    //  8 zone, 9 map, 10 x, 11 y, 12 z, 13 guildid, 14 playerFlags, 15 at_login,
+    //  16 pet.entry, 17 pet.modelid, 18 pet.level, 19 equipmentCache, 20 banned.guid, 21 slot
+    //  22 declined genitive (optional)
 
-    Guid              = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt64());
+    Guid              = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt32());
     Name              = fields[1].GetString();
     Race              = fields[2].GetUInt8();
     Class             = fields[3].GetUInt8();
     Sex               = fields[4].GetUInt8();
-    Skin              = fields[5].GetUInt8();
-    Face              = fields[6].GetUInt8();
-    HairStyle         = fields[7].GetUInt8();
-    HairColor         = fields[8].GetUInt8();
-    FacialHair        = fields[9].GetUInt8();
-    Level             = fields[10].GetUInt8();
-    ZoneId            = int32(fields[11].GetUInt16());
-    MapId             = int32(fields[12].GetUInt16());
-    PreLoadPosition.x = fields[13].GetFloat();
-    PreLoadPosition.y = fields[14].GetFloat();
-    PreLoadPosition.z = fields[15].GetFloat();
 
-    if (ObjectGuid::LowType guildId = fields[16].GetUInt64())
+    uint32 playerBytes = fields[5].GetUInt32();
+    Skin              = uint8(playerBytes & 0xFF);
+    Face              = uint8((playerBytes >> 8) & 0xFF);
+    HairStyle         = uint8((playerBytes >> 16) & 0xFF);
+    HairColor         = uint8((playerBytes >> 24) & 0xFF);
+    FacialHair        = uint8(fields[6].GetUInt32() & 0xFF);
+
+    Level             = fields[7].GetUInt8();
+    ZoneId            = int32(fields[8].GetUInt16());
+    MapId             = int32(fields[9].GetUInt16());
+    PreLoadPosition.x = fields[10].GetFloat();
+    PreLoadPosition.y = fields[11].GetFloat();
+    PreLoadPosition.z = fields[12].GetFloat();
+
+    if (uint32 guildId = fields[13].GetUInt32())
         GuildGuid = ObjectGuid::Create<HighGuid::Guild>(guildId);
 
-    uint32 playerFlags  = fields[17].GetUInt32();
-    uint32 atLoginFlags = fields[18].GetUInt16();
-
-    if (atLoginFlags & AT_LOGIN_RESURRECT)
-        playerFlags &= ~PLAYER_FLAGS_GHOST;
+    uint32 playerFlags  = fields[14].GetUInt32();
+    uint32 atLoginFlags = fields[15].GetUInt16();
 
     if (playerFlags & PLAYER_FLAGS_HIDE_HELM)
         Flags |= CHARACTER_FLAG_HIDE_HELM;
@@ -69,11 +71,19 @@ WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Fiel
     if (atLoginFlags & AT_LOGIN_RENAME)
         Flags |= CHARACTER_FLAG_RENAME;
 
-    if (fields[23].GetUInt64())
+    if (fields[20].GetUInt32())
         Flags |= CHARACTER_FLAG_LOCKED_BY_BILLING;
 
-    if (sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED) && !fields[26].GetString().empty())
+    if (sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED))
+    {
+        if (!fields[22].GetString().empty())
+            Flags |= CHARACTER_FLAG_DECLINED;
+    }
+    else
         Flags |= CHARACTER_FLAG_DECLINED;
+
+    if (atLoginFlags & AT_LOGIN_LOCKED_FOR_TRANSFER)
+        Flags |= CHARACTER_LOCKED_FOR_TRANSFER;
 
     if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
         CustomizationFlag = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
@@ -85,13 +95,12 @@ WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Fiel
     Flags3 = 0;
     FirstLogin = (atLoginFlags & AT_LOGIN_FIRST) != 0;
 
-    // show pet at selection character in character list only for non-ghost character
     if (!(playerFlags & PLAYER_FLAGS_GHOST) && (Class == CLASS_WARLOCK || Class == CLASS_HUNTER || Class == CLASS_DEATH_KNIGHT))
     {
-        if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(fields[19].GetUInt32()))
+        if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(fields[16].GetUInt32()))
         {
-            Pet.CreatureDisplayId = fields[20].GetUInt32();
-            Pet.Level = fields[21].GetUInt16();
+            Pet.CreatureDisplayId = fields[17].GetUInt32();
+            Pet.Level = fields[18].GetUInt16();
             Pet.CreatureFamily = creatureInfo->family;
         }
     }
@@ -100,16 +109,48 @@ WorldPackets::Character::EnumCharactersResult::CharacterInfo::CharacterInfo(Fiel
     ProfessionIds[0] = 0;
     ProfessionIds[1] = 0;
 
-    Tokenizer equipment(fields[22].GetString(), ' ');
-    ListPosition = fields[24].GetUInt8();
-    LastPlayedTime = fields[25].GetUInt32();
+    Tokenizer equipment(fields[19].GetString(), ' ');
+    ListPosition = fields[21].GetUInt8();
+    LastPlayedTime = 0;
 
+    bool const isOld = equipment.size() != (INVENTORY_SLOT_BAG_END * 3);
     for (uint8 slot = 0; slot < INVENTORY_SLOT_BAG_END; ++slot)
     {
         uint32 visualBase = slot * 3;
-        VisualItems[slot].InventoryType = Player::GetUInt32ValueFromArray(equipment, visualBase);
-        VisualItems[slot].DisplayId = Player::GetUInt32ValueFromArray(equipment, visualBase + 1);
-        VisualItems[slot].DisplayEnchantId = Player::GetUInt32ValueFromArray(equipment, visualBase + 2);
+        if (isOld)
+        {
+            uint64 itemDatas = Player::GetUInt64ValueFromArray(equipment, visualBase);
+            uint32 itemId = ((uint32*)(&itemDatas))[0];
+            uint32 displayId = ((uint32*)(&itemDatas))[1];
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+            if (!proto)
+                continue;
+
+            SpellItemEnchantmentEntry const* enchantment = nullptr;
+            uint32 enchantmentData = Player::GetUInt32ValueFromArray(equipment, visualBase + 1);
+            for (uint8 enchantSlot = PERM_ENCHANTMENT_SLOT; enchantSlot <= TEMP_ENCHANTMENT_SLOT; ++enchantSlot)
+            {
+                uint32 enchantId = 0x0000FFFF & (enchantmentData >> enchantSlot * 16);
+                if (!enchantId)
+                    continue;
+                enchantment = sSpellItemEnchantmentStore.LookupEntry(enchantId);
+                if (enchantment)
+                    break;
+            }
+
+            VisualItems[slot].DisplayId = displayId ? displayId : proto->DisplayInfoID;
+            VisualItems[slot].DisplayEnchantId = enchantment ? enchantment->itemVisualID : 0;
+            VisualItems[slot].InventoryType = proto->InventoryType;
+        }
+        else
+        {
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(Player::GetUInt32ValueFromArray(equipment, visualBase));
+            if (!proto)
+                continue;
+            VisualItems[slot].DisplayId = Player::GetUInt32ValueFromArray(equipment, visualBase + 1);
+            VisualItems[slot].DisplayEnchantId = Player::GetUInt32ValueFromArray(equipment, visualBase + 2);
+            VisualItems[slot].InventoryType = proto->InventoryType;
+        }
     }
 }
 

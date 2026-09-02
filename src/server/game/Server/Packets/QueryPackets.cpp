@@ -20,6 +20,7 @@
 #include "Player.h"
 #include "World.h"
 #include "ObjectMgr.h"
+#include "Realm.h"
 
 void WorldPackets::Query::QueryCreature::Read()
 {
@@ -115,19 +116,19 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Query::PlayerGuidLookupHi
 
 bool WorldPackets::Query::PlayerGuidLookupData::Initialize(ObjectGuid const& guid, Player const* player /*= nullptr*/)
 {
-    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
+    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(GUID_LOPART(uint64(guid)));
     if (!characterInfo)
         return false;
 
     if (player)
     {
-        ASSERT(player->GetGUID() == guid);
+        ASSERT(player->GetGUID() == uint64(guid));
 
         AccountID     = player->GetSession()->GetAccountGUID();
         BnetAccountID = player->GetSession()->GetBattlenetAccountGUID();
         Name          = player->GetName();
         Race          = player->getRace();
-        Sex           = player->GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER);
+        Sex           = player->getGender();
         ClassID       = player->getClass();
         Level         = player->getLevel();
 
@@ -136,7 +137,7 @@ bool WorldPackets::Query::PlayerGuidLookupData::Initialize(ObjectGuid const& gui
     }
     else
     {
-        uint32 accountId = ObjectMgr::GetPlayerAccountIdByGUID(guid);
+        uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(uint64(guid));
         uint32 bnetAccountId = ::Battlenet::AccountMgr::GetIdByGameAccount(accountId);
 
         AccountID     = ObjectGuid::Create<HighGuid::WowAccount>(accountId);

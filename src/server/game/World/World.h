@@ -672,6 +672,7 @@ struct CharacterInfo
     uint8 Race;
     uint8 Sex;
     uint8 Level;
+    bool IsDeleted = false;
 };
 
 enum RecordDiffType
@@ -1017,7 +1018,7 @@ class World
 
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
-        std::string GetRealmName() { return m_realmName; }
+        std::string GetRealmName() const { return m_realmName; }
 
         void UpdatePhaseDefinitions();
 

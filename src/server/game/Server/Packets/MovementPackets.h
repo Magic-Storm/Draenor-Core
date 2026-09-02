@@ -503,9 +503,6 @@ namespace WorldPackets
 
 ByteBuffer& operator>>(ByteBuffer& data, MovementInfo& movementInfo);
 ByteBuffer& operator<<(ByteBuffer& data, MovementInfo& movementInfo);
-
-ByteBuffer& operator>>(ByteBuffer& data, MovementInfo::TransportInfo& transportInfo);
-ByteBuffer& operator<<(ByteBuffer& data, MovementInfo::TransportInfo const& transportInfo);
 ByteBuffer& operator>>(ByteBuffer& data, WorldPackets::Movement::MovementAck& movementAck);
 
 #endif // MovementPackets_h__

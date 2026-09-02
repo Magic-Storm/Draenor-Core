@@ -19,6 +19,7 @@
 #include "ObjectMgr.h"
 #include "SocialMgr.h"
 #include "World.h"
+#include "Realm.h"
 
 void WorldPackets::Social::SendContactList::Read()
 {

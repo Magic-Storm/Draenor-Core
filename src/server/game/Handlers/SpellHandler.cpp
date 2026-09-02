@@ -26,6 +26,7 @@
 #ifndef CROSS
 #include "GarrisonMgr.hpp"
 #endif /* not CROSS */
+#include "SpellPackets.h"
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& p_RecvPacket)
 {
@@ -458,130 +459,68 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& p_RecvPacket)
 {
-    std::string l_SrcTargetName;
+    WorldPackets::Spells::CastSpell castPacket(std::move(p_RecvPacket));
+    castPacket.Read();
+    WorldPackets::Spells::SpellCastRequest const& cast = castPacket.Cast;
 
-    uint64 l_TargetItemGUID = 0;
-    uint64 l_SourceTargetGUID = 0;
-    uint64 l_DestinationTargetGUID = 0;
-    uint64 l_TargetGUID = 0;
-    uint64 l_UnkGUID = 0;
+    std::string l_SrcTargetName = cast.Target.Name;
 
-    float l_MissibleTrajectorySpeed = 0.00f;
-    float l_MissibleTrajectoryPitch = 0.00f;
+    uint64 l_TargetItemGUID = uint64(cast.Target.Item);
+    uint64 l_SourceTargetGUID = cast.Target.SrcLocation ? uint64(cast.Target.SrcLocation->Transport) : 0;
+    uint64 l_DestinationTargetGUID = cast.Target.DstLocation ? uint64(cast.Target.DstLocation->Transport) : 0;
+    uint64 l_TargetGUID = uint64(cast.Target.Unit);
+    uint64 l_UnkGUID = uint64(cast.Charmer);
 
-    uint8* l_SpellWeightType      = nullptr;
-    uint32* l_SpellWeightID       = nullptr;
-    uint32* l_SpellWeightQuantity = nullptr;
+    float l_MissibleTrajectorySpeed = cast.MissileTrajectory.Speed;
+    float l_MissibleTrajectoryPitch = cast.MissileTrajectory.Pitch;
 
-    uint32 l_SpellID            = 0;
-    uint32 l_Misc[2]            = {0, 0};
-    uint32 l_TargetFlags        = 0;
-    uint32 l_NameLenght         = 0;
-    uint32 l_SpellWeightCount   = 0;
+    uint32 l_SpellID = uint32(cast.SpellID);
+    uint32 l_Misc[2] = { uint32(cast.Misc[0]), uint32(cast.Misc[1]) };
+    uint32 l_TargetFlags = cast.Target.Flags;
 
-    float l_UnkFloat = 0;
+    float l_UnkFloat = cast.Target.Orientation ? *cast.Target.Orientation : 0.0f;
 
-    uint8 l_CastCount = 0;
-    uint8 l_SendCastFlag = 0;
+    uint8 l_CastCount = cast.CastID;
+    uint8 l_SendCastFlag = cast.SendCastFlags;
+    (void)l_SendCastFlag;
 
-    bool l_HasSourceTarget      = false;
-    bool l_HasDestinationTarget = false;
-    bool l_HasUnkFloat          = false;
-    bool l_HasMovementInfos     = false;
+    bool l_HasSourceTarget = cast.Target.SrcLocation.is_initialized();
+    bool l_HasDestinationTarget = cast.Target.DstLocation.is_initialized();
+    (void)l_HasSourceTarget;
 
     WorldLocation l_SourceTargetPosition;
     WorldLocation l_DestinationTargetPosition;
+    if (cast.Target.SrcLocation)
+        l_SourceTargetPosition.Relocate(cast.Target.SrcLocation->Location);
+    if (cast.Target.DstLocation)
+        l_DestinationTargetPosition.Relocate(cast.Target.DstLocation->Location);
 
-    p_RecvPacket >> l_CastCount;
-
-    for (int l_I = 0; l_I < 2; l_I++)
-        p_RecvPacket >> l_Misc[l_I];
-
-    p_RecvPacket >> l_SpellID;
-    p_RecvPacket.read_skip<uint32>(); // unk
-
-    l_TargetFlags           = p_RecvPacket.ReadBits(23);
-    l_HasSourceTarget       = p_RecvPacket.ReadBit();
-    l_HasDestinationTarget  = p_RecvPacket.ReadBit();
-    l_HasUnkFloat           = p_RecvPacket.ReadBit();
-    l_NameLenght            = p_RecvPacket.ReadBits(7);
-    p_RecvPacket.FlushBits();
-    p_RecvPacket.readPackGUID(l_TargetGUID);
-    p_RecvPacket.readPackGUID(l_TargetItemGUID);
-
-    if (l_HasSourceTarget)
+    if (cast.MoveUpdate)
     {
-        p_RecvPacket.readPackGUID(l_SourceTargetGUID);
-        p_RecvPacket >> l_SourceTargetPosition.m_positionX;
-        p_RecvPacket >> l_SourceTargetPosition.m_positionY;
-        p_RecvPacket >> l_SourceTargetPosition.m_positionZ;
+        WorldPacket movePkt(CMSG_MOVE_HEARTBEAT);
+        movePkt << *cast.MoveUpdate;
+        movePkt.rpos(0);
+        HandleMovementOpcodes(movePkt);
     }
 
-    if (l_HasDestinationTarget)
-    {
-        p_RecvPacket.readPackGUID(l_DestinationTargetGUID);
-        p_RecvPacket >> l_DestinationTargetPosition.m_positionX;
-        p_RecvPacket >> l_DestinationTargetPosition.m_positionY;
-        p_RecvPacket >> l_DestinationTargetPosition.m_positionZ;
-    }
-
-    if (l_HasUnkFloat)
-        p_RecvPacket >> l_UnkFloat;
-
-    l_SrcTargetName = p_RecvPacket.ReadString(l_NameLenght);
-
-    p_RecvPacket >> l_MissibleTrajectoryPitch;
-    p_RecvPacket >> l_MissibleTrajectorySpeed;
-
-    p_RecvPacket.readPackGUID(l_UnkGUID);
-
-    l_SendCastFlag      = p_RecvPacket.ReadBits(5); ///< l_SendCastFlag is never read 01/18/16
-    l_HasMovementInfos  = p_RecvPacket.ReadBit();
-    l_SpellWeightCount  = p_RecvPacket.ReadBits(2);
-
-    if (l_HasMovementInfos)
-        HandleMovementOpcodes(p_RecvPacket);
-
-    if (l_SpellWeightCount)
-    {
-        l_SpellWeightType       = new uint8[l_SpellWeightCount];
-        l_SpellWeightID         = new uint32[l_SpellWeightCount];
-        l_SpellWeightQuantity   = new uint32[l_SpellWeightCount];
-
-        for (uint32 l_I = 0; l_I < l_SpellWeightCount; ++l_I)
-        {
-            l_SpellWeightType[l_I] = p_RecvPacket.ReadBits(2);
-            p_RecvPacket >> l_SpellWeightID[l_I];
-            p_RecvPacket >> l_SpellWeightQuantity[l_I];
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    if (l_SpellWeightCount)
+    if (!cast.Weight.empty())
     {
         GetPlayer()->GetArchaeologyMgr().ClearProjectCost();
 
-        for (uint32 l_I = 0; l_I < l_SpellWeightCount; l_I++)
+        for (WorldPackets::Spells::SpellWeight const& weight : cast.Weight)
         {
-            switch (l_SpellWeightType[l_I])
+            switch (weight.Type)
             {
-                case SPELL_WEIGHT_ARCHEOLOGY_KEYSTONES: // Keystones
-                    GetPlayer()->GetArchaeologyMgr().AddProjectCost(l_SpellWeightID[l_I], l_SpellWeightQuantity[l_I], false);
+                case SPELL_WEIGHT_ARCHEOLOGY_KEYSTONES:
+                    GetPlayer()->GetArchaeologyMgr().AddProjectCost(weight.ID, weight.Quantity, false);
                     break;
-
-                case SPELL_WEIGHT_ARCHEOLOGY_FRAGMENTS: // Fragments
-                    GetPlayer()->GetArchaeologyMgr().AddProjectCost(l_SpellWeightID[l_I], l_SpellWeightQuantity[l_I], true);
+                case SPELL_WEIGHT_ARCHEOLOGY_FRAGMENTS:
+                    GetPlayer()->GetArchaeologyMgr().AddProjectCost(weight.ID, weight.Quantity, true);
                     break;
-
                 default:
                     break;
             }
         }
-
-        delete[] l_SpellWeightType;
-        delete[] l_SpellWeightID;
-        delete[] l_SpellWeightQuantity;
     }
 
     // ignore for remote control state (for player case)

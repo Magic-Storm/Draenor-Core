@@ -13,6 +13,7 @@
 #include "Opcodes.h"
 #include "Log.h"
 #include "Corpse.h"
+#include "MovementPackets.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "MapManager.h"
@@ -282,13 +283,18 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& p_Packet)
     }
 
     /* extract packet */
-    MovementInfo l_MovementInfo;
-    ReadMovementInfo(p_Packet, &l_MovementInfo);
+    WorldPackets::Movement::ClientPlayerMovement movementPacket(std::move(p_Packet));
+    movementPacket.Read();
+    MovementInfo l_MovementInfo = movementPacket.movementInfo;
 
     if (l_OpCode == CMSG_MOVE_FEATHER_FALL_ACK
      || l_OpCode == CMSG_MOVE_WATER_WALK_ACK)
     {
-        uint32 l_AckIndex = p_Packet.read<uint32>(); ///< l_AckIndex is never read 01/18/16
+        if (movementPacket.GetRawPacket()->rpos() + sizeof(uint32) <= movementPacket.GetRawPacket()->size())
+        {
+            uint32 l_AckIndex = const_cast<WorldPacket*>(movementPacket.GetRawPacket())->read<uint32>();
+            (void)l_AckIndex;
+        }
     }
 
     // prevent tampered movement data
@@ -310,14 +316,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& p_Packet)
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)
         if (l_MovementInfo.t_pos.GetPositionX() > 50 || l_MovementInfo.t_pos.GetPositionY() > 50 || l_MovementInfo.t_pos.GetPositionZ() > 50)
         {
-            p_Packet.rfinish();                 // prevent warnings spam
             return;
         }
 
         if (!Trinity::IsValidMapCoord(l_MovementInfo.pos.GetPositionX() + l_MovementInfo.t_pos.GetPositionX(), l_MovementInfo.pos.GetPositionY() + l_MovementInfo.t_pos.GetPositionY(),
             l_MovementInfo.pos.GetPositionZ() + l_MovementInfo.t_pos.GetPositionZ(), l_MovementInfo.pos.GetOrientation() + l_MovementInfo.t_pos.GetOrientation()))
         {
-            p_Packet.rfinish();                 // prevent warnings spam
             return;
         }
 
@@ -404,7 +408,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& p_Packet)
     /*----------------------*/
 
     /* process position-change */
-    WorldPacket data(SMSG_MOVE_UPDATE, p_Packet.size() + 4);
+    WorldPackets::Movement::MoveUpdate moveUpdate;
     l_MovementInfo.guid = l_Mover->GetGUID();
 
     uint32 l_MSTime = getMSTime();
@@ -414,8 +418,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& p_Packet)
 
     l_MovementInfo.time = l_MovementInfo.time + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY;
 
-    WorldSession::WriteMovementInfo(data, &l_MovementInfo);
-    l_Mover->SendMessageToSet(&data, m_Player);
+    moveUpdate.movementInfo = &l_MovementInfo;
+    l_Mover->SendMessageToSet(const_cast<WorldPacket*>(moveUpdate.Write()), m_Player);
 
     l_Mover->m_movementInfo = l_MovementInfo;
     l_Mover->m_movementInfoLastTime = l_MSTime - GetLatency();
@@ -499,20 +503,27 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& p_Packet)
 
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket& p_Packet)
 {
-    MovementInfo l_MovementInfo;
-    ReadMovementInfo(p_Packet, &l_MovementInfo);
+    uint32 l_Opcode = p_Packet.GetOpcode();
+    WorldPackets::Movement::ClientPlayerMovement movementPacket(std::move(p_Packet));
+    movementPacket.Read();
+    MovementInfo l_MovementInfo = movementPacket.movementInfo;
 
     if (l_MovementInfo.guid != m_Player->GetGUID())
         return;
 
-    uint32 l_AckIndex = p_Packet.read<uint32>();
-    float  l_Speed    = p_Packet.read<float>();
+    WorldPacket* raw = const_cast<WorldPacket*>(movementPacket.GetRawPacket());
+    uint32 l_AckIndex = 0;
+    float l_Speed = 0.0f;
+    if (raw->rpos() + sizeof(uint32) + sizeof(float) <= raw->size())
+    {
+        l_AckIndex = raw->read<uint32>();
+        l_Speed = raw->read<float>();
+    }
 
     // client ACK send one packet for mounted/run case and need skip all except last from its
     // in other cases anti-cheat check can be fail in false case
     UnitMoveType l_MoveType       = MOVE_WALK;
 
-    Opcodes l_Opcode = (Opcodes)p_Packet.GetOpcode();
     switch (l_Opcode)
     {
         case CMSG_MOVE_FORCE_WALK_SPEED_CHANGE_ACK:        l_MoveType = MOVE_WALK;        break;

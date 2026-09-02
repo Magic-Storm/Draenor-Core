@@ -20,6 +20,7 @@
 #include "Player.h"
 #include "World.h"
 #include "Creature.h"
+#include "Realm.h"
 
 void WorldPackets::Chat::ChatMessage::Read()
 {

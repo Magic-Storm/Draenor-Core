@@ -6,14 +6,14 @@
 
 inline ByteBuffer& operator<<(ByteBuffer& buf, ObjectGuid const& guid)
 {
-    buf << uint64(guid);
+    buf.appendPackGUID(uint64(guid));
     return buf;
 }
 
 inline ByteBuffer& operator>>(ByteBuffer& buf, ObjectGuid& guid)
 {
     uint64 v = 0;
-    buf >> v;
+    buf.readPackGUID(v);
     guid = ObjectGuid(v);
     return buf;
 }

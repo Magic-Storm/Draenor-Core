@@ -31,6 +31,7 @@
 #include "AccountMgr.h"
 #include "DBCStores.h"
 #include "LFGMgr.h"
+#include "CharacterPackets.h"
 
 #ifndef CROSS
 # include "Guild.h"
@@ -343,49 +344,31 @@ bool LoginQueryHolder::Initialize()
 #ifndef CROSS
 void WorldSession::HandleCharEnum(PreparedQueryResult p_Result)
 {
-    uint32 l_CharacterCount             = 0;
-    uint32 l_FactionChangeRestrictions  = 0;
+    WorldPackets::Character::EnumCharactersResult charEnum;
+    charEnum.Success = true;
+    charEnum.IsDeletedCharacters = false;
 
-    bool l_CanCreateCharacter = true;
+    uint32 l_CharacterCount = 0;
 
     if (p_Result)
     {
         _allowedCharsToLogin.clear();
         l_CharacterCount = uint32(p_Result->GetRowCount());
-    }
-
-    WorldPacket l_Data(SMSG_ENUM_CHARACTERS_RESULT, 5 * 1024);
-
-    l_Data.WriteBit(l_CanCreateCharacter);          ///< Allow char creation
-    l_Data.WriteBit(0);                             ///< IsDeletedCharacters
-    l_Data.FlushBits();
-
-    l_Data << uint32(l_CharacterCount);             ///< Account character count
-    l_Data << uint32(l_FactionChangeRestrictions);  ///< Faction change restrictions
-
-    if (p_Result)
-    {
         do
         {
-            uint32 l_GuidLow = (*p_Result)[0].GetUInt32();
+            Field* fields = p_Result->Fetch();
+            uint32 l_GuidLow = fields[0].GetUInt32();
 
-            Player::BuildEnumData(p_Result, &l_Data);
+            charEnum.Characters.emplace_back(fields);
 
-            /// This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
             if (!sWorld->HasCharacterInfo(l_GuidLow))
-                sWorld->AddCharacterInfo(l_GuidLow, (*p_Result)[1].GetString(), GetAccountId(), (*p_Result)[4].GetUInt8(), (*p_Result)[2].GetUInt8(), (*p_Result)[3].GetUInt8(), (*p_Result)[7].GetUInt8());
+                sWorld->AddCharacterInfo(l_GuidLow, fields[1].GetString(), GetAccountId(), fields[4].GetUInt8(), fields[2].GetUInt8(), fields[3].GetUInt8(), fields[7].GetUInt8());
 
             _allowedCharsToLogin.insert(l_GuidLow);
         } while (p_Result->NextRow());
     }
 
-    for (uint32 l_I = 0; l_I < l_FactionChangeRestrictions; l_I++)
-    {
-        l_Data << uint32(0);                        ///< Mask
-        l_Data << uint8(0);                         ///< Race ID
-    }
-
-    SendPacket(&l_Data);
+    SendPacket(charEnum.Write());
 
     /// Update realm character count
     SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -902,16 +885,9 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& p_RecvData)
 
     m_playerLoading = true;
 
-    //////////////////////////////////////////////////////////////////////////
-
-    uint64 l_PlayerGuid = 0;
-
-    float l_FarClip = 0.0f;
-
-    p_RecvData.readPackGUID(l_PlayerGuid);                                  ///< uint64
-    p_RecvData >> l_FarClip;                                                ///< float
-
-    //////////////////////////////////////////////////////////////////////////
+    WorldPackets::Character::PlayerLogin login(std::move(p_RecvData));
+    login.Read();
+    uint64 l_PlayerGuid = uint64(login.Guid);
 
     if (!CharCanLogin(GUID_LOPART(l_PlayerGuid)))
     {
@@ -946,10 +922,8 @@ void WorldSession::LoginPlayer(uint64 p_Guid)
 void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
 {
     TC_LOG_INFO("misc", "WORLD: Recvd CMSG_LOAD_SCREEN");
-    uint32 mapID;
-
-    recvPacket >> mapID;
-    recvPacket.ReadBit();
+    WorldPackets::Character::LoadingScreenNotify notify(std::move(recvPacket));
+    notify.Read();
 }
 
 #ifndef CROSS
@@ -985,14 +959,11 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
     l_Data << uint8(0x80);                                                  ///< Reason
     SendPacket(&l_Data);
 
-    l_Data.Initialize(SMSG_LOGIN_VERIFY_WORLD, 24);
-    l_Data << pCurrChar->GetMapId();                                        ///< uint32
-    l_Data << pCurrChar->GetPositionX();                                    ///< float
-    l_Data << pCurrChar->GetPositionY();                                    ///< float
-    l_Data << pCurrChar->GetPositionZ();                                    ///< float
-    l_Data << pCurrChar->GetOrientation();                                  ///< float
-    l_Data << uint32(0);                                                    ///< uint32 => TransferSpellID
-    SendPacket(&l_Data);
+    WorldPackets::Character::LoginVerifyWorld verifyWorld;
+    verifyWorld.MapID = int32(pCurrChar->GetMapId());
+    verifyWorld.Pos.Relocate(pCurrChar->GetPositionX(), pCurrChar->GetPositionY(), pCurrChar->GetPositionZ(), pCurrChar->GetOrientation());
+    verifyWorld.Reason = 0;
+    SendPacket(verifyWorld.Write());
 
     // load player specific part before send times
     LoadAccountData(l_CharacterHolder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), PER_CHARACTER_CACHE_MASK);

@@ -137,6 +137,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Scripting
   ${CMAKE_SOURCE_DIR}/src/server/game/Server
   ${CMAKE_SOURCE_DIR}/src/server/game/Server/Protocol
+  ${CMAKE_SOURCE_DIR}/src/server/game/Server/Packets
   ${CMAKE_SOURCE_DIR}/src/server/game/Skills
   ${CMAKE_SOURCE_DIR}/src/server/game/Spells
   ${CMAKE_SOURCE_DIR}/src/server/game/Spells/Auras

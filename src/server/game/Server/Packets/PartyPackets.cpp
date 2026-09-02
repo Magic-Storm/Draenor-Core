@@ -23,6 +23,7 @@
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
 #include "ObjectMgr.h"
+#include "Realm.h"
 
 WorldPacket const* WorldPackets::Party::PartyCommandResult::Write()
 {
@@ -467,7 +468,7 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player const* player)
 
     // Vehicle
     if (player->GetVehicle() && player->GetVehicle()->GetVehicleInfo())
-        MemberStats.VehicleSeat = player->GetVehicle()->GetVehicleInfo()->SeatID[player->m_movementInfo.transport.seat];
+        MemberStats.VehicleSeat = player->GetVehicle()->GetVehicleInfo()->SeatID[player->m_movementInfo.t_seat];
 
     // Auras
     for (uint8 i = 0; i < MAX_AURAS; ++i)

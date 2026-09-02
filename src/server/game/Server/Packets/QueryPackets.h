@@ -26,6 +26,13 @@
 
 class Player;
 
+#ifndef MAX_CREATURE_NAMES
+#define MAX_CREATURE_NAMES 4
+#endif
+#ifndef MAX_CREATURE_MODELS
+#define MAX_CREATURE_MODELS 4
+#endif
+
 namespace WorldPackets
 {
     namespace Query

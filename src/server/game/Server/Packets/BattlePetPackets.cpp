@@ -17,6 +17,7 @@
 
 #include "BattlePetPackets.h"
 #include "World.h"
+#include "Realm.h"
 
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::BattlePet::BattlePetSlot const& slot)
 {
