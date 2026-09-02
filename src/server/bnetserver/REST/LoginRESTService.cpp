@@ -53,29 +53,26 @@ bool LoginRESTService::Start(boost::asio::io_context& ioService)
 
     boost::system::error_code ec;
     boost::asio::ip::tcp::resolver resolver(ioService);
-    boost::asio::ip::tcp::resolver::iterator end;
 
     std::string configuredAddress = sConfigMgr->GetStringDefault("LoginREST.ExternalAddress", "127.0.0.1");
-    boost::asio::ip::tcp::resolver::query externalAddressQuery(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
-    boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
-    if (endPoint == end || ec)
+    boost::asio::ip::tcp::resolver::results_type endPoint = resolver.resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port), ec);
+    if (ec || endPoint.empty())
     {
         TC_LOG_ERROR("server.rest", "Could not resolve LoginREST.ExternalAddress %s", configuredAddress.c_str());
         return false;
     }
 
-    _externalAddress = endPoint->endpoint();
+    _externalAddress = endPoint.begin()->endpoint();
 
     configuredAddress = sConfigMgr->GetStringDefault("LoginREST.LocalAddress", "127.0.0.1");
-    boost::asio::ip::tcp::resolver::query localAddressQuery(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
-    endPoint = resolver.resolve(localAddressQuery, ec);
-    if (endPoint == end || ec)
+    endPoint = resolver.resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port), ec);
+    if (ec || endPoint.empty())
     {
         TC_LOG_ERROR("server.rest", "Could not resolve LoginREST.ExternalAddress %s", configuredAddress.c_str());
         return false;
     }
 
-    _localAddress = endPoint->endpoint();
+    _localAddress = endPoint.begin()->endpoint();
 
     // set up form inputs
     Battlenet::JSON::Login::FormInput* input;
@@ -120,7 +117,7 @@ boost::asio::ip::tcp::endpoint const& LoginRESTService::GetAddressForClient(boos
         return _externalAddress;
 
     boost::asio::ip::address_v4 netmask = boost::asio::ip::address_v4::netmask(_localAddress.address().to_v4());
-    if ((netmask.to_ulong() & address.to_v4().to_ulong()) == (netmask.to_ulong() & _localAddress.address().to_v4().to_ulong()))
+    if ((netmask.to_uint() & address.to_v4().to_uint()) == (netmask.to_uint() & _localAddress.address().to_v4().to_uint()))
         return _localAddress;
 
     return _externalAddress;

@@ -102,42 +102,37 @@ void RealmList::UpdateRealms(boost::system::error_code const& error)
         {
             try
             {
-                boost::asio::ip::tcp::resolver::iterator end;
-
                 Field* fields = result->Fetch();
                 uint32 realmId = fields[0].GetUInt32();
                 std::string name = fields[1].GetString();
-                boost::asio::ip::tcp::resolver::query externalAddressQuery(ip::tcp::v4(), fields[2].GetString(), "");
 
                 boost::system::error_code ec;
-                boost::asio::ip::tcp::resolver::iterator endPoint = _resolver->resolve(externalAddressQuery, ec);
-                if (endPoint == end || ec)
+                boost::asio::ip::tcp::resolver::results_type endPoint = _resolver->resolve(ip::tcp::v4(), fields[2].GetString(), "", ec);
+                if (ec || endPoint.empty())
                 {
                     TC_LOG_ERROR("realmlist", "Could not resolve address %s for realm \"%s\" id %u", fields[2].GetString().c_str(), name.c_str(), realmId);
                     continue;
                 }
 
-                ip::address externalAddress = (*endPoint).endpoint().address();
+                ip::address externalAddress = endPoint.begin()->endpoint().address();
 
-                boost::asio::ip::tcp::resolver::query localAddressQuery(ip::tcp::v4(), fields[3].GetString(), "");
-                endPoint = _resolver->resolve(localAddressQuery, ec);
-                if (endPoint == end || ec)
+                endPoint = _resolver->resolve(ip::tcp::v4(), fields[3].GetString(), "", ec);
+                if (ec || endPoint.empty())
                 {
                     TC_LOG_ERROR("realmlist", "Could not resolve localAddress %s for realm \"%s\" id %u", fields[3].GetString().c_str(), name.c_str(), realmId);
                     continue;
                 }
 
-                ip::address localAddress = (*endPoint).endpoint().address();
+                ip::address localAddress = endPoint.begin()->endpoint().address();
 
-                boost::asio::ip::tcp::resolver::query localSubmaskQuery(ip::tcp::v4(), fields[4].GetString(), "");
-                endPoint = _resolver->resolve(localSubmaskQuery, ec);
-                if (endPoint == end || ec)
+                endPoint = _resolver->resolve(ip::tcp::v4(), fields[4].GetString(), "", ec);
+                if (ec || endPoint.empty())
                 {
                     TC_LOG_ERROR("realmlist", "Could not resolve localSubnetMask %s for realm \"%s\" id %u", fields[4].GetString().c_str(), name.c_str(), realmId);
                     continue;
                 }
 
-                ip::address localSubmask = (*endPoint).endpoint().address();
+                ip::address localSubmask = endPoint.begin()->endpoint().address();
 
                 uint16 port = fields[5].GetUInt16();
                 uint8 icon = fields[6].GetUInt8();

@@ -61,6 +61,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
   ${CMAKE_SOURCE_DIR}/src/server/shared/Reporting
   ${CMAKE_CURRENT_SOURCE_DIR}/Client
+  ${CMAKE_CURRENT_SOURCE_DIR}/Login
+  ${CMAKE_CURRENT_SOURCE_DIR}/RealmList
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Object
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
@@ -78,7 +80,10 @@ add_library(proto STATIC
 
 target_include_directories(proto
   PUBLIC
-    ${PUBLIC_INCLUDES}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Client
+    ${CMAKE_CURRENT_SOURCE_DIR}/Login
+    ${CMAKE_CURRENT_SOURCE_DIR}/RealmList
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
 

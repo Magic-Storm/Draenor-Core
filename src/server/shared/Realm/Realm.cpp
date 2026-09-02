@@ -40,8 +40,8 @@ ip::tcp::endpoint Realm::GetAddressForClient(ip::address const& clientAddr) cons
     else
     {
         if (clientAddr.is_v4() &&
-            (clientAddr.to_v4().to_ulong() & LocalSubnetMask.to_v4().to_ulong()) ==
-            (LocalAddress.to_v4().to_ulong() & LocalSubnetMask.to_v4().to_ulong()))
+            (clientAddr.to_v4().to_uint() & LocalSubnetMask.to_v4().to_uint()) ==
+            (LocalAddress.to_v4().to_uint() & LocalSubnetMask.to_v4().to_uint()))
         {
             realmIp = LocalAddress;
         }
