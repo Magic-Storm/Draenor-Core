@@ -165,8 +165,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Warden/Modules
   ${CMAKE_SOURCE_DIR}/src/server/game/Weather
   ${CMAKE_SOURCE_DIR}/src/server/game/World
-  ${CMAKE_SOURCE_DIR}/src/server/authserver/Server
-  ${CMAKE_SOURCE_DIR}/src/server/authserver/Realms
   ${CMAKE_SOURCE_DIR}/src/server/shared/Reporting
   ${CMAKE_SOURCE_DIR}/src/server/shared/Realm
   ${CMAKE_SOURCE_DIR}/src/server/shared/JSON

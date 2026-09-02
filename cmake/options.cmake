@@ -8,7 +8,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-option(SERVERS          "Build worldserver and authserver"                            1)
+option(SERVERS          "Build worldserver and bnetserver"                            1)
 option(SCRIPTS          "Build core with scripts included"                            1)
 option(CROSS            "Build crossrealm core"                                       0)
 option(TOOLS            "Build map/vmap extraction/assembler tools"                   0)

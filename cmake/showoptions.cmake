@@ -25,9 +25,9 @@ else()
 endif()
 
 if( SERVERS )
-  message("* Build world/auth       : Yes (default)")
+  message("* Build world/bnet       : Yes (default)")
 else()
-  message("* Build world/authserver : No")
+  message("* Build world/bnetserver : No")
 endif()
 
 if( SCRIPTS )
