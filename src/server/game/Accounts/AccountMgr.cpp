@@ -87,11 +87,17 @@ namespace AccountMgr
         if (GetId(gameUsername))
             return AOR_NAME_ALREDY_EXIST;
 
-        std::string passHash = CalculateShaPassHash(username, password);
+        SHA1Hash gameSha;
+        gameSha.Initialize();
+        gameSha.UpdateData(gameUsername);
+        gameSha.UpdateData(":");
+        gameSha.UpdateData(password);
+        gameSha.Finalize();
+        std::string gamePassHash = ByteArrayToHexStr(gameSha.GetDigest(), gameSha.GetLength());
 
         stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_BNET_ACCOUNT);
         stmt->setString(0, username);
-        stmt->setString(1, passHash);
+        stmt->setString(1, CalculateShaPassHash(username, password));
         LoginDatabase.DirectExecute(stmt);
 
         stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_ID_BY_EMAIL);
@@ -104,7 +110,7 @@ namespace AccountMgr
 
         stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
         stmt->setString(0, gameUsername);
-        stmt->setString(1, passHash);
+        stmt->setString(1, gamePassHash);
         stmt->setString(2, username);
         stmt->setUInt32(3, bnetId);
         stmt->setUInt8(4, 1);
@@ -117,6 +123,9 @@ namespace AccountMgr
         LoginDatabase.DirectPExecute(
             "INSERT INTO battlenet_account_gameaccounts (battlenetAccountId, gameAccountId) VALUES (%u, %u)",
             bnetId, gameAccountId);
+
+        stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+        LoginDatabase.Execute(stmt);
 
         return AOR_OK;
     }

@@ -1,8 +1,21 @@
 #include "BattlenetAccountMgr.h"
 #include "AccountMgr.h"
 #include "DatabaseEnv.h"
+#include "Field.h"
 #include "Util.h"
+#include "SHA1.h"
 #include "SHA256.h"
+
+static std::string CalculateGameShaPassHash(std::string const& name, std::string const& password)
+{
+    SHA1Hash sha;
+    sha.Initialize();
+    sha.UpdateData(name);
+    sha.UpdateData(":");
+    sha.UpdateData(password);
+    sha.Finalize();
+    return ByteArrayToHexStr(sha.GetDigest(), sha.GetLength());
+}
 
 AccountOpResult Battlenet::AccountMgr::CreateBattlenetAccount(std::string email, std::string password, bool withGameAccount)
 {
@@ -18,16 +31,40 @@ AccountOpResult Battlenet::AccountMgr::CreateBattlenetAccount(std::string email,
     if (GetId(email))
         return AOR_NAME_ALREDY_EXIST;
 
-    if (withGameAccount)
-        return ::AccountMgr::CreateAccount(email, password);
-
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_BNET_ACCOUNT);
     stmt->setString(0, email);
     stmt->setString(1, CalculateShaPassHash(email, password));
     LoginDatabase.DirectExecute(stmt);
 
-    if (!GetId(email))
+    uint32 newAccountId = GetId(email);
+    if (!newAccountId)
         return AOR_DB_INTERNAL_ERROR;
+
+    if (!withGameAccount)
+        return AOR_OK;
+
+    std::string gameUsername = std::to_string(newAccountId) + "#1";
+    if (::AccountMgr::GetId(gameUsername))
+        return AOR_NAME_ALREDY_EXIST;
+
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
+    stmt->setString(0, gameUsername);
+    stmt->setString(1, CalculateGameShaPassHash(gameUsername, password));
+    stmt->setString(2, email);
+    stmt->setUInt32(3, newAccountId);
+    stmt->setUInt8(4, 1);
+    LoginDatabase.DirectExecute(stmt);
+
+    uint32 gameAccountId = ::AccountMgr::GetId(gameUsername);
+    if (!gameAccountId)
+        return AOR_DB_INTERNAL_ERROR;
+
+    LoginDatabase.DirectPExecute(
+        "INSERT INTO battlenet_account_gameaccounts (battlenetAccountId, gameAccountId) VALUES (%u, %u)",
+        newAccountId, gameAccountId);
+
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+    LoginDatabase.Execute(stmt);
 
     return AOR_OK;
 }
@@ -47,6 +84,17 @@ AccountOpResult Battlenet::AccountMgr::ChangePassword(uint32 accountId, std::str
     stmt->setString(0, CalculateShaPassHash(username, newPassword));
     stmt->setUInt32(1, accountId);
     LoginDatabase.Execute(stmt);
+
+    if (QueryResult games = LoginDatabase.PQuery("SELECT id, username FROM account WHERE battlenet_account = %u", accountId))
+    {
+        do
+        {
+            Field* fields = games->Fetch();
+            LoginDatabase.DirectPExecute("UPDATE account SET sha_pass_hash = '%s' WHERE id = %u",
+                CalculateGameShaPassHash(fields[1].GetString(), newPassword).c_str(), fields[0].GetUInt32());
+        } while (games->NextRow());
+    }
+
     return AOR_OK;
 }
 
@@ -95,11 +143,9 @@ AccountOpResult Battlenet::AccountMgr::UnlinkGameAccount(std::string const& game
     if (!GetIdByGameAccount(gameAccountId))
         return AOR_ACCOUNT_BAD_LINK;
 
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_BNET_GAME_ACCOUNT_LINK);
-    stmt->setNull(0);
-    stmt->setNull(1);
-    stmt->setUInt32(2, gameAccountId);
-    LoginDatabase.Execute(stmt);
+    LoginDatabase.DirectPExecute(
+        "UPDATE account SET battlenet_account = NULL, battlenet_index = NULL WHERE id = %u",
+        gameAccountId);
     return AOR_OK;
 }
 

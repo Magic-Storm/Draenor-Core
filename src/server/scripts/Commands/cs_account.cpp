@@ -123,9 +123,12 @@ public:
         switch (result)
         {
             case AOR_OK:
+            {
                 handler->PSendSysMessage(LANG_ACCOUNT_CREATED, accountName);
-                handler->PSendSysMessage("Battle.net login: %s | Game account: %s#1", accountName, accountName);
+                uint32 bnetId = Battlenet::AccountMgr::GetId(accountName);
+                handler->PSendSysMessage("Battle.net login: %s | Game account: %u#1", accountName, bnetId);
                 break;
+            }
             case AOR_NAME_TOO_LONG:
                 handler->SendSysMessage(LANG_ACCOUNT_TOO_LONG);
                 handler->SetSentErrorMessage(true);
