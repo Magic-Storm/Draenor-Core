@@ -15,6 +15,7 @@ EndScriptData */
 
 #include "ScriptMgr.h"
 #include "AccountMgr.h"
+#include "BattlenetAccountMgr.h"
 #include "Chat.h"
 #ifndef CROSS
 #include "BattlepayPacketFactory.h"
@@ -118,7 +119,7 @@ public:
             return false;
         }
 
-        AccountOpResult result = AccountMgr::CreateAccount(std::string(accountName), std::string(password));
+        AccountOpResult result = Battlenet::AccountMgr::CreateBattlenetAccount(std::string(accountName), std::string(password));
         switch (result)
         {
             case AOR_OK:
