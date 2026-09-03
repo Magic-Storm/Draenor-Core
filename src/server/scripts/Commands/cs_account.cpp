@@ -51,9 +51,16 @@ public:
             { "",               SEC_PLAYER,         false, &HandleAccountCommand,              "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
+        static ChatCommand bnetAccountCommandTable[] =
+        {
+            { "create",         SEC_CONSOLE,        true,  &HandleAccountCreateCommand,        "", NULL },
+            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
+        };
         static ChatCommand commandTable[] =
         {
             { "account",        SEC_PLAYER,         true,  NULL,     "", accountCommandTable  },
+            { "bnetaccount",    SEC_CONSOLE,        true,  NULL,     "", bnetAccountCommandTable },
+            { "bnetacc",        SEC_CONSOLE,        true,  NULL,     "", bnetAccountCommandTable },
             { NULL,             SEC_PLAYER,         false, NULL,                     "", NULL }
         };
         return commandTable;
@@ -116,12 +123,7 @@ public:
         {
             case AOR_OK:
                 handler->PSendSysMessage(LANG_ACCOUNT_CREATED, accountName);
-                if (handler->GetSession())
-                {
-                    TC_LOG_INFO("character", "Account: %d (IP: %s) Character:[%s] (GUID: %u) Change Password."
-                        , handler->GetSession()->GetAccountId(),handler->GetSession()->GetRemoteAddress().c_str()
-                        , handler->GetSession()->GetPlayer()->GetName(), handler->GetSession()->GetPlayer()->GetGUIDLow());
-                }
+                handler->PSendSysMessage("Battle.net login: %s | Game account: %s#1", accountName, accountName);
                 break;
             case AOR_NAME_TOO_LONG:
                 handler->SendSysMessage(LANG_ACCOUNT_TOO_LONG);

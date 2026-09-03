@@ -69,7 +69,7 @@ namespace AccountMgr
     AccountOpResult CreateAccount(std::string username, std::string password)
     {
         if (utf8length(username) > MAX_EMAIL_STR)
-            return AOR_NAME_TOO_LONG;                           // Username's too long
+            return AOR_NAME_TOO_LONG;
 
         if (utf8length(password) > MAX_PASS_STR)
             return AOR_PASS_TOO_LONG;
@@ -77,32 +77,48 @@ namespace AccountMgr
         normalizeString(username);
         normalizeString(password);
 
-        if (GetId(username))
-            return AOR_NAME_ALREDY_EXIST;                       // Username does already exist
-
-        // SRP6aCalculatePasswordVerifier requires a lowercase email
-        normalizeString(username, false);
-
-        std::string salt = SRP6aGenerateSalt32();
-        std::string passwordVerifier = SRP6aCalculatePasswordVerifier(username, password, salt);
-
-        // everything else requires an uppercase email
-        normalizeString(username, true);
-
-        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
-
+        // Battle.net email must already be validated by the command (@ required)
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_ID_BY_EMAIL);
         stmt->setString(0, username);
-        stmt->setString(1, CalculateShaPassHash(username, password));
-        stmt->setString(2, passwordVerifier);
-        stmt->setString(3, salt);
+        if (LoginDatabase.Query(stmt))
+            return AOR_NAME_ALREDY_EXIST;
 
-        LoginDatabase.Execute(stmt);
+        std::string gameUsername = username + "#1";
+        if (GetId(gameUsername))
+            return AOR_NAME_ALREDY_EXIST;
 
-        //stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+        std::string passHash = CalculateShaPassHash(username, password);
 
-        //LoginDatabase.Execute(stmt);
+        stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_BNET_ACCOUNT);
+        stmt->setString(0, username);
+        stmt->setString(1, passHash);
+        LoginDatabase.DirectExecute(stmt);
 
-        return AOR_OK;                                          // Everything's fine
+        stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_ID_BY_EMAIL);
+        stmt->setString(0, username);
+        PreparedQueryResult bnetResult = LoginDatabase.Query(stmt);
+        if (!bnetResult)
+            return AOR_DB_INTERNAL_ERROR;
+
+        uint32 bnetId = (*bnetResult)[0].GetUInt32();
+
+        stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
+        stmt->setString(0, gameUsername);
+        stmt->setString(1, passHash);
+        stmt->setString(2, username);
+        stmt->setUInt32(3, bnetId);
+        stmt->setUInt8(4, 1);
+        LoginDatabase.DirectExecute(stmt);
+
+        uint32 gameAccountId = GetId(gameUsername);
+        if (!gameAccountId)
+            return AOR_DB_INTERNAL_ERROR;
+
+        LoginDatabase.DirectPExecute(
+            "INSERT INTO battlenet_account_gameaccounts (battlenetAccountId, gameAccountId) VALUES (%u, %u)",
+            bnetId, gameAccountId);
+
+        return AOR_OK;
     }
 
     AccountOpResult DeleteAccount(uint32 accountId)

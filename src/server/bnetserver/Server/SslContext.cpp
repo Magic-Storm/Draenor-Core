@@ -33,7 +33,16 @@ bool Battlenet::SslContext::Initialize()
     std::string certificateChainFile = sConfigMgr->GetStringDefault("CertificatesFile", "./bnetserver.cert.pem");
     std::string privateKeyFile = sConfigMgr->GetStringDefault("PrivateKeyFile", "./bnetserver.key.pem");
 
-    LOAD_CHECK(instance().set_options(boost::asio::ssl::context::no_sslv3, err));
+    LOAD_CHECK(instance().set_options(
+        boost::asio::ssl::context::default_workarounds
+        | boost::asio::ssl::context::no_sslv2
+        | boost::asio::ssl::context::no_sslv3
+        | boost::asio::ssl::context::no_tlsv1
+        | boost::asio::ssl::context::no_tlsv1_1
+        | boost::asio::ssl::context::single_dh_use, err));
+#if defined(SSL_OP_NO_TLSv1_3)
+    ::SSL_CTX_set_options(instance().native_handle(), SSL_OP_NO_TLSv1_3);
+#endif
     LOAD_CHECK(instance().use_certificate_chain_file(certificateChainFile, err));
     LOAD_CHECK(instance().use_private_key_file(privateKeyFile, boost::asio::ssl::context::pem, err));
 

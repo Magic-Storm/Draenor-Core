@@ -153,7 +153,17 @@ extern int main(int argc, char** argv)
     TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
     TC_LOG_INFO("server.worldserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
 
+#if PLATFORM == PLATFORM_WINDOWS
+    {
+        char modulePath[MAX_PATH] = {};
+        GetModuleFileNameA(nullptr, modulePath, MAX_PATH);
+        boost::filesystem::path opensslModules(modulePath);
+        opensslModules.remove_filename();
+        OpenSSLCrypto::threadsSetup(opensslModules);
+    }
+#else
     OpenSSLCrypto::threadsSetup(boost::filesystem::path());
+#endif
 
     /// worldserver PID file creation
     std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");

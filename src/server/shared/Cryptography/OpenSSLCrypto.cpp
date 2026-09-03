@@ -31,7 +31,8 @@ void OpenSSLCrypto::threadsSetup(boost::filesystem::path const& providerModulePa
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #if PLATFORM == PLATFORM_WINDOWS
-    OSSL_PROVIDER_set_default_search_path(nullptr, providerModulePath.string().c_str());
+    if (!providerModulePath.empty())
+        OSSL_PROVIDER_set_default_search_path(nullptr, providerModulePath.string().c_str());
 #endif
     LegacyProvider = OSSL_PROVIDER_load(nullptr, "legacy");
     DefaultProvider = OSSL_PROVIDER_load(nullptr, "default");
