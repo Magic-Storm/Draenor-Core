@@ -177,11 +177,12 @@ enum Difficulty
     DifficultyTimewalker    = 24,
 
     MAX_DUNGEON_DIFFICULTY = DUNGEON_DIFFICULTY_CHALLENGE + 1,
-    MAX_RAID_DIFFICULTY = RAID_DIFFICULTY_1025MAN_FLEX + 1,
+    MAX_RAID_DIFFICULTY = DifficultyRaidLFR + 1,
     MAX_SCENARIO_DIFFICULTY = SCENARIO_DIFFICULTY_NORMAL + 1,
-    MAX_DIFFICULTY = RAID_DIFFICULTY_1025MAN_FLEX + 1,
+    // WoD 6.2.x stores spell difficulty rows up to Timewalker (24).
+    MAX_DIFFICULTY = DifficultyTimewalker + 1,
 
-    MAX_CREATURE_DIFFICULTY = RAID_DIFFICULTY_1025MAN_FLEX + 24, // Spawns in battlegrounds
+    MAX_CREATURE_DIFFICULTY = DifficultyTimewalker + 24, // Spawns in battlegrounds
 };
 
 enum DifficultyFlags

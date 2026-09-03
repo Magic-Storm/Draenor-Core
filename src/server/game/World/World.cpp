@@ -1608,9 +1608,11 @@ void World::SetInitialWorldSettings()
 #endif
 
     ///- Load the DBC files
-    TC_LOG_INFO("server.loading", "Initialize data stores...");
+    TC_LOG_ERROR("server.worldserver", "Initialize data stores...");
     LoadDBCStores(m_dataPath);
+    TC_LOG_ERROR("server.worldserver", "DBC stores loaded.");
     LoadDB2Stores(m_dataPath);
+    TC_LOG_ERROR("server.worldserver", "DB2 stores loaded.");
     DetectDBCLang();
 
     TC_LOG_INFO("server.loading", "Initialize Spell Difficulty ...");
@@ -1619,37 +1621,39 @@ void World::SetInitialWorldSettings()
     /// Load weighted graph on taxi nodes path
     sTaxiPathGraph.Initialize();
 
-    TC_LOG_INFO("server.loading", "Loading SpellInfo store...");
+    TC_LOG_ERROR("server.worldserver", "Loading SpellInfo store...");
     sSpellMgr->LoadSpellInfoStore();
+    TC_LOG_ERROR("server.worldserver", "SpellInfo store loaded.");
 
-    TC_LOG_INFO("server.loading", "Loading TalentSpellInfo store....");
+    TC_LOG_ERROR("server.worldserver", "Loading TalentSpellInfo...");
     sSpellMgr->LoadTalentSpellInfo();
 
-    TC_LOG_INFO("server.loading", "Loading SpellPowerInfo store....");
+    TC_LOG_ERROR("server.worldserver", "Loading SpellPowerInfo...");
     sSpellMgr->LoadSpellPowerInfo();
 
-    TC_LOG_INFO("server.loading", "Loading SkillLineAbilityMultiMap Data...");
+    TC_LOG_ERROR("server.worldserver", "Loading SkillLineAbility map...");
     sSpellMgr->LoadSkillLineAbilityMap();
 
-    TC_LOG_INFO("server.loading", "Loading Spell custom attributes...");
+    TC_LOG_ERROR("server.worldserver", "Loading Spell custom attributes...");
     sSpellMgr->LoadSpellCustomAttr();
+    TC_LOG_ERROR("server.worldserver", "Spell custom attributes loaded.");
 
     if (sWorld->getBoolConfig(CONFIG_ENABLE_RESEARCH_SITE_LOAD))
     {
-        TC_LOG_INFO("server.loading", "Loading Research Site Zones...");
+        TC_LOG_ERROR("server.worldserver", "Loading Research Site Zones...");
         sObjectMgr->LoadResearchSiteZones();
 
-        TC_LOG_INFO("server.loading", "Loading Research Site Loot...");
+        TC_LOG_ERROR("server.worldserver", "Loading Research Site Loot...");
         sObjectMgr->LoadResearchSiteLoot();
     }
 
-    TC_LOG_INFO("server.loading", "Loading GameObject models...");
+    TC_LOG_ERROR("server.worldserver", "Loading GameObject models...");
     LoadGameObjectModelList();
 
-    TC_LOG_INFO("server.loading", "Loading Script Names...");
+    TC_LOG_ERROR("server.worldserver", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 
-    TC_LOG_INFO("server.loading", "Loading Instance Template...");
+    TC_LOG_ERROR("server.worldserver", "Loading Instance Template...");
     sObjectMgr->LoadInstanceTemplate();
 
     // Must be called before `creature_respawn`/`gameobject_respawn` tables

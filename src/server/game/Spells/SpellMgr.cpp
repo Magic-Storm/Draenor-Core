@@ -1488,7 +1488,7 @@ void SpellMgr::LoadSpellRanks()
     }
     mSpellChains.clear();
     //                                                     0             1      2
-    QueryResult result = WorldDatabase.Query("SELECT first_spell_id, spell_id, rank from spell_ranks ORDER BY first_spell_id, rank");
+    QueryResult result = WorldDatabase.Query("SELECT first_spell_id, spell_id, `rank` FROM spell_ranks ORDER BY first_spell_id, `rank`");
 
     if (!result)
     {
@@ -3197,20 +3197,26 @@ void SpellMgr::LoadSpellInfoStore()
         VisualsBySpellMap[l_Entry->SpellId][l_Entry->DifficultyID].push_back(l_Entry);
     }
 
-    ParallelFor(0, sSpellStore.GetNumRows(), [this](uint32 l_I) -> void
+    // Sequential load: ParallelFor + std::move on shared VisualsBySpellMap races and can hang/crash.
+    for (uint32 l_I = 0; l_I < sSpellStore.GetNumRows(); ++l_I)
     {
-        if (SpellEntry const* spellEntry = sSpellStore.LookupEntry(l_I))
+        SpellEntry const* spellEntry = sSpellStore.LookupEntry(l_I);
+        if (!spellEntry)
+            continue;
+
+        SpellVisualMap visualMap;
+        auto l_Itr = VisualsBySpellMap.find(l_I);
+        if (l_Itr != VisualsBySpellMap.end())
+            visualMap = l_Itr->second;
+
+        std::set<uint32> difficultyInfo = mAvaiableDifficultyBySpell[l_I];
+        for (uint32 difficulty : difficultyInfo)
         {
-            auto l_Itr = VisualsBySpellMap.find(l_I);
-            SpellVisualMap emptyMap;
-            SpellVisualMap& visualMap = (l_Itr == VisualsBySpellMap.end()) ? emptyMap : l_Itr->second;
-
-            std::set<uint32> difficultyInfo = mAvaiableDifficultyBySpell[l_I];
-
-            for (std::set<uint32>::iterator itr = difficultyInfo.begin(); itr != difficultyInfo.end(); itr++)
-                mSpellInfoMap[(*itr)][l_I] = new SpellInfo(spellEntry, (*itr), std::move(visualMap));
+            if (difficulty >= Difficulty::MAX_DIFFICULTY)
+                continue;
+            mSpellInfoMap[difficulty][l_I] = new SpellInfo(spellEntry, difficulty, SpellVisualMap(visualMap));
         }
-    });
+    }
 
     for (uint32 l_I = 0; l_I < sSpellPowerStore.GetNumRows(); l_I++)
     {

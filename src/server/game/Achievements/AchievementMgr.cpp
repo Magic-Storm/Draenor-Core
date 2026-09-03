@@ -3940,7 +3940,7 @@ void AchievementGlobalMgr::LoadRewards()
     m_achievementRewards.clear();                           // Need for reload case
 
     //                                                   0      1        2        3     4       5        6        7
-    QueryResult l_Result = WorldDatabase.Query("SELECT entry, title_A, title_H, item, SpellID, sender, subject, text FROM achievement_reward");
+    QueryResult l_Result = WorldDatabase.Query("SELECT entry, title_A, title_H, item, SpellID, sender, subject, `text` FROM achievement_reward");
 
     if (!l_Result)
     {

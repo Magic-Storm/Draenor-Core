@@ -461,9 +461,8 @@ void MapManager::FreeInstanceId(uint32 p_InstanceID)
     m_InstanceIDs.erase(p_InstanceID);
 }
 
-MapManager* sMapMgrInstance = nullptr;
-
 MapManager* MapManager::instance()
 {
-    return sMapMgrInstance;
+    static MapManager instance;
+    return &instance;
 }

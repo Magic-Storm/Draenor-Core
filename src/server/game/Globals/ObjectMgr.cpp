@@ -5391,7 +5391,7 @@ void ObjectMgr::LoadPageTexts()
 	uint32 oldMSTime = getMSTime();
 
 	//                                                 0      1       2
-	QueryResult result = WorldDatabase.Query("SELECT entry, text, next_page FROM page_text");
+	QueryResult result = WorldDatabase.Query("SELECT entry, `text`, next_page FROM page_text");
 
 	if (!result)
 	{

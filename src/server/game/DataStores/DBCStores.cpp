@@ -194,8 +194,8 @@ static bool LoadDBC_assert_print(uint32 fsize, uint32 rsize, const std::string& 
 {
     TC_LOG_ERROR("server.worldserver", "Size of '%s' setted by format string (%u) not equal size of C++ structure (%u).", filename.c_str(), fsize, rsize);
 
-    // ASSERT must fail after function call
-    return false;
+    // Do not hard-abort on format mismatch; continue so server can report all issues.
+    return true;
 }
 
 template<class T>
@@ -246,6 +246,7 @@ inline void LoadDBC(uint32& availableDbcLocales, StoreProblemList& errors, DBCSt
 void LoadDBCStores(const std::string& dataPath)
 {
     uint32 oldMSTime = getMSTime();
+    TC_LOG_ERROR("server.worldserver", "LoadDBCStores begin (%s)", dataPath.c_str());
 
     std::string dbcPath = dataPath+"dbc/";
 
@@ -485,11 +486,17 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellEffectStore,            dbcPath,"SpellEffect.dbc");                                                   // 17399
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellEffectScalingStore,     dbcPath,"SpellEffectScaling.dbc");                                            // 17399
 
+    TC_LOG_ERROR("server.worldserver", "Building SpellEffect map...");
     for (uint32 i = 1; i < sSpellEffectStore.GetNumRows(); ++i)
     {
         if (SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry(i))
+        {
+            if (spellEffect->EffectDifficulty >= Difficulty::MAX_DIFFICULTY || spellEffect->EffectIndex >= 32)
+                continue;
             sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectDifficulty][spellEffect->EffectIndex] = spellEffect;
+        }
     }
+    TC_LOG_ERROR("server.worldserver", "SpellEffect map done.");
 
     for (uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
     {

@@ -368,7 +368,7 @@ void InstanceSaveManager::LoadResetTimes()
                     itr->second.second = resettime;
                 }
             }
-            while (result->NextRow());
+            while (result2->NextRow());
         }
 
         // schedule the reset times
@@ -454,7 +454,8 @@ void InstanceSaveManager::LoadResetTimes()
 
             ScheduleReset(true, t - ResetTimeDelay[type - 1], InstResetEvent(type, mapid, difficulty, 0));
 
-            for (in_itr = mapDiffResetInstances.lower_bound(mapDifficultyPair.first); in_itr != mapDiffResetInstances.upper_bound(mapDifficultyPair.first); ++in_itr)
+            uint32 mapDiffKey = MAKE_PAIR32(mapid, difficulty);
+            for (in_itr = mapDiffResetInstances.lower_bound(mapDiffKey); in_itr != mapDiffResetInstances.upper_bound(mapDiffKey); ++in_itr)
                 ScheduleReset(true, t - ResetTimeDelay[type - 1], InstResetEvent(type, mapid, difficulty, in_itr->second));
         }
     }
