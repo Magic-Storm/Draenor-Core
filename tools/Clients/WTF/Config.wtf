@@ -1,4 +1,4 @@
-SET portal "localhost"
+SET portal "127.0.0.1"
 SET textLocale "enUS"
 SET audioLocale "enUS"
 SET agentUID "wow_enus"

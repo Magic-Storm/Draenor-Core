@@ -65,6 +65,7 @@ file(GLOB_RECURSE sources_Cinematic Cinematic/*.h Cinematic/*.cpp)
 
 file(GLOB_RECURSE sources_Garrison Garrison/*.hpp Garrison/*.cpp)
 file(GLOB_RECURSE sources_Vignette Vignette/*.hpp Vignette/*.cpp Vignette/*.hxx)
+file(GLOB_RECURSE sources_Services Services/*.cpp Services/*.h)
 
 # Create game-libary
 
@@ -128,6 +129,7 @@ set(game_STAT_SRCS
   ${sources_Garrison}
   ${sources_shared_ptrs}
   ${sources_Vignette}
+  ${sources_Services}
 )
 
 include_directories(
@@ -251,6 +253,11 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/World
   ${CMAKE_CURRENT_SOURCE_DIR}/SharedPtrs
   ${CMAKE_CURRENT_SOURCE_DIR}/Vignette
+  ${CMAKE_CURRENT_SOURCE_DIR}/Services
+  ${CMAKE_SOURCE_DIR}/src/server/proto
+  ${CMAKE_SOURCE_DIR}/src/server/proto/Client
+  ${CMAKE_SOURCE_DIR}/src/server/proto/Login
+  ${CMAKE_SOURCE_DIR}/src/server/proto/RealmList
   ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
@@ -269,6 +276,7 @@ set_property(TARGET game PROPERTY FOLDER "server")
 
 target_link_libraries(game
   shared
+  proto
   boost
 )
 

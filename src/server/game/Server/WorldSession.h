@@ -9,7 +9,10 @@
 #ifndef __WORLDSESSION_H
 #define __WORLDSESSION_H
 
+#include <array>
 #include <atomic>
+#include <functional>
+#include <unordered_map>
 #include "Common.h"
 #include "SharedDefines.h"
 #include "AddonMgr.h"
@@ -20,6 +23,7 @@
 #include "Opcodes.h"
 #include "LFGListMgr.h"
 #include "MSCallback.hpp"
+#include "MessageBuffer.h"
 #ifdef CROSS
 #include "Cross/InterRealmClient.h"
 #endif /* CROSS */
@@ -28,6 +32,14 @@ namespace WorldPackets
 {
     namespace Auth { enum class ConnectToSerial : uint32; }
     namespace Character { enum class LoginFailureReason : uint8; }
+}
+
+namespace google
+{
+    namespace protobuf
+    {
+        class Message;
+    }
 }
 
 class Creature;
@@ -475,7 +487,7 @@ class WorldSession
 		void SendQueryTimeResponse();
         void HandleLearnPetSpecialization(WorldPacket& data);
 
-        void SendAuthResponse(uint8 code, bool queued, uint32 queuePos = 0);
+        void SendAuthResponse(uint32 code, bool queued, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
 
         AccountTypes GetSecurity() const { return _security; }
@@ -488,6 +500,23 @@ class WorldSession
         uint32 GetGuidLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() { return m_Address; }
+        std::string const& GetAccountName() const { return _accountName; }
+        void SetAccountName(std::string name) { _accountName = std::move(name); }
+        std::string const& GetOS() const { return _os; }
+        void SetOS(std::string os) { _os = std::move(os); }
+
+        void HandleBattlenetRequest(WorldPacket& recvPacket);
+        void HandleBattlenetRequestRealmListTicket(WorldPacket& recvPacket);
+
+        void SendBattlenetResponse(uint32 serviceHash, uint32 methodId, uint32 token, google::protobuf::Message const* response);
+        void SendBattlenetResponse(uint32 serviceHash, uint32 methodId, uint32 token, uint32 status);
+        void SendBattlenetRequest(uint32 serviceHash, uint32 methodId, google::protobuf::Message const* request, std::function<void(MessageBuffer)> callback);
+        void SendBattlenetRequest(uint32 serviceHash, uint32 methodId, google::protobuf::Message const* request);
+
+        std::array<uint8, 32> const& GetRealmListSecret() const { return _realmListSecret; }
+        void SetRealmListSecret(std::array<uint8, 32> const& secret) { _realmListSecret = secret; }
+
+        std::unordered_map<uint32, uint8> const& GetRealmCharacterCounts() const { return _realmCharacterCounts; }
         void SetPlayer(Player* player);
         uint8 Expansion() const { return m_expansion; }
 
@@ -1594,6 +1623,12 @@ class WorldSession
 
         AccountTypes _security;
         uint32 _accountId;
+        std::string _accountName;
+        std::string _os;
+        std::array<uint8, 32> _realmListSecret;
+        std::unordered_map<uint32, uint8> _realmCharacterCounts;
+        std::unordered_map<uint32, std::function<void(MessageBuffer)>> _battlenetResponseCallbacks;
+        uint32 _battlenetRequestToken;
         uint8 m_expansion;
 
         uint16 m_ClientBuild;

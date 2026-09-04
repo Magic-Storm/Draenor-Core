@@ -37,6 +37,3 @@ ALTER TABLE `battlenet_accounts`
   DROP `v`,
   DROP `sessionKey`;
 
--- Update realmlist for 6.2.4
-UPDATE `realmlist` SET `gamebuild`=21355 WHERE `gamebuild`=20726;
-

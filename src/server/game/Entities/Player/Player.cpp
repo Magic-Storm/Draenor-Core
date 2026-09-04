@@ -16,6 +16,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "Realm.h"
 #include "UpdateMask.h"
 #include "Player.h"
 #include "Vehicle.h"
@@ -24068,6 +24069,27 @@ void Player::SaveToDB(bool create /*=false*/, MS::Utilities::CallBackPtr p_Callb
 
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
+
+#ifndef CROSS
+    if (AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
+    {
+        PreparedStatement* bnetStmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_BNET_LAST_PLAYER_CHARACTERS);
+        bnetStmt->setUInt32(0, GetSession()->GetAccountId());
+        bnetStmt->setUInt8(1, realm.Id.Region);
+        bnetStmt->setUInt8(2, realm.Id.Site);
+        LoginDatabase.Execute(bnetStmt);
+
+        bnetStmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_BNET_LAST_PLAYER_CHARACTERS);
+        bnetStmt->setUInt32(0, GetSession()->GetAccountId());
+        bnetStmt->setUInt8(1, realm.Id.Region);
+        bnetStmt->setUInt8(2, realm.Id.Site);
+        bnetStmt->setUInt32(3, realm.Id.Realm);
+        bnetStmt->setString(4, GetName());
+        bnetStmt->setUInt64(5, GetGUID());
+        bnetStmt->setUInt32(6, uint32(time(nullptr)));
+        LoginDatabase.Execute(bnetStmt);
+    }
+#endif
 
     TC_LOG_DEBUG("entities.unit", "The value of player %s at save: ", m_name.c_str());
     outDebugValues();

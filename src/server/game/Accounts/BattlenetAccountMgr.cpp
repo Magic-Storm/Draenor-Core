@@ -25,8 +25,8 @@ AccountOpResult Battlenet::AccountMgr::CreateBattlenetAccount(std::string email,
     if (utf8length(password) > MAX_PASS_STR)
         return AOR_PASS_TOO_LONG;
 
-    ::AccountMgr::normalizeString(email);
-    ::AccountMgr::normalizeString(password);
+    Utf8ToUpperOnlyLatin(email);
+    Utf8ToUpperOnlyLatin(password);
 
     if (GetId(email))
         return AOR_NAME_ALREDY_EXIST;
@@ -75,8 +75,8 @@ AccountOpResult Battlenet::AccountMgr::ChangePassword(uint32 accountId, std::str
     if (!GetName(accountId, username))
         return AOR_NAME_NOT_EXIST;
 
-    ::AccountMgr::normalizeString(username);
-    ::AccountMgr::normalizeString(newPassword);
+    Utf8ToUpperOnlyLatin(username);
+    Utf8ToUpperOnlyLatin(newPassword);
     if (utf8length(newPassword) > MAX_PASS_STR)
         return AOR_PASS_TOO_LONG;
 
@@ -104,8 +104,8 @@ bool Battlenet::AccountMgr::CheckPassword(uint32 accountId, std::string password
     if (!GetName(accountId, username))
         return false;
 
-    ::AccountMgr::normalizeString(username);
-    ::AccountMgr::normalizeString(password);
+    Utf8ToUpperOnlyLatin(username);
+    Utf8ToUpperOnlyLatin(password);
 
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_CHECK_PASSWORD);
     stmt->setUInt32(0, accountId);
@@ -190,5 +190,15 @@ uint8 Battlenet::AccountMgr::GetMaxIndex(uint32 accountId)
 
 std::string Battlenet::AccountMgr::CalculateShaPassHash(std::string const& name, std::string const& password)
 {
-    return ::AccountMgr::CalculateShaPassHash(name, password);
+    SHA256Hash email;
+    email.UpdateData(name);
+    email.Finalize();
+
+    SHA256Hash sha;
+    sha.UpdateData(ByteArrayToHexStr(email.GetDigest(), email.GetLength()));
+    sha.UpdateData(":");
+    sha.UpdateData(password);
+    sha.Finalize();
+
+    return ByteArrayToHexStr(sha.GetDigest(), sha.GetLength(), true);
 }

@@ -58,6 +58,14 @@
 RealmID = 1
 
 #
+#    RealmsStateUpdateDelay
+#        Description: Time (in seconds) between realm list updates.
+#        Default:     10
+#                     0  - (Disabled)
+
+RealmsStateUpdateDelay = 10
+
+#
 #    DataDir
 #        Description: Data directory setting.
 #        Important:   DataDir needs to be quoted, as the string might contain space characters.

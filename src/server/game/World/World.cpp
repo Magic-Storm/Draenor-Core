@@ -49,6 +49,7 @@
 #include "World.h"
 #include "WorldSocket.h"
 #include "Realm.h"
+#include "BattlenetRpcErrorCodes.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
 #include "ObjectMgr.h"
@@ -344,7 +345,7 @@ void World::AddSession_(WorldSession* s)
         return;
     }
 
-    s->SendAuthResponse(AUTH_OK, false);
+    s->SendAuthResponse(ERROR_OK, false);
     s->SendTimeZoneInformations();
     s->SendAddonsInfo();
     s->SendFeatureSystemStatus();
@@ -402,7 +403,7 @@ void World::AddQueuedPlayer(WorldSession* sess)
     m_QueuedPlayer.push_back(sess);
 
     // The 1st SMSG_AUTH_RESPONSE needs to contain other info too.
-    sess->SendAuthResponse(AUTH_OK, true, GetQueuePos(sess));
+        sess->SendAuthResponse(ERROR_OK, true, GetQueuePos(sess));
 }
 
 bool World::RemoveQueuedPlayer(WorldSession* sess)

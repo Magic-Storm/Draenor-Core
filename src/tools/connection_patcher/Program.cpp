@@ -72,12 +72,20 @@ namespace Connection_Patcher
             // sever the connection to blizzard's versions file to stop it from updating and replace with custom version
             // this is good practice with or without the retail version, just to stop the exe from auto-patching randomly
             // hardcode %s.patch.battle.net:1119/%s/versions to trinity6.github.io/%s/%s/build/versi
-            std::string verPatch(Patches::Common::VersionsFile());
-            std::string buildPattern = "build";
+            // Custom/repacked clients (e.g. ZWoW) often already replaced this URL; skip instead of aborting.
+            try
+            {
+                std::string verPatch(Patches::Common::VersionsFile());
+                std::string buildPattern = "build";
 
-            boost::algorithm::replace_all(verPatch, buildPattern, std::to_string(buildNumber));
-            std::vector<unsigned char> verVec(verPatch.begin(), verPatch.end());
-            patcher->Patch(verVec, Patterns::Common::VersionsFile());
+                boost::algorithm::replace_all(verPatch, buildPattern, std::to_string(buildNumber));
+                std::vector<unsigned char> verVec(verPatch.begin(), verPatch.end());
+                patcher->Patch(verVec, Patterns::Common::VersionsFile());
+            }
+            catch (std::exception const& ex)
+            {
+                std::cout << "Versions pattern not found (" << ex.what() << "), skipping\n";
+            }
 
             patcher->Finish(output);
 

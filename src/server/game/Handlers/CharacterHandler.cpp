@@ -15,6 +15,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "DatabaseEnv.h"
+#include "Realm.h"
 #include "Arena.h"
 #include "Chat.h"
 #include "Group.h"
@@ -369,6 +370,8 @@ void WorldSession::HandleCharEnum(PreparedQueryResult p_Result)
     }
 
     SendPacket(charEnum.Write());
+
+    _realmCharacterCounts[GetVirtualRealmAddress()] = uint8(l_CharacterCount);
 
     /// Update realm character count
     SQLTransaction trans = LoginDatabase.BeginTransaction();

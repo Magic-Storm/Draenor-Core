@@ -48,6 +48,7 @@
 #include "AuthenticationPackets.h"
 #include "CharacterPackets.h"
 #include "Realm.h"
+#include "BattlenetRpcErrorCodes.h"
 
 bool MapSessionFilter::Process(WorldPacket* packet)
 {
@@ -115,6 +116,7 @@ WorldSession::WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, b
     m_muteTime              = mute_time;
     _security               = sec;
     _accountId              = id;
+    _battlenetRequestToken  = 0;
     m_expansion             = expansion;
     _ispremium              = ispremium;
 
@@ -1130,9 +1132,9 @@ void WorldSession::Handle_Deprecated(WorldPacket& /*recvPacket*/)
 void WorldSession::SendAuthWaitQue(uint32 position)
 {
     if (position == 0)
-        SendAuthResponse(AUTH_OK, false);
+        SendAuthResponse(ERROR_OK, false);
     else
-        SendAuthResponse(AUTH_OK, true, position);
+        SendAuthResponse(ERROR_OK, true, position);
 }
 
 void WorldSession::LoadGlobalAccountData()

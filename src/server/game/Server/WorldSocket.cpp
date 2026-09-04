@@ -862,6 +862,8 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<WorldPackets::Auth::
     _worldSession = new WorldSession(account.Game.Id, this, account.Game.Security, false, 0,
         account.Game.Expansion, time_t(mutetime), LocaleConstant(account.BattleNet.Locale),
         account.Game.Recruiter, account.Game.IsRectuiter, 0, 0, 0);
+    _worldSession->SetAccountName(authSession->RealmJoinTicket);
+    _worldSession->SetOS(account.Game.OS);
     _worldSession->ReadAddonsInfo(authSession->AddonInfo);
 
     // Initialize Warden system only if it is enabled by config

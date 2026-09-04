@@ -23,6 +23,7 @@
 #include "ProcessPriority.h"
 #include "BigNumber.h"
 #include "Realm.h"
+#include "RealmList.h"
 #include "World.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
@@ -81,6 +82,7 @@ bool StartDB();
 void StopDB();
 void WorldUpdateLoop();
 void ClearOnlineAccounts();
+bool LoadRealmInfo();
 
 /// Launch the Trinity server
 extern int main(int argc, char** argv)
@@ -202,6 +204,13 @@ extern int main(int argc, char** argv)
     if (!StartDB())
         return 1;
 
+    sRealmList->Initialize(_ioService, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 10));
+    if (!LoadRealmInfo())
+    {
+        TC_LOG_ERROR("server.worldserver", "Unable to load realm info for realm ID %u", realmID);
+        return 1;
+    }
+
     // Set server offline (not connectable)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = (flag & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_INVALID, realmID);
 
@@ -282,6 +291,7 @@ extern int main(int argc, char** argv)
 
     // set server offline
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realmID);
+    sRealmList->Close();
 
     // Clean up threads if any
     if (soapThread != nullptr)
@@ -599,6 +609,20 @@ bool StartDB()
 
     TC_LOG_INFO("server.worldserver", "Using World DB: %s", sWorld->GetDBVersion());
     return true;
+}
+
+bool LoadRealmInfo()
+{
+    for (auto const& entry : sRealmList->GetRealms())
+    {
+        if (entry.second.Id.Realm == realmID)
+        {
+            realm = entry.second;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void StopDB()

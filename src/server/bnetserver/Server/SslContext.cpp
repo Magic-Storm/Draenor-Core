@@ -18,6 +18,7 @@
 #include "SslContext.h"
 #include "Log.h"
 #include "Config.h"
+#include <openssl/ssl.h>
 
 bool Battlenet::SslContext::Initialize()
 {
@@ -33,16 +34,27 @@ bool Battlenet::SslContext::Initialize()
     std::string certificateChainFile = sConfigMgr->GetStringDefault("CertificatesFile", "./bnetserver.cert.pem");
     std::string privateKeyFile = sConfigMgr->GetStringDefault("PrivateKeyFile", "./bnetserver.key.pem");
 
+    // WoW 6.2.4 Battle.net client speaks TLS 1.0/1.2 with old ciphers.
+    // OpenSSL 3 defaults (TLS 1.3 + SECLEVEL 2) abort the handshake with "stream truncated".
     LOAD_CHECK(instance().set_options(
         boost::asio::ssl::context::default_workarounds
         | boost::asio::ssl::context::no_sslv2
         | boost::asio::ssl::context::no_sslv3
-        | boost::asio::ssl::context::no_tlsv1
-        | boost::asio::ssl::context::no_tlsv1_1
         | boost::asio::ssl::context::single_dh_use, err));
+
+    SSL_CTX* native = instance().native_handle();
 #if defined(SSL_OP_NO_TLSv1_3)
-    ::SSL_CTX_set_options(instance().native_handle(), SSL_OP_NO_TLSv1_3);
+    SSL_CTX_set_options(native, SSL_OP_NO_TLSv1_3);
 #endif
+#if defined(TLS1_VERSION)
+    SSL_CTX_set_min_proto_version(native, TLS1_VERSION);
+#endif
+#if defined(TLS1_2_VERSION)
+    SSL_CTX_set_max_proto_version(native, TLS1_2_VERSION);
+#endif
+    SSL_CTX_set_security_level(native, 0);
+    SSL_CTX_set_cipher_list(native, "ALL:@SECLEVEL=0");
+
     LOAD_CHECK(instance().use_certificate_chain_file(certificateChainFile, err));
     LOAD_CHECK(instance().use_private_key_file(privateKeyFile, boost::asio::ssl::context::pem, err));
 

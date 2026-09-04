@@ -295,9 +295,15 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
         loginResult.set_login_ticket("TC-" + ByteArrayToHexStr(ticket.AsByteArray(20).get(), 20));
 
         AddLoginTicket(loginResult.login_ticket(), std::move(accountInfo));
+        loginResult.set_authentication_state(Battlenet::JSON::Login::DONE);
+    }
+    else
+    {
+        loginResult.set_authentication_state(Battlenet::JSON::Login::LOGIN);
+        loginResult.set_error_code("UNABLE_TO_DECODE");
+        loginResult.set_error_message("The username or password you have entered is invalid. Please try again.");
     }
 
-    loginResult.set_authentication_state(Battlenet::JSON::Login::DONE);
     return SendResponse(soapClient, loginResult);
 }
 

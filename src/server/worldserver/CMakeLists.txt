@@ -206,6 +206,7 @@ set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAG
 target_link_libraries(worldserver
   game
   shared
+  proto
   scripts
   collision
   g3dlib
