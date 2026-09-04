@@ -88,8 +88,13 @@ void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
     else if (code == ERROR_OK)
     {
         response.SuccessInfo.emplace();
-        response.SuccessInfo->AccountExpansionLevel = Expansion();
-        response.SuccessInfo->ActiveExpansionLevel = Expansion();
+        // Active = server content level; Account = purchased/unlocked expansion for the client.
+        uint8 worldExpansion = uint8(sWorld->getIntConfig(CONFIG_EXPANSION));
+        uint8 accountExpansion = Expansion();
+        if (accountExpansion < worldExpansion)
+            accountExpansion = worldExpansion;
+        response.SuccessInfo->AccountExpansionLevel = accountExpansion;
+        response.SuccessInfo->ActiveExpansionLevel = worldExpansion;
         response.SuccessInfo->VirtualRealmAddress = GetVirtualRealmAddress();
         response.SuccessInfo->VirtualRealms.emplace_back(GetVirtualRealmAddress(), true, false,
             sWorld->GetRealmName(), sWorld->GetNormalizedRealmName());

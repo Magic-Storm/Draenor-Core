@@ -21,6 +21,19 @@ namespace Battlepay
             Player* l_Player           = p_Session->GetPlayer();
             LocaleConstant l_LocaleIdx = p_Session->GetSessionDbLocaleIndex();
 
+            // Character select has no Player; product filters all dereference it.
+            if (!l_Player)
+            {
+                WorldPacket l_Empty(SMSG_BATTLE_PAY_GET_PRODUCT_LIST_RESPONSE);
+                l_Empty << uint32(ProductListResult::Available);
+                l_Empty << uint32(sBattlepayMgr->GetShopCurrency());
+                l_Empty << uint32(0);
+                l_Empty << uint32(0);
+                l_Empty << uint32(0);
+                p_Session->SendPacket(&l_Empty);
+                return;
+            }
+
             WorldPacket l_Data(SMSG_BATTLE_PAY_GET_PRODUCT_LIST_RESPONSE);
             l_Data << uint32(ProductListResult::Available);                         ///< Result
             l_Data << uint32(sBattlepayMgr->GetShopCurrency());                     ///< CurrencyID

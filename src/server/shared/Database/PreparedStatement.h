@@ -141,7 +141,7 @@ class MySQLPreparedStatement
     private:
         MYSQL_STMT* m_Mstmt;
         uint32 m_paramCount;
-        std::vector<bool> m_paramsSet;
+        std::vector<uint8> m_paramsSet;
         MYSQL_BIND* m_bind;
 };
 

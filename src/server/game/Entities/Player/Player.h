@@ -2557,7 +2557,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetSeasonGames(uint8 slot) const { ASSERT(slot < MAX_PVP_SLOT); return m_SeasonGames[slot]; }
         uint32 GetArenaMatchMakerRating(uint8 slot) const { ASSERT(slot < MAX_PVP_SLOT); return m_ArenaMatchMakerRating[slot]; }
 
-#ifdef CROSS
         void InitArenaPersonalRating(uint8 slot, uint32 value) { ASSERT(slot < MAX_PVP_SLOT); m_ArenaPersonalRating[slot] = value; }
         void InitBestRatingOfWeek(uint8 slot, uint32 value) { ASSERT(slot < MAX_PVP_SLOT); m_BestRatingOfWeek[slot] = value; }
         void InitBestRatingOfSeason(uint8 slot, uint32 value) { ASSERT(slot < MAX_PVP_SLOT); m_BestRatingOfSeason[slot] = value; }
@@ -2568,7 +2567,6 @@ class Player : public Unit, public GridObject<Player>
         void InitSeasonGames(uint8 slot, uint32 value) { ASSERT(slot < MAX_PVP_SLOT); m_SeasonGames[slot] = value; }
         void InitArenaMatchMakerRating(uint8 slot, uint32 value) { ASSERT(slot < MAX_PVP_SLOT); m_ArenaMatchMakerRating[slot] = value; }
 
-#endif /* CROSS */
         uint32 GetMaxRating() const
         {
             uint32 max_value = 0;
@@ -2591,7 +2589,9 @@ class Player : public Unit, public GridObject<Player>
                 TC_LOG_ERROR("server.worldserver", "Suspiciously high personal rating. Rating: %u, Slot: %u, Player: %u", p_Value, p_Slot, GUID_LOPART(GetGUID()));
             }
 
-            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, p_Value, Arena::GetTypeBySlot(p_Slot));
+            // Slots 3+ are RBG/PvP, not arena team types — GetTypeBySlot only knows 0..2.
+            if (p_Slot < MAX_ARENA_SLOT)
+                UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, p_Value, Arena::GetTypeBySlot(p_Slot));
 
             m_ArenaPersonalRating[p_Slot] = p_Value;
             if (m_BestRatingOfWeek[p_Slot] < p_Value)

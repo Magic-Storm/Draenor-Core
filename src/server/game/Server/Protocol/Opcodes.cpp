@@ -1675,10 +1675,12 @@ void InitOpcodes()
     /// Battle pay
     //////////////////////////////////////////////////////////////////////////
 #ifndef CROSS
-    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_GET_PURCHASE_LIST,                    STATUS_LOGGEDIN,   PROCESS_INPLACE,         &WorldSession::HandleBattlepayGetPurchaseList    , PROCESS_DISTANT_IF_NEED);
-    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_GET_PRODUCT_LIST_QUERY,               STATUS_LOGGEDIN,   PROCESS_THREADUNSAFE,    &WorldSession::HandleBattlepayGetProductListQuery, PROCESS_DISTANT_IF_NEED);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_GET_PURCHASE_LIST,                    STATUS_AUTHED,     PROCESS_INPLACE,         &WorldSession::HandleBattlepayGetPurchaseList    , PROCESS_DISTANT_IF_NEED);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_GET_PRODUCT_LIST_QUERY,               STATUS_AUTHED,     PROCESS_THREADUNSAFE,    &WorldSession::HandleBattlepayGetProductListQuery, PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_START_PURCHASE,                       STATUS_LOGGEDIN,   PROCESS_INPLACE,         &WorldSession::HandleBattlePayStartPurchase      , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_CONFIRM_PURCHASE_RESPONSE,            STATUS_LOGGEDIN,   PROCESS_INPLACE,         &WorldSession::HandleBattlePayConfirmPurchase    , PROCESS_DISTANT_IF_NEED);
+    DEFINE_OPCODE_HANDLER(CMSG_BATTLE_PAY_START_VAS_PURCHASE,                   STATUS_AUTHED,     PROCESS_INPLACE,         &WorldSession::Handle_NULL                       , PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_UPDATE_VAS_PURCHASE_STATES,                      STATUS_AUTHED,     PROCESS_INPLACE,         &WorldSession::Handle_NULL                       , PROCESS_LOCAL);
 #endif
 
     //////////////////////////////////////////////////////////////////////////

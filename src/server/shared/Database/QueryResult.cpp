@@ -35,11 +35,9 @@ m_length(NULL)
     if (!m_metadataResult)
         return;
 
-    if (m_stmt->bind_result_done)
-    {
-        delete[] m_stmt->bind->length;
-        delete[] m_stmt->bind->is_null;
-    }
+    // Do NOT delete[] m_stmt->bind->length / is_null: MySQL 8 / libmysql owns those
+    // after mysql_stmt_bind_result. delete[] corrupts the heap and later crashes
+    // inside mysql_stmt_execute / list iteration (ACCESS_VIOLATION).
 
     m_rBind = new MYSQL_BIND[m_fieldCount];
     m_isNull = new bool[m_fieldCount];

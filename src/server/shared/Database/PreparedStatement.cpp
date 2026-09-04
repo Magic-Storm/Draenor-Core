@@ -9,6 +9,7 @@
 #include "PreparedStatement.h"
 #include "MySQLConnection.h"
 #include "Log.h"
+#include <cstring>
 
 PreparedStatement::PreparedStatement(uint32 index) :
 m_stmt(NULL),
@@ -31,6 +32,11 @@ PreparedStatement::~PreparedStatement()
 void PreparedStatement::BindParameters()
 {
     ASSERT (m_stmt);
+
+    // Always reset MySQL-level binds before applying this statement's data.
+    // Prevents "already bound index" when a prior Execute skipped ClearParameters
+    // (e.g. crash/reconnect) or MySQL rewrote bind pointers.
+    m_stmt->ClearParameters();
 
     uint8 i = 0;
     for (; i < statement_data.size(); i++)
@@ -71,10 +77,9 @@ void PreparedStatement::BindParameters()
                 m_stmt->setDouble(i, statement_data[i].data.d);
                 break;
             case TYPE_STRING:
-                if (!statement_data[i].data.str.ptr)
-                    ASSERT(statement_data[i].data.str.ptr != NULL);
+                ASSERT(statement_data[i].data.str.ptr != NULL);
+                // Copy into MYSQL_BIND; keep statement_data for retries / getQueryString.
                 m_stmt->setString(i, statement_data[i].data.str.ptr, statement_data[i].data.str.len);
-                statement_data[i].data.str.ptr = NULL;
                 break;
             case TYPE_NULL:
                 m_stmt->setNull(i);
@@ -195,9 +200,10 @@ void PreparedStatement::setString(const uint8 index, const std::string& value)
     size_t len = value.size();
     const char* src = value.c_str();
 
-    char* data = new char[len];
+    char* data = new char[len + 1];
     for (size_t i = 0; i < len; ++i)
         data[i] = src[i];
+    data[len] = '\0';
 
     statement_data[index].data.str.ptr = data;
     statement_data[index].data.str.len = len;
@@ -223,9 +229,10 @@ void PreparedStatement::setString(const uint8 index, const char* value)
     ASSERT(value != NULL);
     size_t len = strlen(value);
 
-    char* data = new char[len];
+    char* data = new char[len + 1];
     for (size_t i = 0; i < len; ++i)
         data[i] = value[i];
+    data[len] = '\0';
 
     statement_data[index].data.str.ptr = data;
     statement_data[index].data.str.len = len;
@@ -239,9 +246,10 @@ void PreparedStatement::setString(const uint8 index, const char* value, uint32 l
 
     ASSERT(value != NULL);
 
-    char* data = new char[len];
+    char* data = new char[len + 1];
     for (size_t i = 0; i < len; ++i)
         data[i] = value[i];
+    data[len] = '\0';
 
     statement_data[index].data.str.ptr = data;
     statement_data[index].data.str.len = len;
@@ -267,23 +275,19 @@ m_bind(NULL)
 MySQLPreparedStatement::~MySQLPreparedStatement()
 {
     ClearParameters();
-    if (m_Mstmt->bind_result_done)
-    {
-        delete[] m_Mstmt->bind->length;
-        delete[] m_Mstmt->bind->is_null;
-    }
+    // Do NOT delete[] m_Mstmt->bind->length / is_null — owned by libmysql (MySQL 8).
     mysql_stmt_close(m_Mstmt);
     delete[] m_bind;
 }
 
 void MySQLPreparedStatement::ClearParameters()
 {
-    for (uint32 i=0; i < m_paramCount; ++i)
+    for (uint32 i = 0; i < m_paramCount; ++i)
     {
-        delete[] (char*) m_bind[i].buffer;
-        m_bind[i].buffer = NULL;
-        m_paramsSet[i] = false;
+        delete[] static_cast<char*>(m_bind[i].buffer);
+        memset(&m_bind[i], 0, sizeof(MYSQL_BIND));
     }
+    m_paramsSet.assign(m_paramCount, 0);
 }
 
 //- Bind on mysql level
@@ -291,15 +295,15 @@ bool MySQLPreparedStatement::CheckValidIndex(uint8 index)
 {
     if (index >= m_paramCount)
     {
-        TC_LOG_ERROR("sql.sql", "Invalid index %u for prepared statement %u", index, m_stmt->m_index);
+        TC_LOG_ERROR("sql.sql", "Invalid index %u for prepared statement %u (paramCount %u)",
+            index, m_stmt ? m_stmt->m_index : 0, m_paramCount);
         ABORT();
     }
 
     if (m_paramsSet[index])
-    {
-        TC_LOG_WARN("sql.sql", "[WARNING] Prepared Statement (id: %u) trying to bind value on already bound index (%u).", m_stmt->m_index, index);
-        ABORT();
-    }
+        TC_LOG_ERROR("sql.sql", "[ERROR] Prepared Statement (id: %u) trying to bind value on already bound index (%u).",
+            m_stmt ? m_stmt->m_index : 0, index);
+
     return true;
 }
 
@@ -400,14 +404,21 @@ void MySQLPreparedStatement::setString(const uint8 index, char* value, uint32 le
     CheckValidIndex(index);
     m_paramsSet[index] = true;
     MYSQL_BIND* param = &m_bind[index];
-    
+
     ASSERT(value != NULL);
 
+    // Copy buffer + use length_value so ClearParameters never delete[]s a length ptr.
+    // Required for MySQL 8: buffers are not NUL-terminated; length must be non-null.
     param->buffer_type = MYSQL_TYPE_VAR_STRING;
-    delete [] static_cast<char *>(param->buffer);
-    param->buffer = value;
+    delete[] static_cast<char*>(param->buffer);
+    param->buffer = new char[len + 1];
+    if (len)
+        memcpy(param->buffer, value, len);
+    static_cast<char*>(param->buffer)[len] = '\0';
     param->buffer_length = len;
+    param->is_null = nullptr;
     param->is_null_value = 0;
+    param->length = &param->length_value;
     param->length_value = len;
 }
 
@@ -418,21 +429,21 @@ void MySQLPreparedStatement::setNull(const uint8 index)
     MYSQL_BIND* param = &m_bind[index];
 
     param->buffer_type = MYSQL_TYPE_NULL;
-    delete [] static_cast<char *>(param->buffer);
-    param->buffer = NULL;
+    delete[] static_cast<char*>(param->buffer);
+    param->buffer = nullptr;
     param->buffer_length = 0;
     param->is_null_value = 1;
-    param->length_value = 0;
+    param->length = nullptr;
 }
 
 void MySQLPreparedStatement::setValue(MYSQL_BIND* param, enum_field_types type, const void* value, uint32 len, bool isUnsigned)
 {
     param->buffer_type = type;
-    delete [] static_cast<char *>(param->buffer);
+    delete[] static_cast<char*>(param->buffer);
     param->buffer = new char[len];
     param->buffer_length = 0;
     param->is_null_value = 0;
-    param->length_value = 0;               // Only != NULL for strings
+    param->length = nullptr; // Only != NULL for strings
     param->is_unsigned = isUnsigned;
 
     memcpy(param->buffer, value, len);

@@ -120,3 +120,14 @@ uint32 Battlenet::GameUtilitiesService::HandleGetAllValuesForAttribute(game_util
 
     return ERROR_RPC_NOT_IMPLEMENTED;
 }
+
+Battlenet::ResourcesService::ResourcesService(WorldSession* session) : BaseService(session)
+{
+}
+
+uint32 Battlenet::ResourcesService::HandleGetContentHandle(::bgs::protocol::resources::v1::ContentHandleRequest const* request, ::bgs::protocol::ContentHandle* /*response*/)
+{
+    TC_LOG_DEBUG("session.rpc", "%s ResourcesService.GetContentHandle program %u stream %u version %u (no CDN, ignored)",
+        GetCallerInfo().c_str(), request->program(), request->stream(), request->version());
+    return ERROR_RPC_NOT_IMPLEMENTED;
+}

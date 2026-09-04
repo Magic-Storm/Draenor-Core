@@ -1193,8 +1193,8 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
 
     for (uint8 i = 0; i < MAX_PVP_SLOT; ++i)
     {
-        SetArenaPersonalRating(i, sWorld->getIntConfig(CONFIG_ARENA_START_PERSONAL_RATING));
-        SetArenaMatchMakerRating(i, sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING));
+        InitArenaPersonalRating(i, sWorld->getIntConfig(CONFIG_ARENA_START_PERSONAL_RATING));
+        InitArenaMatchMakerRating(i, sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING));
     }
 
     //Reputations if "StartAllReputation" is enabled, -- TODO: Fix this in a better way
@@ -4587,8 +4587,8 @@ void Player::GiveLevel(uint8 level)
     /// Reset MMR values
     for (uint8 l_I = 0; l_I < ArenaSlots::MAX_PVP_SLOT; ++l_I)
     {
-        SetArenaPersonalRating(l_I, sWorld->getIntConfig(WorldIntConfigs::CONFIG_ARENA_START_PERSONAL_RATING));
-        SetArenaMatchMakerRating(l_I, sWorld->getIntConfig(WorldIntConfigs::CONFIG_ARENA_START_MATCHMAKER_RATING));
+        InitArenaPersonalRating(l_I, sWorld->getIntConfig(WorldIntConfigs::CONFIG_ARENA_START_PERSONAL_RATING));
+        InitArenaMatchMakerRating(l_I, sWorld->getIntConfig(WorldIntConfigs::CONFIG_ARENA_START_MATCHMAKER_RATING));
     }
 
     PlayerLevelInfo info;
@@ -24393,7 +24393,45 @@ void Player::SaveToDB(bool create /*=false*/, MS::Utilities::CallBackPtr p_Callb
     SQLTransaction trans = RealmDatabase.BeginTransaction();
     SQLTransaction accountTrans = LoginDatabase.BeginTransaction();
 
-    trans->Append(stmt);
+    // Create: insert characters row first (CONNECTION_BOTH + autocommit). Do not Append it
+    // into `trans` — later _Save* used to wipe the list via a bug in _SaveQuestStatus.
+    if (create && p_Callback)
+    {
+        bool charOk = RealmDatabase.DirectExecuteEx(stmt);
+        delete stmt;
+        stmt = nullptr;
+
+        if (charOk)
+        {
+            QueryResult verify = RealmDatabase.PQuery(
+                "SELECT 1 FROM characters WHERE guid = %u LIMIT 1", GetRealGUIDLow());
+            if (!verify)
+            {
+                charOk = false;
+                TC_LOG_ERROR("server.worldserver",
+                    "Create: CHAR_INS_CHARACTER OK but row missing guid %u (%s)",
+                    GetRealGUIDLow(), GetName());
+            }
+            else
+                TC_LOG_ERROR("server.worldserver",
+                    "Create: characters row OK guid %u (%s)", GetRealGUIDLow(), GetName());
+        }
+        else
+            TC_LOG_ERROR("server.worldserver",
+                "Create: CHAR_INS_CHARACTER FAILED guid %u (%s)",
+                GetRealGUIDLow(), GetName());
+
+        if (!charOk)
+        {
+            trans->Cleanup();
+            accountTrans->Cleanup();
+            p_Callback->m_State = MS::Utilities::CallBackState::Fail;
+            sWorld->AddTransactionCallback(p_Callback);
+            return;
+        }
+    }
+    else
+        trans->Append(stmt);
 
 #ifndef CROSS
     if (m_Garrison)
@@ -24447,8 +24485,21 @@ void Player::SaveToDB(bool create /*=false*/, MS::Utilities::CallBackPtr p_Callb
         l_Pet->Save(accountTrans);
     }
 
-    CommitTransaction(RealmDatabase, trans, p_Callback);
-    LoginDatabase.CommitTransaction(accountTrans);
+    if (create && p_Callback)
+    {
+        if (!trans->m_queries.empty())
+            CommitTransaction(RealmDatabase, trans, nullptr);
+        else
+            trans->Cleanup();
+        LoginDatabase.CommitTransaction(accountTrans);
+        p_Callback->m_State = MS::Utilities::CallBackState::Success;
+        sWorld->AddTransactionCallback(p_Callback);
+    }
+    else
+    {
+        CommitTransaction(RealmDatabase, trans, p_Callback);
+        LoginDatabase.CommitTransaction(accountTrans);
+    }
 
     // we save the data here to prevent spamming
     sAnticheatMgr->SavePlayerData(this);
@@ -24818,8 +24869,11 @@ void Player::_SaveMail(SQLTransaction& trans)
 
 void Player::_SaveQuestStatus(SQLTransaction& trans)
 {
-    bool isTransaction = !trans;
-    if (!isTransaction)
+    // Own a transaction only when the caller did not pass one.
+    // (Previously inverted: a live `trans` was replaced with BeginTransaction(),
+    // wiping CHAR_INS_CHARACTER and racing CommitTransaction mid-SaveToDB.)
+    bool ownsTransaction = !trans;
+    if (ownsTransaction)
         trans = RealmDatabase.BeginTransaction();
 
     QuestStatusSaveMap::iterator saveItr;
@@ -24884,8 +24938,8 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
 
     m_RewardedQuestsSave.clear();
 
-    if (!isTransaction)
-        CharacterDatabase.CommitTransaction(trans);
+    if (ownsTransaction)
+        RealmDatabase.CommitTransaction(trans);
 }
 
 void Player::_SaveQuestObjectiveStatus(SQLTransaction& trans)
@@ -33193,6 +33247,7 @@ void Player::_LoadCUFProfiles(PreparedQueryResult p_Result)
         l_Profile->AutoActivate40Players              = l_Fields[l_Index++].GetBool();
         l_Profile->AutoActivateSpec1                  = l_Fields[l_Index++].GetBool();
         l_Profile->AutoActivateSpec2                  = l_Fields[l_Index++].GetBool();
+        l_Profile->AutoActivatePvP                    = l_Fields[l_Index++].GetBool();
         l_Profile->AutoActivatePvE                    = l_Fields[l_Index++].GetBool();
 
         m_CUFProfiles.emplace_back(l_Profile);
@@ -33252,6 +33307,7 @@ void Player::_SaveCUFProfiles(SQLTransaction& p_Trans)
         l_Stmt->setBool(l_Index++, l_Profile->AutoActivate40Players);
         l_Stmt->setBool(l_Index++, l_Profile->AutoActivateSpec1);
         l_Stmt->setBool(l_Index++, l_Profile->AutoActivateSpec2);
+        l_Stmt->setBool(l_Index++, l_Profile->AutoActivatePvP);
         l_Stmt->setBool(l_Index++, l_Profile->AutoActivatePvE);
 
         p_Trans->Append(l_Stmt);

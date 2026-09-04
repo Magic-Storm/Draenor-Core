@@ -196,9 +196,18 @@ public:
     //! Statement must be prepared with the CONNECTION_SYNCH flag.
     void DirectExecute(PreparedStatement* stmt)
     {
+        DirectExecuteEx(stmt);
+    }
+
+    //! Same as DirectExecute, but returns whether mysql_stmt_execute succeeded.
+    //! Clears any leftover explicit transaction and restores autocommit first.
+    bool DirectExecuteEx(PreparedStatement* stmt)
+    {
         T* t = GetFreeConnection();
-        t->Execute(stmt);
+        t->RollbackTransaction();
+        bool ok = t->Execute(stmt);
         t->Unlock();
+        return ok;
     }
 
     /**
@@ -364,33 +373,34 @@ public:
         Enqueue(new TransactionTask(transaction, callback));
     }
 
-    //! Directly executes a collection of one-way SQL operations (can be both adhoc and prepared). The order in which these operations
-    //! were appended to the transaction will be respected during execution.
-    void DirectCommitTransaction(SQLTransaction& transaction)
+    //! Synchronously commit a transaction. Returns false if ExecuteTransaction failed (after deadlock retries).
+    bool DirectCommitTransactionEx(SQLTransaction& transaction)
     {
         MySQLConnection* con = GetFreeConnection();
-        if (con->ExecuteTransaction(transaction))
-        {
-            con->Unlock();      // OK, operation succesful
-            return;
-        }
-
-        //! Handle MySQL Errno 1213 without extending deadlock to the core itself
-        //! TODO: More elegant way
-        if (con->GetLastError() == 1213)
+        bool ok = con->ExecuteTransaction(transaction);
+        if (!ok && con->GetLastError() == 1213)
         {
             uint8 loopBreaker = 5;
             for (uint8 i = 0; i < loopBreaker; ++i)
             {
-                if (con->ExecuteTransaction(transaction))
+                ok = con->ExecuteTransaction(transaction);
+                if (ok)
                     break;
             }
         }
 
-        //! Clean up now.
+        // Always clean up: statements are one-shot after execute (success or fail).
         transaction->Cleanup();
 
         con->Unlock();
+        return ok;
+    }
+
+    //! Directly executes a collection of one-way SQL operations (can be both adhoc and prepared). The order in which these operations
+    //! were appended to the transaction will be respected during execution.
+    void DirectCommitTransaction(SQLTransaction& transaction)
+    {
+        DirectCommitTransactionEx(transaction);
     }
 
     //! Method used to execute prepared statements in a diverse context.

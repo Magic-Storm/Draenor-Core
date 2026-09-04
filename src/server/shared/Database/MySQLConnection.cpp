@@ -188,10 +188,16 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
     uint32 index = stmt->m_index;
     {
         MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
-        ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
+        if (!m_mStmt)            // NULL if statement was prepared only for the other connection type
+        {
+            TC_LOG_ERROR("sql.sql", "Prepared statement %u not available on this connection (async vs sync mismatch).", index);
+            TC_LOG_ERROR("server.worldserver", "Prepared statement %u not available on this connection (async vs sync mismatch).", index);
+            return false;
+        }
         m_mStmt->m_stmt = stmt;     // Cross reference them for debug output
         stmt->m_stmt = m_mStmt;     // TODO: Cleaner way
 
+        m_mStmt->ClearParameters();
         stmt->BindParameters();
 
         MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
@@ -205,10 +211,10 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
             TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
             TC_LOG_ERROR("server.worldserver", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
 
+            m_mStmt->ClearParameters();
             if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
                 return Execute(stmt);       // Try again
 
-            m_mStmt->ClearParameters();
             return false;
         }
 
@@ -218,10 +224,10 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
             TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
             TC_LOG_ERROR("server.worldserver", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
 
+            m_mStmt->ClearParameters();
             if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
                 return Execute(stmt);       // Try again
 
-            m_mStmt->ClearParameters();
             return false;
         }
 
@@ -240,10 +246,15 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
     uint32 index = stmt->m_index;
     {
         MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
-        ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
+        if (!m_mStmt)
+        {
+            TC_LOG_ERROR("sql.sql", "Prepared statement %u not available on this connection (async vs sync mismatch).", index);
+            return false;
+        }
         m_mStmt->m_stmt = stmt;     // Cross reference them for debug output
         stmt->m_stmt = m_mStmt;     // TODO: Cleaner way
 
+        m_mStmt->ClearParameters();
         stmt->BindParameters();
 
         MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
@@ -257,10 +268,10 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
             TC_LOG_ERROR("sql.sql", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
             TC_LOG_ERROR("server.worldserver", "SQL(p): %s\n [ERROR]: [%u] %s", m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
 
+            m_mStmt->ClearParameters();
             if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
                 return _Query(stmt, pResult, pRowCount, pFieldCount);       // Try again
 
-            m_mStmt->ClearParameters();
             return false;
         }
 
@@ -272,10 +283,10 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
             TC_LOG_ERROR("server.worldserver", "SQL(p): %s\n [ERROR]: [%u] %s",
                 m_mStmt->getQueryString(m_queries[index].first).c_str(), lErrno, mysql_stmt_error(msql_STMT));
 
+            m_mStmt->ClearParameters();
             if (_HandleMySQLErrno(lErrno))  // If it returns true, an error was handled successfully (i.e. reconnection)
                 return _Query(stmt, pResult, pRowCount, pFieldCount);      // Try again
 
-            m_mStmt->ClearParameters();
             return false;
         }
 
@@ -352,40 +363,59 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
 
 void MySQLConnection::BeginTransaction()
 {
-    Execute("START TRANSACTION");
+    if (mysql_autocommit(m_Mysql, 0))
+        TC_LOG_ERROR("sql.sql", "BeginTransaction: mysql_autocommit(0) failed: %s", mysql_error(m_Mysql));
+    if (!Execute("START TRANSACTION"))
+        TC_LOG_ERROR("sql.sql", "BeginTransaction: START TRANSACTION failed: %s", mysql_error(m_Mysql));
 }
 
 void MySQLConnection::RollbackTransaction()
 {
     Execute("ROLLBACK");
+    mysql_autocommit(m_Mysql, 1);
 }
 
 void MySQLConnection::CommitTransaction()
 {
-    Execute("COMMIT");
+    if (!Execute("COMMIT"))
+        TC_LOG_ERROR("sql.sql", "CommitTransaction: COMMIT failed: %s", mysql_error(m_Mysql));
+    mysql_autocommit(m_Mysql, 1);
 }
 
 bool MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
 {
+    if (!transaction)
+    {
+        TC_LOG_ERROR("sql.sql", "ExecuteTransaction: null transaction");
+        return false;
+    }
+
     std::list<SQLElementData> const& queries = transaction->m_queries;
     if (queries.empty())
         return false;
 
     BeginTransaction();
 
-    std::list<SQLElementData>::const_iterator itr;
-    for (itr = queries.begin(); itr != queries.end(); ++itr)
+    for (SQLElementData const& data : queries)
     {
-        SQLElementData const& data = *itr;
-        switch (itr->type)
+        switch (data.type)
         {
             case SQL_ELEMENT_PREPARED:
             {
                 PreparedStatement* stmt = data.element.stmt;
-                ASSERT(stmt);
+                if (!stmt)
+                {
+                    TC_LOG_ERROR("sql.sql", "ExecuteTransaction: null prepared statement (%u queries in tx).",
+                        (uint32)queries.size());
+                    RollbackTransaction();
+                    return false;
+                }
                 if (!Execute(stmt))
                 {
-                    TC_LOG_WARN("sql.sql", "Transaction aborted. %u queries not executed.", (uint32)queries.size());
+                    TC_LOG_WARN("sql.sql", "Transaction aborted at prepared statement %u. %u queries not executed.",
+                        stmt->m_index, (uint32)queries.size());
+                    TC_LOG_ERROR("server.worldserver", "Transaction aborted at prepared statement %u (%u queries in tx).",
+                        stmt->m_index, (uint32)queries.size());
                     RollbackTransaction();
                     return false;
                 }
@@ -394,7 +424,13 @@ bool MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
             case SQL_ELEMENT_RAW:
             {
                 const char* sql = data.element.query;
-                ASSERT(sql);
+                if (!sql)
+                {
+                    TC_LOG_ERROR("sql.sql", "ExecuteTransaction: null raw query (%u queries in tx).",
+                        (uint32)queries.size());
+                    RollbackTransaction();
+                    return false;
+                }
                 if (!Execute(sql))
                 {
                     TC_LOG_WARN("sql.sql", "Transaction aborted. %u queries not executed.", (uint32)queries.size());
@@ -403,6 +439,11 @@ bool MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
                 }
             }
             break;
+            default:
+                TC_LOG_ERROR("sql.sql", "ExecuteTransaction: corrupt SQLElementData type %u (%u queries in tx).",
+                    (uint32)data.type, (uint32)queries.size());
+                RollbackTransaction();
+                return false;
         }
     }
 

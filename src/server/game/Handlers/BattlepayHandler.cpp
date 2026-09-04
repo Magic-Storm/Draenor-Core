@@ -22,12 +22,10 @@ void WorldSession::HandleBattlepayGetPurchaseList(WorldPacket& /*p_RecvData*/)
 
 void WorldSession::HandleBattlepayGetProductListQuery(WorldPacket& /*p_RecvData*/)
 {
-    if (!sBattlepayMgr->IsAvailable(this))
-        return;
-
     Battlepay::PacketFactory::SendDistributionList(this);
     Battlepay::PacketFactory::SendProductList(this);
-    Battlepay::PacketFactory::SendPointsBalance(this);
+    if (GetPlayer())
+        Battlepay::PacketFactory::SendPointsBalance(this);
 }
 
 void WorldSession::HandleBattlePayStartPurchase(WorldPacket& p_RecvData)

@@ -20,6 +20,7 @@
 
 #include "WorldSession.h"
 #include "game_utilities_service.pb.h"
+#include "resource_service.pb.h"
 #include <unordered_map>
 
 namespace pb = google::protobuf;
@@ -77,6 +78,16 @@ namespace Battlenet
     private:
         uint32 HandleRealmListRequest(std::unordered_map<std::string, Variant const*> const& params, game_utilities::v1::ClientResponse* response);
         uint32 HandleRealmJoinRequest(std::unordered_map<std::string, Variant const*> const& params, game_utilities::v1::ClientResponse* response);
+    };
+
+    class ResourcesService : public WorldserverService<resources::v1::ResourcesService>
+    {
+        typedef WorldserverService<resources::v1::ResourcesService> BaseService;
+
+    public:
+        ResourcesService(WorldSession* session);
+
+        uint32 HandleGetContentHandle(::bgs::protocol::resources::v1::ContentHandleRequest const* request, ::bgs::protocol::ContentHandle* response) override;
     };
 }
 

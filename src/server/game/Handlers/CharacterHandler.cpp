@@ -776,6 +776,11 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
             newChar.SaveToDB(true, std::make_shared<MS::Utilities::Callback>([l_AccountID](bool p_Success) -> void
             {
+                if (!p_Success)
+                    TC_LOG_ERROR("character", "Account %u: character create SaveToDB transaction FAILED", l_AccountID);
+                else
+                    TC_LOG_INFO("character", "Account %u: character create SaveToDB transaction OK", l_AccountID);
+
                 WorldSession* l_Session = sWorld->FindSession(l_AccountID);
                 if (l_Session == nullptr)
                     return;

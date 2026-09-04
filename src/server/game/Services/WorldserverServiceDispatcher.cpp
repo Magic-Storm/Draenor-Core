@@ -31,7 +31,7 @@ Battlenet::WorldserverServiceDispatcher::WorldserverServiceDispatcher()
     AddService<GameUtilitiesService>();
     AddService<WorldserverService<presence::v1::PresenceService>>();
     AddService<WorldserverService<report::v1::ReportService>>();
-    AddService<WorldserverService<resources::v1::ResourcesService>>();
+    AddService<ResourcesService>();
     AddService<WorldserverService<user_manager::v1::UserManagerService>>();
 }
 
