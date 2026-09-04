@@ -46,9 +46,11 @@
 #include "PetBattle.h"
 #include "Chat.h"
 #include "AuthenticationPackets.h"
+#include "BattlenetPackets.h"
 #include "CharacterPackets.h"
 #include "Realm.h"
 #include "BattlenetRpcErrorCodes.h"
+#include "SystemPackets.h"
 
 bool MapSessionFilter::Process(WorldPacket* packet)
 {
@@ -1511,6 +1513,18 @@ void WorldSession::SendFeatureSystemStatus()
     }
 
     SendPacket(&l_Data);
+}
+
+void WorldSession::SendFeatureSystemStatusGlueScreen()
+{
+    WorldPackets::System::FeatureSystemStatusGlueScreen features;
+    features.BpayStoreAvailable = false;
+    features.BpayStoreDisabledByParentalControls = false;
+    features.CharUndeleteEnabled = false;
+    features.BpayStoreEnabled = false;
+    features.CommerceSystemEnabled = false;
+    features.WillKickFromWorld = false;
+    SendPacket(features.Write());
 }
 
 void WorldSession::SendTimeZoneInformations()

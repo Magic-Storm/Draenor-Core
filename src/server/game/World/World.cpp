@@ -50,6 +50,7 @@
 #include "WorldSocket.h"
 #include "Realm.h"
 #include "BattlenetRpcErrorCodes.h"
+#include "BattlenetPackets.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
 #include "ObjectMgr.h"
@@ -348,9 +349,16 @@ void World::AddSession_(WorldSession* s)
     s->SendAuthResponse(ERROR_OK, false);
     s->SendTimeZoneInformations();
     s->SendAddonsInfo();
+    s->SendFeatureSystemStatusGlueScreen();
     s->SendFeatureSystemStatus();
     s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
     s->SendTutorialsData();
+
+    {
+        WorldPackets::Battlenet::SetSessionState bnetConnected;
+        bnetConnected.State = 1;
+        s->SendPacket(bnetConnected.Write());
+    }
 
     UpdateMaxSessionCounters();
 
@@ -445,6 +453,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         pop_sess->SendAuthWaitQue(0);
         pop_sess->SendTimeZoneInformations();
         pop_sess->SendAddonsInfo();
+        pop_sess->SendFeatureSystemStatusGlueScreen();
         pop_sess->SendFeatureSystemStatus();
 
         pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));

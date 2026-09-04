@@ -472,6 +472,7 @@ class WorldSession
         void ReadAddonsInfo(ByteBuffer& data);
         void SendAddonsInfo();
         void SendFeatureSystemStatus();
+        void SendFeatureSystemStatusGlueScreen();
         void SendTimeZoneInformations();
         bool IsAddonRegistered(const std::string& prefix) const;
 

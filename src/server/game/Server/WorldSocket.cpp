@@ -32,6 +32,7 @@
 
 #include <zlib.h>
 #include <memory>
+#include <cstdarg>
 
 #pragma pack(push, 1)
 
@@ -57,9 +58,25 @@ private:
 
 using boost::asio::ip::tcp;
 
+namespace
+{
+    void AuthDbg(char const* fmt, ...)
+    {
+        FILE* f = fopen("auth_session.log", "a");
+        if (!f)
+            return;
+        va_list ap;
+        va_start(ap, fmt);
+        vfprintf(f, fmt, ap);
+        va_end(ap);
+        fputc('\n', f);
+        fclose(f);
+    }
+}
+
 uint32 const WorldSocket::ConnectionInitializeMagic = 0xF5EB1CE;
 std::string const WorldSocket::ServerConnectionInitialize("WORLD OF WARCRAFT CONNECTION - SERVER TO CLIENT");
-std::string const WorldSocket::ClientConnectionInitialize("WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER", 48);
+std::string const WorldSocket::ClientConnectionInitialize("WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER");
 uint32 const WorldSocket::MinSizeForCompression = 0x400;
 
 uint32 const SizeOfClientHeader[2] = { sizeof(uint16) + sizeof(uint16), sizeof(uint32) + sizeof(uint16) };
@@ -121,7 +138,7 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
         }
     }
 
-    _packetBuffer.Resize(4 + 2 + ClientConnectionInitialize.length());
+    _packetBuffer.Resize(4 + 2 + ClientConnectionInitialize.length() + 1);
 
     AsyncReadWithCallback(&WorldSocket::InitializeHandler);
 
@@ -171,20 +188,25 @@ void WorldSocket::InitializeHandler(boost::system::error_code error, std::size_t
             buffer >> magic;
             if (magic != ConnectionInitializeMagic)
             {
+                AuthDbg("init: bad magic %08X from %s", magic, GetRemoteIpAddress().to_string().c_str());
                 CloseSocket();
                 return;
             }
 
             buffer >> length;
-            if (length > ClientConnectionInitialize.length())
+            if (length > ClientConnectionInitialize.length() + 1)
             {
+                AuthDbg("init: bad length %u from %s", length, GetRemoteIpAddress().to_string().c_str());
                 CloseSocket();
                 return;
             }
 
             std::string initializer = buffer.ReadString(length);
+            while (!initializer.empty() && initializer.back() == '\0')
+                initializer.pop_back();
             if (initializer != ClientConnectionInitialize)
             {
+                AuthDbg("init: bad string '%s' (len=%u) from %s", initializer.c_str(), length, GetRemoteIpAddress().to_string().c_str());
                 CloseSocket();
                 return;
             }
@@ -435,6 +457,11 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
                 return ReadDataHandlerResult::Error;
             }
             HandleAuthSession(authSession);
+            AuthDbg("CMSG_AUTH_SESSION from %s build=%u realm=%u region=%u bg=%u ticket='%s' ticketSize=%u digest=%u addon=%u",
+                GetRemoteIpAddress().to_string().c_str(),
+                authSession->Build, authSession->RealmID, authSession->RegionID, authSession->BattlegroupID,
+                authSession->RealmJoinTicket.c_str(), uint32(authSession->RealmJoinTicket.size()),
+                uint32(authSession->Digest.size()), uint32(authSession->AddonInfo.size()));
             return ReadDataHandlerResult::WaitingForQuery;
         }
         case CMSG_AUTH_CONTINUED_SESSION:
@@ -707,6 +734,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<WorldPackets::Auth::
     if (!result)
     {
         // We can not log here, as we do not know the account. Thus, no accountId.
+        AuthDbg("auth: unknown account ticket='%s' from %s", authSession->RealmJoinTicket.c_str(), GetRemoteIpAddress().to_string().c_str());
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Sent Auth Response (unknown account).");
         DelayedCloseSocket();
         return;
@@ -726,6 +754,8 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<WorldPackets::Auth::
     // Check that Key and account name are the same on client and server
     if (memcmp(hmac.GetDigest(), authSession->Digest.data(), authSession->Digest.size()) != 0)
     {
+        AuthDbg("auth: HMAC failed account %u ticket='%s' sessionKeyBytes=%d from %s",
+            account.Game.Id, authSession->RealmJoinTicket.c_str(), account.Game.SessionKey.GetNumBytes(), address.c_str());
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Authentication failed for account: %u ('%s') address: %s", account.Game.Id, authSession->RealmJoinTicket.c_str(), address.c_str());
         DelayedCloseSocket();
         return;
@@ -767,9 +797,11 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<WorldPackets::Auth::
         return;
     }
 
-    if (authSession->RealmID != realm.Id.Realm)
+    if (authSession->RealmID != realm.Id.Realm && authSession->RealmID != realm.Id.GetAddress())
     {
         SendAuthResponseError(ERROR_DENIED);
+        AuthDbg("auth: realm mismatch client=%u config=%u address=%u from %s",
+            authSession->RealmID, realm.Id.Realm, realm.Id.GetAddress(), GetRemoteIpAddress().to_string().c_str());
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Client %s requested connecting with realm id %u but this realm has id %u set in config.",
             GetRemoteIpAddress().to_string().c_str(), authSession->RealmID, realm.Id.Realm);
         DelayedCloseSocket();
@@ -845,6 +877,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<WorldPackets::Auth::
         return;
     }
 
+    AuthDbg("auth: OK account %u ticket='%s' from %s", account.Game.Id, authSession->RealmJoinTicket.c_str(), address.c_str());
     TC_LOG_DEBUG("network", "WorldSocket::HandleAuthSession: Client '%s' authenticated successfully from %s.", authSession->RealmJoinTicket.c_str(), address.c_str());
 
     // Update the last_ip in the database as it was successful for login
