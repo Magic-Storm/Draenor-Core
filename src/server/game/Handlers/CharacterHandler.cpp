@@ -758,7 +758,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 newChar.CleanupsBeforeDelete();
 
                 WorldPacket data(SMSG_CREATE_CHAR, 1);
-                data << uint8(CHAR_CREATE_ERROR);
+                data << uint8(CHAR_CREATE_FAILED);
                 SendPacket(&data);
                 delete createInfo;
                 _charCreateCallback.Reset();
@@ -770,25 +770,31 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
             newChar.SetAtLoginFlag(AT_LOGIN_FIRST);               // First login
 
-
-            // Player created, save it now
+            // Player created, save it now (create path inserts sync then fires callback).
+            // TCWoD: SaveToDB(true) then SendCharCreate(SUCCESS) on the same thread.
             uint32 l_AccountID = GetAccountId();
-
-            newChar.SaveToDB(true, std::make_shared<MS::Utilities::Callback>([l_AccountID](bool p_Success) -> void
+            bool l_CreateOk = false;
+            newChar.SaveToDB(true, std::make_shared<MS::Utilities::Callback>([&l_CreateOk, l_AccountID](bool p_Success) -> void
             {
-                if (!p_Success)
-                    TC_LOG_ERROR("character", "Account %u: character create SaveToDB transaction FAILED", l_AccountID);
-                else
-                    TC_LOG_INFO("character", "Account %u: character create SaveToDB transaction OK", l_AccountID);
-
-                WorldSession* l_Session = sWorld->FindSession(l_AccountID);
-                if (l_Session == nullptr)
-                    return;
-
-                WorldPacket l_Data(SMSG_CREATE_CHAR, 1);
-                l_Data << uint8(p_Success ? CHAR_CREATE_SUCCESS : CHAR_CREATE_ERROR);
-                l_Session->SendPacket(&l_Data);
+                l_CreateOk = p_Success;
+                FILE* f = fopen("create_debug.log", "a");
+                if (f)
+                {
+                    fprintf(f, "account %u create callback success=%d\n", l_AccountID, p_Success ? 1 : 0);
+                    fclose(f);
+                }
             }));
+
+            WorldPackets::Character::CreateChar l_CreateResponse;
+            l_CreateResponse.Code = l_CreateOk ? CHAR_CREATE_SUCCESS : CHAR_CREATE_FAILED;
+            SendPacket(l_CreateResponse.Write());
+
+            if (!l_CreateOk)
+            {
+                delete createInfo;
+                _charCreateCallback.Reset();
+                return;
+            }
 
             createInfo->CharCount++;
 

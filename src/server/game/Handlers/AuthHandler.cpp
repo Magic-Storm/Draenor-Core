@@ -88,13 +88,25 @@ void WorldSession::SendAuthResponse(uint32 code, bool queued, uint32 queuePos)
     else if (code == ERROR_OK)
     {
         response.SuccessInfo.emplace();
-        // Active = server content level; Account = purchased/unlocked expansion for the client.
+
+        // Same as TCWoD AuthHandler: both levels from account expansion.
+        // IsExpansionTrial must stay false — if true, client enters Starter Edition
+        // glue and shows CHAR_CREATE_EXPANSION_CLASS ("cannot create death knights").
+        // See AuthenticationPackets.h AuthSuccessInfo::IsExpansionTrial.
+        uint8 expansion = Expansion();
         uint8 worldExpansion = uint8(sWorld->getIntConfig(CONFIG_EXPANSION));
-        uint8 accountExpansion = Expansion();
-        if (accountExpansion < worldExpansion)
-            accountExpansion = worldExpansion;
-        response.SuccessInfo->AccountExpansionLevel = accountExpansion;
-        response.SuccessInfo->ActiveExpansionLevel = worldExpansion;
+        if (expansion < worldExpansion)
+            expansion = worldExpansion;
+        if (expansion < EXPANSION_WARLORDS_OF_DRAENOR)
+            expansion = EXPANSION_WARLORDS_OF_DRAENOR;
+
+        response.SuccessInfo->AccountExpansionLevel = expansion;
+        response.SuccessInfo->ActiveExpansionLevel = expansion;
+        response.SuccessInfo->IsExpansionTrial = false;
+        response.SuccessInfo->ForceCharacterTemplate = false;
+        response.SuccessInfo->Billing.BillingPlan = SESSION_NONE;
+        response.SuccessInfo->Billing.TimeRemain = 0;
+        response.SuccessInfo->Billing.InGameRoom = false;
         response.SuccessInfo->VirtualRealmAddress = GetVirtualRealmAddress();
         response.SuccessInfo->VirtualRealms.emplace_back(GetVirtualRealmAddress(), true, false,
             sWorld->GetRealmName(), sWorld->GetNormalizedRealmName());

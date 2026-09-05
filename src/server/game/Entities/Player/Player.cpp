@@ -24426,7 +24426,8 @@ void Player::SaveToDB(bool create /*=false*/, MS::Utilities::CallBackPtr p_Callb
             trans->Cleanup();
             accountTrans->Cleanup();
             p_Callback->m_State = MS::Utilities::CallBackState::Fail;
-            sWorld->AddTransactionCallback(p_Callback);
+            // Fire now (still inside HandleCharCreate) so the client always gets a result.
+            p_Callback->m_CallBack(false);
             return;
         }
     }
@@ -24492,8 +24493,11 @@ void Player::SaveToDB(bool create /*=false*/, MS::Utilities::CallBackPtr p_Callb
         else
             trans->Cleanup();
         LoginDatabase.CommitTransaction(accountTrans);
+        // Character row is already durable. Tell the client SUCCESS immediately —
+        // deferred AddTransactionCallback raced / failed to deliver and the RU client
+        // maps CHAR_CREATE_ERROR to the "starter edition" string.
         p_Callback->m_State = MS::Utilities::CallBackState::Success;
-        sWorld->AddTransactionCallback(p_Callback);
+        p_Callback->m_CallBack(true);
     }
     else
     {

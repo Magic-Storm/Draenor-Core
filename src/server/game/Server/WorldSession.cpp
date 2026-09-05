@@ -1416,103 +1416,44 @@ void WorldSession::SendAddonsInfo()
 
 void WorldSession::SendFeatureSystemStatus()
 {
-    bool l_EuropaTicketSystemEnabled            = true;
-    bool l_PlayTimeAlert                        = false;
-    bool l_ScrollOfResurrectionEnabled          = false;
-    bool l_VoiceChatSystemEnabled               = false;
-    bool l_ItemRestorationButtonEnbaled         = false;
-    bool l_RecruitAFriendSystem                 = false;
-    bool l_HasTravelPass                        = false;
-#ifndef CROSS
-    bool l_InGameBrowser                        = sBattlepayMgr->IsAvailable(this);;
-#else /* CROSS */
-    bool l_InGameBrowser                        = false;
-#endif /* CROSS */
-    bool l_StoreEnabled                         = true;
-    bool l_StoreIsDisabledByParentalControls    = false;
-#ifndef CROSS
-    bool l_StoreIsAvailable                     = sBattlepayMgr->IsAvailable(this);
-#else /* CROSS */
-    bool l_StoreIsAvailable                     = false;
-#endif /* CROSS */
-    bool l_IsRestrictedAccount                  = false;
-    bool l_IsTutorialEnabled                    = false;
-    bool l_ShowNPETutorial                      = true;
-    bool l_TwitterEnabled                       = true;
-    bool l_CommerceSystemEnabled                = true;
+    // Match TCWoD / Trinity packet layout (hand-rolled bits were misaligned vs client).
+    WorldPackets::System::FeatureSystemStatus features;
 
-    uint32 l_PlayTimeAlertDisplayAlertTime      = 0;
-    uint32 l_PlayTimeAlertDisplayAlertDelay     = 0;
-    uint32 l_PlayTimeAlertDisplayAlertPeriod    = 0;
+    features.ComplaintStatus = 2;
+    features.ScrollOfResurrectionRequestsRemaining = 1;
+    features.ScrollOfResurrectionMaxRequestsPerDay = 1;
+    features.TwitterPostThrottleLimit = 60;
+    features.TwitterPostThrottleCooldown = 20;
+    features.CfgRealmID = g_RealmID;
+    features.CfgRealmRecID = 640;
+    features.TokenPollTimeSeconds = 300;
+    features.TokenRedeemIndex = 0;
+    features.VoiceEnabled = false;
+    features.BrowserEnabled = false; // false: client can crash opening Customer Support otherwise
 
-    uint32 l_SORRemaining = 1;
-    uint32 l_SORMaxPerDay = 1;
+    features.EuropaTicketSystemStatus.emplace();
+    features.EuropaTicketSystemStatus->TicketsEnabled = true;
+    features.EuropaTicketSystemStatus->BugsEnabled = true;
+    features.EuropaTicketSystemStatus->ComplaintsEnabled = true;
+    features.EuropaTicketSystemStatus->SuggestionsEnabled = true;
+    features.EuropaTicketSystemStatus->ThrottleState.MaxTries = 10;
+    features.EuropaTicketSystemStatus->ThrottleState.PerMilliseconds = 60000;
+    features.EuropaTicketSystemStatus->ThrottleState.TryCount = 1;
+    features.EuropaTicketSystemStatus->ThrottleState.LastResetTimeBeforeNow = 0;
 
-    uint32 l_ConfigRealmRecordID    = 640;
-    uint32 l_ConfigRealmID          = g_RealmID;
+    features.TutorialsEnabled = true;
+    features.NPETutorialsEnabled = true;
+    features.CharUndeleteEnabled = false;
+    features.RestrictedAccount = false; // true => client Starter Edition glue
+    features.BpayStoreEnabled = false;
+    features.BpayStoreAvailable = false;
+    features.BpayStoreDisabledByParentalControls = false;
+    features.CommerceSystemEnabled = false;
+    features.WillKickFromWorld = false;
+    features.Unk67 = false;
+    features.UnkBit61 = false;
 
-    uint32 l_ComplainSystemStatus = 2;                              ///< 0 - Disabled | 1 - Calendar & Mail | 2 - Calendar & Mail & Ignoring system
-
-    uint32 l_TwitterPostThrottleLimit       = 60;
-    uint32 l_TwitterPostThrottleCooldown    = 20;
-    uint32 l_TokenPollTimeSeconds           = 300;
-    uint32 l_TokenRedeemIndex               = 0;
-
-    WorldPacket l_Data(SMSG_FEATURE_SYSTEM_STATUS, 100);
-
-    l_Data << uint8(l_ComplainSystemStatus);                        ///< Complaints System Status
-    l_Data << uint32(l_SORMaxPerDay);                               ///< Max SOR Per day
-    l_Data << uint32(l_SORRemaining);                               ///< SOR remaining
-    l_Data << uint32(l_ConfigRealmID);                              ///< Config Realm ID
-    l_Data << uint32(l_ConfigRealmRecordID);                        ///< Config Realm Record ID (used for url dbc reading)
-    l_Data << uint32(l_TwitterPostThrottleLimit);                   ///< Number of twitter posts the client can send before they start being throttled
-    l_Data << uint32(l_TwitterPostThrottleCooldown);                ///< Time in seconds the client has to wait before posting again after hitting post limit
-    l_Data << uint32(l_TokenPollTimeSeconds);                       ///< TokenPollTimeSeconds
-    l_Data << uint32(l_TokenRedeemIndex);                           ///< TokenRedeemIndex
-
-    l_Data.WriteBit(l_VoiceChatSystemEnabled);                      ///< voice Chat System Status
-    l_Data.WriteBit(l_EuropaTicketSystemEnabled);                   ///< Europa Ticket System Enabled
-    l_Data.WriteBit(l_ScrollOfResurrectionEnabled);                 ///< Scroll Of Resurrection Enabled
-    l_Data.WriteBit(l_StoreEnabled);                                ///< Store system status
-    l_Data.WriteBit(l_StoreIsAvailable);                            ///< Can purchase in store
-    l_Data.WriteBit(l_StoreIsDisabledByParentalControls);           ///< Is store disabled by parental controls
-    l_Data.WriteBit(l_ItemRestorationButtonEnbaled);                ///< Item Restoration Button Enabled
-    l_Data.WriteBit(l_InGameBrowser);                               ///< Web ticket system enabled
-    l_Data.WriteBit(l_PlayTimeAlert);                               ///< Session Alert Enabled
-    l_Data.WriteBit(l_RecruitAFriendSystem);                        ///< Recruit A Friend System Status
-    l_Data.WriteBit(l_HasTravelPass);                               ///< Has travel pass (can group with cross-realm Battle.net friends.)
-    l_Data.WriteBit(l_IsRestrictedAccount);                         ///< Is restricted account
-    l_Data.WriteBit(l_IsTutorialEnabled);                           ///< Is tutorial system enabled
-    l_Data.WriteBit(l_ShowNPETutorial);                             ///< Show NPE tutorial
-    l_Data.WriteBit(l_TwitterEnabled);                              ///< Enable ingame twitter interface
-    l_Data.WriteBit(l_CommerceSystemEnabled);                       ///< Commerce System Enabled (WoWToken)
-    l_Data.WriteBit(1);                                             ///< Unk 6.1.2 19796
-    l_Data.WriteBit(1);                                             ///< WillKickFromWorld
-    l_Data.WriteBit(0);                                             ///< Unk 6.1.2 19796 -- unk block
-    l_Data.FlushBits();
-
-    if (l_EuropaTicketSystemEnabled)
-    {
-        l_Data.WriteBit(true);                                      ///< TicketsEnabled
-        l_Data.WriteBit(true);                                      ///< BugsEnabled
-        l_Data.WriteBit(true);                                      ///< ComplaintsEnabled
-        l_Data.WriteBit(true);                                      ///< SuggestionsEnabled
-        l_Data.FlushBits();
-
-        l_Data << uint32(10);                                       ///< Max Tries
-        l_Data << uint32(60000);                                    ///< Per Milliseconds
-        l_Data << uint32(1);                                        ///< Try Count
-        l_Data << uint32(0);                                        ///< Last Reset Time Before Now
-    }
-
-    if (l_PlayTimeAlert)
-    {
-        l_Data << uint32(l_PlayTimeAlertDisplayAlertDelay);         ///< Alert delay
-        l_Data << uint32(l_PlayTimeAlertDisplayAlertPeriod);        ///< Alert period
-        l_Data << uint32(l_PlayTimeAlertDisplayAlertTime);          ///< Alert display time
-    }
-
-    SendPacket(&l_Data);
+    SendPacket(features.Write());
 }
 
 void WorldSession::SendFeatureSystemStatusGlueScreen()
@@ -1524,6 +1465,8 @@ void WorldSession::SendFeatureSystemStatusGlueScreen()
     features.BpayStoreEnabled = false;
     features.CommerceSystemEnabled = false;
     features.WillKickFromWorld = false;
+    features.Unk14 = false;
+    features.IsExpansionPreorderInStore = false;
     SendPacket(features.Write());
 }
 
