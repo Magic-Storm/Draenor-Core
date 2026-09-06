@@ -1054,6 +1054,7 @@ bool WINAPI CascOpenStorage(const TCHAR * szDataPath, DWORD dwLocaleMask, HANDLE
     if(nError == ERROR_SUCCESS)
     {
         nError = LoadIndexFiles(hs);
+        printf("LoadIndexFiles -> 0x%X, indexed entries: %u\n", nError, (hs->pIndexEntryMap != NULL) ? hs->pIndexEntryMap->ItemCount : 0);
     }
 
     // Load the index files

@@ -847,6 +847,7 @@ int LoadBuildInfo(TCascStorage * hs)
     if(nError == ERROR_SUCCESS)
     {
         pvListFile = ListFile_OpenExternal(hs->szBuildFile);
+        printf("LoadBuildInfo: open '%s' -> %s\n", hs->szBuildFile, (pvListFile != NULL) ? "OK" : "FAILED");
         if(pvListFile != NULL)
         {
             // Parse the info file
@@ -919,6 +920,7 @@ int CheckGameDirectory(TCascStorage * hs, TCHAR * szDirectory)
         {
             // Attempt to open the file
             pStream = FileStream_OpenFile(szBuildFile, STREAM_FLAG_READ_ONLY);
+            printf("CheckGameDirectory: '%s' -> %s\n", szBuildFile, (pStream != NULL) ? "OPENED" : "not found");
             if(pStream != NULL)
             {
                 // Free the stream
@@ -926,6 +928,7 @@ int CheckGameDirectory(TCascStorage * hs, TCHAR * szDirectory)
 
                 // Check for the data directory
                 nError = CheckDataDirectory(hs, szDirectory);
+                printf("CheckDataDirectory('%s') -> 0x%X\n", szDirectory, nError);
                 if(nError == ERROR_SUCCESS)
                 {
                     hs->szBuildFile = szBuildFile;
