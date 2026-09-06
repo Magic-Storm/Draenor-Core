@@ -357,6 +357,13 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
         }
     }
 
+    if (!forced && sWorld->IsSendBlocked(packet->GetOpcode()))
+    {
+        TC_LOG_ERROR("network.opcode", "Blocked outgoing opcode %s (Debug.BlockSendOpcodes) to %s",
+            GetOpcodeNameForLogging(packet->GetOpcode(), WOW_SERVER_TO_CLIENT).c_str(), GetPlayerName(false).c_str());
+        return;
+    }
+
 #ifdef CROSS
     if (!m_isinIRBG && packet->GetOpcode() != SMSG_BATTLEFIELD_LIST && 
         packet->GetOpcode() != SMSG_BATTLEFIELD_STATUS_NONE &&

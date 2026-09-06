@@ -491,6 +491,33 @@ void World::LoadConfigSettings(bool reload)
         sLog->LoadFromConfig();
     }
 
+    ///- Debug: block outgoing opcodes listed in Debug.BlockSendOpcodes (comma separated, dec or 0x-hex)
+    m_BlockedSendOpcodes.clear();
+    std::string l_BlockedOpcodes = sConfigMgr->GetStringDefault("Debug.BlockSendOpcodes", "");
+    if (!l_BlockedOpcodes.empty())
+    {
+        std::size_t l_Pos = 0;
+        while (l_Pos < l_BlockedOpcodes.size())
+        {
+            std::size_t l_Comma = l_BlockedOpcodes.find(',', l_Pos);
+            if (l_Comma == std::string::npos)
+                l_Comma = l_BlockedOpcodes.size();
+
+            std::string l_Token = l_BlockedOpcodes.substr(l_Pos, l_Comma - l_Pos);
+            l_Token.erase(0, l_Token.find_first_not_of(" \t"));
+            l_Token.erase(l_Token.find_last_not_of(" \t") + 1);
+
+            if (!l_Token.empty())
+            {
+                uint32 l_Opcode = uint32(strtoul(l_Token.c_str(), nullptr, 0));
+                m_BlockedSendOpcodes.insert(l_Opcode);
+                TC_LOG_INFO("server.loading", ">> Debug: blocking outgoing opcode 0x%04X", l_Opcode);
+            }
+
+            l_Pos = l_Comma + 1;
+        }
+    }
+
     ///- Read the player limit and the Message of the day from the config file
     SetPlayerAmountLimit(sConfigMgr->GetIntDefault("PlayerLimit", 100));
 
@@ -2775,12 +2802,18 @@ void World::Update(uint32 diff)
 
                 if (WorldSession* l_Session = FindSession(l_AccountId))
                 {
-                    auto l_Itr = m_NewSessions.find(l_AccountId);
-
-                    if (l_Itr == m_NewSessions.end())
-                        l_Session->KickPlayer();
-                    else
+                    // A session that is still loading or was just added is the legitimate
+                    // owner of this login record - do not kick it
+                    if (l_Session->PlayerLoading() || m_NewSessions.find(l_AccountId) != m_NewSessions.end())
+                    {
                         m_NewSessions.erase(l_AccountId);
+                        continue;
+                    }
+
+                    TC_LOG_ERROR("server.worldserver", "Account [%u] has been kicked by account_log_ip scan (record id: %u, session ip: '%s')",
+                        l_AccountId, m_LastAccountLogId, l_Session->GetRemoteAddress().c_str());
+
+                    l_Session->KickPlayer();
                 }
             }
             while (l_Result->NextRow());

@@ -1064,6 +1064,12 @@ class World
             m_NewSessions.insert(p_AccountID);
         }
 
+        /// Debug: opcodes blocked from being sent to clients (Debug.BlockSendOpcodes)
+        bool IsSendBlocked(uint32 p_Opcode) const
+        {
+            return m_BlockedSendOpcodes.find(p_Opcode) != m_BlockedSendOpcodes.end();
+        }
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -1156,6 +1162,7 @@ class World
         uint32 m_MaxPlayerCount;
 
         std::unordered_set<uint32> m_NewSessions;
+        std::unordered_set<uint32> m_BlockedSendOpcodes;
         uint32 m_LastAccountLogId;
         PreparedQueryResultFuture m_AccountLogIpScanCallback;
 

@@ -177,6 +177,10 @@ static int ParseRoot_CountFiles(
     return ERROR_SUCCESS;
 }
 
+static DWORD s_ZeroHashCount = 0;
+static DWORD s_NonZeroHashCount = 0;
+static ULONGLONG s_FirstNonZeroHash = 0;
+
 static int ParseRoot_AddRootEntries(
     TRootHandler_WoW6 * pRootHandler,
     PCASC_ROOT_BLOCK pRootBlock)
@@ -204,6 +208,14 @@ static int ParseRoot_AddRootEntries(
 
         // (004147A3) Prepare the CASC_FILE_ENTRY structure
         pFileEntry->FileNameHash = pRootBlock->pRootEntries[i].FileNameHash;
+        if (pFileEntry->FileNameHash == 0)
+            s_ZeroHashCount++;
+        else
+        {
+            if (s_NonZeroHashCount == 0)
+                s_FirstNonZeroHash = pFileEntry->FileNameHash;
+            s_NonZeroHashCount++;
+        }
         pFileEntry->FileDataId = dwFileDataId + pRootBlock->FileDataIds[i];
         pFileEntry->Locales = pRootBlock->pLocaleBlockHdr->Locales;
         pFileEntry->EncodingKey = pRootBlock->pRootEntries[i].EncodingKey;
@@ -569,6 +581,7 @@ int RootHandler_CreateWoW6(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFil
 
     // Count the files that are going to be loaded
     ParseWowRootFile(pRootHandler, ParseRoot_CountFiles, pbRootFile, pbRootFileEnd, dwLocaleMask);
+    printf("WoW6 root: dwTotalFileCount = %u (localeMask = 0x%X)\n", pRootHandler->dwTotalFileCount, dwLocaleMask);
     pRootHandler->dwTotalFileCount += CASC_EXTRA_FILES;
 
     // Create linear table that will contain all root items
@@ -588,6 +601,9 @@ int RootHandler_CreateWoW6(TCascStorage * hs, LPBYTE pbRootFile, DWORD cbRootFil
 
     // Parse the root file again and insert all files to the map
     ParseWowRootFile(pRootHandler, ParseRoot_AddRootEntries, pbRootFile, pbRootFileEnd, dwLocaleMask);
+    printf("WoW6 root: named entries in pRootMap = %u (zero-hash: %u, non-zero-hash: %u, first-nonzero: %016llX)\n",
+        (pRootHandler->pRootMap != NULL) ? pRootHandler->pRootMap->ItemCount : 0,
+        s_ZeroHashCount, s_NonZeroHashCount, s_FirstNonZeroHash);
 
     // Sort entries by FileDataId for searches
     qsort_pointer_array((void**)pRootHandler->FileDataIdLookupTable.ItemArray, pRootHandler->FileDataIdLookupTable.ItemCount, &FileDataIdCompare, NULL);
