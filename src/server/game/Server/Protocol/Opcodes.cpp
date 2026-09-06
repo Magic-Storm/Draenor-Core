@@ -1688,6 +1688,8 @@ void InitOpcodes()
     //////////////////////////////////////////////////////////////////////////
     DEFINE_OPCODE_HANDLER(CMSG_DFGET_SYSTEM_INFO,                               STATUS_UNHANDLED,   PROCESS_INPLACE,        &WorldSession::Handle_NULL                     , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_GET_PLAYER_INFO,                             STATUS_NEVER,       PROCESS_INPLACE,        &WorldSession::Handle_NULL                     , PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_DF_GET_JOIN_STATUS,                              STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgGetStatus              , PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_DF_GET_SYSTEM_INFO,                              STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleDFGetSystemInfo           , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_GET_STATUS,                                  STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgGetStatus              , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_JOIN,                                        STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgJoinOpcode             , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_LEAVE,                                       STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgLeaveOpcode            , PROCESS_LOCAL);
@@ -1705,6 +1707,7 @@ void InitOpcodes()
     //////////////////////////////////////////////////////////////////////////
     DEFINE_OPCODE_HANDLER(CMSG_REQUEST_LFG_LIST_BLACKLIST,                      STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleRequestLfgListBlacklist    , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_LIST_JOIN,                                   STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgListJoin                , PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_LFG_LIST_GET_STATUS,                             STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgListGetStatus          , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_LIST_UPDATE_REQUEST,                         STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgListUpdateRequest       , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_LIST_LEAVE,                                  STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgListLeave               , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_LFG_LIST_SEARCH,                                 STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleLfgListSearch              , PROCESS_LOCAL);
@@ -1887,7 +1890,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(CMSG_UPDATE_MISSILE_TRAJECTORY,               STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::HandleUpdateMissileTrajectory   );
     //DEFINE_OPCODE_HANDLER(CMSG_UPGRADE_ITEM,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleUpgradeItemOpcode         );
     //DEFINE_OPCODE_HANDLER(CMSG_USED_FOLLOW,                             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
-    //DEFINE_OPCODE_HANDLER(CMSG_VOICE_SESSION_ENABLE,                    STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleVoiceSessionEnableOpcode  );
+    DEFINE_OPCODE_HANDLER(CMSG_VOICE_SESSION_ENABLE,                    STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleVoiceSessionEnableOpcode  , PROCESS_LOCAL);
     //DEFINE_OPCODE_HANDLER(CMSG_WARDEN_DATA,                             STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::HandleWardenDataOpcode          , PROCESS_DISTANT_IF_NEED); // STATUS_AUTHED
     //DEFINE_OPCODE_HANDLER(CMSG_WARGAME_ACCEPT,                          STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     //DEFINE_OPCODE_HANDLER(CMSG_WARGAME_START,                           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );

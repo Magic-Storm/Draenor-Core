@@ -17,6 +17,15 @@ void WorldSession::HandleRequestLfgListBlacklist(WorldPacket& /*p_RecvData*/)
     SendPacket(&l_Data);
 }
 
+void WorldSession::HandleLfgListGetStatus(WorldPacket& /*p_RecvData*/)
+{
+    TC_LOG_DEBUG("network", "CMSG_LFG_LIST_GET_STATUS " UI64FMTD, (uint64)GetPlayer()->GetGUID());
+
+    ///< No payload. The client asks for the status of its active Premade Groups listing;
+    ///< updates are already pushed via SMSG_LFG_LIST_UPDATE_STATUS as they happen
+    ///< (LFGListMgr::SendLFGListStatusUpdate), so there is nothing to reply here.
+}
+
 void WorldSession::HandleLfgListJoin(WorldPacket& p_RecvData)
 {
     uint32 l_NameLen, l_CommentLen, l_VoiceChatLen, l_ActivityId;

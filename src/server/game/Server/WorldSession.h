@@ -1282,6 +1282,7 @@ class WorldSession
         void HandleLfgGetLockInfoOpcode(WorldPacket& recvData);
         void SendLfgPlayerLockInfo();
         void SendLfgPartyLockInfo();
+        void HandleDFGetSystemInfo(WorldPacket& recvData);
         void HandleLfgJoinOpcode(WorldPacket& recvData);
         void HandleLfgLeaveOpcode(WorldPacket& recvData);
         void HandleLfgSetRolesOpcode(WorldPacket& recvData);
@@ -1314,6 +1315,7 @@ class WorldSession
 
         // Lfg List
         void HandleRequestLfgListBlacklist(WorldPacket& p_RecvData);
+        void HandleLfgListGetStatus(WorldPacket& p_RecvData);
         void HandleLfgListJoin(WorldPacket& p_RecvData);
         void HandleLfgListUpdateRequest(WorldPacket& p_RecvData);
         void HandleLfgListLeave(WorldPacket& p_RecvData);
