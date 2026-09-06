@@ -51,34 +51,35 @@ void BattlePet::Load(Field* p_Fields)
     for (uint32 l_SpeciesXAbilityId = 0; l_SpeciesXAbilityId < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++l_SpeciesXAbilityId)
     {
         BattlePetSpeciesXAbilityEntry const* l_SpeciesXAbilityInfo = sBattlePetSpeciesXAbilityStore.LookupEntry(l_SpeciesXAbilityId);
+        if (!l_SpeciesXAbilityInfo)
+            continue;
+
+        if (l_SpeciesXAbilityInfo->level > Level)
+            continue;
+
+        if (l_SpeciesXAbilityInfo->tier >= MAX_PETBATTLE_ABILITIES)
+            continue;
+
+        if (l_SpeciesXAbilityInfo->level < 5)
+            Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+        else
         {
-            if (l_SpeciesXAbilityInfo->level > Level)
-                continue;
-
-            if (l_SpeciesXAbilityInfo->tier >= MAX_PETBATTLE_ABILITIES)
-                continue;
-
-            if (l_SpeciesXAbilityInfo->level < 5)
-                Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-            else
+            switch (l_SpeciesXAbilityInfo->tier)
             {
-                switch (l_SpeciesXAbilityInfo->tier)
-                {
-                    case 0:
-                        if (Flags & BATTLEPET_FLAG_ABILITY_1_SECOND)
-                            Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-                        break;
-                    case 1:
-                        if (Flags & BATTLEPET_FLAG_ABILITY_2_SECOND)
-                            Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-                        break;
-                    case 2:
-                        if (Flags & BATTLEPET_FLAG_ABILITY_3_SECOND)
-                            Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-                        break;
-                    default:
-                        break;
-                }
+                case 0:
+                    if (Flags & BATTLEPET_FLAG_ABILITY_1_SECOND)
+                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+                    break;
+                case 1:
+                    if (Flags & BATTLEPET_FLAG_ABILITY_2_SECOND)
+                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+                    break;
+                case 2:
+                    if (Flags & BATTLEPET_FLAG_ABILITY_3_SECOND)
+                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+                    break;
+                default:
+                    break;
             }
         }
     }
