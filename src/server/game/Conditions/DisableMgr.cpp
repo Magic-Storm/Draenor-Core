@@ -35,7 +35,7 @@ namespace
 
     DisableMap m_DisableMap;
 
-    uint8 MAX_DISABLE_TYPES = 9;
+    uint8 MAX_DISABLE_TYPES = DISABLE_TYPE_LFG_DUNGEON + 1;
 }
 
 void LoadDisables()
