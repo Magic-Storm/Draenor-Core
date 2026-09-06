@@ -81,7 +81,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 
     if (!numDungeons)
     {
-        TC_LOG_DEBUG("network", "CMSG_LFG_JOIN %s no dungeons selected", GetPlayer()->GetGUID());
+        TC_LOG_DEBUG("network", "CMSG_LFG_JOIN " UI64FMTD " no dungeons selected", (uint64)GetPlayer()->GetGUID());
         recvData.rfinish();
         return;
     }
@@ -241,7 +241,7 @@ void WorldSession::HandleLfgGetLockInfoOpcode(WorldPacket& recvData)
 {
     recvData.read_skip<uint8>();
     bool forPlayer = recvData.ReadBit();
-    TC_LOG_DEBUG("network", "CMSG_LFG_LOCK_INFO_REQUEST %s for %s", GetPlayer()->GetGUID(), (forPlayer ? "player" : "party"));
+    TC_LOG_DEBUG("network", "CMSG_LFG_LOCK_INFO_REQUEST " UI64FMTD " for %s", (uint64)GetPlayer()->GetGUID(), (forPlayer ? "player" : "party"));
 
     if (forPlayer)
         SendLfgPlayerLockInfo();
@@ -266,7 +266,7 @@ void WorldSession::SendLfgPlayerLockInfo()
     uint32 lsize = uint32(lockMap.size());
     bool hasPlayer = true;
 
-    TC_LOG_DEBUG("network", "SMSG_LFG_PLAYER_INFO %s", GetPlayer()->GetGUID());
+    TC_LOG_DEBUG("network", "SMSG_LFG_PLAYER_INFO " UI64FMTD, (uint64)GetPlayer()->GetGUID());
     ByteBuffer lfgData;
     WorldPacket data(SMSG_LFG_PLAYER_INFO, 1 + rsize * (4 + 1 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4) + 4 + lsize * (1 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4));
 
@@ -520,7 +520,7 @@ void WorldSession::SendLfgPartyLockInfo()
     uint32 count = 0;
     bool hasPlayerInfo = true;
 
-    TC_LOG_DEBUG("network", "SMSG_LFG_PARTY_INFO %s", GetPlayer()->GetGUID());
+    TC_LOG_DEBUG("network", "SMSG_LFG_PARTY_INFO " UI64FMTD, (uint64)GetPlayer()->GetGUID());
     WorldPacket data(SMSG_LFG_PARTY_INFO);
     ByteBuffer bytes;
 
@@ -564,8 +564,8 @@ void WorldSession::HandleLfrJoinOpcode(WorldPacket& recvData)
 {
     uint32 entry;                                          // Raid id to search
     recvData >> entry;
-    TC_LOG_DEBUG("network", "CMSG_LFG_LFR_JOIN %s dungeon entry: %u",
-        GetPlayer()->GetGUID(), entry);
+    TC_LOG_DEBUG("network", "CMSG_LFG_LFR_JOIN " UI64FMTD " dungeon entry: %u",
+        (uint64)GetPlayer()->GetGUID(), entry);
     //SendLfrUpdateListOpcode(entry);
 }
 
@@ -573,14 +573,14 @@ void WorldSession::HandleLfrLeaveOpcode(WorldPacket& recvData)
 {
     uint32 dungeonId;                                      // Raid id queue to leave
     recvData >> dungeonId;
-    TC_LOG_DEBUG("network", "CMSG_LFG_LFR_LEAVE %s dungeonId: %u",
-        GetPlayer()->GetGUID(), dungeonId);
+    TC_LOG_DEBUG("network", "CMSG_LFG_LFR_LEAVE " UI64FMTD " dungeonId: %u",
+        (uint64)GetPlayer()->GetGUID(), dungeonId);
     //sLFGMgr->LeaveLfr(GetPlayer(), dungeonId);
 }
 
 void WorldSession::HandleLfgGetStatus(WorldPacket& /*recvData*/)
 {
-    TC_LOG_DEBUG("network", "CMSG_LFG_GET_STATUS %s", GetPlayer()->GetGUID());
+    TC_LOG_DEBUG("network", "CMSG_LFG_GET_STATUS " UI64FMTD, (uint64)GetPlayer()->GetGUID());
 
     if (!GetPlayer()->IsUsingLfg())
         return;
@@ -622,7 +622,7 @@ void WorldSession::SendLfgUpdateStatus(lfg::LfgUpdateType updateType, lfg::Playe
         break;
     }
 
-    TC_LOG_DEBUG("network", "SMSG_LFG_UPDATE_STATUS %s updatetype: %u", GetPlayer()->GetGUID(), updateType);
+    TC_LOG_DEBUG("network", "SMSG_LFG_UPDATE_STATUS " UI64FMTD " updatetype: %u", (uint64)GetPlayer()->GetGUID(), updateType);
 
     WorldPacket data(SMSG_LFG_UPDATE_STATUS, 1 + 8 + 3 + 2 + 1 + comment.length() + 4 + 4 + 1 + 1 + 1 + 4 + queueData.Dungeons.size());
     data.WriteBits(comment.size(), 8);
@@ -709,7 +709,7 @@ void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck)
     else
         dungeons = roleCheck.dungeons;
 
-    TC_LOG_DEBUG("network", "SMSG_LFG_ROLE_CHECK_UPDATE %s", GetPlayer()->GetGUID());
+    TC_LOG_DEBUG("network", "SMSG_LFG_ROLE_CHECK_UPDATE " UI64FMTD, (uint64)GetPlayer()->GetGUID());
 
     ByteBuffer groupData;
     ObjectGuid randomDungeonGuid = 0;
@@ -1127,15 +1127,15 @@ void WorldSession::SendLfgUpdateProposal(lfg::LfgProposal const& proposal)
 
 void WorldSession::SendLfgDisabled()
 {
-    TC_LOG_DEBUG("network", "SMSG_LFG_DISABLED %s", GetPlayer()->GetGUID());
+    TC_LOG_DEBUG("network", "SMSG_LFG_DISABLED " UI64FMTD, (uint64)GetPlayer()->GetGUID());
     WorldPacket data(SMSG_LFG_DISABLED, 0);
     SendPacket(&data);
 }
 
 void WorldSession::SendLfgOfferContinue(uint32 dungeonEntry)
 {
-    TC_LOG_DEBUG("network", "SMSG_LFG_OFFER_CONTINUE %s dungeon entry: %u",
-        GetPlayer()->GetGUID(), dungeonEntry);
+    TC_LOG_DEBUG("network", "SMSG_LFG_OFFER_CONTINUE " UI64FMTD " dungeon entry: %u",
+        (uint64)GetPlayer()->GetGUID(), dungeonEntry);
     WorldPacket data(SMSG_LFG_OFFER_CONTINUE, 4);
     data << uint32(dungeonEntry);
     SendPacket(&data);
@@ -1143,8 +1143,8 @@ void WorldSession::SendLfgOfferContinue(uint32 dungeonEntry)
 
 void WorldSession::SendLfgTeleportError(uint8 err)
 {
-    TC_LOG_DEBUG("network", "SMSG_LFG_TELEPORT_DENIED %s reason: %u",
-        GetPlayer()->GetGUID(), err);
+    TC_LOG_DEBUG("network", "SMSG_LFG_TELEPORT_DENIED " UI64FMTD " reason: %u",
+        (uint64)GetPlayer()->GetGUID(), err);
     WorldPacket data(SMSG_LFG_TELEPORT_DENIED, 4);
     data.WriteBits(err, 4);     // Error
     data.FlushBits();
@@ -1153,7 +1153,7 @@ void WorldSession::SendLfgTeleportError(uint8 err)
 
 void WorldSession::HandleSetLfgBonusFactionId(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "CMSG_SET_LFG_BONUS_FACTION_ID %s", GetPlayer()->GetGUID());
+    TC_LOG_DEBUG("network", "CMSG_SET_LFG_BONUS_FACTION_ID " UI64FMTD, (uint64)GetPlayer()->GetGUID());
 
     uint32 bonusFactionId = recvData.read<uint32>();
     GetPlayer()->SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION_ID, bonusFactionId);
