@@ -58,6 +58,7 @@
 #endif /* CROSS */
 
 #include "BattlegroundPacketFactory.hpp"
+#include "CharacterPackets.h"
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket& p_RecvData)
 {
@@ -2115,7 +2116,15 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& /*p_RecvData*/)
 /// - Blizzard have merge CMSG_GET_UNDELETE_CHARACTER_COOLDOWN_STATUS & CMSG_READY_FOR_ACCOUNT_DATA_TIMES (see history of CharacterSelect_OnShow function in "GlueXML/CharacterSelect.lua" of WoW UI Source)
 void WorldSession::HandleUndeleteCharacter(WorldPacket& /*p_RecvData*/)
 {
-    SendAccountDataTimes(GLOBAL_CACHE_MASK);
+    // No player yet - ObjectGuid::Empty (was: GLOBAL_CACHE_MASK passed as guid)
+    SendAccountDataTimes(0);
+
+    // Also answer the undelete cooldown query (OpenWarCraft sends SMSG_UNDELETE_COOLDOWN_STATUS_RESPONSE)
+    WorldPackets::Character::UndeleteCooldownStatusResponse response;
+    response.OnCooldown = false;
+    response.MaxCooldown = 0;
+    response.CurrentCooldown = 0;
+    SendPacket(response.Write());
 }
 
 ///< @todo refactor me with new data stillnot done 22/02/16

@@ -4,7 +4,6 @@
  #define _DATE                      "@rev_date@"
  #define _BRANCH                    "@rev_branch@"
  #define _REVISION                  "@rev_hash@"
- #define _BUILD_DIRECTIVE           "@CMAKE_BUILD_TYPE@"
  #define _CMAKE_COMMAND             R"(@CMAKE_COMMAND@)"
  #define _CMAKE_VERSION             R"(@CMAKE_VERSION@)"
  #define _CMAKE_HOST_SYSTEM         R"(@CMAKE_HOST_SYSTEM_NAME@ @CMAKE_HOST_SYSTEM_VERSION@)"

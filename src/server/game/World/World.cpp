@@ -329,6 +329,12 @@ void World::AddSession_(WorldSession* s)
 
     m_sessions[s->GetAccountId()] = s;
 
+    // Load global account data and tutorials before sending login packets
+    // (same order as TCWoD InitializeSessionCallback: LoadAccountData + LoadTutorialsData first;
+    //  must happen before the queue check - queued sessions also need them when promoted)
+    s->LoadGlobalAccountData();
+    s->LoadTutorialsData();
+
     uint32 Sessions = GetActiveAndQueuedSessionCount();
     uint32 pLimit = GetPlayerAmountLimit();
     uint32 QueueSize = GetQueuedSessionCount();             //number of players in the queue
@@ -457,7 +463,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         pop_sess->SendFeatureSystemStatus();
 
         pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-        pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
+        pop_sess->SendAccountDataTimes(0);
         pop_sess->SendTutorialsData();
 
         m_QueuedPlayer.pop_front();

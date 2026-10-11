@@ -177,6 +177,7 @@ WorldSession::WorldSession(uint32 id, InterRealmClient* irc, AccountTypes sec, b
     m_playerRecentlyLogout  = false;
     m_playerSave            = false;
     m_TutorialsChanged      = false;
+    memset(m_Tutorials, 0, sizeof(m_Tutorials));
     m_playerLoading         = false;
     m_playerLogout          = false;
     m_inQueue               = false;
@@ -1213,7 +1214,7 @@ void WorldSession::SendAccountDataTimes(uint64 p_Guid)
 {
     WorldPacket l_Data(SMSG_ACCOUNT_DATA_TIMES, 16 + 2 + 4 + (NUM_ACCOUNT_DATA_TYPES * 4));
     l_Data.appendPackGUID(p_Guid);
-    l_Data << uint32(time(NULL));                                           ///< Server time
+    l_Data << uint32(sWorld->GetGameTime());                                ///< Server time (same as OpenWarCraft AccountDataTimes)
 
     for (uint32 l_I = 0; l_I < NUM_ACCOUNT_DATA_TYPES; ++l_I)
         l_Data << uint32(GetAccountData(AccountDataType(l_I))->Time);       ///< also unix time

@@ -33,6 +33,7 @@
 #include "DBCStores.h"
 #include "LFGMgr.h"
 #include "CharacterPackets.h"
+#include "ClientConfigPackets.h"
 
 #ifndef CROSS
 # include "Guild.h"
@@ -965,13 +966,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
 
     //uint32 time1 = getMSTime() - time0;
 
+    // Match OpenWarCraft/WarlordsOfDraenor login order (no SMSG_RESUME_TOKEN on realm login)
+    SendTutorialsData();
+
     pCurrChar->GetMotionMaster()->Initialize();
     pCurrChar->SendDungeonDifficulty();
 
-    WorldPacket l_Data(SMSG_RESUME_TOKEN, 5);
-    l_Data << uint32(0);                                                    ///< Sequence
-    l_Data << uint8(0x80);                                                  ///< Reason
-    SendPacket(&l_Data);
+    WorldPacket l_Data;
 
     WorldPackets::Character::LoginVerifyWorld verifyWorld;
     verifyWorld.MapID = int32(pCurrChar->GetMapId());
@@ -984,7 +985,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
 
     if (!IsBackFromCross())
     {
-        SendAccountDataTimes(pCurrChar->GetGUID());
+        WorldPackets::ClientConfig::AccountDataTimes accountDataTimes;
+        accountDataTimes.PlayerGuid = ObjectGuid(pCurrChar->GetGUID());
+        accountDataTimes.ServerTime = uint32(sWorld->GetGameTime());
+        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+            accountDataTimes.AccountTimes[i] = uint32(GetAccountData(AccountDataType(i))->Time);
+
+        SendPacket(accountDataTimes.Write());
         SendFeatureSystemStatus();
     }
 
@@ -1128,6 +1135,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
 
         SendPacket(&l_Data);
     }
+
+    // OpenWarCraft sends journal lock before initial player packets
+    SendBattlePetJournalLockAcquired();
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 

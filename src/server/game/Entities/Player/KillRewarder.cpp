@@ -265,8 +265,12 @@ void KillRewarder::Reward()
             // 3.2.2. Reward killer.
             _RewardPlayer(_killer, false);
     }
-    
-    
+
+    // Hack fix Blazing Speed (kept from former Player.cpp KillRewarder duplicate)
+    if (_killer->getClass() == CLASS_MAGE && _killer->HasSpell(108843))
+        if (_killer->isHonorOrXPTarget(_victim))
+            _killer->CastSpell(_killer, 113853, true); // Blazing Speed aurastate
+
     // 5. Credit instance encounter.
     // 6. Update guild achievements.
     if (Creature* victim = _victim->ToCreature())

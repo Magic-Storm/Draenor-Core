@@ -59,6 +59,7 @@ struct LFGListEntry
     };
 
     LFGListEntry()
+        : m_RequiredItemLevel(0.0f), m_AutoAcceptInvites(false), m_ActivityEntry(nullptr), m_Group(nullptr)
     {
         m_CreationTime = uint32(time(nullptr));
         m_Timeout = m_CreationTime + LFG_LIST_GROUP_TIMEOUT;
