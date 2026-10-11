@@ -1556,7 +1556,9 @@ class WorldSession
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
 
-        QueryCallback<QueryResult, bool, true> m_VoteTimeCallback;
+        QueryCallbackProcessor _queryProcessor;
+
+        SQLQueryCallback<QueryResult, bool, true> m_VoteTimeCallback;
 
         PreparedQueryResultFuture m_CharEnumCallback;
         PreparedQueryResultFuture m_AddIgnoreCallback;
@@ -1577,11 +1579,11 @@ class WorldSession
         bool m_BackFromCross;
         std::list<std::string> m_SpecialChannelsSave;
 #endif
-        QueryCallback<PreparedQueryResult, std::string> _charRenameCallback;
-        QueryCallback<PreparedQueryResult, std::string> _addFriendCallback;
-        QueryCallback<PreparedQueryResult, uint32> _setPetSlotCallback;
-        QueryCallback<PreparedQueryResult, uint64> _sendStabledPetCallback;
-        QueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
+        SQLQueryCallback<PreparedQueryResult, std::string> _charRenameCallback;
+        SQLQueryCallback<PreparedQueryResult, std::string> _addFriendCallback;
+        SQLQueryCallback<PreparedQueryResult, uint32> _setPetSlotCallback;
+        SQLQueryCallback<PreparedQueryResult, uint64> _sendStabledPetCallback;
+        SQLQueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
         QueryResultHolderFuture m_CharacterLoginCallback;
         QueryResultHolderFuture m_CharacterLoginDBCallback;
 

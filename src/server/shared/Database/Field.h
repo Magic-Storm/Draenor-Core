@@ -11,8 +11,7 @@
 
 #include "Common.h"
 #include "Log.h"
-
-#include <mysql.h>
+#include "MySQLWorkaround.h"
 
 /// |   MySQL type           |  method to use                         |
 /// |------------------------|----------------------------------------|

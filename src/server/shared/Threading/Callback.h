@@ -19,13 +19,13 @@
 #define CALLBACK_STAGE_INVALID uint8(-1)
 
 template <typename Result, typename ParamType, bool chain = false>
-class QueryCallback
+class SQLQueryCallback
 {
     public:
-        QueryCallback() : _param(), _stage(chain ? 0 : CALLBACK_STAGE_INVALID)  {}
+        SQLQueryCallback() : _param(), _stage(chain ? 0 : CALLBACK_STAGE_INVALID)  {}
 
         //! The parameter of this function should be a resultset returned from either .AsyncQuery or .AsyncPQuery
-        void SetFutureResult(std::future<Result>& value)
+        void SetFutureResult(std::future<Result> value)
         {
             _result = std::move(value);
         }
@@ -99,13 +99,13 @@ class QueryCallback
 };
 
 template <typename Result, typename ParamType1, typename ParamType2, bool chain = false>
-class QueryCallback_2
+class SQLQueryCallback_2
 {
     public:
-        QueryCallback_2() : _stage(chain ? 0 : CALLBACK_STAGE_INVALID) {}
+        SQLQueryCallback_2() : _stage(chain ? 0 : CALLBACK_STAGE_INVALID) {}
 
         //! The parameter of this function should be a resultset returned from either .AsyncQuery or .AsyncPQuery
-        void SetFutureResult(std::future<Result>& value)
+        void SetFutureResult(std::future<Result> value)
         {
             _result = std::move(value);
         }

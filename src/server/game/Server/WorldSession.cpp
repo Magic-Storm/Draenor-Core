@@ -500,7 +500,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             // Callback to sync core / database remaining time
             m_VoteTimeCallback.NextStage();
             m_VoteTimeCallback.SetParam(false);     //< not sync callback
-            m_VoteTimeCallback.SetFutureResult(LoginDatabase.AsyncQuery(l_Query.str().c_str()));
+            m_VoteTimeCallback.SetFutureResult(LoginDatabase.AsyncQueryFuture(l_Query.str().c_str()));
         }
     }
 
@@ -522,7 +522,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             // Callback to sync core with database
             m_VoteTimeCallback.NextStage();
             m_VoteTimeCallback.SetParam(true);  //< sync callback
-            m_VoteTimeCallback.SetFutureResult(LoginDatabase.AsyncQuery(l_Query.str().c_str()));
+            m_VoteTimeCallback.SetFutureResult(LoginDatabase.AsyncQueryFuture(l_Query.str().c_str()));
         }
         else
             m_VoteSyncTimer = VOTE_SYNC_TIMER;
@@ -1563,6 +1563,8 @@ void WorldSession::ProcessQueryCallbacks()
     uint32 l_StartTime = getMSTime();
     std::vector<uint32> l_Times;
 
+    _queryProcessor.ProcessReadyQueries();
+
     PreparedQueryResult result;
 
 #ifndef CROSS
@@ -1578,7 +1580,7 @@ void WorldSession::ProcessQueryCallbacks()
                 l_Query << "SELECT remainingTime FROM account_vote WHERE account = " << GetAccountId();
 
                 m_VoteTimeCallback.FreeResult();
-                m_VoteTimeCallback.SetFutureResult(LoginDatabase.AsyncQuery(l_Query.str().c_str()));
+                m_VoteTimeCallback.SetFutureResult(LoginDatabase.AsyncQueryFuture(l_Query.str().c_str()));
                 m_VoteTimeCallback.NextStage();
                 break;
             }
@@ -1734,7 +1736,7 @@ void WorldSession::SetServiceFlags(uint32 p_Flags)
     PreparedStatement* l_Statement = LoginDatabase.GetPreparedStatement(LoginDatabaseStatements::LOGIN_SET_ACCOUNT_SERVICE);
     l_Statement->setUInt32(0, p_Flags);
     l_Statement->setUInt32(1, GetAccountId());
-    LoginDatabase.AsyncQuery(l_Statement);
+    LoginDatabase.AsyncQueryFuture(l_Statement);
 }
 
 void WorldSession::UnsetServiceFlags(uint32 p_Flags)
@@ -1744,7 +1746,7 @@ void WorldSession::UnsetServiceFlags(uint32 p_Flags)
     PreparedStatement* l_Statement = LoginDatabase.GetPreparedStatement(LoginDatabaseStatements::LOGIN_REMOVE_ACCOUNT_SERVICE);
     l_Statement->setUInt32(0, p_Flags);
     l_Statement->setUInt32(1, GetAccountId());
-    LoginDatabase.AsyncQuery(l_Statement);
+    LoginDatabase.AsyncQueryFuture(l_Statement);
 }
 
 void WorldSession::SetCustomFlags(uint32 p_Flags)

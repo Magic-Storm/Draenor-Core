@@ -92,7 +92,7 @@ namespace MS {
 			l_Stmt->setUInt32(l_Index++, m_NumFollowerActivationRegenTimestamp);
 			l_Stmt->setUInt32(l_Index++, m_CacheLastUsage);
 
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			Init();
 
@@ -234,7 +234,7 @@ namespace MS {
 						{
 							PreparedStatement* l_Stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GARRISON_MISSION);
 							l_Stmt->setUInt32(0, l_Mission.DatabaseID);
-							CharacterDatabase.AsyncQuery(l_Stmt);
+							CharacterDatabase.AsyncQueryFuture(l_Stmt);
 						}
 
 					} while (p_MissionsResult->NextRow());
@@ -336,7 +336,7 @@ namespace MS {
 						PreparedStatement* l_Stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GARRISON_MISSION);
 						l_Stmt->setUInt32(0, l_MissionBD_ID);
 
-						CharacterDatabase.AsyncQuery(l_Stmt);
+						CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 						m_Missions.erase(l_It);
 					}
@@ -383,7 +383,7 @@ namespace MS {
 						PreparedStatement* l_Stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GARRISON_MISSION);
 						l_Stmt->setUInt32(0, l_MissionBD_ID);
 
-						CharacterDatabase.AsyncQuery(l_Stmt);
+						CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 						m_Missions.erase(l_It);
 					}
@@ -1154,7 +1154,7 @@ namespace MS {
 			l_Stmt->setUInt32(l_Index++, l_Mission.StartTime);
 			l_Stmt->setUInt32(l_Index++, l_Mission.State);
 
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			m_Missions.push_back(l_Mission);
 
@@ -2492,7 +2492,7 @@ namespace MS {
 			l_Stmt->setUInt32(l_Index++, l_Follower.Flags);
 			l_Stmt->setString(l_Index++, l_Follower.ShipName);
 
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			m_Followers.push_back(l_Follower);
 
@@ -2554,7 +2554,7 @@ namespace MS {
 			l_Stmt->setUInt32(l_Index++, p_Follower.Flags);
 			l_Stmt->setString(l_Index++, p_Follower.ShipName);
 
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			m_Followers.push_back(p_Follower);
 
@@ -3021,7 +3021,7 @@ namespace MS {
 			l_Stmt->setBool(l_Index++, l_Building.Active);
 			l_Stmt->setString(l_Index++, l_Building.GatheringData);
 
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			m_Buildings.push_back(l_Building);
 
@@ -3217,7 +3217,7 @@ namespace MS {
 
 			PreparedStatement* l_Stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GARRISON_BUILDING);
 			l_Stmt->setUInt32(0, GetBuilding(p_PlotInstanceID).DatabaseID);
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			for (std::vector<GarrisonBuilding>::iterator l_It = m_Buildings.begin(); l_It != m_Buildings.end(); ++l_It)
 			{
@@ -3412,7 +3412,7 @@ namespace MS {
 			l_Stmt->setUInt32(l_Index++, l_WorkOrder.CreationTime);
 			l_Stmt->setUInt32(l_Index++, l_WorkOrder.CompleteTime);
 
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			m_WorkOrders.push_back(l_WorkOrder);
 
@@ -3424,7 +3424,7 @@ namespace MS {
 		{
 			PreparedStatement* l_Stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GARRISON_WORKORDER);
 			l_Stmt->setUInt32(0, p_DBID);
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			for (std::vector<GarrisonWorkOrder>::iterator l_It = m_WorkOrders.begin(); l_It != m_WorkOrders.end(); ++l_It)
 			{
@@ -4949,7 +4949,7 @@ namespace MS {
 
 			PreparedStatement* l_Stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GARRISON_FOLLOWER);
 			l_Stmt->setUInt32(0, p_DatabaseID);
-			CharacterDatabase.AsyncQuery(l_Stmt);
+			CharacterDatabase.AsyncQueryFuture(l_Stmt);
 
 			m_Followers.erase(l_Itr);
 

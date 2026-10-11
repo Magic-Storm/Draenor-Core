@@ -15,6 +15,8 @@
 
 #include "Field.h"
 #include "QueryResult.h"
+#include "QueryCallback.h"
+#include "QueryCallbackProcessor.h"
 
 #include "MySQLThreading.h"
 #include "Transaction.h"

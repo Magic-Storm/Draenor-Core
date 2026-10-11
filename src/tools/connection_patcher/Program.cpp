@@ -46,7 +46,7 @@ namespace Connection_Patcher
     namespace
     {
         template<typename PATCH, typename PATTERN>
-        void do_patches(Patcher* patcher, boost::filesystem::path output, uint32_t buildNumber)
+        void do_patches(Patcher* patcher, boost::filesystem::path output, uint32_t buildNumber, boost::filesystem::path const& clientDir)
         {
             std::cout << "patching Portal\n";
             // '.actual.battle.net' -> '' to allow for set portal 'host'
@@ -60,6 +60,24 @@ namespace Connection_Patcher
             // replace name of the file with certificates
             patcher->Patch(Patches::Common::CertFileName(), Patterns::Common::CertFileName());
 
+            // Prefer an absolute path when it fits the 21-byte slot (ca_bundle.txt.signed).
+            // Relative tc_bundle.txt fails with BLZ51901021 if the client is started with a wrong CWD.
+            {
+                static size_t const kCertPathSlot = 21; // includes trailing NUL
+                boost::filesystem::path const absBundle = boost::filesystem::absolute(clientDir / "tc_bundle.txt");
+                std::string abs = absBundle.string();
+                if (abs.size() + 1 <= kCertPathSlot)
+                {
+                    std::vector<unsigned char> from = Patches::Common::CertFileName();
+                    std::vector<unsigned char> to(kCertPathSlot, 0);
+                    std::copy(abs.begin(), abs.end(), to.begin());
+                    std::cout << "using absolute cert bundle path: " << abs << "\n";
+                    patcher->Patch(to, from);
+                }
+                else
+                    std::cout << "cert bundle path too long for in-binary slot, keeping relative tc_bundle.txt\n";
+            }
+
             std::cout << "patching BNet certificate file to load from local path instead of CASC\n";
             // force loading tc_bundle.txt from local directory instead of CASC
             patcher->Patch(PATCH::CertBundleCASCLocalFile(), PATTERN::CertBundleCASCLocalFile());
@@ -69,18 +87,12 @@ namespace Connection_Patcher
             patcher->Patch(PATCH::CertBundleSignatureCheck(), PATTERN::CertBundleSignatureCheck());
 
             std::cout << "patching Versions\n";
-            // sever the connection to blizzard's versions file to stop it from updating and replace with custom version
-            // this is good practice with or without the retail version, just to stop the exe from auto-patching randomly
-            // hardcode %s.patch.battle.net:1119/%s/versions to trinity6.github.io/%s/%s/build/versi
-            // Custom/repacked clients (e.g. ZWoW) often already replaced this URL; skip instead of aborting.
+            // Replace Blizzard versions URL with Zephyr CDN (https://zephyr.v4y.hu/wow/versions).
+            // Custom/repacked clients may already have a different URL; skip instead of aborting.
             try
             {
-                std::string verPatch(Patches::Common::VersionsFile());
-                std::string buildPattern = "build";
-
-                boost::algorithm::replace_all(verPatch, buildPattern, std::to_string(buildNumber));
-                std::vector<unsigned char> verVec(verPatch.begin(), verPatch.end());
-                patcher->Patch(verVec, Patterns::Common::VersionsFile());
+                (void)buildNumber;
+                patcher->Patch(Patches::Common::VersionsFile(), Patterns::Common::VersionsFile());
             }
             catch (std::exception const& ex)
             {
@@ -174,7 +186,7 @@ int main(int argc, char** argv)
 
                 boost::algorithm::replace_all(renamed_binary_path, ".exe", "_Patched.exe");
                 do_patches<Patches::Windows::x86, Patterns::Windows::x86>
-                    (&patcher, renamed_binary_path, wowBuild);
+                    (&patcher, renamed_binary_path, wowBuild, boost::filesystem::path(binary_path).parent_path());
                 WriteCertificateBundle(boost::filesystem::path(binary_path).remove_filename() / "tc_bundle.txt");
                 break;
             case Constants::BinaryTypes::Pe64:
@@ -182,7 +194,7 @@ int main(int argc, char** argv)
 
                 boost::algorithm::replace_all(renamed_binary_path, ".exe", "_Patched.exe");
                 do_patches<Patches::Windows::x64, Patterns::Windows::x64>
-                    (&patcher, renamed_binary_path, wowBuild);
+                    (&patcher, renamed_binary_path, wowBuild, boost::filesystem::path(binary_path).parent_path());
                 WriteCertificateBundle(boost::filesystem::path(binary_path).remove_filename() / "tc_bundle.txt");
                 break;
             case Constants::BinaryTypes::Mach64:
@@ -194,7 +206,8 @@ int main(int argc, char** argv)
                         );
 
                 do_patches<Patches::Mac::x64, Patterns::Mac::x64>
-                    (&patcher, renamed_binary_path, wowBuild);
+                    (&patcher, renamed_binary_path, wowBuild,
+                     boost::filesystem::path(binary_path).parent_path()/*MacOS*/.parent_path()/*Contents*/.parent_path()/*app*/.parent_path());
 
                 {
                     namespace fs = boost::filesystem;

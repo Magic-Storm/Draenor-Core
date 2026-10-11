@@ -20,6 +20,7 @@
 
 #include "Common.h"
 #include "Callback.h"
+#include "QueryCallback.h"
 #include "MySQLConnection.h"
 #include "Transaction.h"
 #include "DatabaseWorker.h"
@@ -289,18 +290,26 @@ public:
         Asynchronous query (with resultset) methods.
     */
 
-    //! Enqueues a query in string format that will set the value of the QueryResultFuture return object as soon as the query is executed.
-    //! The return value is then processed in ProcessQueryCallback methods.
-    QueryResultFuture AsyncQuery(const char* sql)
+    //! Enqueues a query in string format. Attach callbacks via QueryCallback::WithCallback.
+    QueryCallback AsyncQuery(const char* sql)
     {
         BasicStatementTask* task = new BasicStatementTask(sql, true);
+        QueryResultFuture result = task->GetFuture();
         Enqueue(task);
-        return task->GetFuture();         //! Actual return value has no use yet
+        return QueryCallback(std::move(result));
     }
 
-    //! Enqueues a query in string format -with variable args- that will set the value of the QueryResultFuture return object as soon as the query is executed.
-    //! The return value is then processed in ProcessQueryCallback methods.
-    QueryResultFuture AsyncPQuery(const char* sql, ...)
+    //! Legacy string async query returning a raw future (for SQLQueryCallback / VoteTime).
+    QueryResultFuture AsyncQueryFuture(const char* sql)
+    {
+        BasicStatementTask* task = new BasicStatementTask(sql, true);
+        QueryResultFuture result = task->GetFuture();
+        Enqueue(task);
+        return result;
+    }
+
+    //! Enqueues a query in string format -with variable args-.
+    QueryCallback AsyncPQuery(const char* sql, ...)
     {
         va_list ap;
         char szQuery[MAX_QUERY_LEN];
@@ -311,14 +320,35 @@ public:
         return AsyncQuery(szQuery);
     }
 
-    //! Enqueues a query in prepared format that will set the value of the PreparedQueryResultFuture return object as soon as the query is executed.
-    //! The return value is then processed in ProcessQueryCallback methods.
+    //! Legacy AsyncPQuery returning a raw future.
+    QueryResultFuture AsyncPQueryFuture(const char* sql, ...)
+    {
+        va_list ap;
+        char szQuery[MAX_QUERY_LEN];
+        va_start(ap, sql);
+        vsnprintf(szQuery, MAX_QUERY_LEN, sql, ap);
+        va_end(ap);
+
+        return AsyncQueryFuture(szQuery);
+    }
+
+    //! Enqueues a prepared query. Attach callbacks via QueryCallback::WithPreparedCallback.
     //! Statement must be prepared with CONNECTION_ASYNC flag.
-    PreparedQueryResultFuture AsyncQuery(PreparedStatement* stmt)
+    QueryCallback AsyncQuery(PreparedStatement* stmt)
     {
         PreparedStatementTask* task = new PreparedStatementTask(stmt, true);
+        PreparedQueryResultFuture result = task->GetFuture();
         Enqueue(task);
-        return task->GetFuture();
+        return QueryCallback(std::move(result));
+    }
+
+    //! Legacy prepared async query returning a raw future.
+    PreparedQueryResultFuture AsyncQueryFuture(PreparedStatement* stmt)
+    {
+        PreparedStatementTask* task = new PreparedStatementTask(stmt, true);
+        PreparedQueryResultFuture result = task->GetFuture();
+        Enqueue(task);
+        return result;
     }
 
     //! Enqueues a vector of SQL operations (can be both adhoc and prepared) that will set the value of the QueryResultHolderFuture

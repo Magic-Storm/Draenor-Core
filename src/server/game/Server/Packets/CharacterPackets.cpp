@@ -399,6 +399,7 @@ WorldPacket const* WorldPackets::Character::UndeleteCharacterResponse::Write()
 WorldPacket const* WorldPackets::Character::UndeleteCooldownStatusResponse::Write()
 {
     _worldPacket.WriteBit(OnCooldown);
+    _worldPacket.FlushBits();
     _worldPacket << uint32(MaxCooldown);
     _worldPacket << uint32(CurrentCooldown);
     return &_worldPacket;

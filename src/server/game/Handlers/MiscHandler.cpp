@@ -677,7 +677,7 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& p_RecvData)
     l_Stmt->setString(0, l_FriendName);
 
     _addFriendCallback.SetParam(l_FriendNote);
-    _addFriendCallback.SetFutureResult(SessionRealmDatabase.AsyncQuery(l_Stmt));
+    _addFriendCallback.SetFutureResult(SessionRealmDatabase.AsyncQueryFuture(l_Stmt));
 }
 
 void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std::string friendNote)
@@ -779,7 +779,7 @@ void WorldSession::HandleAddIgnoreOpcode(WorldPacket& p_RecvData)
 
     l_Stmt->setString(0, l_IgnoreName);
 
-    m_AddIgnoreCallback = SessionRealmDatabase.AsyncQuery(l_Stmt);
+    m_AddIgnoreCallback = SessionRealmDatabase.AsyncQueryFuture(l_Stmt);
 }
 
 void WorldSession::HandleAddIgnoreOpcodeCallBack(PreparedQueryResult result)
@@ -2116,15 +2116,8 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& /*p_RecvData*/)
 /// - Blizzard have merge CMSG_GET_UNDELETE_CHARACTER_COOLDOWN_STATUS & CMSG_READY_FOR_ACCOUNT_DATA_TIMES (see history of CharacterSelect_OnShow function in "GlueXML/CharacterSelect.lua" of WoW UI Source)
 void WorldSession::HandleUndeleteCharacter(WorldPacket& /*p_RecvData*/)
 {
-    // No player yet - ObjectGuid::Empty (was: GLOBAL_CACHE_MASK passed as guid)
+    // This client expects account data times here (empty GUID), not undelete cooldown alone.
     SendAccountDataTimes(0);
-
-    // Also answer the undelete cooldown query (OpenWarCraft sends SMSG_UNDELETE_COOLDOWN_STATUS_RESPONSE)
-    WorldPackets::Character::UndeleteCooldownStatusResponse response;
-    response.OnCooldown = false;
-    response.MaxCooldown = 0;
-    response.CurrentCooldown = 0;
-    SendPacket(response.Write());
 }
 
 ///< @todo refactor me with new data stillnot done 22/02/16

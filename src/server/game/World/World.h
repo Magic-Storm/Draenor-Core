@@ -18,6 +18,8 @@
 #include "SharedDefines.h"
 #include "QueryResult.h"
 #include "Callback.h"
+#include "QueryCallback.h"
+#include "QueryCallbackProcessor.h"
 #include "TimeDiffMgr.h"
 #include "DatabaseWorkerPool.h"
 
@@ -1045,6 +1047,11 @@ class World
             m_TransactionCallbackLock.unlock();
         }
 
+        void AddQuery(QueryCallback&& query)
+        {
+            _queryProcessor.AddQuery(std::move(query));
+        }
+
         void AddPrepareStatementCallback(std::pair<std::function<void(PreparedQueryResult)>, PreparedQueryResultFuture>&& p_Callback)
         {
             m_PreparedStatementCallbackLock.lock();
@@ -1208,7 +1215,7 @@ class World
 
 
         void ProcessQueryCallbacks();
-        std::deque<std::future<PreparedQueryResult>> m_realmCharCallbacks;
+        QueryCallbackProcessor _queryProcessor;
         PreparedQueryResultFuture m_transfersDumpCallbacks;
         PreparedQueryResultFuture m_transfersLoadCallbacks;
         PreparedQueryResultFuture m_transfersExpLoadCallback;
@@ -1249,21 +1256,9 @@ extern uint32 g_RealmID;
 #define sWorld World::instance()
 
 template <typename T>
-PreparedQueryResultFuture AsyncQuery(T& on, PreparedStatement* stmt, std::function<void(PreparedQueryResult)> p_Callback)
+void AsyncQuery(T& on, PreparedStatement* stmt, std::function<void(PreparedQueryResult)> p_Callback)
 {
-    uint32 index = stmt->getIndex();
-
-    PreparedQueryResultFuture res = on.AsyncQuery(stmt);
-
-    if (index != 0)
-    {
-        # ifdef GAME_SERVER_PROJECTS
-            sWorld->AddPrepareStatementCallback({ std::move(p_Callback), std::move(res) });
-            return PreparedQueryResultFuture();
-        # endif
-    }
-
-    return res;
+    sWorld->AddQuery(on.AsyncQuery(stmt).WithPreparedCallback(std::move(p_Callback)));
 }
 
 template <typename T>

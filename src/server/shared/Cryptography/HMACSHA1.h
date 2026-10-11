@@ -11,7 +11,7 @@
 
 #include "Define.h"
 #include <string>
-#include <openssl/hmac.h>
+#include <openssl/evp.h>
 #include <openssl/sha.h>
 
 class BigNumber;
@@ -21,33 +21,35 @@ class BigNumber;
 class HmacHash
 {
     public:
-        HmacHash(uint32 len, uint8 *seed);
+        HmacHash(uint32 len, uint8* seed);
         ~HmacHash();
-        void UpdateData(const std::string &str);
-        void UpdateData(const uint8* data, size_t len);
+        void UpdateData(std::string const& str);
+        void UpdateData(uint8 const* data, size_t len);
         void Finalize();
-        uint8 *ComputeHash(BigNumber* bn);
-        uint8 *GetDigest() { return (uint8*)m_digest; }
+        uint8* ComputeHash(BigNumber* bn);
+        uint8* GetDigest() { return m_digest; }
         int GetLength() const { return SHA_DIGEST_LENGTH; }
     private:
-        HMAC_CTX* ctx;
+        EVP_MD_CTX* _ctx;
+        EVP_PKEY* _key;
         uint8 m_digest[SHA_DIGEST_LENGTH];
 };
 
 class HmacHash256
 {
     public:
-        HmacHash256(uint32 len, uint8 *seed);
+        HmacHash256(uint32 len, uint8* seed);
         ~HmacHash256();
-        void UpdateData(const std::string &str);
-        void UpdateData(const uint8* data, size_t len);
+        void UpdateData(std::string const& str);
+        void UpdateData(uint8 const* data, size_t len);
         void Finalize();
-        uint8 *ComputeHash(BigNumber* bn);
-        uint8 *ComputeHash(uint8 *seed, uint32 len);
-        uint8 *GetDigest() { return (uint8*)m_digest; }
+        uint8* ComputeHash(BigNumber* bn);
+        uint8* ComputeHash(uint8* seed, uint32 len);
+        uint8* GetDigest() { return m_digest; }
         int GetLength() const { return SHA256_DIGEST_LENGTH; }
     private:
-        HMAC_CTX* ctx;
+        EVP_MD_CTX* _ctx;
+        EVP_PKEY* _key;
         uint8 m_digest[SHA256_DIGEST_LENGTH];
 };
 
@@ -55,4 +57,3 @@ typedef HmacHash HmacSha1;
 typedef HmacHash256 HmacSha256;
 
 #endif
-

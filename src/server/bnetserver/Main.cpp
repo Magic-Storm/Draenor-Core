@@ -33,6 +33,7 @@
 #include "Configuration/Config.h"
 #include "DatabaseEnv.h"
 #include "Log.h"
+#include "OpenSSLCrypto.h"
 #include "Util.h"
 #include <iostream>
 #include <boost/program_options.hpp>
@@ -109,6 +110,18 @@ int main(int argc, char** argv)
 
     sLog->LoadFromConfig();
 
+#if PLATFORM == PLATFORM_WINDOWS
+    {
+        char modulePath[MAX_PATH] = {};
+        GetModuleFileNameA(nullptr, modulePath, MAX_PATH);
+        fs::path opensslModules(modulePath);
+        opensslModules.remove_filename();
+        OpenSSLCrypto::threadsSetup(opensslModules);
+    }
+#else
+    OpenSSLCrypto::threadsSetup(fs::path());
+#endif
+
     Trinity::Banner::Show("bnetserver",
         [](char const* text)
         {
@@ -143,12 +156,16 @@ int main(int argc, char** argv)
     if (!Battlenet::SslContext::Initialize())
     {
         TC_LOG_ERROR("server.bnetserver", "Failed to initialize SSL context");
+        OpenSSLCrypto::threadsCleanup();
         return 1;
     }
 
     // Initialize the database connection
     if (!StartDB())
+    {
+        OpenSSLCrypto::threadsCleanup();
         return 1;
+    }
 
     _ioService = new boost::asio::io_context();
 
@@ -159,6 +176,7 @@ int main(int argc, char** argv)
         TC_LOG_ERROR("server.bnetserver", "Specified battle.net port (%d) out of allowed range (1-65535)", bnport);
         StopDB();
         delete _ioService;
+        OpenSSLCrypto::threadsCleanup();
         return 1;
     }
 
@@ -166,6 +184,7 @@ int main(int argc, char** argv)
     {
         StopDB();
         delete _ioService;
+        OpenSSLCrypto::threadsCleanup();
         TC_LOG_ERROR("server.bnetserver", "Failed to initialize login service");
         return 1;
     }
@@ -229,6 +248,7 @@ int main(int argc, char** argv)
     delete _banExpiryCheckTimer;
     delete _dbPingTimer;
     delete _ioService;
+    OpenSSLCrypto::threadsCleanup();
     google::protobuf::ShutdownProtobufLibrary();
     return 0;
 }

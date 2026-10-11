@@ -527,7 +527,7 @@ void WorldSession::SendStablePet(uint64 guid)
     stmt->setUInt8(2, PET_SLOT_STABLE_LAST);
 
     _sendStabledPetCallback.SetParam(guid);
-    _sendStabledPetCallback.SetFutureResult(SessionRealmDatabase.AsyncQuery(stmt));
+    _sendStabledPetCallback.SetFutureResult(SessionRealmDatabase.AsyncQueryFuture(stmt));
 }
 
 void WorldSession::SendStablePetCallback(PreparedQueryResult p_QueryResult, uint64 p_Guid)
@@ -626,7 +626,7 @@ void WorldSession::HandleStableSetPetSlot(WorldPacket& p_RecvData)
     stmt->setUInt32(1, l_PetNumber);
 
     _setPetSlotCallback.SetParam(l_NewSlot);
-    _setPetSlotCallback.SetFutureResult(SessionRealmDatabase.AsyncQuery(stmt));
+    _setPetSlotCallback.SetFutureResult(SessionRealmDatabase.AsyncQueryFuture(stmt));
 }
 
 void WorldSession::HandleStableSetPetSlotCallback(PreparedQueryResult p_Result, uint32 l_NewSlot)

@@ -8,100 +8,88 @@
 
 #include "HMACSHA1.h"
 #include "BigNumber.h"
-#include "Common.h"
-#include "BigNumber.h"
 #include "Errors.h"
+#include <cstring>
 
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER < 0x10100000L
-HMAC_CTX* HMAC_CTX_new()
+HmacHash::HmacHash(uint32 len, uint8* seed)
+    : _ctx(EVP_MD_CTX_new()), _key(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, seed, static_cast<int>(len)))
 {
-    HMAC_CTX* ctx = new HMAC_CTX();
-    HMAC_CTX_init(ctx);
-    return ctx;
-}
-
-void HMAC_CTX_free(HMAC_CTX* ctx)
-{
-    HMAC_CTX_cleanup(ctx);
-    delete ctx;
-}
-#endif
-
-HmacHash::HmacHash(uint32 len, uint8 *seed) : ctx(HMAC_CTX_new())
-{
-    ctx = HMAC_CTX_new();
-    HMAC_Init_ex(ctx, seed, len, EVP_sha1(), nullptr);
+    EVP_DigestSignInit(_ctx, nullptr, EVP_sha1(), nullptr, _key);
+    memset(m_digest, 0, SHA_DIGEST_LENGTH);
 }
 
 HmacHash::~HmacHash()
 {
-    HMAC_CTX_free(ctx);
+    EVP_MD_CTX_free(_ctx);
+    EVP_PKEY_free(_key);
 }
 
-void HmacHash::UpdateData(const std::string& str)
+void HmacHash::UpdateData(std::string const& str)
 {
-    HMAC_Update(ctx, (uint8 const*)str.c_str(), str.length());
+    EVP_DigestSignUpdate(_ctx, reinterpret_cast<uint8 const*>(str.c_str()), str.length());
 }
 
-void HmacHash::UpdateData(const uint8* data, size_t len)
+void HmacHash::UpdateData(uint8 const* data, size_t len)
 {
-    HMAC_Update(ctx, data, len);
+    EVP_DigestSignUpdate(_ctx, data, len);
 }
 
 void HmacHash::Finalize()
 {
-    uint32 length = 0;
-    HMAC_Final(ctx, (uint8*)m_digest, &length);
+    size_t length = SHA_DIGEST_LENGTH;
+    EVP_DigestSignFinal(_ctx, m_digest, &length);
     ASSERT(length == SHA_DIGEST_LENGTH);
 }
 
 uint8* HmacHash::ComputeHash(BigNumber* bn)
 {
-    HMAC_Update(ctx, bn->AsByteArray().get(), bn->GetNumBytes());
+    UpdateData(bn->AsByteArray().get(), bn->GetNumBytes());
     Finalize();
-    return (uint8*)m_digest;
+    return m_digest;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-HmacHash256::HmacHash256(uint32 len, uint8 *seed)
+HmacHash256::HmacHash256(uint32 len, uint8* seed)
+    : _ctx(EVP_MD_CTX_new()), _key(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, seed, static_cast<int>(len)))
 {
-    ctx = HMAC_CTX_new();
-    HMAC_Init_ex(ctx, seed, len, EVP_sha256(), nullptr);
+    EVP_DigestSignInit(_ctx, nullptr, EVP_sha256(), nullptr, _key);
+    memset(m_digest, 0, SHA256_DIGEST_LENGTH);
 }
 
 HmacHash256::~HmacHash256()
 {
-    HMAC_CTX_free(ctx);
+    EVP_MD_CTX_free(_ctx);
+    EVP_PKEY_free(_key);
 }
 
-void HmacHash256::UpdateData(const std::string &str)
+void HmacHash256::UpdateData(std::string const& str)
 {
-    HMAC_Update(ctx, (uint8 const*)str.c_str(), str.length());
+    EVP_DigestSignUpdate(_ctx, reinterpret_cast<uint8 const*>(str.c_str()), str.length());
 }
 
-void HmacHash256::UpdateData(const uint8* data, size_t len)
+void HmacHash256::UpdateData(uint8 const* data, size_t len)
 {
-    HMAC_Update(ctx, data, len);
+    EVP_DigestSignUpdate(_ctx, data, len);
 }
 
 void HmacHash256::Finalize()
 {
-    uint32 length = 0;
-    HMAC_Final(ctx, (uint8*)m_digest, &length);
+    size_t length = SHA256_DIGEST_LENGTH;
+    EVP_DigestSignFinal(_ctx, m_digest, &length);
     ASSERT(length == SHA256_DIGEST_LENGTH);
 }
 
-uint8 *HmacHash256::ComputeHash(BigNumber* bn)
+uint8* HmacHash256::ComputeHash(BigNumber* bn)
 {
-    HMAC_Update(ctx, bn->AsByteArray().get(), bn->GetNumBytes());
+    UpdateData(bn->AsByteArray().get(), bn->GetNumBytes());
     Finalize();
-    return (uint8*)m_digest;
+    return m_digest;
 }
 
-uint8 *HmacHash256::ComputeHash(uint8 *seed, uint32 len)
+uint8* HmacHash256::ComputeHash(uint8* seed, uint32 len)
 {
-    HMAC_Update(ctx, seed, len);
+    UpdateData(seed, len);
     Finalize();
-    return (uint8*)m_digest;
+    return m_digest;
 }

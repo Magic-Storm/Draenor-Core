@@ -2763,7 +2763,7 @@ void World::Update(uint32 diff)
 
         PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_SCAN_LAST_ACCOUNT_LOG);
         l_Stmt->setUInt32(0, m_LastAccountLogId);
-        m_AccountLogIpScanCallback = LoginDatabase.AsyncQuery(l_Stmt);
+        m_AccountLogIpScanCallback = LoginDatabase.AsyncQueryFuture(l_Stmt);
     }
 
     if (m_AccountLogIpScanCallback.ready())
@@ -3636,8 +3636,7 @@ void World::UpdateRealmCharCount(uint32 accountId)
 #ifndef CROSS
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_COUNT);
     stmt->setUInt32(0, accountId);
-    PreparedQueryResultFuture result = CharacterDatabase.AsyncQuery(stmt);
-    m_realmCharCallbacks.push_back(std::move(result));
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&World::_UpdateRealmCharCount, this, std::placeholders::_1)));
 #endif
 }
 
@@ -4147,20 +4146,7 @@ uint64 World::getWorldState(uint32 index) const
 
 void World::ProcessQueryCallbacks()
 {
-    PreparedQueryResult result;
-
-    for (std::deque<std::future<PreparedQueryResult>>::iterator itr = m_realmCharCallbacks.begin(); itr != m_realmCharCallbacks.end(); )
-    {
-        if ((*itr).wait_for(std::chrono::seconds(0)) != std::future_status::ready)
-        {
-            ++itr;
-            continue;
-        }
-
-        result = (*itr).get();
-        _UpdateRealmCharCount(result);
-        itr = m_realmCharCallbacks.erase(itr);
-    }
+    _queryProcessor.ProcessReadyQueries();
 
     /// - Update querys holders callbacks
     if (!m_QueryHolderCallbacks->empty())
@@ -4430,7 +4416,7 @@ void World::_updateTransfers()
             PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_TRANSFERS_DUMP);
             l_Stmt->setUInt32(0, sLog->GetRealmID());
 
-            m_transfersDumpCallbacks = LoginDatabase.AsyncQuery(l_Stmt);
+            m_transfersDumpCallbacks = LoginDatabase.AsyncQueryFuture(l_Stmt);
         }
 
         // Prepare transfer load callback ...
@@ -4438,7 +4424,7 @@ void World::_updateTransfers()
             PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_TRANSFERS_LOAD);
             l_Stmt->setUInt32(0, sLog->GetRealmID());
 
-            m_transfersLoadCallbacks = LoginDatabase.AsyncQuery(l_Stmt);
+            m_transfersLoadCallbacks = LoginDatabase.AsyncQueryFuture(l_Stmt);
         }
 
         m_timers[WUPDATE_TRANSFER].SetInterval(HOUR * IN_MILLISECONDS);
@@ -4556,7 +4542,7 @@ void World::_updateTransfers()
             PreparedStatement* l_Stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_TRANSFERS_EXP_LOAD);
             l_Stmt->setUInt32(0, sLog->GetRealmID());
 
-            m_transfersExpLoadCallback = LoginDatabase.AsyncQuery(l_Stmt);
+            m_transfersExpLoadCallback = LoginDatabase.AsyncQueryFuture(l_Stmt);
         }
 
         m_timers[WUPDATE_TRANSFER_EXP].SetInterval(HOUR * IN_MILLISECONDS);

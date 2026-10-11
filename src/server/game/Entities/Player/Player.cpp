@@ -1551,7 +1551,7 @@ void Player::Update(uint32 p_time)
         stmt = RealmDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET_BY_ENTRY_AND_SLOT);
         stmt->setUInt32(0, GetRealGUIDLow());
         stmt->setUInt32(1, m_currentPetSlot);
-        _petPreloadCallback = RealmDatabase.AsyncQuery(stmt);
+        _petPreloadCallback = RealmDatabase.AsyncQueryFuture(stmt);
 
         m_initializeCallback = true;
     }
@@ -34113,7 +34113,7 @@ void Player::ReloadPetBattles()
         {
             PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_PETBATTLE_ACCOUNT);
             stmt->setUInt32(0, l_This->GetSession()->GetAccountId());
-            l_This->_petBattleJournalCallback = LoginDatabase.AsyncQuery(stmt);
+            l_This->_petBattleJournalCallback = LoginDatabase.AsyncQueryFuture(stmt);
         }
     });
 

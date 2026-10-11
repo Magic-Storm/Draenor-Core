@@ -26,6 +26,7 @@
 #include "Util.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "QueryCallbackProcessor.h"
 #include "MPSCQueue.h"
 #include <chrono>
 #include <boost/asio/ip/tcp.hpp>
@@ -156,8 +157,7 @@ private:
 
     z_stream_s* _compressionStream;
 
-    PreparedQueryResultFuture _queryFuture;
-    std::function<void(PreparedQueryResult&&)> _queryCallback;
+    QueryCallbackProcessor _queryProcessor;
     std::string _ipCountry;
 };
 

@@ -14,11 +14,8 @@
 #include <chrono>
 #include "Field.h"
 #include "Errors.h"
-
-#ifdef _WIN32
-  #include <winsock2.h>
-#endif
-#include <mysql.h>
+#include "MySQLHacks.h"
+#include "MySQLWorkaround.h"
 
 class ResultSet
 {
@@ -87,7 +84,7 @@ class PreparedResultSet
         MYSQL_STMT* m_stmt;
         MYSQL_RES* m_metadataResult;    ///< Field metadata, returned by mysql_stmt_result_metadata
 
-        bool* m_isNull;
+        MySQLBool* m_isNull;
         unsigned long* m_length;
 
         void CleanUp();

@@ -402,7 +402,7 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket& /*recvData*/)
     stmt->setUInt8(0, PetSlot::PET_SLOT_ACTUAL_PET_SLOT);
     stmt->setUInt32(1, GetAccountId());
 
-    m_CharEnumCallback = CharacterDatabase.AsyncQuery(stmt);
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharEnum, this, std::placeholders::_1)));
 }
 
 void WorldSession::HandleCharCreateOpcode(WorldPacket& p_RecvData)
@@ -595,7 +595,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket& p_RecvData)
     l_Stmt->setString(0, l_CharacterName);
     l_Stmt->setString(1, l_CharacterName);
 
-    _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(l_Stmt));
+    _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQueryFuture(l_Stmt));
 }
 
 void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, CharacterCreateInfo* createInfo)
@@ -624,7 +624,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             stmt->setUInt32(0, GetAccountId());
 
             _charCreateCallback.FreeResult();
-            _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+            _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQueryFuture(stmt));
             _charCreateCallback.NextStage();
         }
         break;
@@ -656,7 +656,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_CREATE_INFO);
                 stmt->setUInt32(0, GetAccountId());
                 stmt->setUInt32(1, (skipCinematics == 1 || createInfo->Class == CLASS_DEATH_KNIGHT) ? 10 : 1);
-                _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+                _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQueryFuture(stmt));
                 _charCreateCallback.NextStage();
                 return;
             }
@@ -966,13 +966,16 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
 
     //uint32 time1 = getMSTime() - time0;
 
-    // Match OpenWarCraft/WarlordsOfDraenor login order (no SMSG_RESUME_TOKEN on realm login)
     SendTutorialsData();
 
     pCurrChar->GetMotionMaster()->Initialize();
     pCurrChar->SendDungeonDifficulty();
 
-    WorldPacket l_Data;
+    // Hellscream client expects resume token on realm login (unlike newer TC ConnectTo flow)
+    WorldPacket l_Data(SMSG_RESUME_TOKEN, 5);
+    l_Data << uint32(0);                                                    ///< Sequence
+    l_Data << uint8(0x80);                                                  ///< Reason
+    SendPacket(&l_Data);
 
     WorldPackets::Character::LoginVerifyWorld verifyWorld;
     verifyWorld.MapID = int32(pCurrChar->GetMapId());
@@ -985,13 +988,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
 
     if (!IsBackFromCross())
     {
-        WorldPackets::ClientConfig::AccountDataTimes accountDataTimes;
-        accountDataTimes.PlayerGuid = ObjectGuid(pCurrChar->GetGUID());
-        accountDataTimes.ServerTime = uint32(sWorld->GetGameTime());
-        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-            accountDataTimes.AccountTimes[i] = uint32(GetAccountData(AccountDataType(i))->Time);
-
-        SendPacket(accountDataTimes.Write());
+        SendAccountDataTimes(pCurrChar->GetGUID());
         SendFeatureSystemStatus();
     }
 
@@ -1511,7 +1508,7 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& p_RecvData)
     stmt->setString(4, newName);
     stmt->setString(5, newName);
 
-    _charRenameCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+    _charRenameCallback.SetFutureResult(CharacterDatabase.AsyncQueryFuture(stmt));
 }
 
 void WorldSession::BuildCharacterRename(WorldPacket* p_Packet, ObjectGuid p_Guid, uint8 p_Result, std::string p_Name)
