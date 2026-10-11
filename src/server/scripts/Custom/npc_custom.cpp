@@ -1784,7 +1784,7 @@ public:
 							{
 								AddBloodMoneyEntry(target->GetGUID(), player->GetGUID(), action);
 								char msg[60];
-								sprintf(msg, "%n has requested a Blood Money duel with you!", player->GetName());
+								sprintf(msg, "%s has requested a Blood Money duel with you!", player->GetName());
 								creature->MonsterWhisper(msg, target->GetGUID(), true);
 							}
 							else

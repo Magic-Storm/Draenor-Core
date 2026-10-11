@@ -603,7 +603,7 @@ class spell_quest_spires_of_arak_free_prisoners : public SpellScriptLoader
                         {
                             l_Creature->CastStop(SpiresOfArakSpells::Rope);
                             l_Creature->RemoveAura(SpiresOfArakSpells::Rope);
-                            l_Creature->GetMotionMaster()->MoveFleeing(l_Caster, 5 * TimeConstants::IN_MILLISECONDS);
+                            l_Creature->GetMotionMaster()->MoveFleeing(l_Caster, false, 5 * TimeConstants::IN_MILLISECONDS);
                             l_Creature->DespawnOrUnsummon(5 * TimeConstants::IN_MILLISECONDS);
                         }
  

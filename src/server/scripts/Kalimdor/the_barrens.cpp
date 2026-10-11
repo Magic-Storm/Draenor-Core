@@ -1328,6 +1328,8 @@ public:
 				return false;
 			}
 		}
+
+		return false;
 	}
 
 	struct npc_halga_bloodeye_34258AI : public ScriptedAI

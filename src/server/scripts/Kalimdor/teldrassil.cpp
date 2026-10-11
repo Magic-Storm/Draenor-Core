@@ -330,7 +330,7 @@ public:
 				return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
 			if (Creature* creature = target->ToCreature())
-				if (creature->GetEntry() == (NPC_GRELKIN1 || NPC_GRELKIN2))
+				if (creature->GetEntry() == NPC_GRELKIN1 || creature->GetEntry() == NPC_GRELKIN2)
 					if (creature->isAlive())
 						return SPELL_CAST_OK;
 

@@ -1249,7 +1249,7 @@ namespace MS { namespace Skill
                         uint32 l_ItemLevel = l_Player->GetEquipItemLevelFor(l_ItemTarget->GetTemplate(), l_ItemTarget);
 
                         SpellInfo const* l_SpellInfo = GetSpellInfo();
-                        if (!l_SpellInfo || !m_UpgradeSpells[l_SpellInfo->Id].size() != 5)
+                        if (!l_SpellInfo || m_UpgradeSpells[l_SpellInfo->Id].size() != 5)
                             return;
 
 						if (l_ItemLevel >= 700)

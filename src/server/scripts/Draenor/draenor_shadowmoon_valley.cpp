@@ -27,19 +27,19 @@ public:
 
 		if (p_Player->GetZoneId() == 6719) // Shadowmoon Valley
 		{
-			if (p_Player->GetQuestStatus(eQuests::QuestStepThreeProphet) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED) // 2
+			if (p_Player->GetQuestStatus(eQuests::QuestStepThreeProphet) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(eQuests::QuestStepThreeProphet) == QUEST_STATUS_REWARDED) // 2
 			{
-				l_PhaseMask == 3;
+				l_PhaseMask = 3;
 			}
 
 			if (p_Player->GetQuestStatus(eQuests::QuestFindingAFoothold) == QUEST_STATUS_COMPLETE) // 4
 			{
-				l_PhaseMask == 5;
+				l_PhaseMask = 5;
 			}
 
-			if (p_Player->GetQuestStatus(eQuests::QuestForTheAlliance) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED) // 4+8
+			if (p_Player->GetQuestStatus(eQuests::QuestForTheAlliance) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(eQuests::QuestForTheAlliance) == QUEST_STATUS_REWARDED) // 4+8
 			{
-				l_PhaseMask == 13;
+				l_PhaseMask = 13;
 			}
 
 			if (p_Player->GetQuestStatus(eQuests::QuestLookingForLumber) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED) // 16

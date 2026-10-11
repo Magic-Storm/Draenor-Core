@@ -338,7 +338,7 @@ class boss_wase_mari : public CreatureScript
 
                             Talk(TEXT_PHASE_SWITCH);
                             std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
-                            threatlist.empty();
+                            threatlist.clear();
                             me->GetMotionMaster()->MovePoint(1, me->GetHomePosition());
 
                             me->RemoveAurasDueToSpell(SPELL_WATER_BUBBLE);

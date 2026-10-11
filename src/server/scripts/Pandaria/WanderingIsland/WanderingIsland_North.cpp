@@ -117,9 +117,11 @@ public:
 		/// UPDATE PHASEMASK DEPENDING OF QUESTS
 		uint32 l_PhaseMask = p_Player->GetPhaseMask();
 
-		if (p_Player->GetQuestStatus(30042 || 30039 || 30041 || 30044 || 30004 || 30043 || 30040 || 30045) == QUEST_STATUS_COMPLETE)
+		if (p_Player->GetQuestStatus(30042) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(30039) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(30041) == QUEST_STATUS_COMPLETE
+			|| p_Player->GetQuestStatus(30044) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(30004) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(30043) == QUEST_STATUS_COMPLETE
+			|| p_Player->GetQuestStatus(30040) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(30045) == QUEST_STATUS_COMPLETE)
 		{
-			l_PhaseMask == 5; // To avoid weird bugs we ensure the phases are correct at the starting of the questline
+			l_PhaseMask = 5; // To avoid weird bugs we ensure the phases are correct at the starting of the questline
 		}
 
 		if (p_Player->GetQuestStatus(29524) == QUEST_STATUS_COMPLETE)

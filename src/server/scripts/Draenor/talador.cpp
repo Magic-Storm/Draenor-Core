@@ -58,7 +58,7 @@ class npc_talador_warlock_soulstealer : public CreatureScript
                         if (l_Unit->HasAura(TormentedSoul))
                         {
                             l_Unit->RemoveAura(TormentedSoul);
-                            l_Unit->GetMotionMaster()->MoveFleeing(me, 5 * TimeConstants::IN_MILLISECONDS);
+                            l_Unit->GetMotionMaster()->MoveFleeing(me, false, 5 * TimeConstants::IN_MILLISECONDS);
                             l_Unit->ToCreature()->DespawnOrUnsummon(5 * TimeConstants::IN_MILLISECONDS);
                             l_PlayerKiller->KilledMonsterCredit(KillCredit_RescueDraeneiSpirits);
                         }

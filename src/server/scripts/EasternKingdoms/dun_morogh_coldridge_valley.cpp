@@ -1688,14 +1688,14 @@ public:
 
 		void DamageTaken(Unit* doneBy, uint32& damage, SpellInfo const* /*p_SpellInfo*/) override
 		{
-			if (doneBy->ToCreature()->GetEntry() == (NPC_FROSTMANE_SCOUT || NPC_FROSTMANE_SCAVENGER))
+			if (doneBy->ToCreature() && (doneBy->ToCreature()->GetEntry() == NPC_FROSTMANE_SCOUT || doneBy->ToCreature()->GetEntry() == NPC_FROSTMANE_SCAVENGER))
 				if (me->GetHealth() <= damage || me->GetHealthPct() <= 87.0f)
 					damage = 0;
 		}
 
 		void DamageDealt(Unit* target, uint32& damage, DamageEffectType /*damageType*/) override
 		{
-			if (target->ToCreature()->GetEntry() == (NPC_FROSTMANE_SCOUT || NPC_FROSTMANE_SCAVENGER))
+			if (target->ToCreature() && (target->ToCreature()->GetEntry() == NPC_FROSTMANE_SCOUT || target->ToCreature()->GetEntry() == NPC_FROSTMANE_SCAVENGER))
 				if (target->GetHealth() <= damage || target->GetHealthPct() <= 91.0f)
 					damage = 0;
 		}
@@ -1761,14 +1761,14 @@ public:
 
 		void DamageTaken(Unit* doneBy, uint32& damage, SpellInfo const* /*p_SpellInfo*/) override
 		{
-			if (doneBy->ToCreature()->GetEntry() == (NPC_FROSTMANE_SCOUT || NPC_FROSTMANE_SCAVENGER))
+			if (doneBy->ToCreature() && (doneBy->ToCreature()->GetEntry() == NPC_FROSTMANE_SCOUT || doneBy->ToCreature()->GetEntry() == NPC_FROSTMANE_SCAVENGER))
 				if (me->GetHealth() <= damage || me->GetHealthPct() <= 87.0f)
 					damage = 0;
 		}
 
 		void DamageDealt(Unit* target, uint32& damage, DamageEffectType /*damageType*/) override
 		{
-			if (target->ToCreature()->GetEntry() == (NPC_FROSTMANE_SCOUT || NPC_FROSTMANE_SCAVENGER))
+			if (target->ToCreature() && (target->ToCreature()->GetEntry() == NPC_FROSTMANE_SCOUT || target->ToCreature()->GetEntry() == NPC_FROSTMANE_SCAVENGER))
 				if (target->GetHealth() <= damage || target->GetHealthPct() <= 91.0f)
 					damage = 0;
 		}

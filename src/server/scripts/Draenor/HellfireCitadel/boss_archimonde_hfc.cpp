@@ -1252,7 +1252,7 @@ class spell_citadel_arcane_barrage : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 
@@ -1278,7 +1278,7 @@ class spell_citadel_arcane_missiles : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 
@@ -1304,7 +1304,7 @@ class spell_citadel_arcane_blast : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 
@@ -1330,7 +1330,7 @@ class spell_citadel_bladestorm : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 
@@ -1356,7 +1356,7 @@ class spell_citadel_mortal_strike : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 
@@ -1382,7 +1382,7 @@ class spell_citadel_dragon_roar : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 
@@ -1408,7 +1408,7 @@ class spell_citadel_flash_of_light : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 94142 || !target->GetEntry() == 92769 || !target->GetEntry() == 93618;
+			return target->IsPlayer() || (target->GetEntry() != 94142 && target->GetEntry() != 92769 && target->GetEntry() != 93618);
 		});
 	}
 
@@ -1434,7 +1434,7 @@ class spell_citadel_holy_shock : public SpellScript
 
 		targets.remove_if([](WorldObject* target) -> bool
 		{
-			return target->IsPlayer() || !target->GetEntry() == 91331;
+			return target->IsPlayer() || target->GetEntry() != 91331;
 		});
 	}
 

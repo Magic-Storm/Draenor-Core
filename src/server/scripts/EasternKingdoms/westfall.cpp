@@ -34,14 +34,14 @@ public:
 
 		if (p_NewAreaId == 109)
 		{
-			if (p_Player->GetQuestStatus(26215) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED)
+			if (p_Player->GetQuestStatus(26215) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(26215) == QUEST_STATUS_REWARDED)
 			{
-				l_PhaseMask == 3; // Lou alive
+				l_PhaseMask = 3; // Lou alive
 			}
 
-			if (p_Player->GetQuestStatus(26232) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED)
+			if (p_Player->GetQuestStatus(26232) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(26232) == QUEST_STATUS_REWARDED)
 			{
-				l_PhaseMask == 5; // Lou dead
+				l_PhaseMask = 5; // Lou dead
 			}
 
 			p_Player->SetPhaseMask(l_PhaseMask, true);
@@ -54,14 +54,14 @@ public:
 		{
 			uint32 l_PhaseMask = p_Player->GetPhaseMask();
 
-			if (p_Player->GetQuestStatus(26215) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED)
+			if (p_Player->GetQuestStatus(26215) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(26215) == QUEST_STATUS_REWARDED)
 			{
-				l_PhaseMask == 3; // Lou alive
+				l_PhaseMask = 3; // Lou alive
 			}
 
-			if (p_Player->GetQuestStatus(26232) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED)
+			if (p_Player->GetQuestStatus(26232) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(26232) == QUEST_STATUS_REWARDED)
 			{
-				l_PhaseMask == 5; // Lou dead
+				l_PhaseMask = 5; // Lou dead
 			}
 
 			p_Player->SetPhaseMask(l_PhaseMask, true);

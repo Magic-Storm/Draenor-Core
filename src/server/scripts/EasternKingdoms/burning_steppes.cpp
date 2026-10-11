@@ -198,7 +198,7 @@ public:
 							me->CastSpell(me, SPELL_COSMETIC_STUN); // Stun cosmetic
 
 							me->setFaction(35); // Default faction to stop attacking
-							me->canWalk() == false;
+							me->SetWalk(false);
 
 							me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); // Immune to nearby players and npcs
 							me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
@@ -237,7 +237,7 @@ public:
 					me->RemoveAurasDueToSpell(SPELL_COSMETIC_STUN); // Remove stun cosmetic
 
 					me->setFaction(103); // Hostile faction to start attacking
-					me->canWalk() == true;
+					me->SetWalk(true);
 
 					me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); // Remove immunity
 					me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
@@ -274,7 +274,7 @@ public:
 						me->CastSpell(me, SPELL_PERFECTLY_TUNED); // Cast spell Perfectly Tuned
 						
 						me->setFaction(35); // Default faction to stop attacking
-						me->canWalk() == false;
+						me->SetWalk(false);
 
 						me->SetHealth(me->CountPctFromMaxHealth(1.0f)); // Set health 1 out of max health
 						me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); // Remove Non-attackable flag

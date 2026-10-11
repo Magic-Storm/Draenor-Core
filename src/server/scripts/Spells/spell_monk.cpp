@@ -5619,7 +5619,7 @@ class spell_monk_extend_life : public AuraScript
 
 		for (Unit* unit : targetList)
 			if (unit->HasAura(SPELL_MONK_EXTEND_LIFE_AURA, l_Caster->GetGUID()))
-				l_Caster->CastCustomSpell(SPELL_MONK_EXTEND_LIFE_HEAL, SPELLVALUE_BASE_POINT0, heal, unit, TRIGGERED_FULL_MASK);
+				l_Caster->CastCustomSpell(SPELL_MONK_EXTEND_LIFE_HEAL, SPELLVALUE_BASE_POINT0, int32(heal), unit, true);
 	}
 
 	void Register() override

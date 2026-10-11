@@ -3031,9 +3031,10 @@ class spell_dru_moonfire : public SpellScriptLoader
 
 				if (l_Caster->HasAura(eSpells::T18_Balance_2P))
 				{
-					if (roll_chance_i)
+					if (SpellInfo const* l_BonusSpell = sSpellMgr->GetSpellInfo(eSpells::T18_Balance_2P))
 					{
-						l_Caster->CastSpell(l_Caster, eSpells::FeyMoonwing, true);
+						if (roll_chance_i(l_BonusSpell->Effects[EFFECT_0].BasePoints))
+							l_Caster->CastSpell(l_Caster, eSpells::FeyMoonwing, true);
 					}
 				}
 			}
@@ -3145,9 +3146,10 @@ class spell_dru_sunfire : public SpellScriptLoader
 
 				if (l_Caster->HasAura(eSpells::T18_Balance_2P))
 				{
-					if (roll_chance_i)
+					if (SpellInfo const* l_BonusSpell = sSpellMgr->GetSpellInfo(eSpells::T18_Balance_2P))
 					{
-						l_Caster->CastSpell(l_Caster, eSpells::FeyMoonwing, true);
+						if (roll_chance_i(l_BonusSpell->Effects[EFFECT_0].BasePoints))
+							l_Caster->CastSpell(l_Caster, eSpells::FeyMoonwing, true);
 					}
 				}
 			}
@@ -3244,9 +3246,10 @@ class spell_dru_moonfire_sunfire_damage : public SpellScriptLoader
 
 				if (l_Caster->HasAura(eSpells::T18_Balance_2P))
 				{
-					if (roll_chance_i)
+					if (SpellInfo const* l_BonusSpell = sSpellMgr->GetSpellInfo(eSpells::T18_Balance_2P))
 					{
-						l_Caster->CastSpell(l_Caster, eSpells::FeyMoonwing, true);
+						if (roll_chance_i(l_BonusSpell->Effects[EFFECT_0].BasePoints))
+							l_Caster->CastSpell(l_Caster, eSpells::FeyMoonwing, true);
 					}
 				}
 			}

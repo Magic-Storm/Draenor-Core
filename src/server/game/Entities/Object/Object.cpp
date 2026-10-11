@@ -3208,11 +3208,12 @@ void Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
                     if (p_Pet->IsPetGhoul())
                         p_Pet->setPowerType(POWER_ENERGY);
 
-					if (entry == 54569)
-						duration == 900 * IN_MILLISECONDS;
+                    uint32 l_Duration = duration;
+                    if (entry == 54569)
+                        l_Duration = 900 * IN_MILLISECONDS;
 
-                    if (duration > 0)
-                        p_Pet->SetDuration(duration);
+                    if (l_Duration > 0)
+                        p_Pet->SetDuration(l_Duration);
 
                     p_Callback(p_Pet, true);
                 });

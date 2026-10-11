@@ -3792,7 +3792,7 @@ void SpellMgr::LoadSpellCustomAttr()
 			case 59547: ///< Gift of the Naaru (Shaman)
 			case 59548: ///< Gift of the Naaru (Mage)
 			case 121093: ///< Gift of the Naaru (Monk)
-				spellInfo->SpellFamilyFlags[2] == 0x80000000;
+				spellInfo->SpellFamilyFlags[2] = 0x80000000;
 				break;
             ///////////////////////////////////////////////////////////////////////////////////
             /// Stables

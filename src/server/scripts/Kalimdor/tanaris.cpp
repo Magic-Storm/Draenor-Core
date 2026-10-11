@@ -108,14 +108,14 @@ public:
 		{
 			uint32 l_PhaseMask = p_Player->GetPhaseMask();
 
-			if (p_Player->GetQuestStatus(27003) == (QUEST_STATUS_INCOMPLETE || QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED)) // If player has quest: Easy Money
+			if (p_Player->GetQuestStatus(27003) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(27003) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(27003) == QUEST_STATUS_REWARDED) // If player has quest: Easy Money
 			{
-				l_PhaseMask == 2;
+				l_PhaseMask = 2;
 			}
 
 			if (p_Player->GetQuestStatus(27922) == QUEST_STATUS_REWARDED) // Traitors!
 			{
-				l_PhaseMask == 2;
+				l_PhaseMask = 2;
 			}
 
 			p_Player->SetPhaseMask(l_PhaseMask, true);
@@ -145,14 +145,14 @@ public:
 		{
 			uint32 l_PhaseMask = p_Player->GetPhaseMask();
 
-			if (p_Player->GetQuestStatus(27003) ==  (QUEST_STATUS_INCOMPLETE || QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED)) // If player has quest: Easy Money
+			if (p_Player->GetQuestStatus(27003) == QUEST_STATUS_INCOMPLETE || p_Player->GetQuestStatus(27003) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(27003) == QUEST_STATUS_REWARDED) // If player has quest: Easy Money
 			{
-				l_PhaseMask == 2;
+				l_PhaseMask = 2;
 			}
 
 			if (p_Player->GetQuestStatus(27922) == QUEST_STATUS_REWARDED) // Traitors!
 			{
-				l_PhaseMask == 2;
+				l_PhaseMask = 2;
 			}
 
 			p_Player->SetPhaseMask(l_PhaseMask, true);
@@ -1333,9 +1333,9 @@ public:
 
 		void Reset() override
 		{
-			m_Health = urand(87.0f, 91.0f);
+			m_Health = urand(87, 91);
 
-			if (me->GetGUID() == (275868 || 275867 || 274428 || 274427)) // Covert Ops Hardsuit and Bilgewater Battlebruiser next to Megs and Kelsey
+			if (me->GetGUID() == 275868 || me->GetGUID() == 275867 || me->GetGUID() == 274428 || me->GetGUID() == 274427) // Covert Ops Hardsuit and Bilgewater Battlebruiser next to Megs and Kelsey
 			{
 				me->HandleEmoteCommand(EMOTE_STATE_READY1H);
 				me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
@@ -2905,6 +2905,8 @@ public:
 				}
 				return SPELL_FAILED_BAD_TARGETS;
 			}
+
+			return SPELL_FAILED_BAD_TARGETS;
 		}
 
 		void Register()

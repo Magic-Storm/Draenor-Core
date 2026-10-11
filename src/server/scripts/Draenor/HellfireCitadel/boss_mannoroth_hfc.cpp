@@ -168,7 +168,7 @@ public:
 		bool m_Phase2;
 		bool m_Phase3;
 		bool m_Phase4;
-		bool m_PhaseID;
+		uint8 m_PhaseID;
 
 		void Reset() override
 		{
@@ -2139,7 +2139,7 @@ public:
 
 		InstanceScript* m_Instance;
 
-		bool m_PhaseID;
+		uint8 m_PhaseID;
 
 		void Reset() override
 		{

@@ -989,7 +989,7 @@ PVOID pAddress)
             if (!IsBadStringPtr(*(PSTR*)pAddress, 32))
             {
                 pszCurrBuffer += snprintf(pszCurrBuffer, sizeof(pszCurrBuffer), " = \"%.31s\"",
-                    *(PSTR)pAddress);
+                    *(PSTR*)pAddress);
             }
             else
                 pszCurrBuffer += snprintf(pszCurrBuffer, sizeof(pszCurrBuffer), " = %X",

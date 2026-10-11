@@ -27,13 +27,19 @@
 #else
 # define _ENDIAN_STRING "little-endian"
 #endif
+/* Stringify config name from -D_BUILD_DIRECTIVE=RelWithDebInfo (avoids C7772 quote escaping issues) */
+#ifndef _BUILD_DIRECTIVE
+# define _BUILD_DIRECTIVE unknown
+#endif
+#define _BUILD_DIRECTIVE_STR_HELPER(x) #x
+#define _BUILD_DIRECTIVE_STR(x) _BUILD_DIRECTIVE_STR_HELPER(x)
 #if PLATFORM == PLATFORM_WINDOWS
 # ifdef _WIN64
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION " " _BUILD_DIRECTIVE " Hash: " _HASH " (Win64, " _ENDIAN_STRING ")"
+#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION " " _BUILD_DIRECTIVE_STR(_BUILD_DIRECTIVE) " Hash: " _HASH " (Win64, " _ENDIAN_STRING ")"
 # else
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION " " _BUILD_DIRECTIVE " Hash: " _HASH " (Win32, " _ENDIAN_STRING ")"
+#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION " " _BUILD_DIRECTIVE_STR(_BUILD_DIRECTIVE) " Hash: " _HASH " (Win32, " _ENDIAN_STRING ")"
 # endif
 #else
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION " " _BUILD_DIRECTIVE " Hash: " _HASH " (Unix, " _ENDIAN_STRING ")"
+#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION " " _BUILD_DIRECTIVE_STR(_BUILD_DIRECTIVE) " Hash: " _HASH " (Unix, " _ENDIAN_STRING ")"
 #endif
 #endif

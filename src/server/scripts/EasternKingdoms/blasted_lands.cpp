@@ -70,9 +70,9 @@ public:
 				l_PhaseMask |= 2; // Loramus inside cave
 			}
 
-			if (p_Player->GetQuestStatus(26163) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED) // Time is short
+			if (p_Player->GetQuestStatus(26163) == QUEST_STATUS_COMPLETE || p_Player->GetQuestStatus(26163) == QUEST_STATUS_REWARDED) // Time is short
 			{
-				l_PhaseMask == 1; // Loramus not inside cave
+				l_PhaseMask = 1; // Loramus not inside cave
 			}
 
 			if (p_Player->GetQuestStatus(26162) == QUEST_STATUS_COMPLETE || QUEST_STATUS_REWARDED) // Altar of the Storms

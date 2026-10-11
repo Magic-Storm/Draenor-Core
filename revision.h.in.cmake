@@ -10,6 +10,25 @@
  #define _SOURCE_DIRECTORY          R"(@CMAKE_SOURCE_DIR@)"
  #define _BUILD_DIRECTORY           R"(@BUILDDIR@)"
  #define _MYSQL_EXECUTABLE          R"(@MYSQL_EXECUTABLE@)"
+ /* Avoid C4005 when Windows SDK (ntverp) already defined these */
+ #ifdef VER_COMPANYNAME_STR
+ # undef VER_COMPANYNAME_STR
+ #endif
+ #ifdef VER_LEGALCOPYRIGHT_STR
+ # undef VER_LEGALCOPYRIGHT_STR
+ #endif
+ #ifdef VER_FILEVERSION
+ # undef VER_FILEVERSION
+ #endif
+ #ifdef VER_FILEVERSION_STR
+ # undef VER_FILEVERSION_STR
+ #endif
+ #ifdef VER_PRODUCTVERSION
+ # undef VER_PRODUCTVERSION
+ #endif
+ #ifdef VER_PRODUCTVERSION_STR
+ # undef VER_PRODUCTVERSION_STR
+ #endif
  #define VER_COMPANYNAME_STR        "DraenorCore - Warlords of Draenor Private Server Source"
  #define VER_LEGALCOPYRIGHT_STR     "(c)2022-@rev_year@ DraenorCore"
  #define VER_FILEVERSION            0,0,0

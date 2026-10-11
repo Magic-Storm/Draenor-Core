@@ -450,31 +450,32 @@ struct Waypoint
     float X, Y, Z;
 };
 
-Waypoint NW_WAYPOINT_LOC1[2]=
+// static: header is included by multiple TUs (Duskhaven + Gilneas_city_part3)
+static Waypoint NW_WAYPOINT_LOC1[2]=
 {
     { -1630.62f, 1480.55f, 70.40f }, // Worgen Runt 1 top edge of Roof Waypoint
     { -1636.01f, 1475.81f, 64.51f }  // Worgen Runt 1 Edge of Roof Waypoint
 };
 
-Waypoint NW_WAYPOINT_LOC2[2]=
+static Waypoint NW_WAYPOINT_LOC2[2]=
 {
     { -1637.26f, 1488.86f, 69.95f }, // Worgen Runt 1 top edge of Roof Waypoint
     { -1642.45f, 1482.23f, 64.30f }  // Worgen Runt 1 Edge of Roof Waypoint
 };
 
-Waypoint SW_WAYPOINT_LOC1[2]=
+static Waypoint SW_WAYPOINT_LOC1[2]=
 {
     { -1718.31f, 1526.62f, 55.91f }, // Worgen Runt 2 Corner where we turn
     { -1717.86f, 1490.77f, 56.61f }  // Worgen Runt 2 Edge of Roof Waypoint
 };
 
-Waypoint SW_WAYPOINT_LOC2[2]=
+static Waypoint SW_WAYPOINT_LOC2[2]=
 {
     { -1718.31f, 1526.62f, 55.91f }, // Worgen Alpha 1 Corner where we turn
     { -1717.86f, 1487.00f, 57.07f }  // Worgen Alpha 1 Edge of Roof Waypoint
 };
 
-Waypoint N_WAYPOINT_LOC[1]=
+static Waypoint N_WAYPOINT_LOC[1]=
 {
     { -1593.38f, 1408.02f, 72.64f } // Worgen Runt 2 Edge of Roof Waypoint
 };

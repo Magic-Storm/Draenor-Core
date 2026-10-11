@@ -132,6 +132,8 @@ public:
 			}
 			return true;
 		}
+
+		return false;
 	}
 
 	bool OnGossipSelect(Player* p_Player, GameObject* p_GameObject, uint32 p_Sender, uint32 p_Action)

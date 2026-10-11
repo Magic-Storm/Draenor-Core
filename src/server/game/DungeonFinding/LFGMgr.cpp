@@ -494,7 +494,7 @@ void LFGMgr::JoinLfg(Player* player, LfgRoles roles, LfgDungeonSet& dungeons, co
     uint32 rDungeonId = 0;
     uint32 queueId = GetActiveQueueId(gguid);
     bool isContinue = false;
-    bool isContinueDungeonRequest = group && group->isLFGGroup() != LFG_STATE_FINISHED_DUNGEON;
+    bool isContinueDungeonRequest = group && group->isLFGGroup() && GetState(gguid, queueId) != LFG_STATE_FINISHED_DUNGEON;
 
     // Check if all dungeons are valid
     if (joinData.result == LFG_JOIN_OK)
