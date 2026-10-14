@@ -17,6 +17,15 @@ class boss_gorefiend_hfc : public CreatureScript
 public:
 	boss_gorefiend_hfc() : CreatureScript("boss_gorefiend_hfc") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
 	struct boss_gorefiend_hfcAI : public BossAI
 	{
 		boss_gorefiend_hfcAI(Creature* p_Creature)
@@ -41,6 +50,7 @@ public:
 		void EnterCombat(Unit* p_Who) override
 		{
 			_EnterCombat();
+            Talk(eTalks::TalkAggro);
 
 			events.ScheduleEvent(eGorefiendEvents::EventFeastOfSouls,  eGorefiendTimers::TimerFeastOfSouls);
 			events.ScheduleEvent(eGorefiendEvents::EventSharedFate,    eGorefiendTimers::TimerSharedFate);
@@ -49,8 +59,16 @@ public:
 			events.ScheduleEvent(eGorefiendEvents::EventHungerForLife, eGorefiendTimers::TimerHungerForLife);
 		}
 
-		void JustDied(Unit* /*p_Killer*/) override
+		void KilledUnit(Unit* p_Who) override
+        {
+            if (p_Who && p_Who->IsPlayer())
+                Talk(eTalks::TalkSlay);
+        }
+
+        void JustDied(Unit* /*p_Killer*/) override
 		{
+
+            Talk(eTalks::TalkDeath);
 			_JustDied();
 
 			/// Rescue any souls still trapped in the realm
@@ -238,6 +256,15 @@ class npc_gorebound_spirit : public CreatureScript
 public:
 	npc_gorebound_spirit() : CreatureScript("npc_gorebound_spirit") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
 	struct npc_gorebound_spiritAI : public ScriptedAI
 	{
 		npc_gorebound_spiritAI(Creature* p_Creature)
@@ -290,6 +317,15 @@ class npc_tortured_essence : public CreatureScript
 {
 public:
 	npc_tortured_essence() : CreatureScript("npc_tortured_essence") { }
+
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
 
 	struct npc_tortured_essenceAI : public ScriptedAI
 	{

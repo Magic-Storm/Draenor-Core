@@ -1328,6 +1328,358 @@ public:
 	}
 };
 
+/// ---------------------------------------------------------------------------
+/// Bastion of Shadows trash
+/// https://www.wowhead.com/guide/raiding/hellfire-citadel/shadow-lord-iskar-strategy-guide
+/// ---------------------------------------------------------------------------
+
+/// Delusional Zealot - 93955
+class npc_hfc_delusional_zealot : public CreatureScript
+{
+public:
+	npc_hfc_delusional_zealot() : CreatureScript("npc_hfc_delusional_zealot") { }
+
+	enum eEvents
+	{
+		EventSolarChakram = 1,
+	};
+
+	struct npc_hfc_delusional_zealotAI : public ScriptedAI
+	{
+		npc_hfc_delusional_zealotAI(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+		EventMap m_Events;
+
+		void Reset() override
+		{
+			m_Events.Reset();
+		}
+
+		void EnterCombat(Unit* /*p_Who*/) override
+		{
+			m_Events.ScheduleEvent(eEvents::EventSolarChakram, 8 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void UpdateAI(uint32 const p_Diff) override
+		{
+			if (!UpdateVictim())
+				return;
+
+			m_Events.Update(p_Diff);
+
+			if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+				return;
+
+			if (m_Events.ExecuteEvent() == eEvents::EventSolarChakram)
+			{
+				if (Unit* l_Target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 40.0f, true))
+					me->CastSpell(l_Target, eCitadelSpells::SpellSolarChakram, false);
+				m_Events.ScheduleEvent(eEvents::EventSolarChakram, 16 * TimeConstants::IN_MILLISECONDS);
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
+
+	CreatureAI* GetAI(Creature* p_Creature) const override
+	{
+		return new npc_hfc_delusional_zealotAI(p_Creature);
+	}
+};
+
+/// Corrupted Talonpriest - 93985
+class npc_hfc_corrupted_talonpriest : public CreatureScript
+{
+public:
+	npc_hfc_corrupted_talonpriest() : CreatureScript("npc_hfc_corrupted_talonpriest") { }
+
+	enum eEvents
+	{
+		EventFelBomb = 1,
+	};
+
+	struct npc_hfc_corrupted_talonpriestAI : public ScriptedAI
+	{
+		npc_hfc_corrupted_talonpriestAI(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+		EventMap m_Events;
+
+		void Reset() override
+		{
+			m_Events.Reset();
+		}
+
+		void EnterCombat(Unit* /*p_Who*/) override
+		{
+			m_Events.ScheduleEvent(eEvents::EventFelBomb, 10 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void UpdateAI(uint32 const p_Diff) override
+		{
+			if (!UpdateVictim())
+				return;
+
+			m_Events.Update(p_Diff);
+
+			if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+				return;
+
+			if (m_Events.ExecuteEvent() == eEvents::EventFelBomb)
+			{
+				if (Unit* l_Target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 40.0f, true))
+					me->CastSpell(l_Target, eCitadelSpells::SpellPhantasmalFelBombTrash, false);
+				m_Events.ScheduleEvent(eEvents::EventFelBomb, 18 * TimeConstants::IN_MILLISECONDS);
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
+
+	CreatureAI* GetAI(Creature* p_Creature) const override
+	{
+		return new npc_hfc_corrupted_talonpriestAI(p_Creature);
+	}
+};
+
+/// Shadowfel Warden - 93968
+class npc_hfc_shadowfel_warden : public CreatureScript
+{
+public:
+	npc_hfc_shadowfel_warden() : CreatureScript("npc_hfc_shadowfel_warden") { }
+
+	enum eEvents
+	{
+		EventFelConduit = 1,
+		EventChain,
+	};
+
+	struct npc_hfc_shadowfel_wardenAI : public ScriptedAI
+	{
+		npc_hfc_shadowfel_wardenAI(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+		EventMap m_Events;
+
+		void Reset() override
+		{
+			m_Events.Reset();
+		}
+
+		void EnterCombat(Unit* /*p_Who*/) override
+		{
+			m_Events.ScheduleEvent(eEvents::EventFelConduit, 12 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void UpdateAI(uint32 const p_Diff) override
+		{
+			if (!UpdateVictim())
+				return;
+
+			m_Events.Update(p_Diff);
+
+			if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+				return;
+
+			switch (m_Events.ExecuteEvent())
+			{
+				case eEvents::EventFelConduit:
+				{
+					me->CastSpell(me, eCitadelSpells::SpellFelConduit, false);
+					m_Events.ScheduleEvent(eEvents::EventChain, 1 * TimeConstants::IN_MILLISECONDS);
+					m_Events.ScheduleEvent(eEvents::EventFelConduit, 25 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				case eEvents::EventChain:
+				{
+					if (Unit* l_Target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 40.0f, true))
+						me->CastSpell(l_Target, eCitadelSpells::SpellFelChainLightning, false);
+					break;
+				}
+				default:
+					break;
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
+
+	CreatureAI* GetAI(Creature* p_Creature) const override
+	{
+		return new npc_hfc_shadowfel_wardenAI(p_Creature);
+	}
+};
+
+/// Korvos - 95642 (Halls of the Sargerei)
+class npc_hfc_korvos : public CreatureScript
+{
+public:
+	npc_hfc_korvos() : CreatureScript("npc_hfc_korvos") { }
+
+	enum eEvents
+	{
+		EventCarrion = 1,
+		EventTorpor,
+		EventCleave,
+	};
+
+	struct npc_hfc_korvosAI : public ScriptedAI
+	{
+		npc_hfc_korvosAI(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+		EventMap m_Events;
+
+		void Reset() override
+		{
+			m_Events.Reset();
+		}
+
+		void EnterCombat(Unit* /*p_Who*/) override
+		{
+			Talk(0);
+			m_Events.ScheduleEvent(eEvents::EventCleave, 6 * TimeConstants::IN_MILLISECONDS);
+			m_Events.ScheduleEvent(eEvents::EventTorpor, 12 * TimeConstants::IN_MILLISECONDS);
+			m_Events.ScheduleEvent(eEvents::EventCarrion, 18 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
+		}
+
+		void UpdateAI(uint32 const p_Diff) override
+		{
+			if (!UpdateVictim())
+				return;
+
+			m_Events.Update(p_Diff);
+
+			if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+				return;
+
+			switch (m_Events.ExecuteEvent())
+			{
+				case eEvents::EventCleave:
+				{
+					DoCastVictim(eCitadelSpells::SpellVampiricCleave);
+					m_Events.ScheduleEvent(eEvents::EventCleave, 10 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				case eEvents::EventTorpor:
+				{
+					if (Unit* l_Target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 30.0f, true))
+						me->CastSpell(l_Target, eCitadelSpells::SpellTorpor, false);
+					m_Events.ScheduleEvent(eEvents::EventTorpor, 20 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				case eEvents::EventCarrion:
+				{
+					if (Unit* l_Target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 40.0f, true))
+						me->CastSpell(l_Target, eCitadelSpells::SpellCarrionSwarm, false);
+					m_Events.ScheduleEvent(eEvents::EventCarrion, 22 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				default:
+					break;
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
+
+	CreatureAI* GetAI(Creature* p_Creature) const override
+	{
+		return new npc_hfc_korvosAI(p_Creature);
+	}
+};
+
+/// Adjunct Kuroh - 91520 (Temple of Tyranny)
+class npc_hfc_adjunct_kuroh : public CreatureScript
+{
+public:
+	npc_hfc_adjunct_kuroh() : CreatureScript("npc_hfc_adjunct_kuroh") { }
+
+	enum eEvents
+	{
+		EventMending = 1,
+		EventSeal,
+		EventRevival,
+	};
+
+	struct npc_hfc_adjunct_kurohAI : public ScriptedAI
+	{
+		npc_hfc_adjunct_kurohAI(Creature* p_Creature) : ScriptedAI(p_Creature) { }
+
+		EventMap m_Events;
+
+		void Reset() override
+		{
+			m_Events.Reset();
+		}
+
+		void EnterCombat(Unit* /*p_Who*/) override
+		{
+			Talk(0);
+			m_Events.ScheduleEvent(eEvents::EventSeal, 5 * TimeConstants::IN_MILLISECONDS);
+			m_Events.ScheduleEvent(eEvents::EventMending, 10 * TimeConstants::IN_MILLISECONDS);
+			m_Events.ScheduleEvent(eEvents::EventRevival, 20 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
+		}
+
+		void UpdateAI(uint32 const p_Diff) override
+		{
+			if (!UpdateVictim())
+				return;
+
+			m_Events.Update(p_Diff);
+
+			if (me->HasUnitState(UnitState::UNIT_STATE_CASTING))
+				return;
+
+			switch (m_Events.ExecuteEvent())
+			{
+				case eEvents::EventSeal:
+				{
+					DoCastVictim(eCitadelSpells::SpellSealOfDecayTrash, true);
+					m_Events.ScheduleEvent(eEvents::EventSeal, 8 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				case eEvents::EventMending:
+				{
+					me->CastSpell(me, eCitadelSpells::SpellHarbingersMending, false);
+					m_Events.ScheduleEvent(eEvents::EventMending, 15 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				case eEvents::EventRevival:
+				{
+					Talk(2);
+					/// Dark Revival: pull nearby dead allies back into combat (simplified)
+					std::list<Creature*> l_Allies;
+					me->GetCreatureListWithEntryInGrid(l_Allies, eCitadelCreatures::NpcDelusionalZealot, 40.0f);
+					for (Creature* l_Ally : l_Allies)
+					{
+						if (l_Ally && !l_Ally->IsAlive())
+							l_Ally->Respawn(true);
+					}
+					m_Events.ScheduleEvent(eEvents::EventRevival, 30 * TimeConstants::IN_MILLISECONDS);
+					break;
+				}
+				default:
+					break;
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
+
+	CreatureAI* GetAI(Creature* p_Creature) const override
+	{
+		return new npc_hfc_adjunct_kurohAI(p_Creature);
+	}
+};
+
 #ifndef __clang_analyzer__
 void AddSC_hellfire_citadel()
 {
@@ -1351,6 +1703,13 @@ void AddSC_hellfire_citadel()
 	new npc_hfc_armored_skullsmasher();
 	new npc_hfc_keen_eyed_gronnstalker();
 	new npc_hfc_grim_ambusher();
+
+	/// Bastion of Shadows
+	new npc_hfc_delusional_zealot();
+	new npc_hfc_corrupted_talonpriest();
+	new npc_hfc_shadowfel_warden();
+	new npc_hfc_korvos();
+	new npc_hfc_adjunct_kuroh();
 
 	/// Destructor's Rise approach (first pass)
 	new npc_hfc_mekbarash();

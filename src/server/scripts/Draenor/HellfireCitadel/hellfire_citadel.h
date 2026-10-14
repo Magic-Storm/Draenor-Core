@@ -106,8 +106,11 @@ enum eCitadelCreatures
 	BossVelhari					= 93439,
 
 	NpcSoulboundConstruct		= 90296,
-	NpcKorvos					= 95642,
-	NpcAdjunctKuroh			= 91520,
+	NpcKorvos					= 95642,		///< Halls of the Sargerei mini-boss
+	NpcAdjunctKuroh			= 91520,		///< Temple of Tyranny (Velhari approach)
+	NpcDelusionalZealot		= 93955,		///< Iskar's Clutch trash
+	NpcShadowfelWarden		= 93968,
+	NpcCorruptedTalonpriest	= 93985,
 
 	/// Destructor's Rise - Part 4
 	BossZakuun					= 89890,
@@ -243,6 +246,18 @@ enum eCitadelSpells
 	SpellBlazingFelTouchAura	= 188448,
 	SpellGraggraSmash			= 188516,
 	SpellGraggraSmashLeap		= 188510,
+
+	/// Bastion of Shadows trash
+	/// https://www.wowhead.com/guide/raiding/hellfire-citadel/shadow-lord-iskar-strategy-guide
+	SpellSolarChakram			= 182367,	///< reuse Fel Chakram missile until sniff confirms Solar ID
+	SpellPhantasmalFelBombTrash	= 182200,
+	SpellFelConduit				= 188085,	///< placeholder empower (Hellweaving) until sniff
+	SpellFelChainLightning		= 187221,	///< placeholder chain (Fel Fireball) until sniff
+	SpellCarrionSwarm			= 187100,	///< Korvos — reuse Residual Shadows AoE until sniff
+	SpellTorpor					= 184793,	///< Korvos sleep — reuse Agitate CC placeholder
+	SpellVampiricCleave			= 188147,	///< Korvos cleave — reuse Mighty Smash
+	SpellHarbingersMending		= 188213,	///< Kuroh heal — reuse Fel Cauterize
+	SpellSealOfDecayTrash		= 180353,	///< same Seal of Decay as Velhari
 };
 
 enum eCitadelAchievements

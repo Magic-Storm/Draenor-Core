@@ -247,33 +247,7 @@ public:
 			if (!InstanceScript::SetBossState(p_BossID, p_State))
 				return false;
 
-			/// Handle Blackhand's doors - must be here in case of loading
-			/*for (uint8 l_I = 0; l_I < eFoundryDatas::DataBlackhand; ++l_I)
-			{
-				if (GetBossState(l_I) != EncounterState::DONE)
-					break;*/
-
-			/*if (GameObject* l_ReaverDoor = instance->GetGameObject(m_ReaverDoorGuid))
-				l_ReaverDoor->SetGoState(GOState::GO_STATE_ACTIVE);*/
-
 			instance->SetObjectVisibility(500.0f);
-			//}
-
-			/// Just cosmetic stuff
-			/*if (p_BossID == eCitadelDatas::DataBlastFurnace && p_State == EncounterState::DONE)
-			{
-				if (GameObject* l_HardenedSlag = instance->GetGameObject(m_HardenedSlagEntranceGuid))
-					l_HardenedSlag->SetGoState(GOState::GO_STATE_ACTIVE);
-
-				if (GameObject* l_HardenedSlagFurnace = instance->GetGameObject(m_HardenedSlagFurnaceGuid))
-					l_HardenedSlagFurnace->SetGoState(GOState::GO_STATE_ACTIVE);
-
-				if (GameObject* l_CrucibleLeft = instance->GetGameObject(m_CrucibleLeftGuid))
-					l_CrucibleLeft->SetAIAnimKitId(0);
-
-				if (GameObject* l_CrucibleRight = instance->GetGameObject(m_CrucibleRightGuid))
-					l_CrucibleRight->SetAIAnimKitId(0);
-			}*/
 
 			/// Don't handle the DONE state in case of loading
 			if (p_State == EncounterState::DONE && l_OldState != EncounterState::IN_PROGRESS)
@@ -542,152 +516,6 @@ public:
 			return true;
 		}
 
-		/*void SetData(uint32 p_Type, uint32 p_Data) override
-		{
-			switch (p_Type)
-			{
-			case eFoundryDatas::PristineTrueIronOres:
-			{
-				if (instance->IsLFR())
-					break;
-
-				++m_PristineTrueIronOres;
-				break;
-			}
-			case eFoundryDatas::VolatileOreGrinded:
-			{
-				if (instance->IsLFR())
-					break;
-
-				m_VolatileOreGrinded = p_Data != 0;
-				break;
-			}
-			case eFoundryDatas::PrimalElementalistTime:
-			{
-				if (instance->IsLFR())
-					break;
-
-				if (!m_PrimalElementalistTime)
-					m_PrimalElementalistTime = p_Data;
-				else
-				{
-					/// Defeating all four Primal Elementalists within 10 seconds of each other
-					if (p_Data > (m_PrimalElementalistTime + 10))
-						m_YaWeveGotTimeAchiev = false;
-					else
-						m_YaWeveGotTimeAchiev = true;
-				}
-
-				break;
-			}
-			case eFoundryDatas::PlayerStamped:
-			{
-				if (instance->IsLFR())
-					break;
-
-				m_StampStampRevolution = false;
-				break;
-			}
-			case eFoundryDatas::IronTaskmasterAggro:
-			{
-				m_IronTaskmasterAggro = true;
-				break;
-			}
-			case eFoundryDatas::AknorDied:
-			{
-				if (instance->IsLFR())
-					break;
-
-				m_SteelHasBeenBrought = false;
-				break;
-			}
-			case eFoundryDatas::GraspingEarthTime:
-			{
-				if (instance->IsLFR())
-					break;
-
-				/// Requirements are already completed, doesn't need to update
-				if (m_WouldYouGiveMeAHand)
-					break;
-
-				++m_GraspingEarthHandsCount;
-
-				/// Register first time kill
-				if (!m_GraspingEarthHandsTime)
-					m_GraspingEarthHandsTime = p_Data;
-
-				if (m_GraspingEarthHandsCount >= eFoundryDatas::MaxGraspingEarthHands)
-				{
-					if (p_Data < (m_GraspingEarthHandsTime + 5))
-						m_WouldYouGiveMeAHand = true;
-				}
-
-				break;
-			}
-			case eFoundryDatas::DarmacBeastMountedFirst:
-			{
-				if (instance->IsLFR())
-					break;
-
-				/// Already set
-				if (m_DarmacBeastMountedFirst > 0)
-					break;
-
-				m_DarmacBeastMountedFirst = p_Data;
-				SendUpdateWorldState(eFoundryWorldState::WorldStateDarmacAchievement, p_Data);
-				break;
-			}
-			case eFoundryDatas::DataThogarIntroStarted:
-			{
-				m_ThogarIntroStarted = true;
-				break;
-			}
-			case eFoundryDatas::IronMaidensKillTimer:
-			{
-				if (instance->IsLFR())
-					break;
-
-				if (!m_IronMaidensKillTime)
-					m_IronMaidensKillTime = p_Data;
-				else
-				{
-					/// Defeat the Iron Maidens within 10 seconds of each other
-					if (p_Data > (m_IronMaidensKillTime + 10))
-						m_BeQuickOrBeDeadAchiev = false;
-					else
-						m_BeQuickOrBeDeadAchiev = true;
-				}
-
-				break;
-			}
-			case eCitadelDatas::BlackhandAshCollected:
-			{
-				if (instance->IsLFR() || GetBossState(eCitadelDatas::DataBlackhand) != EncounterState::IN_PROGRESS)
-					break;
-
-				++m_CollectedAshes;
-				break;
-			}
-			default:
-				break;
-			}
-		}
-
-	/*	uint32 GetData(uint32 p_ID) override
-		{
-			switch (p_ID)
-			{
-			case eCitadelDatas::IronTaskmasterAggro:
-				return (uint32)m_IronTaskmasterAggro;
-			case eCitadelDatas::DataThogarIntroStarted:
-				return (uint32)m_ThogarIntroStarted;
-			default:
-				break;
-			}
-
-			return 0;
-		}*/
-
 		uint64 GetData64(uint32 p_Type) override
 		{
 			switch (p_Type)
@@ -745,7 +573,10 @@ public:
 			case eCitadelCreatures::BossArchimonde:
 			{
 				if (l_Creature->GetMap()->IsMythic())
-					DoCompleteAchievement(eCitadelAchievements::AchievementArchimondeMythic | AchievementArchimondeEdge);
+				{
+					DoCompleteAchievement(eCitadelAchievements::AchievementArchimondeMythic);
+					DoCompleteAchievement(eCitadelAchievements::AchievementArchimondeEdge);
+				}
 				else if (l_Creature->GetMap()->IsHeroic())
 					DoCompleteAchievement(eCitadelAchievements::AchievementArchimondeCurve);
 				else
@@ -792,14 +623,11 @@ public:
 				if (!instance->IsLFR())
 					m_DungeonID = 0;
 
-				std::vector<uint64> m_DisabledGoBs;
-
 				switch (m_DungeonID)
 				{
 				case eCitadelDungeons::Hellbreach:
 				{
 					uint32 l_DisabledMask = 0;
-
 					l_DisabledMask |= (1 << eCitadelDatas::DataCouncil);
 					l_DisabledMask |= (1 << eCitadelDatas::DataKilrogg);
 					l_DisabledMask |= (1 << eCitadelDatas::DataGorefiend);
@@ -810,19 +638,12 @@ public:
 					l_DisabledMask |= (1 << eCitadelDatas::DataXhulhorac);
 					l_DisabledMask |= (1 << eCitadelDatas::DataMannoroth);
 					l_DisabledMask |= (1 << eCitadelDatas::DataArchimonde);
-
 					SetDisabledBosses(l_DisabledMask);
-
-					/*m_DisabledGoBs.push_back(m_BlackForgeEntrance);
-					m_DisabledGoBs.push_back(m_IronAssemblyEntrance);
-					m_DisabledGoBs.push_back(m_SpikeGateGuid);
-					m_DisabledGoBs.push_back(m_CrucibleEntrance);*/
 					break;
 				}
 				case eCitadelDungeons::HallsofBlood:
 				{
 					uint32 l_DisabledMask = 0;
-
 					l_DisabledMask |= (1 << eCitadelDatas::DataMartak);
 					l_DisabledMask |= (1 << eCitadelDatas::DataReaver);
 					l_DisabledMask |= (1 << eCitadelDatas::DataKormrok);
@@ -833,19 +654,12 @@ public:
 					l_DisabledMask |= (1 << eCitadelDatas::DataXhulhorac);
 					l_DisabledMask |= (1 << eCitadelDatas::DataMannoroth);
 					l_DisabledMask |= (1 << eCitadelDatas::DataArchimonde);
-
 					SetDisabledBosses(l_DisabledMask);
-
-					/*m_DisabledGoBs.push_back(m_BlackForgeEntrance);
-					m_DisabledGoBs.push_back(m_IronAssemblyEntrance);
-					m_DisabledGoBs.push_back(m_SpikeGateGuid);
-					m_DisabledGoBs.push_back(m_CrucibleEntrance);*/
 					break;
 				}
 				case eCitadelDungeons::BastionofShadows:
 				{
 					uint32 l_DisabledMask = 0;
-
 					l_DisabledMask |= (1 << eCitadelDatas::DataMartak);
 					l_DisabledMask |= (1 << eCitadelDatas::DataReaver);
 					l_DisabledMask |= (1 << eCitadelDatas::DataKormrok);
@@ -856,19 +670,12 @@ public:
 					l_DisabledMask |= (1 << eCitadelDatas::DataXhulhorac);
 					l_DisabledMask |= (1 << eCitadelDatas::DataMannoroth);
 					l_DisabledMask |= (1 << eCitadelDatas::DataArchimonde);
-
 					SetDisabledBosses(l_DisabledMask);
-
-					/*m_DisabledGoBs.push_back(m_SlagworksEntrance);
-					m_DisabledGoBs.push_back(m_IronAssemblyEntrance);
-					m_DisabledGoBs.push_back(m_SpikeGateGuid);
-					m_DisabledGoBs.push_back(m_CrucibleEntrance);*/
 					break;
 				}
 				case eCitadelDungeons::DestructorRise:
 				{
 					uint32 l_DisabledMask = 0;
-
 					l_DisabledMask |= (1 << eCitadelDatas::DataMartak);
 					l_DisabledMask |= (1 << eCitadelDatas::DataReaver);
 					l_DisabledMask |= (1 << eCitadelDatas::DataKormrok);
@@ -879,20 +686,12 @@ public:
 					l_DisabledMask |= (1 << eCitadelDatas::DataSocrethar);
 					l_DisabledMask |= (1 << eCitadelDatas::DataVelhari);
 					l_DisabledMask |= (1 << eCitadelDatas::DataArchimonde);
-					
-
 					SetDisabledBosses(l_DisabledMask);
-
-					/*m_DisabledGoBs.push_back(m_SlagworksEntrance);
-					m_DisabledGoBs.push_back(m_BlackForgeEntrance);
-					m_DisabledGoBs.push_back(m_SpikeGateGuid);
-					m_DisabledGoBs.push_back(m_CrucibleEntrance);*/
 					break;
 				}
 				case eCitadelDungeons::BlackGate:
 				{
 					uint32 l_DisabledMask = 0;
-
 					l_DisabledMask |= (1 << eCitadelDatas::DataMartak);
 					l_DisabledMask |= (1 << eCitadelDatas::DataReaver);
 					l_DisabledMask |= (1 << eCitadelDatas::DataKormrok);
@@ -905,22 +704,11 @@ public:
 					l_DisabledMask |= (1 << eCitadelDatas::DataZakuun);
 					l_DisabledMask |= (1 << eCitadelDatas::DataXhulhorac);
 					l_DisabledMask |= (1 << eCitadelDatas::DataMannoroth);
-
 					SetDisabledBosses(l_DisabledMask);
-
-					/*m_DisabledGoBs.push_back(m_SlagworksEntrance);
-					m_DisabledGoBs.push_back(m_BlackForgeEntrance);
-					m_DisabledGoBs.push_back(m_IronAssemblyEntrance);*/
-					//break;
+					break;
 				}
 				default:
 					break;
-				}
-
-				for (uint64 l_Guid : m_DisabledGoBs)
-				{
-					if (GameObject* l_Door = sObjectAccessor->FindGameObject(l_Guid))
-						l_Door->SetGoState(GOState::GO_STATE_READY);
 				}
 			}
 		}

@@ -18,6 +18,15 @@ class boss_socrethar : public CreatureScript
 public:
     boss_socrethar() : CreatureScript("boss_socrethar") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct boss_socretharAI : public BossAI
     {
         boss_socretharAI(Creature* creature) : BossAI(creature, eCitadelDatas::DataSocrethar)
@@ -50,6 +59,7 @@ public:
         void EnterCombat(Unit* /*who*/) override
         {
             _EnterCombat();
+            Talk(eTalks::TalkAggro);
 
             m_Phase = eSocretharPhases::PHASE_CONSTRUCT;
 
@@ -65,6 +75,8 @@ public:
 
         void JustDied(Unit* /*killer*/) override
         {
+
+            Talk(eTalks::TalkDeath);
             _JustDied();
 
             DespawnCreaturesInArea(NPC_SOULBOUND_CONSTRUCT,    me);
@@ -75,7 +87,11 @@ public:
             me->CastSpell(me, SPELL_SOCRETHAR_BONUS_LOOT, true);
         }
 
-        void KilledUnit(Unit* /*victim*/) override { }
+        void KilledUnit(Unit* p_Who) override
+        {
+            if (p_Who && p_Who->IsPlayer())
+                Talk(eTalks::TalkSlay);
+        }
 
         void DoAction(int32 action) override
         {
@@ -210,6 +226,15 @@ class npc_soulbound_construct : public CreatureScript
 public:
     npc_soulbound_construct() : CreatureScript("npc_soulbound_construct") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct npc_soulbound_constructAI : public ScriptedAI
     {
         npc_soulbound_constructAI(Creature* creature) : ScriptedAI(creature)
@@ -324,6 +349,15 @@ class npc_sargerei_spiritbinder : public CreatureScript
 public:
     npc_sargerei_spiritbinder() : CreatureScript("npc_sargerei_spiritbinder") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct npc_sargerei_spiritbinderAI : public ScriptedAI
     {
         npc_sargerei_spiritbinderAI(Creature* creature) : ScriptedAI(creature) { }
@@ -372,6 +406,15 @@ class npc_sargerei_dominator : public CreatureScript
 {
 public:
     npc_sargerei_dominator() : CreatureScript("npc_sargerei_dominator") { }
+
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
 
     struct npc_sargerei_dominatorAI : public ScriptedAI
     {

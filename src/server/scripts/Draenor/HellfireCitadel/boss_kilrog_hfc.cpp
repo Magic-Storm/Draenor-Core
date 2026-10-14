@@ -15,6 +15,15 @@ class boss_kilrogg_deadeye : public CreatureScript
 public:
     boss_kilrogg_deadeye() : CreatureScript("boss_kilrogg_deadeye") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct boss_kilrogg_deadeyeAI : public BossAI
     {
         boss_kilrogg_deadeyeAI(Creature* creature) : BossAI(creature, eCitadelDatas::DataKilrogg)
@@ -50,6 +59,7 @@ public:
         void EnterCombat(Unit* /*who*/) override
         {
             _EnterCombat();
+            Talk(eTalks::TalkAggro);
 
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             
@@ -74,8 +84,15 @@ public:
             }
         }
 
+        void KilledUnit(Unit* p_Who) override
+        {
+            if (p_Who && p_Who->IsPlayer())
+                Talk(eTalks::TalkSlay);
+        }
+
         void JustDied(Unit* /*killer*/) override
         {
+            Talk(eTalks::TalkDeath);
             _JustDied();
             
             // Clean up all adds
@@ -95,11 +112,6 @@ public:
                     player->RemoveAura(SPELL_DEMONIC_POSSESSION);
                 }
             }
-        }
-
-        void KilledUnit(Unit* /*victim*/) override
-        {
-            // Optional: Add kill quotes or special handling
         }
 
         void UpdateAI(uint32 diff) override
@@ -435,6 +447,15 @@ class npc_drooling_bloodsucker : public CreatureScript
 public:
     npc_drooling_bloodsucker() : CreatureScript("npc_drooling_bloodsucker") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct npc_drooling_bloodsuckerAI : public ScriptedAI
     {
         npc_drooling_bloodsuckerAI(Creature* creature) : ScriptedAI(creature) { }
@@ -519,6 +540,15 @@ class npc_massive_horror : public CreatureScript
 public:
     npc_massive_horror() : CreatureScript("npc_massive_horror") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct npc_massive_horrorAI : public ScriptedAI
     {
         npc_massive_horrorAI(Creature* creature) : ScriptedAI(creature) { }
@@ -579,6 +609,15 @@ class npc_vision_of_death_demon : public CreatureScript
 {
 public:
     npc_vision_of_death_demon() : CreatureScript("npc_vision_of_death_demon") { }
+
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
 
     struct npc_vision_of_death_demonAI : public ScriptedAI
     {

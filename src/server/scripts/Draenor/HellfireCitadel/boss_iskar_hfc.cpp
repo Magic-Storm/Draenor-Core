@@ -15,6 +15,15 @@ class boss_shadow_lord_iskar : public CreatureScript
 public:
     boss_shadow_lord_iskar() : CreatureScript("boss_shadow_lord_iskar") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct boss_shadow_lord_iskarAI : public BossAI
     {
         boss_shadow_lord_iskarAI(Creature* creature) : BossAI(creature, eCitadelDatas::DataIskar)
@@ -49,6 +58,7 @@ public:
         void EnterCombat(Unit* /*who*/) override
         {
             _EnterCombat();
+            Talk(eTalks::TalkAggro);
 
             m_Phase = eIskarPhases::PHASE_ISKAR;
 
@@ -65,8 +75,15 @@ public:
             events.ScheduleEvent(EVENT_SPAWN_FELBLADE,     TIMER_SPAWN_FELBLADE);
         }
 
+        void KilledUnit(Unit* p_Who) override
+        {
+            if (p_Who && p_Who->IsPlayer())
+                Talk(eTalks::TalkSlay);
+        }
+
         void JustDied(Unit* /*killer*/) override
         {
+            Talk(eTalks::TalkDeath);
             _JustDied();
 
             // Clean up all encounter-related creatures
@@ -85,8 +102,6 @@ public:
             // Grant bonus loot
             me->CastSpell(me, SPELL_ISKAR_BONUS_LOOT, true);
         }
-
-        void KilledUnit(Unit* /*victim*/) override { }
 
         void DoAction(int32 action) override
         {
@@ -280,6 +295,15 @@ class npc_fel_raven : public CreatureScript
 public:
     npc_fel_raven() : CreatureScript("npc_fel_raven") { }
 
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
+
     struct npc_fel_ravenAI : public ScriptedAI
     {
         npc_fel_ravenAI(Creature* creature) : ScriptedAI(creature) { }
@@ -328,6 +352,15 @@ class npc_corrupted_felblade_raven : public CreatureScript
 {
 public:
     npc_corrupted_felblade_raven() : CreatureScript("npc_corrupted_felblade_raven") { }
+
+    enum eTalks
+    {
+        TalkAggro = 0,
+        TalkSlay,
+        TalkDeath,
+        TalkAbility,
+        TalkWipe
+    };
 
     struct npc_corrupted_felblade_ravenAI : public ScriptedAI
     {

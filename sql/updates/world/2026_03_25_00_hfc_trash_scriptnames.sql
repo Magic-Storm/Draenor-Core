@@ -21,6 +21,13 @@ UPDATE `creature_template` SET `ScriptName`='npc_hfc_armored_skullsmasher' WHERE
 UPDATE `creature_template` SET `ScriptName`='npc_hfc_grim_ambusher' WHERE `entry`=94861;
 UPDATE `creature_template` SET `ScriptName`='npc_hfc_keen_eyed_gronnstalker' WHERE `entry`=94894;
 
+-- Bastion of Shadows
+UPDATE `creature_template` SET `ScriptName`='npc_hfc_delusional_zealot' WHERE `entry`=93955;
+UPDATE `creature_template` SET `ScriptName`='npc_hfc_corrupted_talonpriest' WHERE `entry`=93985;
+UPDATE `creature_template` SET `ScriptName`='npc_hfc_shadowfel_warden' WHERE `entry`=93968;
+UPDATE `creature_template` SET `ScriptName`='npc_hfc_korvos' WHERE `entry`=95642;
+UPDATE `creature_template` SET `ScriptName`='npc_hfc_adjunct_kuroh' WHERE `entry`=91520;
+
 -- Destructor's Rise approach
 UPDATE `creature_template` SET `ScriptName`='npc_hfc_mekbarash' WHERE `entry`=92554;
 UPDATE `creature_template` SET `ScriptName`='npc_hfc_named_felguard' WHERE `entry` IN (92526, 92523, 92514);

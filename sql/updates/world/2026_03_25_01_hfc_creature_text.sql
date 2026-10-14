@@ -110,3 +110,12 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (94285, 0, 0, 'Your essence is mine!', 14, 0, 100, 0, 0, 0, 'Fel Extractor - Aggro'),
 (94283, 0, 0, 'Shadows claim you!', 14, 0, 100, 0, 0, 0, 'Shadow Infuser - Aggro'),
 (94284, 0, 0, 'Feel the flame!', 14, 0, 100, 0, 0, 0, 'Fiery Enkindler - Aggro');
+
+-- ========== Bastion of Shadows named trash ==========
+DELETE FROM `creature_text` WHERE `entry` IN (95642, 91520);
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(95642, 0, 0, 'Your souls will feed the swarm!', 14, 0, 100, 0, 0, 0, 'Korvos - Aggro'),
+(95642, 1, 0, 'The darkness... claims me...', 14, 0, 100, 0, 0, 0, 'Korvos - Death'),
+(91520, 0, 0, 'Disciples! Your work is not yet done!', 14, 0, 100, 0, 0, 0, 'Kuroh - Aggro'),
+(91520, 1, 0, 'I was to be... undying...', 14, 0, 100, 0, 0, 0, 'Kuroh - Death'),
+(91520, 2, 0, 'Rise once more!', 14, 0, 100, 0, 0, 0, 'Kuroh - Dark Revival');

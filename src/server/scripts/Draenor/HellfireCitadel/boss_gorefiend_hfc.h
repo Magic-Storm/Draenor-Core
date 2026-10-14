@@ -16,11 +16,11 @@
 enum eGorefiendSpells
 {
 	/// Main rotation
-	SpellFeastOfSouls		= 181295,	///< Channelled AoE drain that empowers Gorefiend
-	SpellSharedFate			= 179864,	///< Tether two random players together - damages both if far apart
-	SpellSharedFateVisual	= 179909,	///< Visual/aura component of Shared Fate
+	SpellFeastOfSouls		= 181973,	///< Channelled AoE drain that empowers Gorefiend
+	SpellSharedFate			= 179909,	///< Tether two random players together - damages both if far apart
+	SpellSharedFateVisual	= 179908,	///< Visual/aura component of Shared Fate
 	SpellTouchOfDoom		= 179978,	///< Heavy DoT on current tank
-	SpellShadowOfDeath		= 179909,	///< Sends target to Gorefiend's realm (reuse visual spell ID as placeholder)
+	SpellShadowOfDeath		= 179864,	///< Sends target to Gorefiend's realm
 	SpellHungerForLife		= 179883,	///< Heals Gorefiend when a player in the realm dies
 	SpellConsumedSouls		= 181296,	///< Stacking power buff on Gorefiend for each soul consumed
 
