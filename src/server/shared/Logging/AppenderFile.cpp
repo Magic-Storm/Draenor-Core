@@ -65,9 +65,9 @@ void AppenderFile::_write(LogMessage const& message)
     else if (exceedMaxSize)
         logfile = OpenFile(filename, "w", true);
 
-    if (logfile)
+    if (!logfile)
         return;
-    
+
     fprintf(logfile, "%s%s", message.prefix.c_str(), message.text.c_str());
     fflush(logfile);
     fileSize += uint64(message.Size());
