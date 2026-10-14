@@ -81,6 +81,12 @@ public:
 		MannorothGazeCast = 181597, // Cast and debuff
 		MannorothGazeDmg = 181617,
 
+		// Shadowforce
+		ShadowForce = 181799,
+
+		// Inferno (spire / dread infernal spawn cue)
+		Inferno = 181299,
+
 		// Empowered Glaive Combo
 		EmpoweredGlaiveCombo = 187347,
 		EmpoweredGlaiveThrustCast = 185831,
@@ -89,7 +95,13 @@ public:
 		EmpoweredMassiveBlast = 185826,
 		EmpoweredMassiveBlastWaveVisual = 185821, // Three of these, areatriggers
 		EmpoweredMassiveBlastWave = 189424, // Dmg and knockback
-		EmpoweredMassiveBlastStun = 191581
+		EmpoweredMassiveBlastStun = 191581,
+
+		// Empowered variants
+		EmpoweredFelHellstorm = 181948,
+		EmpoweredFelseeker = 182336,
+		EmpoweredShadowForce = 182084,
+		EmpoweredMannorothGaze = 182006
 	};
 
 	enum eEvents
@@ -777,11 +789,77 @@ public:
 							me->AddAura(eSpells::MannorothGazeCast, l_Iter);
 						}
 					});
-				break;
+					break;
 				}
-
-				// Phase 3
-
+				case eEvents::EventFelHellstorm:
+				{
+					me->CastSpell(me, eSpells::FelHellstormCast, false);
+					m_Events.ScheduleEvent(eEvents::EventFelHellstorm, 30 * TimeConstants::IN_MILLISECONDS, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventFelseeker:
+				{
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+					{
+						uint64 l_TargetGuid = l_Target->GetGUID();
+						me->CastSpell(l_Target, eSpells::Felseeker, false);
+						me->CastSpell(l_Target, eSpells::Felseeker1, true);
+						AddTimedDelayedOperation(1 * TimeConstants::IN_MILLISECONDS, [this, l_TargetGuid]() -> void
+						{
+							if (Unit* l_Unit = Unit::GetUnit(*me, l_TargetGuid))
+								me->CastSpell(l_Unit, eSpells::Felseeker2, true);
+						});
+						AddTimedDelayedOperation(2 * TimeConstants::IN_MILLISECONDS, [this, l_TargetGuid]() -> void
+						{
+							if (Unit* l_Unit = Unit::GetUnit(*me, l_TargetGuid))
+								me->CastSpell(l_Unit, eSpells::Felseeker3, true);
+						});
+					}
+					m_Events.ScheduleEvent(eEvents::EventFelseeker, 50 * TimeConstants::IN_MILLISECONDS, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventShadowForce:
+				{
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+						me->CastSpell(l_Target, eSpells::ShadowForce, false);
+					m_Events.ScheduleEvent(eEvents::EventShadowForce, 65 * TimeConstants::IN_MILLISECONDS, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventInferno:
+				{
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+					{
+						me->CastSpell(l_Target, eSpells::Inferno, true);
+						me->SummonCreature(eCitadelCreatures::DreadInfernal, *l_Target, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+					}
+					m_Events.ScheduleEvent(eEvents::EventInferno, 45 * TimeConstants::IN_MILLISECONDS, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventEmpoweredFelHellstorm:
+				{
+					me->CastSpell(me, eSpells::EmpoweredFelHellstorm, false);
+					m_Events.ScheduleEvent(eEvents::EventEmpoweredFelHellstorm, 20 * TimeConstants::IN_MILLISECONDS, 0, ePhases::Empowerment);
+					break;
+				}
+				case eEvents::EventEmpoweredFelseeker:
+				{
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+						me->CastSpell(l_Target, eSpells::EmpoweredFelseeker, false);
+					m_Events.ScheduleEvent(eEvents::EventEmpoweredFelseeker, 50 * TimeConstants::IN_MILLISECONDS, 0, ePhases::Empowerment);
+					break;
+				}
+				case eEvents::EventEmpoweredShadowForce:
+				{
+					me->CastSpell(me, eSpells::EmpoweredShadowForce, false);
+					m_Events.ScheduleEvent(eEvents::EventEmpoweredShadowForce, 65 * TimeConstants::IN_MILLISECONDS, 0, ePhases::Empowerment);
+					break;
+				}
+				case eEvents::EventEmpoweredMannorothGaze:
+				{
+					me->CastSpell(me, eSpells::EmpoweredMannorothGaze, false);
+					m_Events.ScheduleEvent(eEvents::EventEmpoweredMannorothGaze, 45 * TimeConstants::IN_MILLISECONDS, 0, ePhases::Empowerment);
+					break;
+				}
 
 				// Phase 4
 				case eEvents::EventEmpoweredGlaiveCombo:

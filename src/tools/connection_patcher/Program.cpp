@@ -46,7 +46,7 @@ namespace Connection_Patcher
     namespace
     {
         template<typename PATCH, typename PATTERN>
-        void do_patches(Patcher* patcher, boost::filesystem::path output, uint32_t buildNumber, boost::filesystem::path const& clientDir)
+        void do_patches(Patcher* patcher, boost::filesystem::path output, uint32_t buildNumber)
         {
             std::cout << "patching Portal\n";
             // '.actual.battle.net' -> '' to allow for set portal 'host'
@@ -60,11 +60,12 @@ namespace Connection_Patcher
             // replace name of the file with certificates
             patcher->Patch(Patches::Common::CertFileName(), Patterns::Common::CertFileName());
 
-            // Prefer an absolute path when it fits the 21-byte slot (ca_bundle.txt.signed).
-            // Relative tc_bundle.txt fails with BLZ51901021 if the client is started with a wrong CWD.
+            // Prefer absolute path when it fits the 21-byte filename slot (avoids CWD-dependent 1021).
             {
                 static size_t const kCertPathSlot = 21; // includes trailing NUL
-                boost::filesystem::path const absBundle = boost::filesystem::absolute(clientDir / "tc_bundle.txt");
+                boost::filesystem::path absBundle = boost::filesystem::absolute(
+                    boost::filesystem::path(output).parent_path() / "tc_bundle.txt");
+                absBundle.make_preferred();
                 std::string abs = absBundle.string();
                 if (abs.size() + 1 <= kCertPathSlot)
                 {
@@ -75,7 +76,11 @@ namespace Connection_Patcher
                     patcher->Patch(to, from);
                 }
                 else
-                    std::cout << "cert bundle path too long for in-binary slot, keeping relative tc_bundle.txt\n";
+                {
+                    std::cout << "cert bundle path too long for in-binary slot (" << abs.size()
+                              << " chars): " << abs << "\n"
+                              << "keeping relative tc_bundle.txt — launch with CWD = client folder\n";
+                }
             }
 
             std::cout << "patching BNet certificate file to load from local path instead of CASC\n";
@@ -87,12 +92,14 @@ namespace Connection_Patcher
             patcher->Patch(PATCH::CertBundleSignatureCheck(), PATTERN::CertBundleSignatureCheck());
 
             std::cout << "patching Versions\n";
-            // Replace Blizzard versions URL with Zephyr CDN (https://zephyr.v4y.hu/wow/versions).
-            // Custom/repacked clients may already have a different URL; skip instead of aborting.
+            // sever connection to blizzard versions file; replace "build" with client build number
             try
             {
-                (void)buildNumber;
-                patcher->Patch(Patches::Common::VersionsFile(), Patterns::Common::VersionsFile());
+                std::string verPatch(Patches::Common::VersionsFile());
+                std::string buildPattern = "build";
+                boost::algorithm::replace_all(verPatch, buildPattern, std::to_string(buildNumber));
+                std::vector<unsigned char> verVec(verPatch.begin(), verPatch.end());
+                patcher->Patch(verVec, Patterns::Common::VersionsFile());
             }
             catch (std::exception const& ex)
             {
@@ -186,7 +193,7 @@ int main(int argc, char** argv)
 
                 boost::algorithm::replace_all(renamed_binary_path, ".exe", "_Patched.exe");
                 do_patches<Patches::Windows::x86, Patterns::Windows::x86>
-                    (&patcher, renamed_binary_path, wowBuild, boost::filesystem::path(binary_path).parent_path());
+                    (&patcher, renamed_binary_path, wowBuild);
                 WriteCertificateBundle(boost::filesystem::path(binary_path).remove_filename() / "tc_bundle.txt");
                 break;
             case Constants::BinaryTypes::Pe64:
@@ -194,7 +201,7 @@ int main(int argc, char** argv)
 
                 boost::algorithm::replace_all(renamed_binary_path, ".exe", "_Patched.exe");
                 do_patches<Patches::Windows::x64, Patterns::Windows::x64>
-                    (&patcher, renamed_binary_path, wowBuild, boost::filesystem::path(binary_path).parent_path());
+                    (&patcher, renamed_binary_path, wowBuild);
                 WriteCertificateBundle(boost::filesystem::path(binary_path).remove_filename() / "tc_bundle.txt");
                 break;
             case Constants::BinaryTypes::Mach64:
@@ -206,8 +213,7 @@ int main(int argc, char** argv)
                         );
 
                 do_patches<Patches::Mac::x64, Patterns::Mac::x64>
-                    (&patcher, renamed_binary_path, wowBuild,
-                     boost::filesystem::path(binary_path).parent_path()/*MacOS*/.parent_path()/*Contents*/.parent_path()/*app*/.parent_path());
+                    (&patcher, renamed_binary_path, wowBuild);
 
                 {
                     namespace fs = boost::filesystem;

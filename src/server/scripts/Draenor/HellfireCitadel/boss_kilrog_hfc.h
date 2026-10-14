@@ -49,7 +49,7 @@ enum eKilroggCreatures
     NPC_HELLFIRE_GRUNT = 90407,                   // Vision of Death demon
     NPC_HELLFIRE_BRUTE = 90411,                   // Vision of Death demon
     NPC_HELLFIRE_MISTRESS = 90414,                // Vision of Death demon
-    NPC_BLOOD_POOL = 188852,                      // Blood pool creature
+    NPC_BLOOD_POOL = 82577,                       // Invisible stalker used as blood pool anchor
 };
 
 enum eKilroggEvents

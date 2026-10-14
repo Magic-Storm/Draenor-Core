@@ -44,12 +44,14 @@ public:
             m_ActiveHorrors.clear();
             
             me->SetReactState(REACT_AGGRESSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         }
 
         void EnterCombat(Unit* /*who*/) override
         {
             _EnterCombat();
+
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             
             m_Phase = PHASE_NORMAL;
             m_VisionTimer = 60000; // 1 minute
@@ -58,10 +60,18 @@ public:
             
             events.ScheduleEvent(EVENT_ARMOR_RIP, TIMER_ARMOR_RIP);
             events.ScheduleEvent(EVENT_HEARTSEEKER, TIMER_HEARTSEEKER);
-            events.ScheduleEvent(EVENT_DEATH_THROES, TIMER_DEATH_THROES);
             events.ScheduleEvent(EVENT_VISION_OF_DEATH, TIMER_VISION_OF_DEATH);
             events.ScheduleEvent(EVENT_SPAWN_BLOODSUCKER, TIMER_SPAWN_BLOODSUCKER);
             events.ScheduleEvent(EVENT_UPDATE_CORRUPTION, TIMER_UPDATE_CORRUPTION);
+        }
+
+        void DamageTaken(Unit* /*attacker*/, uint32& damage, SpellInfo const* /*spellInfo*/) override
+        {
+            if (m_Phase != PHASE_DEATH_THROES && me->HealthBelowPctDamaged(30, damage))
+            {
+                EnterPhase(PHASE_DEATH_THROES);
+                events.ScheduleEvent(EVENT_DEATH_THROES, 1000);
+            }
         }
 
         void JustDied(Unit* /*killer*/) override
@@ -160,8 +170,8 @@ public:
                         {
                             me->CastSpell(me, SPELL_DEATH_THROES, false);
                             events.ScheduleEvent(EVENT_DEATH_GATES, 2000);
+                            events.ScheduleEvent(EVENT_DEATH_THROES, TIMER_DEATH_THROES);
                         }
-                        events.ScheduleEvent(EVENT_DEATH_THROES, TIMER_DEATH_THROES);
                         break;
                     }
                     case EVENT_DEATH_GATES:

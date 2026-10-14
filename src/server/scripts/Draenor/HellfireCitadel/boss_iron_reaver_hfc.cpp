@@ -75,12 +75,23 @@ public:
 
 	enum eEvents
 	{
-		EventRegenerateEnergy = 1
+		EventRegenerateEnergy = 1,
+		EventImmolation,
+		EventBarrage,
+		EventPounding,
+		EventFallingSlam,
+		EventUnstableOrbs
 	};
 
 	enum eTimers
 	{
-
+		TimerImmolation = 9 * TimeConstants::IN_MILLISECONDS,
+		TimerImmolationCD = 27 * TimeConstants::IN_MILLISECONDS,
+		TimerBarrage = 32 * TimeConstants::IN_MILLISECONDS,
+		TimerBarrageCD = 40 * TimeConstants::IN_MILLISECONDS,
+		TimerPounding = 22 * TimeConstants::IN_MILLISECONDS,
+		TimerPoundingCD = 35 * TimeConstants::IN_MILLISECONDS,
+		TimerUnstableOrbs = 6 * TimeConstants::IN_MILLISECONDS
 	};
 
 	enum eMoves
@@ -223,6 +234,10 @@ public:
 			}
 
 			m_CosmeticEvents.ScheduleEvent(eEvents::EventRegenerateEnergy, 1000);
+			m_Events.ScheduleEvent(eEvents::EventImmolation, eTimers::TimerImmolation);
+			m_Events.ScheduleEvent(eEvents::EventBarrage, eTimers::TimerBarrage);
+			m_Events.ScheduleEvent(eEvents::EventPounding, eTimers::TimerPounding);
+			m_Events.ScheduleEvent(eEvents::EventUnstableOrbs, eTimers::TimerUnstableOrbs);
 		}
 
 		void JustDied(Player* p_Player)
@@ -296,6 +311,9 @@ public:
 
 					me->ModifyPower(Powers::POWER_RAGE, l_Power);
 
+					if (m_PhaseID == ePhases::GroundOperation && me->GetPower(Powers::POWER_RAGE) >= 100)
+						m_Events.RescheduleEvent(eEvents::EventFallingSlam, 500);
+
 					m_CosmeticEvents.ScheduleEvent(eEvents::EventRegenerateEnergy, 1000);
 					break;
 				}
@@ -311,12 +329,115 @@ public:
 
 			switch (m_Events.ExecuteEvent())
 			{
-				
+				case eEvents::EventImmolation:
+				{
+					if (m_PhaseID == ePhases::GroundOperation)
+					{
+						me->CastSpell(me, eSpells::ImmolationCast, false);
+						if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+							me->CastSpell(l_Target, eSpells::ImmolationMissile, true);
+						m_Events.ScheduleEvent(eEvents::EventImmolation, eTimers::TimerImmolationCD);
+					}
+					break;
+				}
+				case eEvents::EventBarrage:
+				{
+					if (m_PhaseID == ePhases::GroundOperation)
+					{
+						me->CastSpell(me, eSpells::BarrageCast, false);
+						if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+							me->CastSpell(l_Target, eSpells::BarrageDmg, true);
+						m_Events.ScheduleEvent(eEvents::EventBarrage, eTimers::TimerBarrageCD);
+					}
+					break;
+				}
+				case eEvents::EventPounding:
+				{
+					if (m_PhaseID == ePhases::GroundOperation)
+					{
+						me->CastSpell(me, eSpells::PoundingCast, false);
+						m_Events.ScheduleEvent(eEvents::EventPounding, eTimers::TimerPoundingCD);
+					}
+					break;
+				}
+				case eEvents::EventUnstableOrbs:
+				{
+					if (m_PhaseID == ePhases::GroundOperation)
+					{
+						for (uint8 i = 0; i < 4; ++i)
+						{
+							if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+							{
+								Position l_Pos = *l_Target;
+								l_Target->GetNearPoint(l_Pos, 0.0f, frand(2.0f, 8.0f), frand(0.0f, 2.0f * M_PI));
+								me->CastSpell(l_Pos, eSpells::CosmeticUnstableOrb, true);
+							}
+						}
+						m_Events.ScheduleEvent(eEvents::EventUnstableOrbs, 40 * TimeConstants::IN_MILLISECONDS);
+					}
+					break;
+				}
+				case eEvents::EventFallingSlam:
+				{
+					EnterAirPhase();
+					break;
+				}
 			default:
 				break;
 			}
 
-			DoMeleeAttackIfReady();
+			if (m_PhaseID == ePhases::GroundOperation)
+				DoMeleeAttackIfReady();
+		}
+
+		void EnterAirPhase()
+		{
+			if (m_PhaseID == ePhases::AirOperation)
+				return;
+
+			m_PhaseID = ePhases::AirOperation;
+			m_Events.SetPhase(ePhases::AirOperation);
+			m_Events.CancelEvent(eEvents::EventImmolation);
+			m_Events.CancelEvent(eEvents::EventBarrage);
+			m_Events.CancelEvent(eEvents::EventPounding);
+			m_Events.CancelEvent(eEvents::EventUnstableOrbs);
+
+			me->SetReactState(ReactStates::REACT_PASSIVE);
+			me->AttackStop();
+			me->SetPower(Powers::POWER_RAGE, 0);
+			me->CastSpell(me, eSpells::AirPhase, true);
+			me->SetDisableGravity(true);
+			me->SetCanFly(true);
+			me->GetMotionMaster()->MovePoint(0, g_MidPos);
+
+			AddTimedDelayedOperation(3 * TimeConstants::IN_MILLISECONDS, [this]() -> void
+			{
+				me->CastSpell(me, eSpells::SlamCast, false);
+			});
+
+			AddTimedDelayedOperation(6 * TimeConstants::IN_MILLISECONDS, [this]() -> void
+			{
+				if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+				{
+					Position l_Pos = *l_Target;
+					me->CastSpell(l_Pos, eSpells::SlamDmg, true);
+					me->NearTeleportTo(l_Pos);
+				}
+				else
+					me->CastSpell(g_FloorJumpPos, eSpells::SlamDmg, true);
+
+				me->RemoveAura(eSpells::AirPhase);
+				me->CastSpell(me, eSpells::GroundPhase, true);
+				me->SetDisableGravity(false);
+				me->SetCanFly(false);
+				me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+				m_PhaseID = ePhases::GroundOperation;
+				m_Events.SetPhase(ePhases::GroundOperation);
+				m_Events.ScheduleEvent(eEvents::EventImmolation, eTimers::TimerImmolation);
+				m_Events.ScheduleEvent(eEvents::EventBarrage, eTimers::TimerBarrage);
+				m_Events.ScheduleEvent(eEvents::EventPounding, eTimers::TimerPounding);
+				m_Events.ScheduleEvent(eEvents::EventUnstableOrbs, eTimers::TimerUnstableOrbs);
+			});
 		}
 
 		void DoAction(int32 const p_Action) override
@@ -443,8 +564,20 @@ public:
 
 		void RemoveCombatAurasAndTriggers()
 		{
-			if (m_Instance != nullptr)
+			if (m_Instance == nullptr)
 				return;
+
+			Map::PlayerList const& l_Players = me->GetMap()->GetPlayers();
+			for (Map::PlayerList::const_iterator l_Iter = l_Players.begin(); l_Iter != l_Players.end(); ++l_Iter)
+			{
+				if (Player* l_Player = l_Iter->getSource())
+				{
+					l_Player->RemoveAura(eSpells::ImmolationDebuff);
+					l_Player->RemoveAura(eSpells::ImmolationTrigger);
+				}
+			}
+
+			me->RemoveAllAreasTrigger();
 		}
 
 		void OnSpellCasted(SpellInfo const* p_SpellInfo) override
@@ -453,38 +586,21 @@ public:
 			{
 				case eSpells::CosmeticCastUnstableOrb:
 				{
-					// Left
-					me->CastSpell(500000, 182095, false);
-					me->CastSpell(500000, 182095, false);
-					me->CastSpell(500000, 182095, false);
-					me->CastSpell(500000, 182095, false);
-					me->CastSpell(500000, 182095, false);
-					me->CastSpell(500000, 182095, false);
+					static Position const l_WallPositions[4] =
+					{
+						{ 4051.50f, -723.789f, 39.5595f, 4.70284f },
+						{ 3990.67f, -725.450f, 33.6644f, 1.62371f },
+						{ 3951.63f, -727.518f, 33.1712f, 1.62371f },
+						{ 3879.25f, -728.536f, 37.5222f, 4.72246f }
+					};
 
-					// Left center
-					me->CastSpell(500001, 182095, false);
-					me->CastSpell(500001, 182095, false);
-					me->CastSpell(500001, 182095, false);
-					me->CastSpell(500001, 182095, false);
-					me->CastSpell(500001, 182095, false);
-					me->CastSpell(500001, 182095, false);
-
-					// Right center
-					me->CastSpell(500002, 182095, false);
-					me->CastSpell(500002, 182095, false);
-					me->CastSpell(500002, 182095, false);
-					me->CastSpell(500002, 182095, false);
-					me->CastSpell(500002, 182095, false);
-					me->CastSpell(500002, 182095, false);
-
-					// Right
-					me->CastSpell(500003, 182095, false);
-					me->CastSpell(500003, 182095, false);
-					me->CastSpell(500003, 182095, false);
-					me->CastSpell(500003, 182095, false);
-					me->CastSpell(500003, 182095, false);
-					me->CastSpell(500003, 182095, false);
+					for (uint8 i = 0; i < 4; ++i)
+						for (uint8 j = 0; j < 6; ++j)
+							me->CastSpell(l_WallPositions[i], 182095, true);
+					break;
 				}
+			default:
+				break;
 			}
 		}
 	};

@@ -118,6 +118,15 @@ public:
 		VoidStarFixate = 189895,
 		VoidDetonation = 189896, // Used when reaches the target
 
+		// Shackled Torment / Wrought Chaos / Feedback
+		ShackledTorment = 184964,
+		WroughtChaos = 184265,
+		FocusedChaos = 185014,
+		DemonicFeedback = 187080,
+		MarkoftheLegion = 187050,
+		SeethingCorruption = 190735,
+		VanguardoftheLegion = 182826,
+
 		// Mythic
 		Transformation = 190310,
 
@@ -273,10 +282,11 @@ public:
 			m_Events.Reset();
 			m_Events.SetPhase(ePhases::TheDefiler);
 
-			m_Events.ScheduleEvent(eEvents::EventDoomfire, eTimers::TimerDoomfire, 0, ePhases::TheDefiler);
+					m_Events.ScheduleEvent(eEvents::EventDoomfire, eTimers::TimerDoomfire, 0, ePhases::TheDefiler);
 			m_Events.ScheduleEvent(eEvents::EventAllureofFlames, eTimers::TimerAllureofFlames, 0, ePhases::TheDefiler);
 			m_Events.ScheduleEvent(eEvents::EventShadowfelBurst, eTimers::TimerShadowfelBurst, 0, ePhases::TheDefiler);
 			m_Events.ScheduleEvent(eEvents::EventDeathBrand, eTimers::TimerDeathBrand, 0, ePhases::TheDefiler);
+			m_Events.ScheduleEvent(eEvents::EventDesecrate, eTimers::TimerDesecrateCD, 0, ePhases::TheDefiler);
 		}
 
 		void EnterEvadeMode() override
@@ -387,6 +397,7 @@ public:
 			{
 				case eEvents::EventDoomfire:
 				{
+					Talk(eTalks::TalkDoomfire);
 					me->CastSpell(me, eSpells::Doomfire, true);
 
 					AddTimedDelayedOperation(1.6 * TimeConstants::IN_MILLISECONDS, [this]() -> void
@@ -401,6 +412,91 @@ public:
 					});
 
 					m_Events.ScheduleEvent(eEvents::EventDoomfire, eTimers::TimerDoomfireCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventAllureofFlames:
+				{
+					Talk(eTalks::TalkAllureofFlames);
+					me->CastSpell(me, eSpells::AllureofFlames, false);
+					m_Events.ScheduleEvent(eEvents::EventAllureofFlames, eTimers::TimerAllureofFlamesCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventShadowfelBurst:
+				{
+					Talk(eTalks::TalkShadowfelBurst);
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+					{
+						me->CastSpell(l_Target, eSpells::ShadowfelBurstCast, false);
+						me->CastSpell(l_Target, eSpells::ShadowfelBurstDebuff, true);
+					}
+					m_Events.ScheduleEvent(eEvents::EventShadowfelBurst, eTimers::TimerShadowfelBurstCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventDeathBrand:
+				{
+					Talk(eTalks::TalkDeathBrand);
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+					{
+						me->CastSpell(l_Target, eSpells::DeathBrand, false);
+						me->CastSpell(l_Target, eSpells::DeathBrandVisual, true);
+					}
+					m_Events.ScheduleEvent(eEvents::EventDeathBrand, eTimers::TimerDeathBrandCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventDesecrate:
+				{
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+						me->CastSpell(l_Target, eSpells::Desecrate, false);
+					m_Events.ScheduleEvent(eEvents::EventDesecrate, eTimers::TimerDesecrateCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventShackledTorment:
+				{
+					Talk(eTalks::TalkShackledTorment);
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+						me->CastSpell(l_Target, eSpells::ShackledTorment, false);
+					m_Events.ScheduleEvent(eEvents::EventShackledTorment, eTimers::TimerShackledTormentCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventVanguardoftheLegion:
+				{
+					me->CastSpell(me, eSpells::VanguardoftheLegion, false);
+					me->CastSpell(me, eSpells::WroughtChaos, true);
+					Talk(eTalks::TalkWroughtChaos);
+					m_Events.ScheduleEvent(eEvents::EventVanguardoftheLegion, eTimers::TimerVanguardoftheLegionCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventDemonicFeedback:
+				{
+					me->CastSpell(me, eSpells::DemonicFeedback, false);
+					m_Events.ScheduleEvent(eEvents::EventDemonicFeedback, eTimers::TimerDemonicFeedbackCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventNetherBanish:
+				{
+					Talk(eTalks::TalkNetherBanish);
+					if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+					{
+						me->CastSpell(l_Target, eSpells::NetherBanish, false);
+						me->CastSpell(l_Target, eSpells::NetherPortal, true);
+					}
+					m_Events.ScheduleEvent(eEvents::EventNetherBanish, eTimers::TimerNetherBanishCD, 0, m_PhaseID);
+					break;
+				}
+				case eEvents::EventRainofChaos:
+				{
+					Talk(eTalks::TalkRainofChaos);
+					me->CastSpell(me, eSpells::RainofChaos, false);
+					me->CastSpell(me, eSpells::RainofChaosVisual, true);
+					for (uint8 i = 0; i < 3; ++i)
+					{
+						if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+						{
+							Position l_Pos = *l_Target;
+							me->CastSpell(l_Pos, eSpells::RainofChaosSummoning, true);
+						}
+					}
+					m_Events.ScheduleEvent(eEvents::EventRainofChaos, eTimers::TimerRainofChaosCD, 0, m_PhaseID);
 					break;
 				}
 				default:
