@@ -23,7 +23,6 @@ OFFSET_BITS = 30
 OFFSET_MASK = (1 << OFFSET_BITS) - 1
 # Stay under 30-bit offset with room for a large last record
 MAX_DATA_FILE = 0x3C000000  # ~960 MiB
-IDX_PAD = 0x10000
 
 
 def bucket_index(ekey: bytes) -> int:
@@ -186,17 +185,37 @@ class LocalCascWriter:
     def has_ekey(self, ekey: bytes) -> bool:
         return (ekey + b"\x00" * 9)[:9] in self._seen
 
+    @staticmethod
+    def _idx_entry_bytes(path: Path) -> int:
+        """Return entries payload size, or -1 if the journal looks unreadable."""
+        try:
+            raw = path.read_bytes()
+        except OSError:
+            return -1
+        if len(raw) < 40:
+            return -1
+        hs = struct.unpack_from("<I", raw, 0)[0]
+        file_pos = (8 + hs + 0x0F) & ~0x0F
+        if file_pos + 8 > len(raw):
+            return -1
+        es = struct.unpack_from("<I", raw, file_pos)[0]
+        if es <= 0 or file_pos + 8 + es > len(raw):
+            return -1
+        return es
+
     @classmethod
     def open_existing(cls, data_dir: Path, idx_version: int = 1) -> "LocalCascWriter":
         """Resume an existing Data/data tree: load .idx, append to last data.NNN."""
         w = cls(data_dir=data_dir, idx_version=idx_version)
-        # Load entries from highest-version idx per bucket
+        # Prefer the richest journal per bucket. Wow/CascLib pick the highest
+        # version number, so a smaller *00000002.idx left by a failed launch
+        # must not win over a complete *00000001.idx when we resume.
         for bucket in range(16):
-            files = sorted(data_dir.glob(f"{bucket:02x}*.idx"))
+            files = list(data_dir.glob(f"{bucket:02x}????????.idx"))
             if not files:
                 continue
-            latest = files[-1]
-            raw = latest.read_bytes()
+            best = max(files, key=lambda p: (cls._idx_entry_bytes(p), p.name))
+            raw = best.read_bytes()
             if len(raw) < 40:
                 continue
             hs = struct.unpack_from("<I", raw, 0)[0]
@@ -243,7 +262,23 @@ class LocalCascWriter:
             self._fh = None
         self._write_indices()
 
+    def _highest_idx_version(self) -> int:
+        """Wow and CascLib keep the highest XX########.idx per bucket."""
+        highest = 0
+        for path in self.data_dir.glob("[0-9a-f][0-9a-f]????????.idx"):
+            try:
+                ver = int(path.name[2:10], 16)
+            except ValueError:
+                continue
+            if ver > highest:
+                highest = ver
+        return highest
+
     def _write_indices(self) -> None:
+        # A previous Wow launch rewrites journals as the next version
+        # (*00000002.idx) and then ignores anything left at a lower number.
+        self.idx_version = max(self.idx_version, self._highest_idx_version() + 1)
+        written: List[int] = []
         for bucket in range(16):
             entries = self._entries[bucket]
             if not entries:
@@ -251,6 +286,18 @@ class LocalCascWriter:
             entries.sort(key=lambda e: e.ekey9)
             body = b"".join(e.pack() for e in entries)
             self._write_idx(bucket, body)
+            written.append(bucket)
+        self._delete_older_indices(written)
+
+    def _delete_older_indices(self, buckets: List[int]) -> None:
+        current = f"{self.idx_version:08x}.idx"
+        for bucket in buckets:
+            for path in self.data_dir.glob(f"{bucket:02x}????????.idx"):
+                if not path.name.endswith(current):
+                    try:
+                        path.unlink()
+                    except OSError:
+                        pass
 
     def _write_idx(self, bucket: int, entries_blob: bytes) -> None:
         # Header block (16 bytes) hashed with hashlittle2
@@ -277,15 +324,14 @@ class LocalCascWriter:
             pc_e, pb_e = hashlittle2(entries_blob[i : i + 18], pc_e, pb_e)
 
         block = prefix + struct.pack("<II", len(entries_blob), pc_e) + entries_blob
-        # Pad so CascLib sees >= 0x7800 after 0x1000 align (Agent uses 64 KiB files)
-        if len(block) < IDX_PAD:
-            block = block.ljust(IDX_PAD, b"\x00")
-        else:
-            # Align up to next 0x1000 then ensure 0x7800 tail
-            aligned = (len(block) + 0xFFF) & ~0xFFF
-            need = aligned + 0x7800
-            if len(block) < need:
-                block = block.ljust(need, b"\x00")
+        # CascLib rejects the journal unless
+        #   (fileSize - align_up(entriesEnd, 0x1000)) >= 0x7800.
+        # Wow itself then rounds that up to 64 KiB (see *00000002.idx).
+        entries_end = len(block)
+        aligned = (entries_end + 0xFFF) & ~0xFFF
+        need = (aligned + 0x7800 + 0xFFFF) & ~0xFFFF
+        if len(block) < need:
+            block = block.ljust(need, b"\x00")
 
         name = f"{bucket:02x}{self.idx_version:08x}.idx"
         dest = self.data_dir / name

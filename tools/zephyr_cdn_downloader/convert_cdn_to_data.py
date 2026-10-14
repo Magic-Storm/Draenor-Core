@@ -24,6 +24,21 @@ import time
 from pathlib import Path
 
 from archive import ArchiveIndex, build_index_from_cdn, parse_archive_index, resolve_ekey_bytes
+
+
+def _loc_plausible(loc, arch_size: int | None = None) -> bool:
+    """Filter garbage .index rows (null keys / nonsense offset+size)."""
+    if loc.offset < 0 or loc.size <= 0:
+        return False
+    # Typical CDN archive is <= ~256–512 MiB; single BLTE rarely > 64 MiB
+    if loc.size > 64 * 1024 * 1024:
+        return False
+    if loc.offset > 512 * 1024 * 1024:
+        return False
+    if arch_size is not None and loc.offset + loc.size > arch_size:
+        return False
+    return True
+
 from cdn import CdnClient, DEFAULT_BASE
 from download_client import Progress, download_install_files, human, pick_version_row, write_build_info
 from local_casc import LocalCascWriter
@@ -50,13 +65,14 @@ def convert_archives(
     progress: Progress,
     *,
     keep_cdn_cache: bool,
+    kind: str = "data",
 ) -> None:
     total = len(archive_keys)
     already_done = 0
     for i, key in enumerate(archive_keys, 1):
-        print(f"[{i}/{total}] archive {key}")
+        print(f"[{i}/{total}] {kind} archive {key}")
         try:
-            idx_path = cdn.download_key(key, kind="data", index=True, progress_cb=progress)
+            idx_path = cdn.download_key(key, kind=kind, index=True, progress_cb=progress)
         except Exception as exc:  # noqa: BLE001
             print(f"  skip index: {exc}")
             continue
@@ -75,17 +91,32 @@ def convert_archives(
             full = ekey if len(ekey) == 16 else ekey + b"\x00" * 7
             locs.append((full, loc))
 
-        missing = [full for full, _ in locs if not writer.has_ekey(full)]
-        if not missing:
+        # Ignore garbage index rows — they are never present in data.* and must not
+        # force a re-download of an otherwise complete archive.
+        arch_size = cdn.head_size(key, kind=kind, index=False)
+        plausible = [(full, loc) for full, loc in locs if _loc_plausible(loc, arch_size)]
+        missing_locs = [(full, loc) for full, loc in plausible if not writer.has_ekey(full)]
+        if not missing_locs:
             already_done += 1
-            print(f"  -> already complete ({len(locs)} ekeys), skip download")
+            garbage = len(locs) - len(plausible)
+            extra = f", ignored {garbage} garbage index rows" if garbage else ""
+            print(f"  -> already complete ({len(plausible)} ekeys{extra}), skip download")
+            if arch_size is not None and garbage:
+                # Often "garbage" = index rows past truncated CDN EOF
+                beyond = sum(
+                    1 for _, loc in locs if loc.size > 0 and loc.offset + loc.size > arch_size
+                )
+                if beyond:
+                    print(
+                        f"  !! CDN archive truncated? {beyond} index rows past EOF"
+                        f" ({human(arch_size)})"
+                    )
             continue
 
-        print(f"  -> need {len(missing)}/{len(locs)} ekeys")
+        print(f"  -> need {len(missing_locs)}/{len(plausible)} plausible ekeys (full archive)")
 
-        # Download full archive once (resume-safe), then slice locally
         try:
-            arch_path = cdn.download_key(key, kind="data", index=False, progress_cb=progress)
+            arch_path = cdn.download_key(key, kind=kind, index=False, progress_cb=progress)
         except Exception as exc:  # noqa: BLE001
             print(f"  skip archive: {exc}")
             continue
@@ -94,8 +125,8 @@ def convert_archives(
         skipped = 0
         arch_size = arch_path.stat().st_size
         with open(arch_path, "rb") as af:
-            for full, loc in locs:
-                if loc.offset < 0 or loc.size <= 0 or loc.offset + loc.size > arch_size:
+            for full, loc in missing_locs:
+                if not _loc_plausible(loc, arch_size):
                     skipped += 1
                     continue
                 try:
@@ -113,7 +144,18 @@ def convert_archives(
                 else:
                     skipped += 1
 
-        print(f"  -> {written}/{len(locs)} records into local data.* (skipped {skipped})")
+        print(f"  -> {written}/{len(missing_locs)} records into local data.* (skipped {skipped})")
+        # Zephyr (and some mirrors) occasionally serve truncated archives: .index
+        # points past EOF. Flag it so missing ADTs are explainable.
+        if arch_size is not None:
+            beyond = sum(
+                1 for _, loc in locs if loc.size > 0 and loc.offset + loc.size > arch_size
+            )
+            if beyond:
+                print(
+                    f"  !! CDN archive truncated? {beyond} index rows past EOF"
+                    f" ({human(arch_size)}); those ekeys cannot be filled from this host"
+                )
         if not keep_cdn_cache:
             try:
                 arch_path.unlink(missing_ok=True)
@@ -218,11 +260,16 @@ def main() -> int:
     build_cfg = parse_kv_config(build_path.read_text(encoding="utf-8", errors="replace"))
     cdn_cfg = parse_kv_config(cdncfg_path.read_text(encoding="utf-8", errors="replace"))
     archives = archive_keys_from_cdnconfig(cdn_cfg)
+    patch_archives = list(cdn_cfg.get("patch-archives", []))
     if args.limit_archives and args.limit_archives > 0:
         archives = archives[: args.limit_archives]
-        print(f"==> Limiting to {len(archives)} archives (smoke)")
+        patch_archives = []
+        print(f"==> Limiting to {len(archives)} archives (smoke); skipping patch-archives")
 
-    print(f"==> Converting {len(archives)} CDN archives -> local data.NNN / .idx")
+    print(
+        f"==> Converting {len(archives)} data + {len(patch_archives)} patch archives"
+        " -> local data.NNN / .idx"
+    )
     print("    This is the real full Data (tens of GB). Resume via --cache.")
     # Resume into existing journals if present; otherwise start clean
     existing = list(local_data.glob("data.*"))
@@ -238,7 +285,18 @@ def main() -> int:
             writer,
             progress,
             keep_cdn_cache=args.keep_cache,
+            kind="data",
         )
+        if patch_archives:
+            print(f"==> Patch archives ({len(patch_archives)}) — often hold updated ADTs/maps")
+            convert_archives(
+                cdn,
+                patch_archives,
+                writer,
+                progress,
+                keep_cdn_cache=args.keep_cache,
+                kind="patch",
+            )
 
         # CascLib REQUIRES encoding/root in idx — force-inject even if an archive was skipped
         encoding_keys = build_cfg.get("encoding", [])

@@ -44,6 +44,33 @@ class CdnClient:
         url = f"{self.base_url}/{name}"
         return self._request_bytes(url).decode("utf-8", errors="replace")
 
+    def head_size(self, key_hex: str, kind: str = "data", index: bool = False) -> Optional[int]:
+        """Return Content-Length for a CDN object, or None if unknown."""
+        url = self.url_for(key_hex, kind, index=index)
+        local = self.local_path(key_hex, kind, index=index) if self.cache_dir else None
+        if local is not None and local.exists() and local.stat().st_size > 0:
+            return local.stat().st_size
+        try:
+            req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                cl = resp.headers.get("Content-Length")
+                return int(cl) if cl else None
+        except Exception:
+            # Some mirrors dislike HEAD — probe with a 1-byte Range
+            try:
+                req = urllib.request.Request(
+                    url,
+                    headers={"User-Agent": USER_AGENT, "Range": "bytes=0-0"},
+                )
+                with urllib.request.urlopen(req, timeout=20) as resp:
+                    cr = resp.headers.get("Content-Range", "")
+                    if "/" in cr:
+                        return int(cr.rsplit("/", 1)[-1])
+                    cl = resp.headers.get("Content-Length")
+                    return int(cl) if cl else None
+            except Exception:
+                return None
+
     def download_key(
         self,
         key_hex: str,
@@ -105,6 +132,22 @@ class CdnClient:
                 return dest
             except Exception as exc:  # noqa: BLE001 - retry network/CDN glitches
                 last_err = exc
+                # Complete-file partial + Range → 416 on some mirrors: treat as done or restart
+                err_s = str(exc)
+                if "416" in err_s and tmp.exists() and tmp.stat().st_size > 0:
+                    if expected_size is None or tmp.stat().st_size == expected_size:
+                        os.replace(tmp, dest)
+                        if progress_cb:
+                            progress_cb(dest.stat().st_size, dest.stat().st_size, key_hex)
+                        return dest
+                    try:
+                        tmp.unlink()
+                    except OSError:
+                        pass
+                    existing = 0
+                    headers = {"User-Agent": USER_AGENT}
+                    time.sleep(min(2 ** attempt, 15))
+                    continue
                 time.sleep(min(2 ** attempt, 15))
                 existing = tmp.stat().st_size if tmp.exists() else 0
                 headers = {"User-Agent": USER_AGENT}

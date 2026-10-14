@@ -15,6 +15,7 @@ class ArchiveLoc:
     archive_key: str
     offset: int
     size: int
+    kind: str = "data"
 
 
 def _parse_footer(data: bytes) -> Tuple[int, int, int, int, int]:
@@ -78,12 +79,21 @@ def parse_archive_index(data: bytes, archive_key: str) -> Dict[bytes, ArchiveLoc
     return out
 
 
+def _set_loc_kind(parsed: Dict[bytes, ArchiveLoc], kind: str) -> Dict[bytes, ArchiveLoc]:
+    if kind == "data":
+        return parsed
+    return {
+        k: ArchiveLoc(archive_key=v.archive_key, offset=v.offset, size=v.size, kind=kind)
+        for k, v in parsed.items()
+    }
+
+
 class ArchiveIndex:
     def __init__(self):
         self.map: Dict[bytes, ArchiveLoc] = {}
 
-    def add_index(self, archive_key: str, data: bytes) -> int:
-        parsed = parse_archive_index(data, archive_key)
+    def add_index(self, archive_key: str, data: bytes, kind: str = "data") -> int:
+        parsed = _set_loc_kind(parse_archive_index(data, archive_key), kind)
         self.map.update(parsed)
         return len(parsed)
 
@@ -103,6 +113,8 @@ def build_index_from_cdn(
     cdn: CdnClient,
     archive_keys: list[str],
     progress_cb=None,
+    *,
+    kind: str = "data",
 ) -> ArchiveIndex:
     idx = ArchiveIndex()
     total = len(archive_keys)
@@ -110,8 +122,8 @@ def build_index_from_cdn(
         if progress_cb:
             progress_cb(i, total, key)
         try:
-            path = cdn.download_key(key, kind="data", index=True)
-            n = idx.add_index(key, path.read_bytes())
+            path = cdn.download_key(key, kind=kind, index=True)
+            n = idx.add_index(key, path.read_bytes(), kind=kind)
             print(f"  index {i}/{total} {key} (+{n} entries, total {len(idx.map)})")
         except Exception as exc:  # noqa: BLE001
             print(f"  warn: index {key}: {exc}")
@@ -121,14 +133,15 @@ def build_index_from_cdn(
 def fetch_archive_slice(cdn: CdnClient, loc: ArchiveLoc, progress_cb=None) -> bytes:
     """Download only the needed byte range from an archive (or whole file if cached)."""
     assert cdn.cache_dir is not None
-    local = cdn.local_path(loc.archive_key, kind="data")
+    kind = getattr(loc, "kind", "data") or "data"
+    local = cdn.local_path(loc.archive_key, kind=kind)
     if local.exists() and local.stat().st_size >= loc.offset + loc.size:
         with open(local, "rb") as f:
             f.seek(loc.offset)
             return f.read(loc.size)
 
     # HTTP Range request against CDN
-    url = cdn.url_for(loc.archive_key, kind="data")
+    url = cdn.url_for(loc.archive_key, kind=kind)
     headers = {
         "User-Agent": USER_AGENT,
         "Range": f"bytes={loc.offset}-{loc.offset + loc.size - 1}",
@@ -138,7 +151,7 @@ def fetch_archive_slice(cdn: CdnClient, loc: ArchiveLoc, progress_cb=None) -> by
         data = resp.read()
     if len(data) != loc.size:
         # Some servers ignore Range — fall back to full archive download
-        path = cdn.download_key(loc.archive_key, kind="data", progress_cb=progress_cb)
+        path = cdn.download_key(loc.archive_key, kind=kind, progress_cb=progress_cb)
         with open(path, "rb") as f:
             f.seek(loc.offset)
             data = f.read(loc.size)

@@ -520,7 +520,11 @@ static int LoadKeyMapping(PCASC_MAPPING_TABLE pKeyMapping, DWORD KeyIndex)
     {
         // Retrieve the file size
         FileStream_GetSize(pStream, &FileSize);
-        if(0 < FileSize && FileSize <= 0x200000)
+        // Upstream CascLib caps at 0x200000 (TCWoD uses 0x100000). Full WoD
+        // local Data with patch-archives produces ~2.5–3 MiB journals per bucket
+        // (~150k+ × 18-byte entries + Casc padding) — raise so LoadIndexFiles
+        // actually parses them (otherwise encoding lookup → FILE_NOT_FOUND).
+        if(0 < FileSize && FileSize <= 0x1000000)
         {
             // WoW6 actually reads THE ENTIRE file to memory
             // Verified on Mac build (x64)
