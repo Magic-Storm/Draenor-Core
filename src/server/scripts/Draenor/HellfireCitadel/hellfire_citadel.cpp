@@ -47,8 +47,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFelStrike, 5 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventShieldLeap, 12 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -121,9 +127,15 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFelFireball, 3 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventHellweaving, 8 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventOrbOfDestruction, 15 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -198,8 +210,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFelCauterize, 6 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventFelLavaBeam, 4 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -267,8 +285,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFelSlam, 10 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventBrutalShout, 15 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -337,8 +361,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventHammerThrow, 6 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventExplosiveCrate, 14 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -409,6 +439,7 @@ public:
 
 		void EnterCombat(Unit* p_Who) override
 		{
+			Talk(0);
 			if (p_Who)
 			{
 				me->CastSpell(p_Who, eCitadelSpells::SpellCheapShot, true);
@@ -417,6 +448,11 @@ public:
 
 			m_Events.ScheduleEvent(eEvents::EventFelPoison, 8 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventCheapShot, 20 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -492,7 +528,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFelStrike, 4 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -549,8 +591,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventBlazingFelTouch, 12 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventGraggraSmash, 20 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(2);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -573,6 +621,7 @@ public:
 				}
 				case eEvents::EventGraggraSmash:
 				{
+					Talk(1);
 					if (Unit* l_Target = SelectTarget(SelectAggroTarget::SELECT_TARGET_RANDOM, 0, 40.0f, true))
 					{
 						me->CastSpell(l_Target, eCitadelSpells::SpellGraggraSmashLeap, false);
@@ -624,6 +673,7 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventGraspingHands, 15 * TimeConstants::IN_MILLISECONDS);
 
 			switch (me->GetEntry())
@@ -639,6 +689,11 @@ public:
 				default: ///< Togdrov
 					break;
 			}
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -717,7 +772,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventPrimalEnergies, 8 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -771,7 +832,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventResidualShadows, 9 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -825,7 +892,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFocusedFire, 10 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -881,8 +954,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventMuleKick, 8 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventMightySmash, 16 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -955,7 +1034,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventSlagTrap, 10 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -1009,7 +1094,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventLeap, 10 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -1069,7 +1160,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventBurningBlades, 5 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -1123,8 +1220,14 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventWhirl, 8 * TimeConstants::IN_MILLISECONDS);
 			m_Events.ScheduleEvent(eEvents::EventHurl, 14 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
@@ -1189,7 +1292,13 @@ public:
 
 		void EnterCombat(Unit* /*p_Who*/) override
 		{
+			Talk(0);
 			m_Events.ScheduleEvent(eEvents::EventFelPoison, 6 * TimeConstants::IN_MILLISECONDS);
+		}
+
+		void JustDied(Unit* /*p_Killer*/) override
+		{
+			Talk(1);
 		}
 
 		void UpdateAI(uint32 const p_Diff) override
