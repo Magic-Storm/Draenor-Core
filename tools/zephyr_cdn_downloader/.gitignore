@@ -1,0 +1,15 @@
+_test_out/
+**/cdn/
+**/client/
+Data/
+Wow.exe
+Wow-64.exe
+Wow*.exe.bak
+*.partial
+_sample.index
+_*.txt
+.build.info
+BlizzardError.exe
+dbghelp.dll
+World of Warcraft Launcher.exe
+Utils/
