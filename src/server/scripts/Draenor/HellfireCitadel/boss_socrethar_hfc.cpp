@@ -54,7 +54,7 @@ public:
             m_Phase = eSocretharPhases::PHASE_CONSTRUCT;
 
             // Summon the Soulbound Construct – it will do the fighting in Phase 1
-            Position constructPos = me->GetPosition();
+            Position constructPos = *me;
             me->MovePosition(constructPos, 10.0f, 0.0f);
             if (Creature* construct = me->SummonCreature(NPC_SOULBOUND_CONSTRUCT, constructPos))
             {

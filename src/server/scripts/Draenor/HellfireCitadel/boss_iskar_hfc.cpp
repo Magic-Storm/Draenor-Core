@@ -373,37 +373,45 @@ public:
 
 /// Eye of Anzu - 179202
 /// On expiry, notifies Iskar to transfer the Eye to a new random player.
-class spell_eye_of_anzu : public AuraScript
+class spell_eye_of_anzu : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_eye_of_anzu);
+public:
+    spell_eye_of_anzu() : SpellScriptLoader("spell_eye_of_anzu") { }
 
-    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
+    class spell_eye_of_anzu_AuraScript : public AuraScript
     {
-        // Only fire on natural expiry, not on explicit removal (AURA_REMOVE_BY_EXPIRE)
-        if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
-            return;
+        PrepareAuraScript(spell_eye_of_anzu_AuraScript);
 
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        // Locate Iskar and trigger transfer
-        std::list<Creature*> bossList;
-        GetCreatureListWithEntryInGrid(bossList, target, eCitadelCreatures::BossIskar, 300.0f);
-        for (Creature* boss : bossList)
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (boss && boss->IsAlive())
+            // Only fire on natural expiry, not on explicit removal (AURA_REMOVE_BY_EXPIRE)
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                return;
+
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Locate Iskar and trigger transfer
+            std::list<Creature*> bossList;
+            GetCreatureListWithEntryInGrid(bossList, target, eCitadelCreatures::BossIskar, 300.0f);
+            for (Creature* boss : bossList)
             {
-                boss->AI()->DoAction(ACTION_EYE_EXPIRED);
-                break;
+                if (boss && boss->IsAlive())
+                {
+                    boss->AI()->DoAction(ACTION_EYE_EXPIRED);
+                    break;
+                }
             }
         }
-    }
 
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(spell_eye_of_anzu::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
+        void Register() override
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_eye_of_anzu_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_eye_of_anzu_AuraScript(); }
 };
 
 void AddSC_boss_iskar_hfc()

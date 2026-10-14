@@ -564,6 +564,9 @@ public:
 
 					m_Events.SetPhase(ePhases::HandoftheLegion);
 
+					/// Allure / Death Brand continue; add P2 abilities
+					m_Events.ScheduleEvent(eEvents::EventAllureofFlames, eTimers::TimerAllureofFlamesCD, 0, ePhases::HandoftheLegion);
+					m_Events.ScheduleEvent(eEvents::EventDeathBrand, eTimers::TimerDeathBrandCD, 0, ePhases::HandoftheLegion);
 					m_Events.ScheduleEvent(eEvents::EventShackledTorment, eTimers::TimerShackledTorment, 0, ePhases::HandoftheLegion);
 					m_Events.ScheduleEvent(eEvents::EventVanguardoftheLegion, eTimers::TimerVanguardoftheLegionCD, 0, ePhases::HandoftheLegion);
 					break;
@@ -574,9 +577,12 @@ public:
 
 					m_Events.CancelEvent(eEvents::EventAllureofFlames);
 					m_Events.CancelEvent(eEvents::EventDeathBrand);
+					m_Events.CancelEvent(eEvents::EventShackledTorment);
+					m_Events.CancelEvent(eEvents::EventVanguardoftheLegion);
 
 					m_Events.SetPhase(ePhases::TheTwistingNether);
 
+					m_Events.ScheduleEvent(eEvents::EventDeathBrand, eTimers::TimerDeathBrandCD, 0, ePhases::TheTwistingNether);
 					m_Events.ScheduleEvent(eEvents::EventDemonicFeedback, eTimers::TimerDemonicFeedback, 0, ePhases::TheTwistingNether);
 					m_Events.ScheduleEvent(eEvents::EventNetherBanish, eTimers::TimerNetherBanishCD, 0, ePhases::TheTwistingNether);
 					m_Events.ScheduleEvent(eEvents::EventRainofChaos, eTimers::TimerRainofChaos, 0, ePhases::TheTwistingNether);

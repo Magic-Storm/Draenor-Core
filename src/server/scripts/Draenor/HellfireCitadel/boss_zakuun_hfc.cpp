@@ -378,7 +378,7 @@ public:
         void Reset() override
         {
             me->SetReactState(ReactStates::REACT_PASSIVE);
-            me->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, UnitFlags::UNIT_FLAG_NON_ATTACKABLE | UnitFlags::UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, eUnitFlags::UNIT_FLAG_NON_ATTACKABLE | eUnitFlags::UNIT_FLAG_NOT_SELECTABLE);
         }
 
         void UpdateAI(uint32 const /*p_Diff*/) override { }
@@ -392,42 +392,58 @@ public:
 
 /// Spell: Soul Cleave - 179406
 /// Marks the target with Shadow Realm debuff
-class spell_zakuun_soul_cleave : public SpellScript
+class spell_zakuun_soul_cleave : public SpellScriptLoader
 {
-    PrepareSpellScript(spell_zakuun_soul_cleave);
+public:
+    spell_zakuun_soul_cleave() : SpellScriptLoader("spell_zakuun_soul_cleave") { }
 
-    void HandleAfterHit()
+    class spell_zakuun_soul_cleave_SpellScript : public SpellScript
     {
-        if (Unit* l_Target = GetHitUnit())
+        PrepareSpellScript(spell_zakuun_soul_cleave_SpellScript);
+
+        void HandleAfterHit()
         {
-            /// Apply the lingering Shadow Realm mark
-            l_Target->CastSpell(l_Target, eZakuunSpells::SpellSoulCleaveDebuff, true);
+            if (Unit* l_Target = GetHitUnit())
+            {
+                /// Apply the lingering Shadow Realm mark
+                l_Target->CastSpell(l_Target, eZakuunSpells::SpellSoulCleaveDebuff, true);
+            }
         }
-    }
 
-    void Register() override
-    {
-        AfterHit += SpellHitFn(spell_zakuun_soul_cleave::HandleAfterHit);
-    }
+        void Register() override
+        {
+            AfterHit += SpellHitFn(spell_zakuun_soul_cleave_SpellScript::HandleAfterHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override { return new spell_zakuun_soul_cleave_SpellScript(); }
 };
 
 /// Spell: Seed of Destruction - 181508
 /// AuraScript: explode when removed / on expire
-class spell_zakuun_seed_of_destruction : public AuraScript
+class spell_zakuun_seed_of_destruction : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_zakuun_seed_of_destruction);
+public:
+    spell_zakuun_seed_of_destruction() : SpellScriptLoader("spell_zakuun_seed_of_destruction") { }
 
-    void HandleRemove(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+    class spell_zakuun_seed_of_destruction_AuraScript : public AuraScript
     {
-        if (Unit* l_Target = GetTarget())
-            l_Target->CastSpell(l_Target, eZakuunSpells::SpellSeedExplosion, true);
-    }
+        PrepareAuraScript(spell_zakuun_seed_of_destruction_AuraScript);
 
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(spell_zakuun_seed_of_destruction::HandleRemove,
-            EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
+        void HandleRemove(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+        {
+            if (Unit* l_Target = GetTarget())
+                l_Target->CastSpell(l_Target, eZakuunSpells::SpellSeedExplosion, true);
+        }
+
+        void Register() override
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_zakuun_seed_of_destruction_AuraScript::HandleRemove,
+                EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_zakuun_seed_of_destruction_AuraScript(); }
 };
 
 #ifndef __clang_analyzer__

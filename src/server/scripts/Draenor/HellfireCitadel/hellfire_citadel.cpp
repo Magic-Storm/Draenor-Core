@@ -8,38 +8,15 @@
 
 #include "hellfire_citadel.h"
 
-/* BONUS ROLL SPELLS FOR EACH BOSS
-
-Assault		- 188972
-Reaver		- 188973
-?			. 188974
-?			. 188975
-?			. 188976
-?			. 188977
-?			. 188978
-?			. 188979
-?			. 188980
-?			. 188981
-?			. 188982
-Mannoroth	. 188983
-Archimonde	. 188984
-
-Kazzak	. 188984
-*/
+/// Bonus roll spells (cast by bosses on death when encounter loot is enabled):
+/// Assault 188972 | Reaver 188973 | Kormrok 188974 | Council 188975
+/// Kilrogg 188976 | Gorefiend 188976 | Iskar 188977 | Socrethar 188978
+/// Zakuun 188979 | Xhul'horac 188980 | Velhari 188981 | Mannoroth 188983
+/// Archimonde 188984
 
 #ifndef __clang_analyzer__
 void AddSC_hellfire_citadel()
 {
-	/// Misc
-
-	/// NPCs
-
-	/// Spells
-
-	/// GameObjects
-
-	/// AreaTriggers (spell)
-
-	/// AreaTriggers (world)
+	/// Misc encounter helpers / shared scripts live in boss_* and instance_*.
 }
 #endif

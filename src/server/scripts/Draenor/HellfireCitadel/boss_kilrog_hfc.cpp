@@ -665,193 +665,241 @@ public:
 // Spell Scripts
 
 // 182428 - Vision of Death
-class spell_kilrogg_vision_of_death : public SpellScript
+class spell_kilrogg_vision_of_death : public SpellScriptLoader
 {
-    PrepareSpellScript(spell_kilrogg_vision_of_death);
+public:
+    spell_kilrogg_vision_of_death() : SpellScriptLoader("spell_kilrogg_vision_of_death") { }
 
-    void HandleTargets(std::list<WorldObject*>& targets)
+    class spell_kilrogg_vision_of_death_SpellScript : public SpellScript
     {
-        if (targets.empty())
-            return;
+        PrepareSpellScript(spell_kilrogg_vision_of_death_SpellScript);
 
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        // Remove non-players and dead players
-        targets.remove_if([](WorldObject* target) -> bool
+        void HandleTargets(std::list<WorldObject*>& targets)
         {
-            if (!target->IsPlayer())
-                return true;
-            
-            Player* player = target->ToPlayer();
-            return !player || !player->IsAlive() || player->HasAura(SPELL_VISION_OF_DEATH);
-        });
+            if (targets.empty())
+                return;
 
-        // Limit to 3-5 players
-        if (targets.size() > 5)
-        {
-            targets.resize(5);
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            // Remove non-players and dead players
+            targets.remove_if([](WorldObject* target) -> bool
+            {
+                if (!target->IsPlayer())
+                    return true;
+                
+                Player* player = target->ToPlayer();
+                return !player || !player->IsAlive() || player->HasAura(SPELL_VISION_OF_DEATH);
+            });
+
+            // Limit to 3-5 players
+            if (targets.size() > 5)
+            {
+                targets.resize(5);
+            }
         }
-    }
 
-    void Register() override
-    {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kilrogg_vision_of_death::HandleTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-    }
+        void Register() override
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kilrogg_vision_of_death_SpellScript::HandleTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override { return new spell_kilrogg_vision_of_death_SpellScript(); }
 };
 
 // 180372 - Heartseeker
-class spell_kilrogg_heartseeker : public SpellScript
+class spell_kilrogg_heartseeker : public SpellScriptLoader
 {
-    PrepareSpellScript(spell_kilrogg_heartseeker);
+public:
+    spell_kilrogg_heartseeker() : SpellScriptLoader("spell_kilrogg_heartseeker") { }
 
-    void HandleAfterCast()
+    class spell_kilrogg_heartseeker_SpellScript : public SpellScript
     {
-        Unit* caster = GetCaster();
-        Unit* target = GetExplTargetUnit();
-        
-        if (!caster || !target)
-            return;
+        PrepareSpellScript(spell_kilrogg_heartseeker_SpellScript);
 
-        // Create blood pool at target location
-        if (Creature* bloodPool = caster->SummonCreature(NPC_BLOOD_POOL, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
+        void HandleAfterCast()
         {
-            bloodPool->CastSpell(bloodPool, SPELL_BLOOD_POOL, true);
-        }
-    }
+            Unit* caster = GetCaster();
+            Unit* target = GetExplTargetUnit();
+            
+            if (!caster || !target)
+                return;
 
-    void Register() override
-    {
-        AfterCast += SpellCastFn(spell_kilrogg_heartseeker::HandleAfterCast);
-    }
+            // Create blood pool at target location
+            if (Creature* bloodPool = caster->SummonCreature(NPC_BLOOD_POOL, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
+            {
+                bloodPool->CastSpell(bloodPool, SPELL_BLOOD_POOL, true);
+            }
+        }
+
+        void Register() override
+        {
+            AfterCast += SpellCastFn(spell_kilrogg_heartseeker_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override { return new spell_kilrogg_heartseeker_SpellScript(); }
 };
 
 // 182159 - Corruption Sickness
-class spell_kilrogg_corruption_sickness : public AuraScript
+class spell_kilrogg_corruption_sickness : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_kilrogg_corruption_sickness);
+public:
+    spell_kilrogg_corruption_sickness() : SpellScriptLoader("spell_kilrogg_corruption_sickness") { }
 
-    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    class spell_kilrogg_corruption_sickness_AuraScript : public AuraScript
     {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
+        PrepareAuraScript(spell_kilrogg_corruption_sickness_AuraScript);
 
-        // Add corruption stack
-        if (Aura* corruption = target->GetAura(SPELL_CORRUPTION_SICKNESS))
+        void HandlePeriodic(AuraEffect const* /*aurEff*/)
         {
-            if (corruption->GetStackAmount() >= 100)
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Add corruption stack
+            if (Aura* corruption = target->GetAura(SPELL_CORRUPTION_SICKNESS))
             {
-                target->RemoveAura(SPELL_CORRUPTION_SICKNESS);
-                target->CastSpell(target, SPELL_DEMONIC_POSSESSION, true);
-            }
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_kilrogg_corruption_sickness::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-    }
-};
-
-// 180718 - Immortal Resolve
-class spell_kilrogg_immortal_resolve : public AuraScript
-{
-    PrepareAuraScript(spell_kilrogg_immortal_resolve);
-
-    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        // Apply damage increase
-        // target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, 10.0f);
-    }
-
-    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        // Remove damage increase
-        // target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, -10.0f);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_kilrogg_immortal_resolve::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_kilrogg_immortal_resolve::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-// 185563 - Immortal Salvation
-class spell_kilrogg_immortal_salvation : public AuraScript
-{
-    PrepareAuraScript(spell_kilrogg_immortal_salvation);
-
-    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        // Apply healing increase
-        // target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, 10.0f);
-    }
-
-    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        // Remove healing increase
-        // target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, -10.0f);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_kilrogg_immortal_salvation::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_kilrogg_immortal_salvation::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-// 187089 - Cleansing Aura
-class spell_kilrogg_cleansing_aura : public AuraScript
-{
-    PrepareAuraScript(spell_kilrogg_cleansing_aura);
-
-    void HandlePeriodic(AuraEffect const* /*aurEff*/)
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return;
-
-        // Reduce corruption on nearby allies
-        std::list<Unit*> allies;
-        Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(target, target, 10.0f);
-        Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(target, allies, u_check);
-        target->VisitNearbyObject(10.0f, searcher);
-
-        for (Unit* ally : allies)
-        {
-            if (Aura* corruption = ally->GetAura(SPELL_CORRUPTION_SICKNESS))
-            {
-                if (corruption->GetStackAmount() > 1)
+                if (corruption->GetStackAmount() >= 100)
                 {
-                    corruption->ModStackAmount(-1);
+                    target->RemoveAura(SPELL_CORRUPTION_SICKNESS);
+                    target->CastSpell(target, SPELL_DEMONIC_POSSESSION, true);
                 }
             }
         }
-    }
 
-    void Register() override
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_kilrogg_corruption_sickness_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_kilrogg_corruption_sickness_AuraScript(); }
+};
+
+// 180718 - Immortal Resolve
+class spell_kilrogg_immortal_resolve : public SpellScriptLoader
+{
+public:
+    spell_kilrogg_immortal_resolve() : SpellScriptLoader("spell_kilrogg_immortal_resolve") { }
+
+    class spell_kilrogg_immortal_resolve_AuraScript : public AuraScript
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_kilrogg_cleansing_aura::HandlePeriodic, EFFECT_0, SPELL_AURA_DUMMY);
-    }
+        PrepareAuraScript(spell_kilrogg_immortal_resolve_AuraScript);
+
+        void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Apply damage increase
+            // target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, 10.0f);
+        }
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Remove damage increase
+            // target->ApplyStatPctModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT, -10.0f);
+        }
+
+        void Register() override
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_kilrogg_immortal_resolve_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_kilrogg_immortal_resolve_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_kilrogg_immortal_resolve_AuraScript(); }
+};
+
+// 185563 - Immortal Salvation
+class spell_kilrogg_immortal_salvation : public SpellScriptLoader
+{
+public:
+    spell_kilrogg_immortal_salvation() : SpellScriptLoader("spell_kilrogg_immortal_salvation") { }
+
+    class spell_kilrogg_immortal_salvation_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_kilrogg_immortal_salvation_AuraScript);
+
+        void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Apply healing increase
+            // target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, 10.0f);
+        }
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Remove healing increase
+            // target->ApplyStatPctModifier(UNIT_MOD_HEALING_DONE_POSITIVE, TOTAL_PCT, -10.0f);
+        }
+
+        void Register() override
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_kilrogg_immortal_salvation_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_kilrogg_immortal_salvation_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_kilrogg_immortal_salvation_AuraScript(); }
+};
+
+// 187089 - Cleansing Aura
+class spell_kilrogg_cleansing_aura : public SpellScriptLoader
+{
+public:
+    spell_kilrogg_cleansing_aura() : SpellScriptLoader("spell_kilrogg_cleansing_aura") { }
+
+    class spell_kilrogg_cleansing_aura_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_kilrogg_cleansing_aura_AuraScript);
+
+        void HandlePeriodic(AuraEffect const* /*aurEff*/)
+        {
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            // Reduce corruption on nearby allies
+            std::list<Unit*> allies;
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(target, target, 10.0f);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(target, allies, u_check);
+            target->VisitNearbyObject(10.0f, searcher);
+
+            for (Unit* ally : allies)
+            {
+                if (Aura* corruption = ally->GetAura(SPELL_CORRUPTION_SICKNESS))
+                {
+                    if (corruption->GetStackAmount() > 1)
+                    {
+                        corruption->ModStackAmount(-1);
+                    }
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_kilrogg_cleansing_aura_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_kilrogg_cleansing_aura_AuraScript(); }
 };
 
 void AddSC_boss_kilrog_hfc()

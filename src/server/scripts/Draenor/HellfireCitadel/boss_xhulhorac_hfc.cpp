@@ -468,24 +468,32 @@ public:
 
 /// Spell: Chains of Fel - 186500
 /// Roots the target and deals periodic fel damage
-class spell_xhulhorac_chains_of_fel : public AuraScript
+class spell_xhulhorac_chains_of_fel : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_xhulhorac_chains_of_fel);
+public:
+    spell_xhulhorac_chains_of_fel() : SpellScriptLoader("spell_xhulhorac_chains_of_fel") { }
 
-    void HandlePeriodic(AuraEffect const* /*p_AurEff*/)
+    class spell_xhulhorac_chains_of_fel_AuraScript : public AuraScript
     {
-        if (Unit* l_Target = GetTarget())
+        PrepareAuraScript(spell_xhulhorac_chains_of_fel_AuraScript);
+
+        void HandlePeriodic(AuraEffect const* /*p_AurEff*/)
         {
-            if (l_Target->IsAlive())
-                l_Target->CastSpell(l_Target, eXhulSpells::SpellFelstar, true);
+            if (Unit* l_Target = GetTarget())
+            {
+                if (l_Target->IsAlive())
+                    l_Target->CastSpell(l_Target, eXhulSpells::SpellFelstar, true);
+            }
         }
-    }
 
-    void Register() override
-    {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_xhulhorac_chains_of_fel::HandlePeriodic,
-            EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-    }
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_xhulhorac_chains_of_fel_AuraScript::HandlePeriodic,
+                EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_xhulhorac_chains_of_fel_AuraScript(); }
 };
 
 #ifndef __clang_analyzer__

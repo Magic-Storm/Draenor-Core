@@ -46,7 +46,7 @@ static void CouncilEngageAll(InstanceScript* p_Instance, uint32 p_IgnoreEntry)
 		uint64 l_Guid = p_Instance->GetData64(l_Entry);
 		if (Creature* l_Boss = p_Instance->instance->GetCreature(l_Guid))
 		{
-			if (l_Boss->IsAlive() && !l_Boss->IsInCombat())
+			if (l_Boss->IsAlive() && !l_Boss->isInCombat())
 				l_Boss->SetInCombatWithZone();
 		}
 	}
@@ -66,7 +66,7 @@ static void CouncilEvadeAll(InstanceScript* p_Instance, uint32 p_IgnoreEntry)
 		uint64 l_Guid = p_Instance->GetData64(l_Entry);
 		if (Creature* l_Boss = p_Instance->instance->GetCreature(l_Guid))
 		{
-			if (l_Boss->IsAlive() && l_Boss->IsInCombat())
+			if (l_Boss->IsAlive() && l_Boss->isInCombat())
 				l_Boss->AI()->EnterEvadeMode();
 		}
 	}

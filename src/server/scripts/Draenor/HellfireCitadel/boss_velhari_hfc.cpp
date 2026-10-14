@@ -359,7 +359,7 @@ public:
         void Reset() override
         {
             me->SetReactState(ReactStates::REACT_PASSIVE);
-            me->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, UnitFlags::UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, eUnitFlags::UNIT_FLAG_NOT_SELECTABLE);
             m_PulseTimer = eVelhariTimers::TimerFontCorruptionPulse;
         }
 
@@ -400,7 +400,7 @@ public:
         void Reset() override
         {
             me->SetReactState(ReactStates::REACT_PASSIVE);
-            me->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, UnitFlags::UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(EUnitFields::UNIT_FIELD_FLAGS, eUnitFlags::UNIT_FLAG_NOT_SELECTABLE);
             m_PulseTimer = 3000;
         }
 
@@ -424,81 +424,105 @@ public:
 
 /// Spell: Seal of Decay - 180353
 /// AuraScript: stacks debuff each tick; high stacks trigger a tank swap mechanic
-class spell_velhari_seal_of_decay : public AuraScript
+class spell_velhari_seal_of_decay : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_velhari_seal_of_decay);
+public:
+    spell_velhari_seal_of_decay() : SpellScriptLoader("spell_velhari_seal_of_decay") { }
 
-    void HandlePeriodic(AuraEffect const* /*p_AurEff*/)
+    class spell_velhari_seal_of_decay_AuraScript : public AuraScript
     {
-        Unit* l_Target = GetTarget();
-        if (!l_Target)
-            return;
+        PrepareAuraScript(spell_velhari_seal_of_decay_AuraScript);
 
-        /// At 5 stacks warn the tank they need to be swapped
-        if (GetStackAmount() >= 5)
+        void HandlePeriodic(AuraEffect const* /*p_AurEff*/)
         {
-            /// The actual swap is handled by players taunting; here we amplify
-            /// damage for gameplay pressure
-            l_Target->CastSpell(l_Target, eVelhariSpells::SpellAncientCorruption, true);
-        }
-    }
+            Unit* l_Target = GetTarget();
+            if (!l_Target)
+                return;
 
-    void Register() override
-    {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_velhari_seal_of_decay::HandlePeriodic,
-            EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-    }
+            /// At 5 stacks warn the tank they need to be swapped
+            if (GetStackAmount() >= 5)
+            {
+                /// The actual swap is handled by players taunting; here we amplify
+                /// damage for gameplay pressure
+                l_Target->CastSpell(l_Target, eVelhariSpells::SpellAncientCorruption, true);
+            }
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_velhari_seal_of_decay_AuraScript::HandlePeriodic,
+                EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_velhari_seal_of_decay_AuraScript(); }
 };
 
 /// Spell: Edict of Condemnation - 182884
 /// AuraScript: explodes at expiry dealing massive damage to nearby players
-class spell_velhari_edict_of_condemnation : public AuraScript
+class spell_velhari_edict_of_condemnation : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_velhari_edict_of_condemnation);
+public:
+    spell_velhari_edict_of_condemnation() : SpellScriptLoader("spell_velhari_edict_of_condemnation") { }
 
-    void HandleRemove(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+    class spell_velhari_edict_of_condemnation_AuraScript : public AuraScript
     {
-        Unit* l_Target = GetTarget();
-        if (!l_Target)
-            return;
+        PrepareAuraScript(spell_velhari_edict_of_condemnation_AuraScript);
 
-        /// Trigger the final condemnation damage burst
-        l_Target->CastSpell(l_Target, eVelhariSpells::SpellFinalVerdict, true);
-    }
+        void HandleRemove(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+        {
+            Unit* l_Target = GetTarget();
+            if (!l_Target)
+                return;
 
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(spell_velhari_edict_of_condemnation::HandleRemove,
-            EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
+            /// Trigger the final condemnation damage burst
+            l_Target->CastSpell(l_Target, eVelhariSpells::SpellFinalVerdict, true);
+        }
+
+        void Register() override
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_velhari_edict_of_condemnation_AuraScript::HandleRemove,
+                EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_velhari_edict_of_condemnation_AuraScript(); }
 };
 
 /// Spell: Ancient Corruption - 180351
 /// AuraScript: intensifies (increases damage) based on Velhari's current phase
-class spell_velhari_ancient_corruption : public AuraScript
+class spell_velhari_ancient_corruption : public SpellScriptLoader
 {
-    PrepareAuraScript(spell_velhari_ancient_corruption);
+public:
+    spell_velhari_ancient_corruption() : SpellScriptLoader("spell_velhari_ancient_corruption") { }
 
-    void HandleApply(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+    class spell_velhari_ancient_corruption_AuraScript : public AuraScript
     {
-        // Stacking corruption - handled by server-side stack amount
-    }
+        PrepareAuraScript(spell_velhari_ancient_corruption_AuraScript);
 
-    void HandleRemove(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
-    {
-        // On expiry trigger a burst if too many stacks
-        Unit* l_Target = GetTarget();
-        if (l_Target && GetStackAmount() >= 10)
-            l_Target->CastSpell(l_Target, eVelhariSpells::SpellEdictOfCondemnation, true);
-    }
+        void HandleApply(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+        {
+            // Stacking corruption - handled by server-side stack amount
+        }
 
-    void Register() override
-    {
-        OnEffectApply  += AuraEffectApplyFn(spell_velhari_ancient_corruption::HandleApply,
-            EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_velhari_ancient_corruption::HandleRemove,
-            EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-    }
+        void HandleRemove(AuraEffect const* /*p_AurEff*/, AuraEffectHandleModes /*p_Mode*/)
+        {
+            // On expiry trigger a burst if too many stacks
+            Unit* l_Target = GetTarget();
+            if (l_Target && GetStackAmount() >= 10)
+                l_Target->CastSpell(l_Target, eVelhariSpells::SpellEdictOfCondemnation, true);
+        }
+
+        void Register() override
+        {
+            OnEffectApply  += AuraEffectApplyFn(spell_velhari_ancient_corruption_AuraScript::HandleApply,
+                EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_velhari_ancient_corruption_AuraScript::HandleRemove,
+                EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override { return new spell_velhari_ancient_corruption_AuraScript(); }
 };
 
 #ifndef __clang_analyzer__

@@ -10,7 +10,10 @@
 
 DoorData const g_DoorData[] =
 {
-	{ 0,              0,              DoorType::DOOR_TYPE_ROOM,       BoundaryType::BOUNDARY_NONE }
+	{ eCitadelGameObjects::ReinforcedHellfireDoor, eCitadelDatas::DataMartak,     DoorType::DOOR_TYPE_PASSAGE, BoundaryType::BOUNDARY_NONE },
+	{ eCitadelGameObjects::ReinforcedHellfireDoor, eCitadelDatas::DataReaver,     DoorType::DOOR_TYPE_PASSAGE, BoundaryType::BOUNDARY_NONE },
+	{ eCitadelGameObjects::DarkPortalFireWall,     eCitadelDatas::DataArchimonde, DoorType::DOOR_TYPE_ROOM,    BoundaryType::BOUNDARY_NONE },
+	{ 0,                                           0,                             DoorType::DOOR_TYPE_ROOM,    BoundaryType::BOUNDARY_NONE }
 };
 
 class instance_hellfire_citadel : public InstanceMapScript
@@ -28,6 +31,7 @@ public:
 
 			m_MartakGuid = 0;
 			m_ReinforcedHellfireDoor = 0;
+			m_DarkPortalFireWall = 0;
 
 			m_ReaverGuid = 0;
 			m_KormrokGuid = 0;
@@ -60,6 +64,7 @@ public:
 		/// Hellbreach - Part 1
 		uint64 m_MartakGuid;
 		uint64 m_ReinforcedHellfireDoor;
+		uint64 m_DarkPortalFireWall;
 		uint64 m_ReaverGuid;
 		uint64 m_KormrokGuid;
 
@@ -201,7 +206,12 @@ public:
 			{
 				case eCitadelGameObjects::ReinforcedHellfireDoor:
 					m_ReinforcedHellfireDoor = p_GameObject->GetGUID();
-				break;
+					AddDoor(p_GameObject, true);
+					break;
+				case eCitadelGameObjects::DarkPortalFireWall:
+					m_DarkPortalFireWall = p_GameObject->GetGUID();
+					AddDoor(p_GameObject, true);
+					break;
 			default:
 				break;
 			}
@@ -494,14 +504,14 @@ public:
 				{
 				case EncounterState::DONE:
 				{
+					/// Open the path toward the Black Gate after Mannoroth
+					if (GameObject* l_Firewall = instance->GetGameObject(m_DarkPortalFireWall))
+						l_Firewall->SetGoState(GOState::GO_STATE_ACTIVE);
 					break;
 				}
 				default:
-				{
 					break;
 				}
-				}
-
 				break;
 			}
 			case eCitadelDatas::DataArchimonde:
@@ -510,14 +520,19 @@ public:
 				{
 				case EncounterState::DONE:
 				{
+					if (GameObject* l_Firewall = instance->GetGameObject(m_DarkPortalFireWall))
+						l_Firewall->SetGoState(GOState::GO_STATE_ACTIVE);
+					break;
+				}
+				case EncounterState::IN_PROGRESS:
+				{
+					if (GameObject* l_Firewall = instance->GetGameObject(m_DarkPortalFireWall))
+						l_Firewall->SetGoState(GOState::GO_STATE_READY);
 					break;
 				}
 				default:
-				{
 					break;
 				}
-				}
-
 				break;
 			}
 			default:
@@ -681,6 +696,8 @@ public:
 				return m_MartakGuid;
 			case eCitadelGameObjects::ReinforcedHellfireDoor:
 				return m_ReinforcedHellfireDoor;
+			case eCitadelGameObjects::DarkPortalFireWall:
+				return m_DarkPortalFireWall;
 			case eCitadelCreatures::BossReaver:
 				return m_ReaverGuid;
 			case eCitadelCreatures::BossKormrok:
@@ -749,11 +766,10 @@ public:
 			{
 			case eCitadelDatas::DataArchimonde:
 			{
-				/* Mannoroth must be defeated to start Archimonde encounter
+				/// Mannoroth must be defeated before Archimonde
 				if (GetBossState(eCitadelDatas::DataMannoroth) != EncounterState::DONE)
 					return false;
-
-				return true;*/
+				return true;
 			}
 			default:
 				break;
