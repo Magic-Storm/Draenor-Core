@@ -1,7 +1,10 @@
 _test_out/
+_conv_smoke/
+_cdn_cache/
 **/cdn/
 **/client/
 Data/
+_data_backup_*/
 Wow.exe
 Wow-64.exe
 Wow*.exe.bak

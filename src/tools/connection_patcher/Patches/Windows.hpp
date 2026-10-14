@@ -35,7 +35,6 @@ namespace Connection_Patcher
 
             struct x64
             {
-                // mov r9b, 1 — bit0 = local file (CreateFile). bit1 would run extra sig path; keep clear.
                 static const std::vector<unsigned char> CertBundleCASCLocalFile() { return{ 0x41, 0xB1, 0x01 }; }
                 static const std::vector<unsigned char> CertBundleSignatureCheck() { return{ 0xEB }; }
             };
