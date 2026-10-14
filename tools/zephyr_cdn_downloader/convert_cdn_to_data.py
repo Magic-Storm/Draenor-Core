@@ -52,6 +52,7 @@ def convert_archives(
     keep_cdn_cache: bool,
 ) -> None:
     total = len(archive_keys)
+    already_done = 0
     for i, key in enumerate(archive_keys, 1):
         print(f"[{i}/{total}] archive {key}")
         try:
@@ -73,6 +74,14 @@ def convert_archives(
             seen9.add(e9)
             full = ekey if len(ekey) == 16 else ekey + b"\x00" * 7
             locs.append((full, loc))
+
+        missing = [full for full, _ in locs if not writer.has_ekey(full)]
+        if not missing:
+            already_done += 1
+            print(f"  -> already complete ({len(locs)} ekeys), skip download")
+            continue
+
+        print(f"  -> need {len(missing)}/{len(locs)} ekeys")
 
         # Download full archive once (resume-safe), then slice locally
         try:
@@ -111,6 +120,9 @@ def convert_archives(
             except OSError:
                 pass
 
+    if already_done:
+        print(f"==> Skipped {already_done}/{total} archives already fully in Data")
+
 
 def main() -> int:
     ap = argparse.ArgumentParser(
@@ -145,6 +157,11 @@ def main() -> int:
         default=0,
         help="Convert only first N archives (debug/smoke)",
     )
+    ap.add_argument(
+        "--fresh",
+        action="store_true",
+        help="Move existing Data/data aside and start clean (default: keep/overwrite idx at end)",
+    )
     args = ap.parse_args()
 
     client_dir: Path = args.out
@@ -164,8 +181,8 @@ def main() -> int:
     print(f"==> Cache  : {cache_dir}")
     print(f"==> Local Data/data : {local_data}")
 
-    # Fresh local data journals (do not mix with CDN junk)
-    if local_data.exists():
+    # Only wipe when explicitly requested — resume must not destroy 90GB progress
+    if local_data.exists() and args.fresh:
         backup = data_root / f"_data_backup_{int(time.time())}"
         print(f"==> Moving old Data/data -> {backup.name}")
         local_data.rename(backup)
@@ -207,7 +224,13 @@ def main() -> int:
 
     print(f"==> Converting {len(archives)} CDN archives -> local data.NNN / .idx")
     print("    This is the real full Data (tens of GB). Resume via --cache.")
-    writer = LocalCascWriter(local_data)
+    # Resume into existing journals if present; otherwise start clean
+    existing = list(local_data.glob("data.*"))
+    writer = (
+        LocalCascWriter.open_existing(local_data)
+        if existing and not args.fresh
+        else LocalCascWriter(local_data)
+    )
     try:
         convert_archives(
             cdn,
@@ -216,6 +239,31 @@ def main() -> int:
             progress,
             keep_cdn_cache=args.keep_cache,
         )
+
+        # CascLib REQUIRES encoding/root in idx — force-inject even if an archive was skipped
+        encoding_keys = build_cfg.get("encoding", [])
+        if len(encoding_keys) >= 2:
+            print("==> Ensuring ENCODING/ROOT/DOWNLOAD/INSTALL are in local Data")
+            archive_index = build_index_from_cdn(cdn, archives)
+            enc_ekey = bytes.fromhex(encoding_keys[1])
+            enc_raw = resolve_ekey_bytes(
+                cdn, enc_ekey, archive_index=archive_index, progress_cb=progress
+            )
+            if writer.write_blte(enc_ekey, enc_raw):
+                print(f"  + encoding {human(len(enc_raw))}")
+            encoding = EncodingTable.parse(enc_raw)
+            for name in ("root", "download", "install", "patch"):
+                vals = build_cfg.get(name, [])
+                if not vals:
+                    continue
+                ekey = encoding.get_ekey(vals[0])
+                if not ekey or writer.has_ekey(ekey):
+                    continue
+                blob = resolve_ekey_bytes(
+                    cdn, ekey, archive_index=archive_index, progress_cb=progress
+                )
+                if writer.write_blte(ekey, blob):
+                    print(f"  + {name} {human(len(blob))}")
     finally:
         writer.close()
 
@@ -230,7 +278,6 @@ def main() -> int:
         if len(encoding_keys) >= 2 and install_ckey:
             encoding_ekey = encoding_keys[1]
             print("==> Encoding (for install extract)")
-            # Prefer already-converted local blob via CDN cache / loose
             archive_index = build_index_from_cdn(cdn, archives)
             enc_raw = resolve_ekey_bytes(
                 cdn, bytes.fromhex(encoding_ekey), archive_index=archive_index, progress_cb=progress

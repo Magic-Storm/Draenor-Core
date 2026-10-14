@@ -17,6 +17,7 @@
 
 #ifdef _WIN32
 #include "direct.h"
+#include <windows.h>
 #else
 #include <sys/stat.h>
 #include <unistd.h>
@@ -133,16 +134,26 @@ char const* Locales[LOCALES_COUNT] =
 
 void CreateDir(std::string const& path)
 {
-    if (chdir(path.c_str()) == 0)
-    {
-            chdir("../");
-            return;
-    }
+    // Same idea as dio85/TCWoD (boost::filesystem::create_directory): create one
+    // directory level without chdir(). The old chdir()/chdir("..") path broke nested
+    // dirs like ./dbc/enUS — cwd ended in ./dbc and fopen("./dbc/enUS/...") failed.
+    // Windows _mkdir also rejects a trailing slash.
+    std::string dir = path;
+    while (!dir.empty() && (dir.back() == '/' || dir.back() == '\\'))
+        dir.pop_back();
+    if (dir.empty())
+        return;
 
 #ifdef _WIN32
-    _mkdir(path.c_str());
+    DWORD const attrs = GetFileAttributesA(dir.c_str());
+    if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY))
+        return;
+    _mkdir(dir.c_str());
 #else
-    mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO); // 0777
+    struct stat st;
+    if (stat(dir.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
+        return;
+    mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO); // 0777
 #endif
 }
 

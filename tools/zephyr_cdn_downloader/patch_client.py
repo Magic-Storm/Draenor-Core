@@ -66,12 +66,16 @@ def write_build_info(client_dir: Path, region: str = "us") -> None:
     build_config = "451679f16b266632976beb8d5c922d9f"
     cdn_config = "eee453d9035886d03a1308de041de88c"
     version = "6.2.4.21742"
+    # CascLib requires CDN Hosts + CDN Path or CascOpenStorage -> BAD_FORMAT
     header = (
         "Branch!STRING:0|Active!DEC:1|Build Key!HEX:16|CDN Key!HEX:16|"
-        "Region!STRING:0|Version!STRING:0|KeyRing!HEX:16|BuildId!DEC:4|VersionName!String:0"
+        "Region!STRING:0|CDN Path!STRING:0|CDN Hosts!STRING:0|"
+        "Version!STRING:0|KeyRing!HEX:16|BuildId!DEC:4|VersionName!String:0"
     )
-    # Active=1, empty Version field is normal for WoD
-    row = f"wow|1|{build_config}|{cdn_config}|{region}||{build_config}|21742|{version}"
+    row = (
+        f"wow|1|{build_config}|{cdn_config}|{region}|wow|zephyr.v4y.hu||"
+        f"{build_config}|21742|{version}"
+    )
     (client_dir / ".build.info").write_text(header + "\n" + row + "\n", encoding="utf-8", newline="\n")
 
 

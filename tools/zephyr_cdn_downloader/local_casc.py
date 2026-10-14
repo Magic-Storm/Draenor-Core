@@ -183,6 +183,60 @@ class LocalCascWriter:
         self._write_record(ekey, blte, flags=b"\x00\x00", indexable=True)
         return True
 
+    def has_ekey(self, ekey: bytes) -> bool:
+        return (ekey + b"\x00" * 9)[:9] in self._seen
+
+    @classmethod
+    def open_existing(cls, data_dir: Path, idx_version: int = 1) -> "LocalCascWriter":
+        """Resume an existing Data/data tree: load .idx, append to last data.NNN."""
+        w = cls(data_dir=data_dir, idx_version=idx_version)
+        # Load entries from highest-version idx per bucket
+        for bucket in range(16):
+            files = sorted(data_dir.glob(f"{bucket:02x}*.idx"))
+            if not files:
+                continue
+            latest = files[-1]
+            raw = latest.read_bytes()
+            if len(raw) < 40:
+                continue
+            hs = struct.unpack_from("<I", raw, 0)[0]
+            file_pos = (8 + hs + 0x0F) & ~0x0F
+            if file_pos + 8 > len(raw):
+                continue
+            es = struct.unpack_from("<I", raw, file_pos)[0]
+            blob = raw[file_pos + 8 : file_pos + 8 + es]
+            for i in range(0, len(blob), 18):
+                rec = blob[i : i + 18]
+                if len(rec) < 18:
+                    break
+                ekey9 = rec[0:9]
+                loc = int.from_bytes(rec[9:14], "big")
+                size = struct.unpack_from("<I", rec, 14)[0]
+                arch = loc >> OFFSET_BITS
+                off = loc & OFFSET_MASK
+                w._seen.add(ekey9)
+                w._entries[bucket].append(
+                    IndexEntry(ekey9=ekey9, archive=arch, offset=off, size=size)
+                )
+                w._written += 1
+
+        # Append point = end of highest data.NNN
+        data_files = sorted(data_dir.glob("data.[0-9][0-9][0-9]"))
+        if not data_files:
+            return w
+        last = data_files[-1]
+        # data.012 -> 12
+        try:
+            arch_num = int(last.name.split(".")[-1])
+        except ValueError:
+            arch_num = 0
+        size = last.stat().st_size
+        w._archive = arch_num
+        w._offset = size
+        w._fh = open(last, "ab")
+        w._bytes = sum(p.stat().st_size for p in data_files)
+        return w
+
     def close(self) -> None:
         if self._fh is not None:
             self._fh.close()
@@ -234,7 +288,11 @@ class LocalCascWriter:
                 block = block.ljust(need, b"\x00")
 
         name = f"{bucket:02x}{self.idx_version:08x}.idx"
-        (self.data_dir / name).write_bytes(block)
+        dest = self.data_dir / name
+        tmp = self.data_dir / f"{name}.tmp"
+        # Atomic-ish replace avoids Windows errno 22 on some locked/in-use .idx
+        tmp.write_bytes(block)
+        tmp.replace(dest)
 
     @property
     def stats(self) -> Tuple[int, int, int]:

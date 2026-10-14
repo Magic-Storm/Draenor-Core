@@ -180,11 +180,27 @@ def download_install_files(
     return ok
 
 
-def write_build_info(client_dir: Path, region: str, build_config: str, cdn_config: str, version_name: str, build_id: str) -> None:
-    # Minimal .build.info used by WoD clients / tools
-    header = "Branch!STRING:0|Active!DEC:1|Build Key!HEX:16|CDN Key!HEX:16|Region!STRING:0|Version!STRING:0|KeyRing!HEX:16|BuildId!DEC:4|VersionName!String:0"
-    # Leave Version empty (retail style); KeyRing unused on 6.2.4
-    row = f"wow|1|{build_config}|{cdn_config}|{region}||{build_config}|{build_id}|{version_name}"
+def write_build_info(
+    client_dir: Path,
+    region: str,
+    build_config: str,
+    cdn_config: str,
+    version_name: str,
+    build_id: str,
+    *,
+    cdn_hosts: str = "zephyr.v4y.hu",
+    cdn_path: str = "wow",
+) -> None:
+    # CascLib requires Build Key + CDN Key + CDN Hosts + CDN Path (else BAD_FORMAT)
+    header = (
+        "Branch!STRING:0|Active!DEC:1|Build Key!HEX:16|CDN Key!HEX:16|"
+        "Region!STRING:0|CDN Path!STRING:0|CDN Hosts!STRING:0|"
+        "Version!STRING:0|KeyRing!HEX:16|BuildId!DEC:4|VersionName!String:0"
+    )
+    row = (
+        f"wow|1|{build_config}|{cdn_config}|{region}|{cdn_path}|{cdn_hosts}||"
+        f"{build_config}|{build_id}|{version_name}"
+    )
     write_text(client_dir / ".build.info", header + "\n" + row + "\n")
 
 
