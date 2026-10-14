@@ -1,0 +1,311 @@
+================================================================================
+  WoW 6.2.4 (build 21742) — скачивание клиента с Zephyr CDN
+  Источник: https://zephyr.v4y.hu/wow/
+================================================================================
+
+ЧТО ЭТО
+-------
+Набор скриптов, который скачивает клиент Warlords of Draenor 6.2.4
+и собирает папку Data в нормальном локальном формате CASC
+(файлы data.000, data.001, … и журналы .idx).
+
+Именно такой Data открывают CascLib, mapextractor, vmap4extractor
+и сам Wow.exe.
+
+
+ТРЕБОВАНИЯ
+----------
+1. Windows 10 / 11 (64-bit).
+2. Python 3.10+ в PATH.
+   Скачать: https://www.python.org/downloads/
+   При установке ОБЯЗАТЕЛЬНО включите галочку:
+   "Add python.exe to PATH".
+3. Свободное место на диске: примерно 60–100+ ГБ
+   (полная Data + временный кэш CDN).
+4. Стабильный интернет. Загрузка долгая (часы).
+
+
+КАКУЮ ПАПКУ ИСПОЛЬЗОВАТЬ
+------------------------
+Распакуйте/скопируйте всю папку zephyr_cdn_downloader туда,
+где хотите держать клиент. Все .bat пишут файлы В ЭТУ ЖЕ ПАПКУ:
+
+  ВашаПапка\
+    Wow-64.exe
+    Data\
+      config\
+      data\          ← data.000, *.idx
+    .build.info
+    _cdn_cache\      ← временный кэш (можно удалить после конвертера)
+
+
+ДВА СПОСОБА СКАЧАТЬ DATA
+------------------------
+
+────────────────────────────────────────────────────────────────
+СПОСОБ A (проще): Wow.exe сам качает Data
+────────────────────────────────────────────────────────────────
+Подходит, если хотите просто получить рабочий клиент.
+
+1. Дважды щёлкните:  Скачать_клиент.bat
+2. Дождитесь сообщений:
+   [1/3] скачались exe/DLL
+   [2/3] патч на zephyr.v4y.hu
+   [3/3] запуск Wow
+3. Нажмите любую клавишу — откроется Wow-64.exe.
+4. НЕ ЗАКРЫВАЙТЕ игру, пока качается Data.
+   Следите за папкой Data\data\ — размер должен вырасти
+   до десятков гигабайт (не останавливайтесь на ~600 МБ).
+5. Когда Data полностью скачана — клиент готов.
+   Дальше можно запускать через Запустить_клиент.bat
+   или сразу Wow-64.exe.
+
+Плюсы: проще, формат Data делает сам клиент.
+Минусы: нужно держать окно игры открытым до конца загрузки.
+
+
+────────────────────────────────────────────────────────────────
+СПОСОБ B (рекомендуется для экстракторов): Конвертер
+────────────────────────────────────────────────────────────────
+Качает архивы с CDN и сам собирает data.NNN + .idx.
+Не зависит от окна Wow.exe.
+
+1. Дважды щёлкните:  Конвертер_Data.bat
+2. Нажмите любую клавишу для старта.
+3. Скрипт:
+   - скачает архивы в _cdn_cache\
+   - соберёт Data\data\data.000, data.001, … и *.idx
+   - вытянет Wow.exe / DLL
+   - пропатчит exe на Zephyr
+4. Дождитесь строки "Готово" / "Done".
+5. Проверьте:
+   - есть Data\data\data.000 (и другие data.NNN)
+   - рядом лежат файлы вида 0000000001.idx … 0f00000001.idx
+   - размер папки Data\data — десятки ГБ
+
+Если загрузка оборвалась — просто запустите Конвертер_Data.bat
+снова. Кэш _cdn_cache сохраняется, уже скачанное не качается заново.
+
+После успешной конвертации папку _cdn_cache можно удалить,
+чтобы освободить место (она больше не нужна).
+
+
+ПРОВЕРКА, ЧТО ВСЁ ОКПРАВНО
+----------------------------
+Хорошо:
+  Data\data\data.000
+  Data\data\data.001  (и дальше по мере надобности)
+  Data\data\*.idx
+  Data\config\…
+  Wow-64.exe
+  .build.info
+
+Плохо (сырое зеркало CDN — экстракторы не откроют):
+  Data\data\aa\bb\длинный_хеш
+  куча файлов .index без data.000
+
+
+ЗАПУСК КЛИЕНТА ПОСЛЕ ЗАГРУЗКИ
+-----------------------------
+  Запустить_клиент.bat
+или
+  Wow-64.exe
+
+
+ЭКСТРАКТОРЫ (карты / vmaps / mmaps)
+-----------------------------------
+Когда Data полная и в правильном формате:
+
+  1. Положите mapextractor / vmap4extractor / … рядом с Wow-64.exe
+     (или используйте Extract.bat, если он есть в папке).
+  2. Запускайте экстракторы из папки клиента.
+
+
+ЧАСТЫЕ ПРОБЛЕМЫ
+---------------
+• "Нужен Python 3 в PATH"
+  → Переустановите Python с галочкой Add to PATH,
+    откройте НОВОЕ окно cmd и проверьте:  python --version
+
+• Загрузка очень долгая / обрывается
+  → Способ B: просто запускайте Конвертер_Data.bat снова.
+  → Способ A: снова запустите Wow-64.exe — докачает.
+
+• Мало места на диске
+  → Нужно ~60–100+ ГБ. При способе B после успеха удалите _cdn_cache.
+
+• Антивирус блокирует .bat / .exe
+  → Добавьте папку в исключения.
+
+• CascLib / mapextractor пишет BAD_FORMAT
+  → Data ещё не полная ИЛИ это сырое CDN-зеркало.
+    Используйте Способ B (Конвертер_Data.bat) до конца.
+
+
+КОРОТКО
+-------
+Обычный клиент:     Скачать_клиент.bat  → ждать Data в Wow
+Для экстракторов:   Конвертер_Data.bat  → ждать "Готово"
+Потом играть:       Запустить_клиент.bat
+
+
+Версия клиента: 6.2.4.21742
+CDN: https://zephyr.v4y.hu/wow/
+
+================================================================================
+
+
+================================================================================
+  WoW 6.2.4 (build 21742) — download client from Zephyr CDN
+  Source: https://zephyr.v4y.hu/wow/
+================================================================================
+
+WHAT THIS IS
+------------
+A small toolkit that downloads a Warlords of Draenor 6.2.4 client
+and builds a proper local CASC Data folder (data.000, data.001, …
+plus .idx journals).
+
+That is the layout CascLib, mapextractor, vmap4extractor, and
+Wow.exe itself expect.
+
+
+REQUIREMENTS
+------------
+1. Windows 10 / 11 (64-bit).
+2. Python 3.10+ on PATH.
+   Download: https://www.python.org/downloads/
+   During setup, ENABLE: "Add python.exe to PATH".
+3. Free disk space: about 60–100+ GB
+   (full Data + temporary CDN cache).
+4. Stable internet. The download takes hours.
+
+
+WHERE TO PUT THE FOLDER
+-----------------------
+Unpack/copy the whole zephyr_cdn_downloader folder to wherever
+you want the client. All .bat files write INTO THAT SAME FOLDER:
+
+  YourFolder\
+    Wow-64.exe
+    Data\
+      config\
+      data\          ← data.000, *.idx
+    .build.info
+    _cdn_cache\      ← temp CDN cache (safe to delete after converter)
+
+
+TWO WAYS TO GET DATA
+--------------------
+
+────────────────────────────────────────────────────────────────
+METHOD A (easier): let Wow.exe download Data
+────────────────────────────────────────────────────────────────
+Best if you just want a playable client.
+
+1. Double-click:  Скачать_клиент.bat
+   (or Download_Client.bat if you renamed it)
+2. Wait for:
+   [1/3] exe/DLLs downloaded
+   [2/3] patched to zephyr.v4y.hu
+   [3/3] Wow launch
+3. Press any key — Wow-64.exe starts.
+4. Do NOT close the game while Data is downloading.
+   Watch Data\data\ — size must grow to tens of GB
+   (do not stop at ~600 MB).
+5. When Data is fully downloaded, the client is ready.
+   Later use Запустить_клиент.bat or Wow-64.exe.
+
+Pros: simple; Wow writes correct Data format.
+Cons: game window must stay open until download finishes.
+
+
+────────────────────────────────────────────────────────────────
+METHOD B (recommended for extractors): Converter
+────────────────────────────────────────────────────────────────
+Downloads CDN archives and builds data.NNN + .idx itself.
+Does not need the Wow window open.
+
+1. Double-click:  Конвертер_Data.bat
+2. Press any key to start.
+3. The script will:
+   - download archives into _cdn_cache\
+   - build Data\data\data.000, data.001, … and *.idx
+   - extract Wow.exe / DLLs
+   - patch the exe to Zephyr
+4. Wait until you see "Готово" / "Done".
+5. Verify:
+   - Data\data\data.000 exists (plus more data.NNN as needed)
+   - nearby files like 0000000001.idx … 0f00000001.idx
+   - Data\data folder size is tens of GB
+
+If the download breaks — run Конвертер_Data.bat again.
+The _cdn_cache folder is kept, so finished archives are not re-downloaded.
+
+After a successful conversion you may delete _cdn_cache
+to free disk space.
+
+
+HOW TO TELL IT WORKED
+---------------------
+Good:
+  Data\data\data.000
+  Data\data\data.001  (and more if needed)
+  Data\data\*.idx
+  Data\config\…
+  Wow-64.exe
+  .build.info
+
+Bad (raw CDN mirror — extractors will fail):
+  Data\data\aa\bb\long_hash
+  lots of .index files and no data.000
+
+
+LAUNCH AFTER DOWNLOAD
+---------------------
+  Запустить_клиент.bat
+or
+  Wow-64.exe
+
+
+EXTRACTORS (maps / vmaps / mmaps)
+---------------------------------
+When Data is complete and in the correct format:
+
+  1. Place mapextractor / vmap4extractor / … next to Wow-64.exe
+     (or use Extract.bat if present).
+  2. Run extractors from the client folder.
+
+
+TROUBLESHOOTING
+---------------
+• "Нужен Python 3 в PATH" / Python not found
+  → Reinstall Python with "Add to PATH" checked.
+    Open a NEW cmd window and run:  python --version
+
+• Download is slow / interrupted
+  → Method B: just run Конвертер_Data.bat again.
+  → Method A: start Wow-64.exe again — it will resume.
+
+• Not enough disk space
+  → Need ~60–100+ GB. With Method B, delete _cdn_cache after success.
+
+• Antivirus blocks .bat / .exe
+  → Add the folder to exclusions.
+
+• CascLib / mapextractor reports BAD_FORMAT
+  → Data is incomplete OR it is a raw CDN mirror.
+    Finish Method B (Конвертер_Data.bat) completely.
+
+
+QUICK SUMMARY
+-------------
+Normal client:     Скачать_клиент.bat  → wait for Data in Wow
+For extractors:    Конвертер_Data.bat  → wait for "Done"
+Then play:         Запустить_клиент.bat
+
+
+Client version: 6.2.4.21742
+CDN: https://zephyr.v4y.hu/wow/
+
+================================================================================
