@@ -80,6 +80,14 @@ class boss_dia_darkwhisper : public CreatureScript
 public:
 	boss_dia_darkwhisper() : CreatureScript("boss_dia_darkwhisper") { }
 
+	enum eTalks
+	{
+		TalkAggro   = 0,
+		TalkSlay    = 1,
+		TalkDeath   = 2,
+		TalkAbility = 3,
+	};
+
 	struct boss_dia_darkwhisperAI : public BossAI
 	{
 		boss_dia_darkwhisperAI(Creature* p_Creature)
@@ -99,15 +107,22 @@ public:
 			me->SetReactState(REACT_AGGRESSIVE);
 		}
 
-		void EnterCombat(Unit* p_Who) override
+		void EnterCombat(Unit* /*p_Who*/) override
 		{
 			_EnterCombat();
+			Talk(eTalks::TalkAggro);
 
 			events.ScheduleEvent(eCouncilEvents::EventVoidBolt,         eCouncilTimers::TimerVoidBolt);
 			events.ScheduleEvent(eCouncilEvents::EventNightmareVisage,  eCouncilTimers::TimerNightmareVisage);
 			events.ScheduleEvent(eCouncilEvents::EventVoidHaze,         eCouncilTimers::TimerVoidHaze);
 
 			CouncilEngageAll(m_Instance, eCitadelCreatures::BossDia);
+		}
+
+		void KilledUnit(Unit* p_Who) override
+		{
+			if (p_Who->IsPlayer())
+				Talk(eTalks::TalkSlay);
 		}
 
 		void EnterEvadeMode() override
@@ -123,6 +138,7 @@ public:
 
 		void JustDied(Unit* /*p_Killer*/) override
 		{
+			Talk(eTalks::TalkDeath);
 			events.Reset();
 			summons.DespawnAll();
 
@@ -173,6 +189,7 @@ public:
 					}
 					case eCouncilEvents::EventNightmareVisage:
 					{
+						Talk(eTalks::TalkAbility);
 						if (Unit* l_Target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
 							me->CastSpell(l_Target, eCouncilSpells::SpellNightmareVisage, false);
 						events.ScheduleEvent(eCouncilEvents::EventNightmareVisage, eCouncilTimers::TimerNightmareVisage);
@@ -208,6 +225,15 @@ class boss_gurtogg_bloodboil : public CreatureScript
 public:
 	boss_gurtogg_bloodboil() : CreatureScript("boss_gurtogg_bloodboil") { }
 
+	enum eTalks
+	{
+		TalkAggro   = 0,
+		TalkSlay    = 1,
+		TalkDeath   = 2,
+		TalkFelRage = 3,
+		TalkAbility = 4,
+	};
+
 	struct boss_gurtogg_bloodboilAI : public BossAI
 	{
 		boss_gurtogg_bloodboilAI(Creature* p_Creature)
@@ -227,15 +253,22 @@ public:
 			me->SetReactState(REACT_AGGRESSIVE);
 		}
 
-		void EnterCombat(Unit* p_Who) override
+		void EnterCombat(Unit* /*p_Who*/) override
 		{
 			_EnterCombat();
+			Talk(eTalks::TalkAggro);
 
 			events.ScheduleEvent(eCouncilEvents::EventAcidicWound,  eCouncilTimers::TimerAcidicWound);
 			events.ScheduleEvent(eCouncilEvents::EventFelRage,       eCouncilTimers::TimerFelRage);
 			events.ScheduleEvent(eCouncilEvents::EventBloodyCleave,  eCouncilTimers::TimerBloodyCleave);
 
 			CouncilEngageAll(m_Instance, eCitadelCreatures::BossGurtogg);
+		}
+
+		void KilledUnit(Unit* p_Who) override
+		{
+			if (p_Who->IsPlayer())
+				Talk(eTalks::TalkSlay);
 		}
 
 		void EnterEvadeMode() override
@@ -251,6 +284,7 @@ public:
 
 		void JustDied(Unit* /*p_Killer*/) override
 		{
+			Talk(eTalks::TalkDeath);
 			events.Reset();
 			summons.DespawnAll();
 
@@ -284,12 +318,14 @@ public:
 					}
 					case eCouncilEvents::EventFelRage:
 					{
+						Talk(eTalks::TalkFelRage);
 						me->CastSpell(me, eCouncilSpells::SpellFelRage, true);
 						events.ScheduleEvent(eCouncilEvents::EventFelRage, eCouncilTimers::TimerFelRage);
 						break;
 					}
 					case eCouncilEvents::EventBloodyCleave:
 					{
+						Talk(eTalks::TalkAbility);
 						me->CastSpell(me, eCouncilSpells::SpellBloodyCleave, false);
 						events.ScheduleEvent(eCouncilEvents::EventBloodyCleave, eCouncilTimers::TimerBloodyCleave);
 						break;
@@ -317,6 +353,13 @@ class boss_jubeithos : public CreatureScript
 public:
 	boss_jubeithos() : CreatureScript("boss_jubeithos") { }
 
+	enum eTalks
+	{
+		TalkMirror = 0,
+		TalkSlay   = 1,
+		TalkDeath  = 2,
+	};
+
 	struct boss_jubeithosAI : public BossAI
 	{
 		boss_jubeithosAI(Creature* p_Creature)
@@ -336,7 +379,7 @@ public:
 			me->SetReactState(REACT_AGGRESSIVE);
 		}
 
-		void EnterCombat(Unit* p_Who) override
+		void EnterCombat(Unit* /*p_Who*/) override
 		{
 			_EnterCombat();
 
@@ -344,6 +387,12 @@ public:
 			events.ScheduleEvent(eCouncilEvents::EventMirrorImage,   eCouncilTimers::TimerMirrorImage);
 
 			CouncilEngageAll(m_Instance, eCitadelCreatures::BossJubeithos);
+		}
+
+		void KilledUnit(Unit* p_Who) override
+		{
+			if (p_Who->IsPlayer())
+				Talk(eTalks::TalkSlay);
 		}
 
 		void EnterEvadeMode() override
@@ -359,6 +408,7 @@ public:
 
 		void JustDied(Unit* /*p_Killer*/) override
 		{
+			Talk(eTalks::TalkDeath);
 			events.Reset();
 			summons.DespawnAll();
 
@@ -391,12 +441,14 @@ public:
 				{
 					case eCouncilEvents::EventFelstormBlade:
 					{
+						Talk(eTalks::TalkMirror);
 						me->CastSpell(me, eCouncilSpells::SpellFelstormBlade, false);
 						events.ScheduleEvent(eCouncilEvents::EventFelstormBlade, eCouncilTimers::TimerFelstormBlade);
 						break;
 					}
 					case eCouncilEvents::EventMirrorImage:
 					{
+						Talk(eTalks::TalkMirror);
 						me->CastSpell(me, eCouncilSpells::SpellMirrorImage, false);
 
 						/// Spawn images near Jubei'thos that fight the raid
