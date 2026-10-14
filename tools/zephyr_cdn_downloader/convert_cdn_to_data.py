@@ -214,7 +214,7 @@ def main() -> int:
             archives,
             writer,
             progress,
-            keep_cdn_cache=args.keep_cache or bool(args.cache),
+            keep_cdn_cache=args.keep_cache,
         )
     finally:
         writer.close()

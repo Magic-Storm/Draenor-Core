@@ -20,8 +20,9 @@
    Скачать: https://www.python.org/downloads/
    При установке ОБЯЗАТЕЛЬНО включите галочку:
    "Add python.exe to PATH".
-3. Свободное место на диске: примерно 60–100+ ГБ
-   (полная Data + временный кэш CDN).
+3. Свободное место на диске: примерно 40–60+ ГБ
+   (полная Data; CDN-архивы удаляются после конвертации).
+   Ошибка "No space left on device" = диск полный.
 4. Стабильный интернет. Загрузка долгая (часы).
 
 
@@ -176,8 +177,9 @@ REQUIREMENTS
 2. Python 3.10+ on PATH.
    Download: https://www.python.org/downloads/
    During setup, ENABLE: "Add python.exe to PATH".
-3. Free disk space: about 60–100+ GB
-   (full Data + temporary CDN cache).
+3. Free disk space: about 40–60+ GB
+   (full Data; CDN archives are deleted after conversion).
+   "No space left on device" means the disk is full.
 4. Stable internet. The download takes hours.
 
 

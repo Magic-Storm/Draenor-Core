@@ -13,11 +13,12 @@ echo   Качает архивы с zephyr.v4y.hu и пишет
 echo   нормальный локальный CASC:
 echo     data.000, data.001, … + .idx
 echo.
-echo   Это то, что открывают CascLib /
-echo   mapextractor / vmap4extractor.
+echo   После каждого архива файл из кэша
+echo   удаляется ^(экономия места^).
+echo   Индексы в _cdn_cache остаются — можно
+echo   прервать и продолжить.
 echo.
-echo   Нужны десятки GB и много времени.
-echo   Можно прервать и продолжить с --cache.
+echo   Нужно свободно ~40–60+ ГБ на этом диске.
 echo  ========================================
 echo.
 
@@ -27,6 +28,10 @@ set "CACHE=%OUT%\_cdn_cache"
 
 echo  Клиент : %OUT%
 echo  Кэш CDN: %CACHE%
+echo.
+echo  Если ошибка "No space left on device":
+echo   - удали папку _test_out ^(тесты^)
+echo   - или перенеси конвертер на диск с местом
 echo.
 pause
 
@@ -39,7 +44,7 @@ if errorlevel 1 (
 
 echo.
 echo [1/2] Конвертация архивов → Data\data\ ...
-python convert_cdn_to_data.py --out "%OUT%" --region us --cache "%CACHE%" --keep-cache --with-install --patch-exe
+python convert_cdn_to_data.py --out "%OUT%" --region us --cache "%CACHE%" --with-install --patch-exe
 if errorlevel 1 (
   echo [ERROR] convert failed
   pause
@@ -49,6 +54,7 @@ if errorlevel 1 (
 echo.
 echo [2/2] Готово.
 echo  Проверь: Data\data\data.000 и *.idx
+echo  Папку _cdn_cache можно удалить.
 echo  Дальше: Extract.bat / mapextractor
 echo.
 pause
