@@ -145,7 +145,10 @@ namespace MS { namespace Garrison
             GnomishGearworks_GoblinWorkshop_Level3      = 164,
             FishingShack_FishingShack_Level1            = 64,
             FishingShack_FishingShack_Level2            = 134,
-            FishingShack_FishingShack_Level3            = 135
+            FishingShack_FishingShack_Level3            = 135,
+            Menagerie_Menagerie_Level1                  = 42,
+            Menagerie_Menagerie_Level2                  = 167,
+            Menagerie_Menagerie_Level3                  = 168
         };
 
         enum Type : uint8

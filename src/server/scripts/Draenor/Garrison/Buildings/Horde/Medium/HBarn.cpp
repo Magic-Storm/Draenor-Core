@@ -83,7 +83,24 @@ namespace MS { namespace Garrison
         if (l_Quest == nullptr)
             return false;
 
-        if (p_Player->IsQuestRewarded(p_QuestID) || (p_Player->GetQuestStatus(p_QuestID) == QUEST_STATUS_INCOMPLETE && !p_Player->GetQuestObjectiveCounter(276190)))
+        /// Place A Work Order objectives (Horde Barn)
+        uint32 l_WorkOrderObjective = 0;
+        switch (p_QuestID)
+        {
+            case Quests::Horde_BreakingIntoTheTrapGame:  ///< 36345
+                l_WorkOrderObjective = 276190;
+                break;
+            case Quests::Horde_FeedingAnArmy:            ///< 36344
+                l_WorkOrderObjective = 276193;
+                break;
+            case Quests::Horde_BiggerTrapBetterRewards:  ///< 36346
+                l_WorkOrderObjective = 276195;
+                break;
+            default:
+                break;
+        }
+
+        if (p_Player->IsQuestRewarded(p_QuestID) || (p_Player->GetQuestStatus(p_QuestID) == QUEST_STATUS_INCOMPLETE && l_WorkOrderObjective && !p_Player->GetQuestObjectiveCounter(l_WorkOrderObjective)))
         {
             p_Player->ADD_GOSSIP_ITEM_DB(GarrisonGossipMenus::MenuID::DefaultMenuGreetings, GarrisonGossipMenus::GossipOption::DefaultWorkOrder, GOSSIP_SENDER_MAIN, p_Action);
             p_Player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, p_Creature->GetGUID());

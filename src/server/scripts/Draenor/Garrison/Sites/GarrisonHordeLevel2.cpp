@@ -27,7 +27,8 @@ namespace MS { namespace Garrison { namespace Sites
         PhaseMagePortalNagrand          = 0x00000080,
         PhaseMagePortalShadowmoon       = 0x00000100,
         PhaseMagePortalGorgrond         = 0x00000200,
-        PhaseLostInTransitionQuest      = 0x00000400
+        /// Match Horde L1 / Alliance L1-L2 so upgrade mid-quest keeps the same phase bit
+        PhaseLostInTransitionQuest      = 0x00008000
     };
 
     /// Constructor
@@ -305,7 +306,7 @@ namespace MS { namespace Garrison { namespace Sites
                     case Building::ID::LunarfallExcavation_FrostwallMines_Level2:
                     case Building::ID::LunarfallExcavation_FrostwallMines_Level3:
                     {
-                        std::vector<uint64> l_CreatureGuids = l_GarrisonMgr->GetBuildingCreaturesByBuildingType(Building::Type::Inn);
+                        std::vector<uint64> l_CreatureGuids = l_GarrisonMgr->GetBuildingCreaturesByBuildingType(Building::Type::Mine);
 
                         for (std::vector<uint64>::iterator l_Itr = l_CreatureGuids.begin(); l_Itr != l_CreatureGuids.end(); l_Itr++)
                         {

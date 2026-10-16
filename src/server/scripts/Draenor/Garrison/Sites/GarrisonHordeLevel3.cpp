@@ -18,7 +18,9 @@
 
 enum
 {
-    GARRISON_PHASE_BASE = 0x0001
+    GARRISON_PHASE_BASE = 0x0001,
+    /// Same bit as Horde L1/L2 Storehouse quest phase
+    PhaseLostInTransitionQuest = 0x00008000
 };
 
 namespace MS { namespace Garrison { namespace Sites
@@ -115,6 +117,13 @@ namespace MS { namespace Garrison { namespace Sites
         uint32 l_PhaseMask = GARRISON_PHASE_BASE;
 
         Manager* l_GarrisonMgr = p_Owner->GetGarrison();
+
+        if (l_GarrisonMgr == nullptr)
+            return 0;
+
+        /// Storehouse intro: Lost in Transition (37060)
+        if (p_Owner->HasQuest(Quests::Alliance_LostInTransition) || p_Owner->HasQuest(Quests::Horde_LostInTransition))
+            l_PhaseMask |= PhaseLostInTransitionQuest;
 
         if (l_GarrisonMgr->HasBuildingType(Building::Type::MageTower))
         {
@@ -247,7 +256,7 @@ namespace MS { namespace Garrison { namespace Sites
                     case Building::ID::LunarfallExcavation_FrostwallMines_Level2:
                     case Building::ID::LunarfallExcavation_FrostwallMines_Level3:
                     {
-                        std::vector<uint64> l_CreatureGuids = l_GarrisonMgr->GetBuildingCreaturesByBuildingType(Building::Type::Inn);
+                        std::vector<uint64> l_CreatureGuids = l_GarrisonMgr->GetBuildingCreaturesByBuildingType(Building::Type::Mine);
 
                         for (std::vector<uint64>::iterator l_Itr = l_CreatureGuids.begin(); l_Itr != l_CreatureGuids.end(); l_Itr++)
                         {

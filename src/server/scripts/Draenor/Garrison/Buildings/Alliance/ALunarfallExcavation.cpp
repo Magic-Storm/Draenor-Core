@@ -234,13 +234,13 @@ namespace MS { namespace Garrison
 
             for (SequencePosition l_Pos : g_GorenHatchlingPositions)
             {
-                if (Creature* l_Creature = SummonRelativeCreature(NPCs::NpcLunarfallGoren, l_Pos.X, l_Pos.Y, l_Pos.Z, 0, TEMPSUMMON_MANUAL_DESPAWN))
+                if (Creature* l_Creature = SummonRelativeCreature(NPCs::NpcLunarfallGorenHatchling, l_Pos.X, l_Pos.Y, l_Pos.Z, 0, TEMPSUMMON_MANUAL_DESPAWN))
                     l_Creature->GetMotionMaster()->MoveRandom(7.0f);
             }
 
             for (SequencePosition l_Pos : g_GorenPositions)
             {
-                if (Creature* l_Creature = SummonRelativeCreature(NPCs::NpcLunarfallGorenHatchling, l_Pos.X, l_Pos.Y, l_Pos.Z, 0, TEMPSUMMON_MANUAL_DESPAWN))
+                if (Creature* l_Creature = SummonRelativeCreature(NPCs::NpcLunarfallGoren, l_Pos.X, l_Pos.Y, l_Pos.Z, 0, TEMPSUMMON_MANUAL_DESPAWN))
                     l_Creature->GetMotionMaster()->MoveRandom(7.0f);
             }
 
@@ -287,7 +287,8 @@ namespace MS { namespace Garrison
                     case Building::ID::LunarfallExcavation_FrostwallMines_Level3:
                         if (Creature* l_Creature = SummonRelativeCreature(l_GarrFollEntry->CreatureID[1], 28.5000f, -63.6978f, 30.5292f, 4.7543f, TEMPSUMMON_MANUAL_DESPAWN))
                         {
-                            if (CreatureTemplate const* l_FollowerTemplate = sObjectMgr->GetCreatureTemplate(l_GarrFollEntry->CreatureID[1]))
+                            /// Display from CreatureID[0] (same as Horde Frostwall Mines)
+                            if (CreatureTemplate const* l_FollowerTemplate = sObjectMgr->GetCreatureTemplate(l_GarrFollEntry->CreatureID[0]))
                                 l_Creature->SetDisplayId(l_FollowerTemplate->Modelid1);
 
                             l_GarrisonMgr->InsertNewCreatureInPlotDatas(p_PlotInstanceID, l_Creature->GetGUID());
@@ -336,7 +337,7 @@ namespace MS { namespace Garrison
                     Position l_Pos = *l_Owner;
 
                     if (l_BuildingEntry)
-                        l_Owner->PlayStandaloneScene(l_Owner->GetGarrison()->GetGarrisonFactionIndex() ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, l_Pos);
+                        l_Owner->PlayStandaloneScene(l_Owner->GetGarrison()->GetGarrisonFactionIndex() == FactionIndex::Horde ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, l_Pos);
 
                     l_GarrisonMgr->ActivateBuilding(GetPlotInstanceID());
                 }

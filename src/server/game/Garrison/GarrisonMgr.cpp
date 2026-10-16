@@ -1582,12 +1582,13 @@ namespace MS {
 					}
 					else if (HasActiveBuilding(Building::ID::SalvageYard_SalvageYard_Level2))
 					{
-						if (roll_chance_i(30))
+						/// L2 increases salvage chance over L1 (was incorrectly 30% < L1's 50%)
+						if (roll_chance_i(75))
 							m_PendingMissionReward.RewardItems.push_back(std::make_pair(Items::ItemCrateOfSalvage, 1));
 					}
 					else if (HasActiveBuilding(Building::ID::SalvageYard_SalvageYard_Level3))
 					{
-						if (roll_chance_i(50))
+						if (roll_chance_i(90))
 							m_PendingMissionReward.RewardItems.push_back(std::make_pair(Items::ItemCrateOfSalvage, 1));
 					}
 					break;
@@ -4476,7 +4477,7 @@ namespace MS {
 						/// If player has Tavern lvl 3, he'll have 50% chance to get a treasure hunter type mission
 						if (l_Entry->MissionType == MissionType::Treasure)
 						{
-							if (!GetBuildingLevel(GetBuildingWithType(Building::Type::Inn)) == 3)
+							if (GetBuildingLevel(GetBuildingWithType(Building::Type::Inn)) != 3)
 								continue;
 							else if (urand(0, 1))
 								continue;

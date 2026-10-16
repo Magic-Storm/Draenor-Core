@@ -334,9 +334,17 @@ namespace MS {
 			/// When a building from the same type with higher level is purchased
 			/// @p_Owner      : Garrison owner
 			/// @p_BuildingID : Purchased building ID
-			void InstanceScript_GarrisonAllianceLevel1::OnUpgradeBuilding(Player* /*p_Owner*/, uint32 /*p_BuildingID*/)
+			void InstanceScript_GarrisonAllianceLevel1::OnUpgradeBuilding(Player* p_Owner, uint32 p_BuildingID)
 			{
+				/// Trading Post L2 resets outpost rep when upgrading (same as Horde OnPurchaseBuilding)
+				if (p_BuildingID == Building::ID::TradingPost_TradingPost_Level2)
+				{
+					uint32 l_FactionID = p_Owner->GetTeamId() == TEAM_ALLIANCE ? 1710 : 1708;
+					FactionEntry const* l_Entry = sFactionStore.LookupEntry(l_FactionID);
 
+					if (l_Entry != nullptr)
+						p_Owner->GetReputationMgr().SetReputation(l_Entry, 0);
+				}
 			}
 
 			void InstanceScript_GarrisonAllianceLevel1::OnDeleteBuilding(Player* p_Owner, uint32 /*p_BuildingID*/, uint32 p_BuildingType, bool p_RemoveForUpgrade)

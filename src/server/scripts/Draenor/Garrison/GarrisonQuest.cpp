@@ -347,13 +347,13 @@ namespace MS {
 					{
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
-						break;
 					}
 					else
 					{
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
 					}
+					break;
 				}
 				case GarrisonPortals::DraenorZones::ZoneGorgrond:
 				{
@@ -361,13 +361,13 @@ namespace MS {
 					{
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
-						break;
 					}
 					else
 					{
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
 					}
+					break;
 				}
 				case GarrisonPortals::DraenorZones::ZoneNagrand:
 				{
@@ -375,13 +375,13 @@ namespace MS {
 					{
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
-						break;
 					}
 					else
 					{
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
 					}
+					break;
 				}
 				case GarrisonPortals::DraenorZones::ZoneShadowmoon:
 				{
@@ -389,13 +389,13 @@ namespace MS {
 					{
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
-						break;
 					}
 					else
 					{
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
 					}
+					break;
 				}
 				case GarrisonPortals::DraenorZones::ZoneSpiresOfArak:
 				{
@@ -403,13 +403,13 @@ namespace MS {
 					{
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
-						break;
 					}
 					else
 					{
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
 					}
+					break;
 				}
 				case GarrisonPortals::DraenorZones::ZoneTalador:
 				{
@@ -417,15 +417,14 @@ namespace MS {
 					{
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
-						break;
 					}
 					else
 					{
 						l_PhaseMask |= GarrisonPortals::DraenorPortalPhases::WorldPhaseDeactivatedPortal;
 						l_PhaseMask &= ~GarrisonPortals::DraenorPortalPhases::WorldPhaseActivatedPortal;
 					}
+					break;
 				}
-				break;
 				default:
 					break;
 				}
@@ -518,8 +517,8 @@ namespace MS {
 			if (p_Player->HasAura(172424))
 				p_Player->RemoveAura(172424);
 
-			/// Fix for taxi path to ashran
-			uint32 l_QuestID = p_Player->GetTeamId() == TEAM_ALLIANCE ? Quests::Alliance_LostInTransition : Quests::Horde_LostInTransition;
+			/// Fix for taxi path to Ashran (Appearance quests 36624 / 36706)
+			uint32 l_QuestID = p_Player->GetTeamId() == TEAM_ALLIANCE ? Quests::Alliance_AshranAppearance : Quests::Horde_AshranAppearance;
 
 			if (p_Player->GetQuestStatus(l_QuestID) != QUEST_STATUS_NONE)
 			{
@@ -627,17 +626,10 @@ namespace MS {
 
 		void playerScript_Garrison_Quests_Phases::OnQuestAccept(Player* p_Player, const Quest* p_Quest)
 		{
-			if (!p_Player->IsInGarrison())
-				return;
-
-			uint32 l_PhaseMask = p_Player->GetPhaseMask();
-
+			/// Lost in Transition phases are applied by Manager::OnQuestStarted via site GetPhaseMask
+			/// (site-local bits differ from GarrisonScriptData::PhaseLostInTransitionQuest).
 			switch (p_Quest->GetQuestId())
 			{
-			case Quests::Alliance_LostInTransition:
-			case Quests::Horde_LostInTransition:
-				l_PhaseMask |= GarrisonPhases::PhaseLostInTransitionQuest;
-				break;
 			case Quests::Alliance_AshranAppearance:
 				p_Player->m_taxi.SetTaximaskNode(1420);
 				break;
@@ -647,48 +639,16 @@ namespace MS {
 			default:
 				break;
 			}
-
-			p_Player->SetPhaseMask(l_PhaseMask, true);
 		}
 
-		void playerScript_Garrison_Quests_Phases::OnQuestReward(Player* p_Player, const Quest* p_Quest)
+		void playerScript_Garrison_Quests_Phases::OnQuestReward(Player* /*p_Player*/, const Quest* /*p_Quest*/)
 		{
-			if (!p_Player->IsInGarrison())
-				return;
-
-			uint32 l_PhaseMask = p_Player->GetPhaseMask();
-
-			switch (p_Quest->GetQuestId())
-			{
-			case Quests::Alliance_LostInTransition:
-			case Quests::Horde_LostInTransition:
-				l_PhaseMask &= ~GarrisonPhases::PhaseLostInTransitionQuest;
-				break;
-			default:
-				break;
-			}
-
-			p_Player->SetPhaseMask(l_PhaseMask, true);
+			/// Garrison quest phases refreshed by Manager::OnQuestReward / site GetPhaseMask
 		}
 
-		void playerScript_Garrison_Quests_Phases::OnQuestAbandon(Player* p_Player, const Quest* p_Quest)
+		void playerScript_Garrison_Quests_Phases::OnQuestAbandon(Player* /*p_Player*/, const Quest* /*p_Quest*/)
 		{
-			if (!p_Player->IsInGarrison())
-				return;
-
-			uint32 l_PhaseMask = p_Player->GetPhaseMask();
-
-			switch (p_Quest->GetQuestId())
-			{
-			case Quests::Alliance_LostInTransition:
-			case Quests::Horde_LostInTransition:
-				l_PhaseMask &= ~GarrisonPhases::PhaseLostInTransitionQuest;
-				break;
-			default:
-				break;
-			}
-
-			p_Player->SetPhaseMask(l_PhaseMask, true);
+			/// Garrison quest phases refreshed by Manager::OnQuestAbandon / site GetPhaseMask
 		}
 
 		void playerScript_Garrison_Quests_Phases::OnItemDestroyed(Player* p_Player, Item* p_Item)

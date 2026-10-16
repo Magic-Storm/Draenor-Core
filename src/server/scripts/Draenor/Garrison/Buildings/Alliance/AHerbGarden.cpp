@@ -212,9 +212,10 @@ namespace MS {
 					{
 					case Building::ID::HerbGarden_HerbGarden_Level2:
 					case Building::ID::HerbGarden_HerbGarden_Level3:
-						if (Creature* l_Creature = SummonRelativeCreature(l_GarrFollEntry->CreatureID[1], -6.5917f, -7.0602f, 0.1845f, 4.9248f, TEMPSUMMON_MANUAL_DESPAWN))
+						/// Match Horde herb garden: summon + display from CreatureID[0]
+						if (Creature* l_Creature = SummonRelativeCreature(l_GarrFollEntry->CreatureID[0], -6.5917f, -7.0602f, 0.1845f, 4.9248f, TEMPSUMMON_MANUAL_DESPAWN))
 						{
-							if (CreatureTemplate const* l_FollowerTemplate = sObjectMgr->GetCreatureTemplate(l_GarrFollEntry->CreatureID[1]))
+							if (CreatureTemplate const* l_FollowerTemplate = sObjectMgr->GetCreatureTemplate(l_GarrFollEntry->CreatureID[0]))
 								l_Creature->SetDisplayId(l_FollowerTemplate->Modelid1);
 
 							l_GarrisonMgr->InsertNewCreatureInPlotDatas(p_PlotInstanceID, l_Creature->GetGUID());
@@ -261,7 +262,7 @@ namespace MS {
 				GarrBuildingEntry const* l_BuildingEntry = sGarrBuildingStore.LookupEntry(GetBuildingID());
 
 				if (l_BuildingEntry)
-					l_Owner->PlayStandaloneScene(l_Owner->GetGarrison()->GetGarrisonFactionIndex() ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, s_CinematicLoc);
+					l_Owner->PlayStandaloneScene(l_Owner->GetGarrison()->GetGarrisonFactionIndex() == FactionIndex::Horde ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, s_CinematicLoc);
 
 				l_Owner->GetGarrison()->ActivateBuilding(GetPlotInstanceID());
 			}

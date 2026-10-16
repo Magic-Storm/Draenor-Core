@@ -237,8 +237,16 @@ namespace MS {
 			/// @p_Owner      : Garrison owner
 			/// @p_BuildingID : Purchased building ID
 			/// @p_BaseTime   : Default build time
-			uint32 InstanceScript_GarrisonAllianceLevel2::OnPrePurchaseBuilding(Player* /*p_Owner*/, uint32 /*p_BuildingID*/, uint32 p_BaseTime)
+			uint32 InstanceScript_GarrisonAllianceLevel2::OnPrePurchaseBuilding(Player* p_Owner, uint32 p_BuildingID, uint32 p_BaseTime)
 			{
+				if (p_BuildingID == Building::ID::TradingPost_TradingPost_Level2)
+				{
+					uint32 l_FactionID = p_Owner->GetTeamId() == TEAM_ALLIANCE ? 1710 : 1708;
+					FactionEntry const* l_Entry = sFactionStore.LookupEntry(l_FactionID);
+
+					if (l_Entry != nullptr)
+						p_Owner->GetReputationMgr().SetReputation(l_Entry, 0);
+				}
 				return p_BaseTime;
 			}
 			/// When a construction start
@@ -340,6 +348,15 @@ namespace MS {
 							if (Item* l_Item = p_Owner->GetItemByEntry(Items::ItemImprovedIronTrap))
 								p_Owner->RemoveItem(l_Item->GetBagSlot(), l_Item->GetSlot(), true);
 							break;
+						case Building::ID::TradingPost_TradingPost_Level2:
+						{
+							uint32 l_FactionID = p_Owner->GetTeamId() == TEAM_ALLIANCE ? 1710 : 1708;
+							FactionEntry const* l_Entry = sFactionStore.LookupEntry(l_FactionID);
+
+							if (l_Entry != nullptr)
+								p_Owner->GetReputationMgr().SetReputation(l_Entry, 0);
+							break;
+						}
 						default:
 							break;
 						}

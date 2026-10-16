@@ -30,8 +30,9 @@ namespace MS { namespace Garrison
         {
             ClearingTheGardenA       = 36404,
             ClearingTheGardenH       = 34193,
-            BattlePetRoundup         = 36483,
-            Scrappin                 = 36662,
+            /// Unlock Menagerie (not the post-build dailies Battle Pet Roundup / Scrappin')
+            PetsVersusPestsA         = 36423,
+            PetsVersusPestsH         = 36469,
             ThingsAreNotGorenOurWayA = 34192,
             ThingsAreNotGorenOurWayH = 35154,
             FishFight                = 34846
@@ -43,7 +44,7 @@ namespace MS { namespace Garrison
     {
         /// BuildingID, MinLevel QuestA                                            QuestH
         {   29,         96,      BuildingConditionQuest::ClearingTheGardenA,       BuildingConditionQuest::ClearingTheGardenH       },    ///< Herb Garden
-        {   42,         98,      BuildingConditionQuest::BattlePetRoundup,         BuildingConditionQuest::Scrappin                 },    ///< Menagerie
+        {   42,         98,      BuildingConditionQuest::PetsVersusPestsA,         BuildingConditionQuest::PetsVersusPestsH         },    ///< Menagerie
         {   61,         92,      BuildingConditionQuest::ThingsAreNotGorenOurWayA, BuildingConditionQuest::ThingsAreNotGorenOurWayH },    ///< Lunarfall Excavation / Frostwall Mines
         {   64,         94,      BuildingConditionQuest::FishFight,                BuildingConditionQuest::FishFight                }     ///< Fishing Shack
     };

@@ -207,6 +207,10 @@ namespace MS {
 				if (p_Owner->HasQuest(Quests::Horde_BuildYourBarracks))
 					l_PhaseMask |= GarrisonPhases::PhaseBuildYourBarracks;
 
+				/// Storehouse intro: Lost in Transition (37060) — crates around Frostwall
+				if (p_Owner->HasQuest(Quests::Alliance_LostInTransition) || p_Owner->HasQuest(Quests::Horde_LostInTransition))
+					l_PhaseMask |= GarrisonPhases::PhaseLostInTransitionQuest;
+
 				if (l_GarrisonMgr->HasBuildingType(Building::Type::MageTower))
 				{
 					if (p_Owner->IsQuestRewarded(GarrisonPortals::PortalsQuests::QuestFrostfireRidge))

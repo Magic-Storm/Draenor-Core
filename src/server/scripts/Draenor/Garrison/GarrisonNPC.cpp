@@ -1005,9 +1005,12 @@ namespace MS {
 									{
 									case GOSSIP_ACTION_INFO_DEF + 1:
 									{
-										/// Test for removing already selected option
-
-										uint32 l_Type = reinterpret_cast<GatheringBuildingMaster<&g_HordeHerbGardenFlowerPlot, &g_AllianceTreeFruitsPosition>*>(l_GarrisonAI)->GetGatheringMiscData();
+										/// Naron (85344) Alliance / Tarnon (81981) Horde — use matching GatheringBuildingMaster specialization
+										uint32 l_Type = 0;
+										if (l_Creature->GetEntry() == 85344)
+											l_Type = reinterpret_cast<GatheringBuildingMaster<&g_AllyHerbGardenFlowerPlot, &g_AllianceTreeFruitsPosition>*>(l_GarrisonAI)->GetGatheringMiscData();
+										else
+											l_Type = reinterpret_cast<GatheringBuildingMaster<&g_HordeHerbGardenFlowerPlot, &g_HordeTreeFruitsPosition>*>(l_GarrisonAI)->GetGatheringMiscData();
 
 										p_Player->ADD_GOSSIP_ITEM_DB(MenuID::DefaultMenuGreetings, GossipOption::HerbRandom, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
 
@@ -1768,6 +1771,9 @@ void AddSC_Garrison_NPC()
 
 		/// Fishing Hut
 		new MS::Garrison::npc_MakJin_Garr;
+
+		/// Gladiator's Sanctum
+		new MS::Garrison::npc_RazaKul_Garr;
 
 		/// Goblin Workshop
 		new MS::Garrison::npc_Vee_Garrison;

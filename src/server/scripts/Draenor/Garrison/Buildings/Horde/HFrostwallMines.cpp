@@ -226,7 +226,7 @@ namespace MS { namespace Garrison
                 Position l_Pos = *p_Player;
 
                 if (l_BuildingEntry)
-                    p_Player->PlayStandaloneScene(p_Player->GetGarrison()->GetGarrisonFactionIndex() ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, l_Pos);
+                    p_Player->PlayStandaloneScene(p_Player->GetGarrison()->GetGarrisonFactionIndex() == FactionIndex::Horde ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, l_Pos);
 
                 if (Manager* l_Garrison = p_Player->GetGarrison())
                     l_Garrison->ActivateBuilding(GetPlotInstanceID());

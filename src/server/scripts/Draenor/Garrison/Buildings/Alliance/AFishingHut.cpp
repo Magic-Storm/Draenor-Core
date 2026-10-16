@@ -339,7 +339,7 @@ namespace MS { namespace Garrison
                 Position l_Pos = *l_Owner;
 
                 if (l_BuildingEntry)
-                    l_Owner->PlayStandaloneScene(l_Owner->GetGarrison()->GetGarrisonFactionIndex() ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, l_Pos);
+                    l_Owner->PlayStandaloneScene(l_Owner->GetGarrison()->GetGarrisonFactionIndex() == FactionIndex::Horde ? l_BuildingEntry->HordeActivationScenePackageID : l_BuildingEntry->AllianceActivationScenePackageID, 0, l_Pos);
 
                 l_GarrisonMgr->ActivateBuilding(l_AI->GetPlotInstanceID());
             }

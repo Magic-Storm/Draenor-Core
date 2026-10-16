@@ -112,6 +112,37 @@ namespace MS { namespace Garrison
         return new npc_Kuros_GarrAI(p_Creature);
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    /// 86629 - Raza'kul                                                   ///
+    //////////////////////////////////////////////////////////////////////////
+
+    npc_RazaKul_Garr::npc_RazaKul_Garr()
+        : CreatureScript("npc_RazaKul_Garr")
+    {
+    }
+
+    bool npc_RazaKul_Garr::OnGossipHello(Player* p_Player, Creature* p_Creature)
+    {
+        p_Player->PlayerTalkClass->GetQuestMenu().AddMenuItem(Quests::Horde_WarlordOfDraenor, 4);
+        p_Player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, p_Creature->GetGUID());
+
+        return true;
+    }
+
+    npc_RazaKul_GarrAI::npc_RazaKul_GarrAI(Creature* p_Creature)
+        : GarrisonNPCAI(p_Creature)
+    {
+        me->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEMS, 114823);
+        me->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEMS + 2, 114824);
+
+        me->SetAIAnimKitId(7224);
+    }
+
+    CreatureAI* npc_RazaKul_Garr::GetAI(Creature* p_Creature) const
+    {
+        return new npc_RazaKul_GarrAI(p_Creature);
+    }
+
 }   ///< namespace Garrison
 }   ///< namespace MS
 #endif

@@ -105,6 +105,26 @@ namespace MS { namespace Garrison
             /// @p_Creature : AI Owner
             npc_Kuros_GarrAI(Creature* p_Creature);
     };
+
+    //////////////////////////////////////////////////////////////////////////
+    /// 86629 - Raza'kul (Horde Gladiator's Sanctum)                        ///
+    //////////////////////////////////////////////////////////////////////////
+
+    class npc_RazaKul_Garr : public CreatureScript
+    {
+        public:
+            npc_RazaKul_Garr();
+
+            bool OnGossipHello(Player* p_Player, Creature* p_Creature) override;
+
+            CreatureAI* GetAI(Creature* p_Creature) const override;
+    };
+
+    class npc_RazaKul_GarrAI : public GarrisonNPCAI
+    {
+        public:
+            npc_RazaKul_GarrAI(Creature* p_Creature);
+    };
 }   ///< namespace Garrison
 }   ///< namespace MS
 

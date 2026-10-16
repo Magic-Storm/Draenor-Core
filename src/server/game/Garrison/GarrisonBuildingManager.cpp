@@ -47,6 +47,8 @@ namespace MS { namespace Garrison
         m_AllowedBluePrints.push_back(Building::ID::LunarfallInn_FrostwallTavern_Level2);
         m_AllowedBluePrints.push_back(Building::ID::MageTower_SpiritLodge_Level1);
         m_AllowedBluePrints.push_back(Building::ID::MageTower_SpiritLodge_Level2);
+        m_AllowedBluePrints.push_back(Building::ID::Menagerie_Menagerie_Level1);
+        m_AllowedBluePrints.push_back(Building::ID::Menagerie_Menagerie_Level2);
         m_AllowedBluePrints.push_back(Building::ID::SalvageYard_SalvageYard_Level1);
         m_AllowedBluePrints.push_back(Building::ID::SalvageYard_SalvageYard_Level2);
         m_AllowedBluePrints.push_back(Building::ID::ScribesQuarters_ScribesQuarters_Level1);
