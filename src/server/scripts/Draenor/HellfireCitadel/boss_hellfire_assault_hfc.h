@@ -33,9 +33,9 @@ enum eHellfireAssaultSpells
 /// ============================================================================
 enum eHellfireAssaultCreatures
 {
-	NpcHellfireGrunt             = 93858,   ///< Assault wave melee add
-	NpcHellfireEngineer          = 93856,   ///< Assault wave engineer — drops Felfire Munitions crate on death (placeholder entry)
-	NpcFelfireMunitionsCrate     = 93846,   ///< Interactable crate — players click to receive carrier aura (placeholder entry)
+	NpcHellfireGrunt             = 93858,   ///< Hulking Berserker — assault wave melee add
+	NpcFelfireSiegeVehicle       = 91103,   ///< Felfire Demolisher — drops Felfire Munitions on death
+	NpcFelfireMunitionsCrate     = 90610,   ///< Felfire Munitions — interactable pickup
 	NpcHellfireCannon            = 90018,   ///< Alliance cannon — players deliver munitions here to breach the door
 };
 

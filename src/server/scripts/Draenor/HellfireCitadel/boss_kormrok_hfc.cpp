@@ -263,25 +263,19 @@ public:
 
 			switch (m_Events.ExecuteEvent())
 			{
-				/// ---- Pound -----------------------------------------------
+				/// ---- Pound (never pool-empowered) ------------------------
 				case eKormrokEvents::EventPound:
 				{
-					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolFiery);
-					uint32 l_Spell   = l_Empowered
-						? (uint32)eKormrokSpells::SpellEmpoweredPound
-						: (uint32)eKormrokSpells::SpellPound;
-
-					if (Unit* l_Target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0.0f, true))
-						me->CastSpell(l_Target, l_Spell, false);
+					me->CastSpell(me, eKormrokSpells::SpellPound, false);
 
 					m_Events.ScheduleEvent(eKormrokEvents::EventPound,
 						eKormrokTimers::TimerPoundCD);
 					break;
 				}
-				/// ---- Explosive Runes -------------------------------------
+				/// ---- Explosive Runes (Explosive / Fiery pool) ------------
 				case eKormrokEvents::EventExplosiveRunes:
 				{
-					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolShadow);
+					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolFiery);
 					uint32 l_Spell   = l_Empowered
 						? (uint32)eKormrokSpells::SpellEmpoweredExplosiveRunes
 						: (uint32)eKormrokSpells::SpellExplosiveRunes;
@@ -292,10 +286,10 @@ public:
 						eKormrokTimers::TimerExplosiveRunesCD);
 					break;
 				}
-				/// ---- Grasping Hands --------------------------------------
+				/// ---- Grasping Hands (Foul pool) --------------------------
 				case eKormrokEvents::EventGraspingHands:
 				{
-					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolShadow);
+					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolFoul);
 					uint32 l_Spell   = l_Empowered
 						? (uint32)eKormrokSpells::SpellEmpoweredGraspingHands
 						: (uint32)eKormrokSpells::SpellGraspingHands;
@@ -306,10 +300,10 @@ public:
 						eKormrokTimers::TimerGraspingHandsCD);
 					break;
 				}
-				/// ---- Fel Outpouring --------------------------------------
+				/// ---- Fel Outpouring (Shadow pool) ------------------------
 				case eKormrokEvents::EventFelOutpouring:
 				{
-					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolFoul);
+					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolShadow);
 					uint32 l_Spell   = l_Empowered
 						? (uint32)eKormrokSpells::SpellEmpoweredFelOutpouring
 						: (uint32)eKormrokSpells::SpellFelOutpouring;

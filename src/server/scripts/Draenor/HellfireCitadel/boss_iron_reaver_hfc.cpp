@@ -37,7 +37,7 @@ public:
 	enum eSpells
 	{
 		CosmeticDeactivated			= 186246,
-		CosmeticBarrage				= 186274, // It must trigger the missiles yet
+		CosmeticBarrage				= 186274, // Intro channel — script fires BarrageDmg at players
 		CosmeticCastUnstableOrb		= 187172, // Casted on walls to create them
 		CosmeticUnstableOrb			= 185250,
 
@@ -493,30 +493,43 @@ public:
 					AddTimedDelayedOperation(17 * TimeConstants::IN_MILLISECONDS, [this]() -> void
 					{
 						me->CastSpell(me, eSpells::CosmeticBarrage, false);
+
+						/// CosmeticBarrage does not trigger missiles from DBC — fire a few at nearby players
+						for (uint8 i = 0; i < 3; ++i)
+						{
+							AddTimedDelayedOperation((i + 1) * 1500, [this]() -> void
+							{
+								Map::PlayerList const& l_Players = me->GetMap()->GetPlayers();
+								std::vector<Player*> l_Targets;
+								for (Map::PlayerList::const_iterator l_Iter = l_Players.begin(); l_Iter != l_Players.end(); ++l_Iter)
+									if (Player* l_Player = l_Iter->getSource())
+										if (l_Player->IsAlive() && l_Player->IsWithinDist(me, 80.0f))
+											l_Targets.push_back(l_Player);
+
+								if (!l_Targets.empty())
+									me->CastSpell(l_Targets[urand(0, l_Targets.size() - 1)], eSpells::BarrageDmg, true);
+							});
+						}
 					});
 
 					AddTimedDelayedOperation(26.5 * TimeConstants::IN_MILLISECONDS, [this]() -> void
 					{
 						me->SetOrientation(4.857939f);
-						// channel center
 					});
 
 					AddTimedDelayedOperation(28.5 * TimeConstants::IN_MILLISECONDS, [this]() -> void
 					{
 						me->SetOrientation(5.415565f);
-						// channel left
 					});
 
 					AddTimedDelayedOperation(30.5 * TimeConstants::IN_MILLISECONDS, [this]() -> void
 					{
 						me->SetOrientation(4.182491f);
-						//channel right
 					});
 
 					AddTimedDelayedOperation(32.5 * TimeConstants::IN_MILLISECONDS, [this]() -> void
 					{
 						me->SetOrientation(4.857939f);
-						// channel cannons
 					});
 
 					AddTimedDelayedOperation(35 * TimeConstants::IN_MILLISECONDS, [this]() -> void

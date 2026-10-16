@@ -84,8 +84,8 @@ public:
 		// Shadowforce
 		ShadowForce = 181799,
 
-		// Inferno (spire / dread infernal spawn cue)
-		Inferno = 181299,
+		// Inferno — summons Dread Infernal at impact (https://www.wowhead.com/spell=181180)
+		Inferno = 181180,
 
 		// Empowered Glaive Combo
 		EmpoweredGlaiveCombo = 187347,
@@ -3252,6 +3252,8 @@ void AddSC_boss_mannoroth_hfc()
 	new spell_citadel_teleport_mann_to_blackgate();
 
 	new spell_citadel_curse_of_the_legion();
+	new spell_citadel_mannoroth_gaze();
+	new spell_citadel_mannoroth_gaze_damage();
 
 	/// Areatriggers
 	new areatrigger_citadel_mannoroth_blood();

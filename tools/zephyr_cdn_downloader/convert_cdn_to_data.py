@@ -101,16 +101,7 @@ def convert_archives(
             garbage = len(locs) - len(plausible)
             extra = f", ignored {garbage} garbage index rows" if garbage else ""
             print(f"  -> already complete ({len(plausible)} ekeys{extra}), skip download")
-            if arch_size is not None and garbage:
-                # Often "garbage" = index rows past truncated CDN EOF
-                beyond = sum(
-                    1 for _, loc in locs if loc.size > 0 and loc.offset + loc.size > arch_size
-                )
-                if beyond:
-                    print(
-                        f"  !! CDN archive truncated? {beyond} index rows past EOF"
-                        f" ({human(arch_size)})"
-                    )
+            # Rows past EOF are usually unused .index padding, not missing CDN data.
             continue
 
         print(f"  -> need {len(missing_locs)}/{len(plausible)} plausible ekeys (full archive)")
@@ -145,17 +136,9 @@ def convert_archives(
                     skipped += 1
 
         print(f"  -> {written}/{len(missing_locs)} records into local data.* (skipped {skipped})")
-        # Zephyr (and some mirrors) occasionally serve truncated archives: .index
-        # points past EOF. Flag it so missing ADTs are explainable.
-        if arch_size is not None:
-            beyond = sum(
-                1 for _, loc in locs if loc.size > 0 and loc.offset + loc.size > arch_size
-            )
-            if beyond:
-                print(
-                    f"  !! CDN archive truncated? {beyond} index rows past EOF"
-                    f" ({human(arch_size)}); those ekeys cannot be filled from this host"
-                )
+        # .index often has unused rows past archive EOF (~256 MB padding). That is
+        # normal — not the same as a host serving a truncated archive. Real gaps
+        # (Zephyr smaller than archive.wow.tools) are handled by repair_truncated.py.
         if not keep_cdn_cache:
             try:
                 arch_path.unlink(missing_ok=True)

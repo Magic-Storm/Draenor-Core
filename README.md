@@ -90,6 +90,7 @@ Copy `libmysql` / `libssl` / `libcrypto` DLLs next to the Windows executables if
 - Pet Battles are incomplete.
 - Phasing still uses `phasemask`, not PhaseID / PhaseGroup.
 - Low-level zones are playable; unpopular ones are not fully blizzlike.
-- Some NPCs have bad coordinates or duplicates; Tanaan and Hellfire Citadel NPCs are the main gaps.
-- Draenor content is not blizzlike overall. Garrison intro and the legendary questline were reworked. **Hellfire Citadel is not implemented.**
+- Some NPCs have bad coordinates or duplicates; Tanaan and Hellfire Citadel spawn coverage is incomplete (map 1448 has scripts but few `creature` rows).
+- Draenor content is not blizzlike overall. Garrison intro and the legendary questline were reworked. **Hellfire Citadel has boss/trash scripts (partial / not blizzlike); doors, loot, and full spawns still need work.**
+- **Tanaan Intro** (Assault on the Dark Portal) scripts live in `scripts/Draenor/TanaanIntro/` and are registered via `AddSC_tanaan_jungle()`; CMake must glob `TanaanIntro/` (not the old `Tanaan_jungle/` path).
 - LFG and vehicles are unfinished TrinityCore cherry-picks.

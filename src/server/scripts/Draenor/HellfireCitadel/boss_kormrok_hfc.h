@@ -12,12 +12,11 @@
 #include "hellfire_citadel.h"
 
 /// ============================================================================
-///  Pool leap destination positions
-///  TODO: Verify exact coordinates against in-game data
+///  Pool leap destination positions (approx. — refine from sniff when available)
 /// ============================================================================
-static Position const g_KormrokFieryPoolPos  = { 4380.0f, 651.0f, 87.5f, 0.0f }; ///< Northwest — empowers Pound
-static Position const g_KormrokFoulPoolPos   = { 4430.0f, 651.0f, 87.5f, 0.0f }; ///< Northeast — empowers Fel Outpouring
-static Position const g_KormrokShadowPoolPos = { 4405.0f, 593.0f, 87.5f, 0.0f }; ///< South      — empowers Explosive Runes & Grasping Hands
+static Position const g_KormrokFieryPoolPos  = { 4380.0f, 651.0f, 87.5f, 0.0f }; ///< Explosive Energy — empowers Explosive Runes
+static Position const g_KormrokFoulPoolPos   = { 4430.0f, 651.0f, 87.5f, 0.0f }; ///< Foul Energy     — empowers Grasping Hands
+static Position const g_KormrokShadowPoolPos = { 4405.0f, 593.0f, 87.5f, 0.0f }; ///< Shadow Energy   — empowers Fel Outpouring
 
 /// ============================================================================
 ///  Pool type identifiers
@@ -25,28 +24,25 @@ static Position const g_KormrokShadowPoolPos = { 4405.0f, 593.0f, 87.5f, 0.0f };
 enum eKormrokPools : uint8
 {
 	PoolNone    = 0,
-	PoolFiery   = 1,   ///< Empowers Pound
-	PoolFoul    = 2,   ///< Empowers Fel Outpouring
-	PoolShadow  = 3,   ///< Empowers Explosive Runes + Grasping Hands
+	PoolFiery   = 1,   ///< Explosive Energy → Empowered Explosive Runes
+	PoolFoul    = 2,   ///< Foul Energy     → Empowered Grasping Hands
+	PoolShadow  = 3,   ///< Shadow Energy   → Empowered Fel Outpouring
 };
 
 /// ============================================================================
-///  Spells
+///  Spells  (https://www.wowhead.com/npc=90776/kormrok)
 /// ============================================================================
 enum eKormrokSpells
 {
-	/// Core abilities
-	SpellPound                   = 185427,  ///< Main tank hit — heavy physical damage + debuff
+	/// Core abilities — Pound is never pool-empowered
+	SpellPound                   = 180244,  ///< Raid-wide shockwaves under every player
 	SpellExplosiveRunes          = 180270,  ///< Places rune traps that detonate after a short delay
-	SpellGraspingHands           = 180246,  ///< Hands erupt from the ground, gripping players
-	SpellFelOutpouring           = 181992,  ///< Fel energy wave that strikes the entire raid
+	SpellGraspingHands           = 181299,  ///< Hands erupt from the ground, gripping players
+	SpellFelOutpouring           = 181292,  ///< Shadow pool spews globules across the room
 
-	/// Empowered variants (activated by leaping into the matching pool)
-	/// SpellEmpoweredPound uses the same spell ID as SpellPound;
-	///   actual damage increase should come from a separate DB aura or script hook.
-	SpellEmpoweredPound          = 185427,  ///< Empowered Pound         (placeholder — same ID)
-	SpellEmpoweredExplosiveRunes = 180286,  ///< Empowered Explosive Runes
-	SpellEmpoweredGraspingHands  = 180297,  ///< Empowered Grasping Hands
+	/// Empowered variants (leap into matching energy pool)
+	SpellEmpoweredExplosiveRunes = 181297,  ///< Empowered Explosive Runes
+	SpellEmpoweredGraspingHands  = 180297,  ///< Empowered Grasping Hands / Dragging Hands
 	SpellEmpoweredFelOutpouring  = 185816,  ///< Empowered Fel Outpouring
 
 	/// Bonus loot

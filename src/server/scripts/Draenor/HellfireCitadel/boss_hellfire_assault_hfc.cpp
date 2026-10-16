@@ -184,18 +184,18 @@ public:
 				}
 			}
 
-			/// Every second wave also spawns an engineer carrying Felfire Munitions
+			/// Every second wave also spawns a Felfire siege vehicle that drops munitions
 			if ((m_WaveCount % 2) == 0)
 			{
 				float l_Ex = me->GetPositionX() + frand(-22.0f, 22.0f);
 				float l_Ey = me->GetPositionY() + frand(-22.0f, 22.0f);
 
-				if (Creature* l_Eng = me->SummonCreature(
-					eHellfireAssaultCreatures::NpcHellfireEngineer,
+				if (Creature* l_Vehicle = me->SummonCreature(
+					eHellfireAssaultCreatures::NpcFelfireSiegeVehicle,
 					l_Ex, l_Ey, me->GetPositionZ(), 0.0f,
 					TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * TimeConstants::IN_MILLISECONDS))
 				{
-					l_Eng->SetInCombatWithZone();
+					l_Vehicle->SetInCombatWithZone();
 				}
 			}
 		}
@@ -321,9 +321,9 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-///  Hellfire Engineer — 93856 (placeholder entry)
+///  Felfire Demolisher — 91103  (ScriptName: npc_hellfire_engineer_hfa)
 ///
-///  Wave add that drops a Felfire Munitions crate when killed.
+///  Siege vehicle wave add that drops Felfire Munitions when killed.
 //////////////////////////////////////////////////////////////////////////////
 class npc_hellfire_engineer_hfa : public CreatureScript
 {
@@ -341,7 +341,7 @@ public:
 
 		void JustDied(Unit* /*p_Killer*/) override
 		{
-			/// Spawn a collectible Felfire Munitions crate at the engineer's location
+			/// Spawn collectible Felfire Munitions at the vehicle's death location
 			me->SummonCreature(
 				eHellfireAssaultCreatures::NpcFelfireMunitionsCrate,
 				me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(),
@@ -364,9 +364,9 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-///  Felfire Munitions Crate — 93846 (placeholder entry)
+///  Felfire Munitions — 90610
 ///
-///  Interactable creature spawned at an engineer's death location.
+///  Interactable creature spawned when a siege vehicle dies.
 ///  Players click it (gossip) to receive the Felfire Munitions carrier aura,
 ///  then walk to a Hellfire Cannon and interact there to deliver.
 //////////////////////////////////////////////////////////////////////////////

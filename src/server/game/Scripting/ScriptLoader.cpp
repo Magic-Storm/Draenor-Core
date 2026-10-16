@@ -1073,7 +1073,7 @@ void AddSC_WanderingIsland_West();
 void AddSC_WanderingIsland_South();
 
 /// Draenor
-//void AddSC_tanaan_jungle();
+void AddSC_tanaan_jungle();
 void AddSC_spires_of_arak();
 void AddSC_frostfire_ridge();
 void AddSC_draenor_shadowmoon_valley();
@@ -2147,7 +2147,7 @@ void AddPandarieScripts()
 void AddDraenorScripts()
 {
 #ifdef SCRIPTS
-	//AddSC_tanaan_jungle();
+	AddSC_tanaan_jungle();
     AddSC_spires_of_arak();
     AddSC_frostfire_ridge();
     AddSC_draenor_shadowmoon_valley();

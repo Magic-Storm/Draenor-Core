@@ -19,7 +19,7 @@ file(GLOB_RECURSE sources_BlackrockFoundry Draenor/BlackrockFoundry/*.hpp Draeno
 file(GLOB_RECURSE sources_ScenarioFateOfKarabor Draenor/FateOfKaraborScenario/*.hpp Draenor/FateOfKaraborScenario/*.cpp Draenor/FateOfKaraborScenario/*.hxx)
 file(GLOB_RECURSE sources_ScenarioBlackTemple Draenor/BlackTempleScenario/*.hpp Draenor/BlackTempleScenario/*.cpp Draenor/BlackTempleScenario/*.hxx)
 file(GLOB_RECURSE sources_GrimrailDepot Draenor/GrimrailDepot/*.hpp Draenor/GrimrailDepot/*.cpp Draenor/GrimrailDepot/*.hxx)
-file(GLOB_RECURSE sources_TanaanIntro Draenor/Tanaan_jungle/*.hpp Draenor/Tanaan_jungle/*.cpp Draenor/Tanaan_jungle/*.hxx)
+file(GLOB_RECURSE sources_TanaanIntro Draenor/TanaanIntro/*.hpp Draenor/TanaanIntro/*.cpp Draenor/TanaanIntro/*.hxx)
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
@@ -39,7 +39,6 @@ set(scripts_STAT_SRCS
   ${sources_ScenarioBlackTemple}
   ${sources_GrimrailDepot}
   ${sources_TanaanIntro}
-  ${sources_HellfireCitadel}
 
   Draenor/draenor_shadowmoon_valley.cpp
   Draenor/draenor_shadowmoon_valley.hpp
@@ -53,6 +52,7 @@ set(scripts_STAT_SRCS
   Draenor/gorgrond.hpp
   Draenor/item_strongboxes.cpp
   Draenor/talador.cpp
+  Draenor/talador.h
 )
 
 message("  -> Prepared: Draenor")

@@ -20,9 +20,9 @@ UPDATE `creature_template` SET `ScriptName`='boss_archimonde_hfc' WHERE `entry`=
 
 -- ========== Hellfire Assault adds ==========
 UPDATE `creature_template` SET `ScriptName`='npc_hellfire_cannon_hfa' WHERE `entry`=90018;
-UPDATE `creature_template` SET `ScriptName`='npc_hellfire_engineer_hfa' WHERE `entry`=93856;
-UPDATE `creature_template` SET `ScriptName`='npc_felfire_munitions_crate_hfa' WHERE `entry`=93846;
-UPDATE `creature_template` SET `ScriptName`='npc_hellfire_grunt_hfa' WHERE `entry`=93858;
+UPDATE `creature_template` SET `ScriptName`='npc_hellfire_engineer_hfa' WHERE `entry`=91103; -- Felfire Demolisher (drops munitions)
+UPDATE `creature_template` SET `ScriptName`='npc_felfire_munitions_crate_hfa' WHERE `entry`=90610; -- Felfire Munitions pickup
+UPDATE `creature_template` SET `ScriptName`='npc_hellfire_grunt_hfa' WHERE `entry`=93858; -- Hulking Berserker wave add
 
 -- ========== High Council ==========
 UPDATE `creature_template` SET `ScriptName`='npc_jubeithos_mirror_image' WHERE `entry`=92143;
@@ -99,7 +99,14 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 (180351, 'spell_velhari_ancient_corruption'),
 (179406, 'spell_zakuun_soul_cleave'),
 (181508, 'spell_zakuun_seed_of_destruction'),
-(186500, 'spell_xhulhorac_chains_of_fel');
+(186500, 'spell_xhulhorac_chains_of_fel'),
+(181275, 'spell_citadel_curse_of_the_legion'),
+(181597, 'spell_citadel_mannoroth_gaze'),
+(181617, 'spell_citadel_mannoroth_gaze_damage'),
+(185256, 'spell_citadel_spire_channel'),
+(187029, 'spell_citadel_spire_channel_perma'),
+(182259, 'spell_citadel_spire_beam'),
+(186648, 'spell_citadel_summoner_beam');
 
 -- GameObject
 UPDATE `gameobject_template` SET `ScriptName`='go_citadel_mannoroth_platform_fix' WHERE `entry`=700000;

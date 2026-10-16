@@ -31,11 +31,11 @@ namespace TaladorLegendaryNpcs
 {
 	enum
 	{
-		KhadgarBase					= 83823,
-		CordanaBase					= 83929,
-		GaronaStabber				= 999999, // Not yet
-		JainaBase					= 999998, // Not yet
-		GaronaBase					= 86926,
+		KhadgarBase					= 83823,  ///< https://www.wowhead.com/npc=83823
+		CordanaBase					= 83929,  ///< https://www.wowhead.com/npc=83929
+		GaronaStabber				= 85134,  ///< Hunter: Hunted chase/fight — https://www.wowhead.com/npc=85134
+		JainaBase					= 85217,  ///< Post-capture scene at tower — https://www.wowhead.com/npc=85217
+		GaronaBase					= 86926,  ///< Imprisoned at Khadgar's Tower
 		KhadgarInfiltrating			= 90233,
 		GaronaInfiltrating			= 90237,
 		GaronaPet					= 90138,

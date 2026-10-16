@@ -1667,27 +1667,20 @@ public:
 			// Number of enemies
 			switch (me->GetEntry())
 			{
-				case TanaanCreatures::NpcBonesaw || TanaanCreatures::NpcHaomi || TanaanCreatures::NpcDarragh || TanaanCreatures::NpcAstrylian || TanaanCreatures::NpcArnold || TanaanCreatures::NpcAgios:
+				case TanaanCreatures::NpcBonesaw:
+				case TanaanCreatures::NpcHaomi:
+				case TanaanCreatures::NpcDarragh:
+				case TanaanCreatures::NpcAstrylian:
+				case TanaanCreatures::NpcArnold:
+				case TanaanCreatures::NpcAgios:
 					enemyNumber = 3;
 					break;
 				case TanaanCreatures::NpcThrend:
-					enemyNumber = 1;
-					break;
 				case TanaanCreatures::NpcEtubrute:
-					enemyNumber = 1;
-					break;
 				case TanaanCreatures::NpcQiana:
-					enemyNumber = 1;
-					break;
 				case TanaanCreatures::NpcAriokVanguard:
-					enemyNumber = 1;
-					break;
 				case TanaanCreatures::NpcShoju:
-					enemyNumber = 1;
-					break;
 				case TanaanCreatures::NpcRacy:
-					enemyNumber = 1;
-					break;
 				case TanaanCreatures::NpcNorthpaul:
 					enemyNumber = 1;
 					break;
@@ -1743,11 +1736,14 @@ public:
 
 			if (IsEscalierVangard())
 			{
-				// TODO
-				return;
+				/// Stair vanguards: spawn Iron Grunts at the foot of the stairs
+				/// (npc_iron_grunt then charges up to fight Mumper / Moriccalas).
+				if (me->GetEntry() == TanaanCreatures::NpcMoriccalas)
+					enemySpawnPos.Relocate(4090.5f, -2324.5f, 64.68f, me->GetOrientation());
+				else
+					enemySpawnPos.Relocate(4042.5f, -2326.5f, 64.68f, me->GetOrientation());
 			}
-
-			if (enemyId == TanaanCreatures::NpcShadowRitualist)
+			else if (enemyId == TanaanCreatures::NpcShadowRitualist)
 				GetRandPosFromCenterInDist(me, frand(3.0f, 7.0f), enemySpawnPos);
 			else
 				GetPositionWithDistInOrientation(me, 2.0f, me->GetOrientation() + frand(-3.0f, 3.0f), enemySpawnPos);
@@ -1757,7 +1753,6 @@ public:
 				if (enemyId == TanaanCreatures::NpcShadowRitualist)
 					enemy->CastSpell(enemy, SPELL_RITUALIST_SPAWN, true);
 
-				//ennemy->SetPlayerDamageReq(ennemy->GetHealth() / 10);
 				enemy->Attack(me, enemyId != TanaanCreatures::NpcShadowRitualist);
 			}
 		}
@@ -1972,17 +1967,11 @@ class npc_iron_grunt : public CreatureScript
                 switch (p_Id)
                 {
                     case eCreatureIds::Moriccalas:
-                    {
-                        if ((m_Pos.m_positionX <= 4091.0f && m_Pos.m_positionX >= 4090.0f) &&
-                            (m_Pos.m_positionY >= -2325.0f && m_Pos.m_positionY <= -2324.0f))
-                            return true;
-                    }
+                        return (m_Pos.m_positionX <= 4091.0f && m_Pos.m_positionX >= 4090.0f) &&
+                            (m_Pos.m_positionY >= -2325.0f && m_Pos.m_positionY <= -2324.0f);
                     case eCreatureIds::Mumper:
-                    {
-                        if ((m_Pos.m_positionX <= 4043.0f && m_Pos.m_positionX >= 4042.0f) &&
-                            (m_Pos.m_positionY >= -2327.0f && m_Pos.m_positionY <= -2326.0f))
-                            return true;
-                    }
+                        return (m_Pos.m_positionX <= 4043.0f && m_Pos.m_positionX >= 4042.0f) &&
+                            (m_Pos.m_positionY >= -2327.0f && m_Pos.m_positionY <= -2326.0f);
                     default:
                         break;
                 }

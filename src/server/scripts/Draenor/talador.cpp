@@ -278,45 +278,47 @@ public:
 					std::list<Player*> PlayersInRange;
 					me->GetPlayerListInGrid(PlayersInRange, 10.0f);
 					for (Player* p_Player : PlayersInRange)
-
-					if (p_Player->GetQuestStatus(TaladorLegendaryQuests::CallOfTheArchmage) == QUEST_STATUS_COMPLETE)
 					{
-						DoAction(eActions::PreFinishQuest1);
+						if (p_Player->GetQuestStatus(TaladorLegendaryQuests::CallOfTheArchmage) == QUEST_STATUS_COMPLETE)
+							DoAction(eActions::PreFinishQuest1);
 					}
+					break;
 				}
 				case eEvents::EventCheckPlayer2:
 				{
 					std::list<Player*> PlayersInRange;
 					me->GetPlayerListInGrid(PlayersInRange, 5.0f);
 					for (Player* p_Player : PlayersInRange)
-
-					if (p_Player->GetQuestStatus(TaladorLegendaryQuests::SpiresOfTheBetrayer) == QUEST_STATUS_INCOMPLETE)
 					{
-						DoAction(eActions::StartQuest1);
+						if (p_Player->GetQuestStatus(TaladorLegendaryQuests::SpiresOfTheBetrayer) == QUEST_STATUS_INCOMPLETE)
+							DoAction(eActions::StartQuest1);
 					}
+					break;
 				}
 				case eEvents::EventCheckPlayer3:
 				{
 					std::list<Player*> PlayersInRange;
 					me->GetPlayerListInGrid(PlayersInRange, 5.0f);
 					for (Player* p_Player : PlayersInRange)
-
+					{
 						if (p_Player->GetQuestStatus(TaladorLegendaryQuests::OrbOfDominion) == QUEST_STATUS_INCOMPLETE)
-						{
 							DoAction(eActions::StartQuest2);
-						}
+					}
+					break;
 				}
 				case eEvents::EventCheckPlayer4:
 				{
 					std::list<Player*> PlayersInRange;
 					me->GetPlayerListInGrid(PlayersInRange, 10.0f);
 					for (Player* p_Player : PlayersInRange)
-
+					{
 						if (p_Player->GetQuestStatus(TaladorLegendaryQuests::OrbOfDominion) == QUEST_STATUS_COMPLETE)
-						{
 							DoAction(eActions::PreFinishQuest2);
-						}
+					}
+					break;
 				}
+				default:
+					break;
 			}
 		}
 	};
