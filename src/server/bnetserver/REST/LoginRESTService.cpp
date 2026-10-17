@@ -225,6 +225,7 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     Battlenet::JSON::Login::LoginResult loginResult;
     if (!JSON::Deserialize(buf, &loginForm))
     {
+        TC_LOG_DEBUG("server.rest", "[%s:%d] Failed to decode login form (%u bytes)", ip_address.c_str(), soapClient->port, uint32(len));
         if (soap_register_plugin_arg(soapClient, &ResponseCodePlugin::Init, nullptr) != SOAP_OK)
             return 500;
 
@@ -252,6 +253,9 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
 
     Utf8ToUpperOnlyLatin(login);
     Utf8ToUpperOnlyLatin(password);
+
+    TC_LOG_DEBUG("server.rest", "[%s:%d] Login attempt: account_name='%s' (password length %u, %d inputs)",
+        ip_address.c_str(), soapClient->port, login.c_str(), uint32(password.length()), loginForm.inputs_size());
 
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_INFO);
     stmt->setString(0, login);
@@ -299,6 +303,7 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     }
     else
     {
+        TC_LOG_DEBUG("server.rest", "[%s:%d] Login failed for account_name='%s': unknown account or wrong password", ip_address.c_str(), soapClient->port, login.c_str());
         loginResult.set_authentication_state(Battlenet::JSON::Login::LOGIN);
         loginResult.set_error_code("UNABLE_TO_DECODE");
         loginResult.set_error_message("The username or password you have entered is invalid. Please try again.");

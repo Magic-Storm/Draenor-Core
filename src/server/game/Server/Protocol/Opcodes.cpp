@@ -1116,6 +1116,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_REORDER_CHARACTERS,                              STATUS_AUTHED,      PROCESS_INPLACE,        &WorldSession::HandleReorderCharacters          , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_PLAYER_LOGIN,                                    STATUS_AUTHED,      PROCESS_THREADUNSAFE,   &WorldSession::HandlePlayerLoginOpcode          , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_VIOLENCE_LEVEL,                                  STATUS_AUTHED,      PROCESS_INPLACE,        &WorldSession::HandleViolenceLevel              , PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_ENGINE_SURVEY,                                   STATUS_AUTHED,      PROCESS_INPLACE,        &WorldSession::Handle_NULL                      , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_CHAR_RACE_OR_FACTION_CHANGE,                     STATUS_AUTHED,      PROCESS_THREADUNSAFE,   &WorldSession::HandleCharRaceOrFactionChange    , PROCESS_LOCAL);
 #endif
 

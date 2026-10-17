@@ -576,7 +576,7 @@ void WorldSession::HandleDBQueryBulk(WorldPacket& p_RecvPacket)
             {
                 WorldPacket l_Data(SMSG_DB_REPLY, 4 + 4 + 4 + 4);
                 l_Data << uint32(l_Type);
-                l_Data << uint32(-int32(l_Entry));
+                l_Data << uint32(l_Entry);
                 l_Data << uint32(time(NULL));
                 l_Data.WriteBit(0);                                                         ///< Found ???
                 l_Data << uint32(0);

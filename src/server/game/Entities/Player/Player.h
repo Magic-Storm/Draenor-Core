@@ -898,25 +898,27 @@ typedef std::vector<ItemPosCount> ItemPosCountVec;
 
 enum TransferAbortReason
 {
-	TRANSFER_ABORT_NONE = 0x00, // additional args: 0 - has no normal mode, 1 - need min level, 2 - has no heroic mode
-	TRANSFER_ABORT_NEED_GROUP = 0x01, // need raid
-	TRANSFER_ABORT_MAX_PLAYERS = 0x02, // instance is full
-	TRANSFER_ABORT_NOT_FOUND = 0x05, // instance not found
-	TRANSFER_ABORT_INSUF_EXPAN_LVL = 0x06, // You must have <TBC, WotLK> expansion installed to access this area.
-	TRANSFER_ABORT_TOO_MANY_INSTANCES = 0x07, // You have entered too many instances recently.
-	TRANSFER_ABORT_REALM_ONLY = 0x08, // All players on party must be from the same realm.
-	TRANSFER_ABORT_ALREADY_COMPLETED_ENCOUNTER = 0x09, // You are ineligible to participate in at least one encounter in this instance because you are already locked to an instance in which it has been defeated.
-	TRANSFER_ABORT_MAP_NOT_ALLOWED = 0x0A, // Map can't be entered at this time.
-	TRANSFER_ABORT_NOT_FOUND1 = 0x0B, // Transfer aborted: instance is not found
-	TRANSFER_ABORT_NOT_FOUND2 = 0x0D, // Transfer aborted: instance is not found
-	TRANSFER_ABORT_CROSS_REALM_ZONE_NOT_ALLOWED = 0x0F, // Transfer aborted: cross map can't be entered at this time.
-	TRANSFER_ABORT_LOCKED_TO_DIFFERENT_INSTANCE = 0x13, // You are already locked to %s. Additional args: 0 - none, 1+ - difficulty mode
-	TRANSFER_ABORT_CUSTOM_ZONE_RESTRICTION = 0x14, // Custom restrictions. Additional args: 1 - death knight zone, 2 - goblin zone, 3 - gilneas zone, 
-	TRANSFER_ABORT_TOO_MANY_REALM_INSTANCES = 0x15, // Additional instances cannot be launched, please try again later.
-	TRANSFER_ABORT_CANNOT_CHANGE_DIFFICULTY = 0x16, // Instance has been started. You can change difficulty inside the instance only.
-	TRANSFER_ABORT_ZONE_IN_COMBAT = 0x18, // Unable to zone in while an encounter is in progress.
-	TRANSFER_ABORT_NOT_FOUND3 = 0x1A, // Transfer aborted: instance is not found
-	TRANSFER_ABORT_NOT_FOUND4 = 0x1B, // Transfer aborted: instance is not found
+	TRANSFER_ABORT_NONE = 0, // additional args: 0 - has no normal mode, 1 - need min level, 2 - has no heroic mode
+	TRANSFER_ABORT_ERROR = 1,
+	TRANSFER_ABORT_MAX_PLAYERS = 2, // instance is full
+	TRANSFER_ABORT_NOT_FOUND = 3, // instance not found
+	TRANSFER_ABORT_TOO_MANY_INSTANCES = 4, // You have entered too many instances recently.
+	TRANSFER_ABORT_ZONE_IN_COMBAT = 6, // Unable to zone in while an encounter is in progress.
+	TRANSFER_ABORT_INSUF_EXPAN_LVL = 7, // You must have <TBC, WotLK> expansion installed to access this area.
+	TRANSFER_ABORT_DIFFICULTY = 8, // <Normal, Heroic, Epic> difficulty mode is not available for %s.
+	TRANSFER_ABORT_CUSTOM_ZONE_RESTRICTION = 9, // Unique message. Additional args: 1 - death knight zone, 2 - goblin zone, 3 - gilneas zone,
+	TRANSFER_ABORT_TOO_MANY_REALM_INSTANCES = 10, // Additional instances cannot be launched, please try again later.
+	TRANSFER_ABORT_NEED_GROUP = 11, // need raid
+	TRANSFER_ABORT_NOT_FOUND1 = 12, // Transfer aborted: instance is not found
+	TRANSFER_ABORT_NOT_FOUND2 = 13, // Transfer aborted: instance is not found
+	TRANSFER_ABORT_NOT_FOUND3 = 14, // Transfer aborted: instance is not found
+	TRANSFER_ABORT_REALM_ONLY = 15, // All players on party must be from the same realm.
+	TRANSFER_ABORT_MAP_NOT_ALLOWED = 16, // Map can't be entered at this time.
+	TRANSFER_ABORT_LOCKED_TO_DIFFERENT_INSTANCE = 18, // You are already locked to %s. Additional args: 0 - none, 1+ - difficulty mode
+	TRANSFER_ABORT_ALREADY_COMPLETED_ENCOUNTER = 19, // You are ineligible to participate in at least one encounter in this instance because you are already locked to an instance in which it has been defeated.
+	TRANSFER_ABORT_NOT_FOUND4 = 22, // Unable to resolve requested difficultyID to actual difficulty for map
+	TRANSFER_ABORT_CROSS_REALM_ZONE_NOT_ALLOWED = 24, // Transfer aborted: cross-realm zone is down
+	TRANSFER_ABORT_CANNOT_CHANGE_DIFFICULTY = 26, // Instance has been started. You can change difficulty inside the instance only.
 };
 
 enum NewWorldReason

@@ -139,7 +139,11 @@ public:
 				me->GetPosition(&wolfPos);
 				GetPositionWithDistInFront(me, 15.0f, wolfPos);
 
-				float z = me->GetMap()->GetHeight(me->GetPhaseMask(), wolfPos.GetPositionX(), wolfPos.GetPositionY(), wolfPos.GetPositionZ());
+				// Map::GetHeight ignores terrain that is more than 2 yards above the given Z,
+				// so search from a higher point and fall back to our own Z if nothing is found
+				float z = me->GetMap()->GetHeight(me->GetPhaseMask(), wolfPos.GetPositionX(), wolfPos.GetPositionY(), wolfPos.GetPositionZ() + 10.0f);
+				if (z <= INVALID_HEIGHT)
+					z = me->GetPositionZ();
 				wolfPos.m_positionZ = z;
 				
 				if (Creature* wolf = me->SummonCreature(NPC_BLACKROCK_BATTLE_WORG, wolfPos))
@@ -696,7 +700,9 @@ public:
 				p_Player->GetPosition(&l_Pos);
 				GetPositionWithDistInFront(p_Player, 2.5f, l_Pos);
 
-				float z = p_Player->GetMap()->GetHeight(p_Player->GetPhaseMask(), l_Pos.GetPositionX(), l_Pos.GetPositionY(), l_Pos.GetPositionZ());
+				float z = p_Player->GetMap()->GetHeight(p_Player->GetPhaseMask(), l_Pos.GetPositionX(), l_Pos.GetPositionY(), l_Pos.GetPositionZ() + 10.0f);
+				if (z <= INVALID_HEIGHT)
+					z = p_Player->GetPositionZ();
 				l_Pos.m_positionZ = z;
 
 				if (Creature* Charger = p_Player->SummonCreature(NPC_STORMWIND_CHARGER, l_Pos))
