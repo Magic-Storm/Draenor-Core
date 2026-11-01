@@ -337,7 +337,7 @@ namespace AccountMgr
     }
 
 #ifndef CROSS
-    uint32 AccountMgr::GetCharactersCount(uint32 accountId)
+    uint32 GetCharactersCount(uint32 accountId)
     {
         // check character count
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SUM_CHARS);

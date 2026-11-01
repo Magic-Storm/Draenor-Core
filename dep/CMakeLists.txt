@@ -37,6 +37,11 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
   if(SERVERS OR TOOLS)
     add_subdirectory(zlib)
   endif()
+elseif(ZLIB_LIBRARIES)
+  # Linux callers link the "zlib" target. The bundled library is Windows-only,
+  # so expose the system zlib under that same target name.
+  add_library(zlib INTERFACE)
+  target_link_libraries(zlib INTERFACE ${ZLIB_LIBRARIES})
 endif()
 
 if(SERVERS OR TOOLS)

@@ -67,6 +67,7 @@ include_directories(
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/protobuf/src
 )
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})

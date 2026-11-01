@@ -75,6 +75,8 @@
 #include "Vignette.hpp"
 #include "WowTime.hpp"
 #include "LootLockoutMap.h"
+#include "AreaTrigger.h"
+#include "Conversation.hpp"
 
 #ifndef CROSS
 # include "CharacterDatabaseCleaner.h"
@@ -28055,6 +28057,8 @@ template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data
 template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(AreaTrigger*   target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(Conversation*  target, UpdateData& data, std::set<Unit*>& visibleNow);
 
 void Player::UpdateVisibilityForPlayer()
 {
