@@ -123,7 +123,6 @@ public:
 		}
 	}
 };
-playerScript_map_shift_100* g_MapShiftPlayerScript = nullptr;
 
 /// Passive Scene Object
 class playerScript_quests_custom_gestion_100 : public PlayerScript
@@ -1570,7 +1569,7 @@ void AddSC_tanaan_jungle_100()
 {
 	new map_tanaan_jungle_100();
 	// new playerScript_enter_tanaan();
-	g_MapShiftPlayerScript = new playerScript_map_shift_100();
+	new playerScript_map_shift_100();
 	new playerScript_quests_custom_gestion_100();
 
 	new npc_shadow_hunter_mutumba();
