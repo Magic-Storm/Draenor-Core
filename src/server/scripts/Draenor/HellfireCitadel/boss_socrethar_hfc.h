@@ -13,19 +13,24 @@
 
 enum eSocretharSpells
 {
-    // Phase 1 – Soulbound Construct
-    SPELL_REVERBERATING_BLOW        = 182020,   ///< Massive cleave on tank
-    SPELL_FEL_PRISON                = 183017,   ///< Traps a player in place
-    SPELL_GIFT_OF_MANARI            = 184124,   ///< AoE heal for Construct
-    SPELL_CONSTRUCT_APOCALYPSE      = 184053,   ///< Channelled devastation (Phase 1)
+    /// IDs from BigWigs Socrethar.lua and Wowhead.
+    /// 182020 is Iron Reaver's Pounding, 184394 is Hellfire Assault's Shockwave.
+    /// Neither belongs on this fight.
 
-    // Phase 2 – Socrethar
-    SPELL_DOMINATING_POWER          = 184394,   ///< Mind control / domination
-    SPELL_SHADOW_WORD_AGONY         = 184081,   ///< Shadow DoT on random target
-    SPELL_EXERTAR_OF_SOULS          = 182769,   ///< Soul rip – AoE soul explosion
-    SPELL_APOCALYPSE_FINAL          = 184053,   ///< Apocalypse (shared ID, Phase 2 cast)
+    /// Phase 1 – Soulbound Construct (90296)
+    SPELL_REVERBERATING_BLOW        = 180008,   ///< Tank cleave, first at 7s
+    SPELL_FEL_PRISON                = 181288,   ///< Cast. The root aura is 183017.
+    SPELL_VOLATILE_FEL_ORB          = 180221,   ///< Bouncing orb, first at 13s
+    SPELL_FELBLAZE_CHARGE           = 182051,   ///< Charge, first at 29s
 
-    // Bonus roll
+    /// Phase 2 – Socrethar (92330) and the Sargerei
+    SPELL_EXERT_DOMINANCE           = 183331,   ///< Interruptible cast
+    SPELL_APOCALYPSE                = 183329,   ///< Channel. 184053 is Fel Barrier, not this.
+    SPELL_GIFT_OF_MANARI            = 184124,   ///< Dominator heal, not a Construct spell
+    SPELL_SHADOW_BOLT_VOLLEY        = 182392,   ///< Sargerei Shadowcaller
+    SPELL_GHASTLY_FIXATION          = 182769,   ///< Haunting Soul
+
+    /// Bonus roll
     SPELL_SOCRETHAR_BONUS_LOOT      = 188978,
 };
 
@@ -77,18 +82,21 @@ enum eSocretharData
 
 enum eSocretharTimers
 {
-    // Phase 1
-    TIMER_REVERBERATING_BLOW        = 12000,
-    TIMER_FEL_PRISON                = 22000,
-    TIMER_GIFT_OF_MANARI            = 35000,
-    TIMER_CONSTRUCT_APOCALYPSE      = 45000,
+    /// Phase 1, from BigWigs OnEngage
+    TIMER_REVERBERATING_BLOW        = 7000,
+    TIMER_REVERBERATING_BLOW_CD     = 17000,
+    TIMER_FEL_PRISON                = 48000,
+    TIMER_FEL_PRISON_CD             = 45000,
+    TIMER_VOLATILE_FEL_ORB          = 13000,
+    TIMER_VOLATILE_FEL_ORB_CD       = 30000,
+    TIMER_FELBLAZE_CHARGE           = 29000,
+    TIMER_FELBLAZE_CHARGE_CD        = 30000,
 
-    // Phase 2
-    TIMER_DOMINATING_POWER          = 20000,
-    TIMER_SHADOW_WORD_AGONY         = 15000,
-    TIMER_EXERTAR_OF_SOULS          = 30000,
-    TIMER_SPAWN_SARGEREI            = 25000,
-    TIMER_APOCALYPSE                = 40000,
+    /// Phase 2
+    TIMER_EXERT_DOMINANCE           = 20000,
+    TIMER_SPAWN_SARGEREI            = 24000,
+    TIMER_APOCALYPSE                = 51000,
+    TIMER_APOCALYPSE_CD             = 36000,
 };
 
 #endif // BOSS_SOCRETHAR_HFC_HPP

@@ -13,43 +13,57 @@
 
 enum eKilroggSpells
 {
-    // Boss Abilities
-    SPELL_CORRUPTION_SICKNESS = 182159,           // Corruption Sickness - Stacking debuff
-    SPELL_DEMONIC_POSSESSION = 180313,            // Demonic Possession - Mind control at 100 stacks
-    SPELL_ARMOR_RIP = 180199,                     // Armor Rip - Physical damage + vulnerability
-    SPELL_HEARTSEEKER = 180372,                   // Heartseeker - Line damage + DoT
-    SPELL_BLOOD_POOL = 188852,                    // Blood Pool - Ground effect damage
-    SPELL_BLOOD_CLOT = 90477,                     // Blood Clot - Moving add
-    SPELL_BLOOD_FRENZY = 180127,                  // Blood Frenzy - Raid damage
-    SPELL_CORRUPTED_BLOOD_CLOT = 96077,           // Corrupted Blood Clot - Moving add
-    SPELL_CORRUPTED_BLOOD_FRENZY = 180143,        // Corrupted Blood Frenzy - Raid damage + heal
-    SPELL_DEATH_THROES = 180224,                  // Death Throes - Raid damage + projectiles
-    SPELL_DEATH_GATES = 184551,                   // Death Gates - Damage increase
-    SPELL_VISION_OF_DEATH = 182428,               // Vision of Death - Phase transition
-    SPELL_IMMORTAL_RESOLVE = 180718,              // Immortal Resolve - DPS buff
-    SPELL_IMMORTAL_SALVATION = 185563,            // Immortal Salvation - Healer buff
-    SPELL_CLEANSING_AURA = 187089,                // Cleansing Aura - Corruption reduction
-    
-    // Add Abilities
-    SPELL_FRENZIED_STRIKES = 180163,              // Frenzied Strikes - Horror cleave
-    SPELL_FEL_CLAWS = 182153,                     // Fel Claws - Corruption application
-    SPELL_SHATTERING_SCREAM = 183917,             // Shattering Scream - Interruptible AoE
-    SPELL_FEL_RIFT = 180243,                      // Fel Rift - Death explosion
-    
-    // Demon Abilities (Vision of Death)
-    SPELL_FEL_FIRE = 180618,                      // Fel Fire - Hellfire Grunt
-    SPELL_FEL_FLAME = 180570,                     // Fel Flame - Hellfire Brute
-    SPELL_SEARING_BREATH = 180033,                // Searing Breath - Hellfire Mistress
+    /// Boss. IDs from Wowhead / BigWigs KilroggDeadeye.lua.
+    /// 90477 and 96077 are creature entries (Blood Globule), not spells.
+    SPELL_FEL_CORRUPTION = 182159,                ///< Alternate power. The encounter applies it; do not stack it by hand.
+    SPELL_SHRED_ARMOR = 180199,                   ///< Tank hit. Debuff if it lands is 180200.
+    SPELL_SHREDDED_ARMOR = 180200,
+    SPELL_HEARTSEEKER = 180372,                   ///< Spear. The player debuff is 188929.
+    SPELL_HEARTSEEKER_DEBUFF = 188929,
+    SPELL_BLOOD_SPLATTER = 188852,                ///< Ground damage left by a Blood Globule
+    SPELL_DEATH_THROES = 180224,                  ///< Repeating raid cast, not a 30% phase
+    SPELL_VISION_OF_DEATH = 182428,
+    SPELL_VISION_OF_DEATH_AURA = 185458,          ///< Buff on players who are inside the vision
+    SPELL_IMMORTAL_RESOLVE = 180718,
+    SPELL_IMMORTAL_SALVATION = 185563,
+    SPELL_CLEANSING_AURA = 187089,
+    SPELL_BLOODTHIRSTER_TRANSFORM = 182012,       ///< Cast as a Bloodthirster reaches the pool
+
+    /// Hulking Terror
+    SPELL_SAVAGE_STRIKES = 180163,                ///< Cone. Was mislabeled Frenzied Strikes.
+    SPELL_RENDING_HOWL = 183917,                  ///< Interruptible raid damage. Was mislabeled Shattering Scream.
+    SPELL_FEL_RUPTURE = 180243,                   ///< Death burst. Wowhead spell=180243.
+
+    /// Vision of Death demons
+    SPELL_FEL_BLAZE = 180618,                     ///< Hellblaze Imp
+    SPELL_FEL_FLAMES = 180570,                    ///< Hellblaze Fiend
+    SPELL_CINDER_BREATH = 180033,                 ///< Hellblaze Mistress
+
+    /// Old names kept so existing call sites stay valid.
+    SPELL_ARMOR_RIP = SPELL_SHRED_ARMOR,
+    SPELL_FRENZIED_STRIKES = SPELL_SAVAGE_STRIKES,
+    SPELL_SHATTERING_SCREAM = SPELL_RENDING_HOWL,
+    SPELL_FEL_RIFT = SPELL_FEL_RUPTURE,
+    SPELL_FEL_FIRE = SPELL_FEL_BLAZE,
+    SPELL_FEL_FLAME = SPELL_FEL_FLAMES,
+    SPELL_SEARING_BREATH = SPELL_CINDER_BREATH,
+    SPELL_CORRUPTION_SICKNESS = SPELL_FEL_CORRUPTION,
+    SPELL_VISION_OF_DEATH_CHECK = SPELL_VISION_OF_DEATH,
 };
 
 enum eKilroggCreatures
 {
-    NPC_DROOLING_BLOODSUCKER = 93369,             // Moving to blood pool
-    NPC_MASSIVE_HORROR = 90523,                   // Transformed bloodsucker
-    NPC_HELLFIRE_GRUNT = 90407,                   // Vision of Death demon
-    NPC_HELLFIRE_BRUTE = 90411,                   // Vision of Death demon
-    NPC_HELLFIRE_MISTRESS = 90414,                // Vision of Death demon
-    NPC_BLOOD_POOL = 82577,                       // Invisible stalker used as blood pool anchor
+    /// Live encounter-frame IDs (BigWigs INSTANCE_ENCOUNTER_ENGAGE_UNIT).
+    NPC_SALIVATING_BLOODTHIRSTER = 90521,         ///< Walks to the fel pool. Kill it before it arrives.
+    NPC_HULKING_TERROR = 93369,                   ///< What a Bloodthirster becomes in the pool.
+    NPC_BLOOD_GLOBULE = 90477,                    ///< Spawned by Heart Seeker. Not a spell.
+    NPC_FEL_BLOOD_GLOBULE = 90513,
+    NPC_HELLFIRE_GRUNT = 90407,
+    NPC_HELLFIRE_BRUTE = 90411,
+    NPC_HELLFIRE_MISTRESS = 90414,
+
+    NPC_DROOLING_BLOODSUCKER = NPC_SALIVATING_BLOODTHIRSTER,
+    NPC_MASSIVE_HORROR = NPC_HULKING_TERROR,
 };
 
 enum eKilroggEvents
@@ -101,17 +115,22 @@ enum eKilroggData
 
 enum eKilroggTimers
 {
-    TIMER_ARMOR_RIP = 15000,
+    /// BigWigs OnEngage: Shred Armor 10.8s then 17s, Heart Seeker 25s,
+    /// Death Throes 40s, Vision of Death 60s then ~75s, Bloodthirsters 15s then ~70s.
+    TIMER_ARMOR_RIP = 11000,
+    TIMER_ARMOR_RIP_CD = 17000,
     TIMER_HEARTSEEKER = 25000,
-    TIMER_DEATH_THROES = 45000,
+    TIMER_HEARTSEEKER_CD = 26000,
+    TIMER_DEATH_THROES = 40000,
     TIMER_VISION_OF_DEATH = 60000,
-    TIMER_SPAWN_BLOODSUCKER = 30000,
-    TIMER_UPDATE_CORRUPTION = 1000,
-    TIMER_FRENZIED_STRIKES = 5000,
+    TIMER_VISION_OF_DEATH_CD = 75000,
+    TIMER_SPAWN_BLOODSUCKER = 15000,
+    TIMER_SPAWN_BLOODSUCKER_CD = 70000,
+    TIMER_FRENZIED_STRIKES = 6000,
     TIMER_SHATTERING_SCREAM = 10000,
-    TIMER_FEL_FIRE = 3000,
+    TIMER_FEL_FIRE = 10000,
     TIMER_FEL_FLAME = 5000,
-    TIMER_SEARING_BREATH = 4000,
+    TIMER_SEARING_BREATH = 4500,
 };
 
 enum eKilroggPoints

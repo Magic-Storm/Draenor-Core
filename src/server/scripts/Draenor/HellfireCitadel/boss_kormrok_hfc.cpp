@@ -29,16 +29,17 @@ static eKormrokPools const g_KormrokPoolTypes[3] =
 ///  Kormrok — 90776
 ///
 ///  Encounter overview:
-///    Kormrok alternates between melee combat and leaping to one of three
-///    pools of power around the room every ~100 s.  Each pool empowers his
-///    next 2 (Normal) or 3 (Heroic) casts of the associated ability:
+///    About 10 seconds after pull, and again every two minutes, Kormrok leaps
+///    to an energy pool. He will not revisit a pool until he has used all three.
+///    Each pool empowers the next casts of one ability and adds a tank strike
+///    (LFR does not empower). Counts: Normal 2, Heroic 3, Mythic 4.
 ///
-///      Fiery  Pool → Empowered Pound
-///      Foul   Pool → Empowered Fel Outpouring
-///      Shadow Pool → Empowered Explosive Runes + Empowered Grasping Hands
+///      Fiery  pool (Explosive Energy) → Empowered Explosive Runes + Explosive Burst
+///      Foul   pool (Foul Energy)      → Dragging Hands + Foul Crush
+///      Shadow pool (Shadow Energy)    → Empowered Fel Outpouring + Swat
 ///
-///    Kormrok always leaps to the nearest pool, naturally cycling through
-///    all three over successive leaps as his position shifts after each one.
+///    Pound is never empowered.
+///    Sources: Wowhead Kormrok guide, Icy Veins, BigWigs Kormrok.lua.
 //////////////////////////////////////////////////////////////////////////////
 class boss_kormrok_hfc : public CreatureScript
 {
@@ -62,6 +63,7 @@ public:
 			m_CurrentPool       = eKormrokPools::PoolNone;
 			m_EmpoweredCastsLeft = 0;
 			m_IsLeaping         = false;
+			m_PoolVisited[0] = m_PoolVisited[1] = m_PoolVisited[2] = false;
 		}
 
 		InstanceScript* m_Instance;
@@ -70,6 +72,7 @@ public:
 		uint8           m_CurrentPool;        ///< eKormrokPools — active empowerment type
 		uint8           m_EmpoweredCastsLeft; ///< How many empowered casts remain
 		bool            m_IsLeaping;          ///< True while performing a pool leap
+		bool            m_PoolVisited[3];     ///< Pools used since the last full cycle
 
 		/// ----- Reset / State -----------------------------------------------
 
@@ -83,6 +86,7 @@ public:
 			m_CurrentPool        = eKormrokPools::PoolNone;
 			m_EmpoweredCastsLeft = 0;
 			m_IsLeaping          = false;
+			m_PoolVisited[0] = m_PoolVisited[1] = m_PoolVisited[2] = false;
 
 			_Reset();
 
@@ -111,7 +115,7 @@ public:
 			m_Events.ScheduleEvent(eKormrokEvents::EventExplosiveRunes, eKormrokTimers::TimerExplosiveRunes);
 			m_Events.ScheduleEvent(eKormrokEvents::EventGraspingHands,  eKormrokTimers::TimerGraspingHands);
 			m_Events.ScheduleEvent(eKormrokEvents::EventFelOutpouring,  eKormrokTimers::TimerFelOutpouring);
-			m_Events.ScheduleEvent(eKormrokEvents::EventLeapToPool,     eKormrokTimers::TimerLeapToPool);
+			m_Events.ScheduleEvent(eKormrokEvents::EventLeapToPool,     eKormrokTimers::TimerLeapFirst);
 
 			if (m_Instance != nullptr)
 			{
@@ -147,14 +151,26 @@ public:
 
 		/// ----- Pool leap ---------------------------------------------------
 
-		/// Returns the index (0-2) of the pool closest to Kormrok's current position
-		uint8 FindNearestPoolIndex() const
+		/// Nearest pool he has not used since the last full cycle.
+		/// Retail: he cannot return to a pool until all three have been visited.
+		uint8 FindNextPoolIndex()
 		{
+			bool l_AnyLeft = false;
+			for (uint8 i = 0; i < 3; ++i)
+				if (!m_PoolVisited[i])
+					l_AnyLeft = true;
+
+			if (!l_AnyLeft)
+				m_PoolVisited[0] = m_PoolVisited[1] = m_PoolVisited[2] = false;
+
 			float l_BestDist = 9999.0f;
 			uint8 l_BestIdx  = 0;
 
 			for (uint8 i = 0; i < 3; ++i)
 			{
+				if (m_PoolVisited[i])
+					continue;
+
 				float l_Dist = me->GetDistance(
 					g_KormrokPools[i].m_positionX,
 					g_KormrokPools[i].m_positionY,
@@ -167,6 +183,41 @@ public:
 				}
 			}
 			return l_BestIdx;
+		}
+
+		uint8 EmpoweredCastsForDifficulty() const
+		{
+			if (me->GetMap()->IsLFR())
+				return 0;
+			if (me->GetMap()->IsMythic())
+				return 4;
+			if (me->GetMap()->IsHeroic())
+				return 3;
+			return 2;
+		}
+
+		uint32 LeapCooldownForPool(uint8 p_Pool) const
+		{
+			if (me->GetMap()->IsLFR())
+				return eKormrokTimers::TimerLeapLFR;
+			if (p_Pool == eKormrokPools::PoolShadow)
+				return eKormrokTimers::TimerLeapShadow;
+			return eKormrokTimers::TimerLeapExplosive;
+		}
+
+		void ApplyPoolEnergy(uint8 p_Pool)
+		{
+			me->RemoveAurasDueToSpell(eKormrokSpells::SpellExplosiveEnergy);
+			me->RemoveAurasDueToSpell(eKormrokSpells::SpellFoulEnergy);
+			me->RemoveAurasDueToSpell(eKormrokSpells::SpellShadowEnergy);
+
+			uint32 l_Energy = eKormrokSpells::SpellExplosiveEnergy;
+			if (p_Pool == eKormrokPools::PoolFoul)
+				l_Energy = eKormrokSpells::SpellFoulEnergy;
+			else if (p_Pool == eKormrokPools::PoolShadow)
+				l_Energy = eKormrokSpells::SpellShadowEnergy;
+
+			me->CastSpell(me, l_Energy, true);
 		}
 
 		void InitiatePoolLeap()
@@ -183,7 +234,8 @@ public:
 			m_Events.CancelEvent(eKormrokEvents::EventFelOutpouring);
 			m_Events.CancelEvent(eKormrokEvents::EventLeapToPool);
 
-			uint8 l_PoolIdx    = FindNearestPoolIndex();
+			uint8 l_PoolIdx    = FindNextPoolIndex();
+			m_PoolVisited[l_PoolIdx] = true;
 			m_CurrentPool      = (uint8)g_KormrokPoolTypes[l_PoolIdx];
 
 			me->GetMotionMaster()->MoveJump(
@@ -196,11 +248,12 @@ public:
 
 		void OnPoolLanded()
 		{
-			/// Empowered cast count: 2 on Normal/LFR, 3 on Heroic/Mythic
-			m_EmpoweredCastsLeft = me->GetMap()->IsHeroic() ? 3 : 2;
+			ApplyPoolEnergy(m_CurrentPool);
+			m_EmpoweredCastsLeft = EmpoweredCastsForDifficulty();
+			uint32 l_NextLeap = LeapCooldownForPool(m_CurrentPool);
 
 			/// Brief pause in the pool before re-engaging
-			AddTimedDelayedOperation(eKormrokTimers::TimerResumeAfterLeap, [this]() -> void
+			AddTimedDelayedOperation(eKormrokTimers::TimerResumeAfterLeap, [this, l_NextLeap]() -> void
 			{
 				m_IsLeaping = false;
 				me->SetReactState(ReactStates::REACT_AGGRESSIVE);
@@ -215,7 +268,10 @@ public:
 				m_Events.ScheduleEvent(eKormrokEvents::EventExplosiveRunes, eKormrokTimers::TimerExplosiveRunesCD);
 				m_Events.ScheduleEvent(eKormrokEvents::EventGraspingHands,  eKormrokTimers::TimerGraspingHandsCD);
 				m_Events.ScheduleEvent(eKormrokEvents::EventFelOutpouring,  eKormrokTimers::TimerFelOutpouringCD);
-				m_Events.ScheduleEvent(eKormrokEvents::EventLeapToPool,     eKormrokTimers::TimerLeapToPool);
+				m_Events.ScheduleEvent(eKormrokEvents::EventLeapToPool,     l_NextLeap);
+
+				if (m_EmpoweredCastsLeft > 0)
+					m_Events.ScheduleEvent(eKormrokEvents::EventTankStrike, eKormrokTimers::TimerTankStrike);
 			});
 		}
 
@@ -291,7 +347,7 @@ public:
 				{
 					bool l_Empowered = ConsumeEmpower(eKormrokPools::PoolFoul);
 					uint32 l_Spell   = l_Empowered
-						? (uint32)eKormrokSpells::SpellEmpoweredGraspingHands
+						? (uint32)eKormrokSpells::SpellDraggingHands
 						: (uint32)eKormrokSpells::SpellGraspingHands;
 
 					me->CastSpell(me, l_Spell, false);
@@ -312,6 +368,24 @@ public:
 
 					m_Events.ScheduleEvent(eKormrokEvents::EventFelOutpouring,
 						eKormrokTimers::TimerFelOutpouringCD);
+					break;
+				}
+				/// ---- Tank strike tied to the active pool -------------------
+				case eKormrokEvents::EventTankStrike:
+				{
+					if (m_EmpoweredCastsLeft == 0 || m_CurrentPool == eKormrokPools::PoolNone)
+						break;
+
+					uint32 l_Spell = eKormrokSpells::SpellExplosiveBurst;
+					if (m_CurrentPool == eKormrokPools::PoolFoul)
+						l_Spell = eKormrokSpells::SpellFoulCrush;
+					else if (m_CurrentPool == eKormrokPools::PoolShadow)
+						l_Spell = eKormrokSpells::SpellSwat;
+
+					if (Unit* l_Tank = me->GetVictim())
+						me->CastSpell(l_Tank, l_Spell, false);
+
+					m_Events.ScheduleEvent(eKormrokEvents::EventTankStrike, eKormrokTimers::TimerTankStrikeCD);
 					break;
 				}
 				/// ---- Leap to pool ----------------------------------------

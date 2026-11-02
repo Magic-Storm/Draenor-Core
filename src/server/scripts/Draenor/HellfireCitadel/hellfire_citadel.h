@@ -97,7 +97,7 @@ enum eCitadelCreatures
 	BossGorefiend				= 91809,
 
 	NpcSalivatingBloodthirster = 90521,
-	NpcHulkingTerror			= 90523,
+	NpcHulkingTerror			= 93369,	///< Encounter-frame id. 90523 is the same add on some difficulties.
 	NpcHellfireDeathcaller	= 92740,
 
 	/// Bastion of Shadows - Part 3

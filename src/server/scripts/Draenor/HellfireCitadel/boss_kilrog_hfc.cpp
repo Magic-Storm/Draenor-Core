@@ -64,24 +64,13 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             
             m_Phase = PHASE_NORMAL;
-            m_VisionTimer = 60000; // 1 minute
-            m_BloodsuckerTimer = 30000; // 30 seconds
-            m_CorruptionTimer = 1000; // 1 second
-            
+
+            /// Death Throes is a repeating cast from the start of the fight, not an execute phase.
             events.ScheduleEvent(EVENT_ARMOR_RIP, TIMER_ARMOR_RIP);
             events.ScheduleEvent(EVENT_HEARTSEEKER, TIMER_HEARTSEEKER);
+            events.ScheduleEvent(EVENT_DEATH_THROES, TIMER_DEATH_THROES);
             events.ScheduleEvent(EVENT_VISION_OF_DEATH, TIMER_VISION_OF_DEATH);
             events.ScheduleEvent(EVENT_SPAWN_BLOODSUCKER, TIMER_SPAWN_BLOODSUCKER);
-            events.ScheduleEvent(EVENT_UPDATE_CORRUPTION, TIMER_UPDATE_CORRUPTION);
-        }
-
-        void DamageTaken(Unit* /*attacker*/, uint32& damage, SpellInfo const* /*spellInfo*/) override
-        {
-            if (m_Phase != PHASE_DEATH_THROES && me->HealthBelowPctDamaged(30, damage))
-            {
-                EnterPhase(PHASE_DEATH_THROES);
-                events.ScheduleEvent(EVENT_DEATH_THROES, 1000);
-            }
         }
 
         void KilledUnit(Unit* p_Who) override
@@ -108,8 +97,9 @@ public:
             {
                 if (Player* player = itr->getSource())
                 {
-                    player->RemoveAura(SPELL_CORRUPTION_SICKNESS);
-                    player->RemoveAura(SPELL_DEMONIC_POSSESSION);
+                    player->RemoveAura(SPELL_FEL_CORRUPTION);
+                    player->RemoveAura(SPELL_VISION_OF_DEATH);
+                    player->RemoveAura(SPELL_VISION_OF_DEATH_AURA);
                 }
             }
         }
@@ -120,32 +110,7 @@ public:
                 return;
             
             events.Update(diff);
-            
-            // Update timers
-            if (m_VisionTimer <= diff)
-            {
-                CastVisionOfDeath();
-                m_VisionTimer = 120000; // 2 minutes
-            }
-            else
-                m_VisionTimer -= diff;
-            
-            if (m_BloodsuckerTimer <= diff)
-            {
-                SpawnBloodsucker();
-                m_BloodsuckerTimer = 45000; // 45 seconds
-            }
-            else
-                m_BloodsuckerTimer -= diff;
-            
-            if (m_CorruptionTimer <= diff)
-            {
-                UpdateCorruption();
-                m_CorruptionTimer = 1000; // 1 second
-            }
-            else
-                m_CorruptionTimer -= diff;
-            
+
             // Handle events
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -155,58 +120,34 @@ public:
                     {
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                         {
-                            me->CastSpell(target, SPELL_ARMOR_RIP, false);
+                            me->CastSpell(target, SPELL_SHRED_ARMOR, false);
                         }
-                        events.ScheduleEvent(EVENT_ARMOR_RIP, TIMER_ARMOR_RIP);
+                        events.ScheduleEvent(EVENT_ARMOR_RIP, TIMER_ARMOR_RIP_CD);
                         break;
                     }
                     case EVENT_HEARTSEEKER:
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f))
-                        {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                             me->CastSpell(target, SPELL_HEARTSEEKER, false);
-                            
-                            // Create blood pool at target location
-                            if (Creature* bloodPool = me->SummonCreature(NPC_BLOOD_POOL, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
-                            {
-                                m_BloodPools.push_back(bloodPool);
-                                bloodPool->CastSpell(bloodPool, SPELL_BLOOD_POOL, true);
-                            }
-                        }
-                        events.ScheduleEvent(EVENT_HEARTSEEKER, TIMER_HEARTSEEKER);
+                        events.ScheduleEvent(EVENT_HEARTSEEKER, TIMER_HEARTSEEKER_CD);
                         break;
                     }
                     case EVENT_DEATH_THROES:
                     {
-                        if (m_Phase == PHASE_DEATH_THROES)
-                        {
-                            me->CastSpell(me, SPELL_DEATH_THROES, false);
-                            events.ScheduleEvent(EVENT_DEATH_GATES, 2000);
-                            events.ScheduleEvent(EVENT_DEATH_THROES, TIMER_DEATH_THROES);
-                        }
-                        break;
-                    }
-                    case EVENT_DEATH_GATES:
-                    {
-                        me->CastSpell(me, SPELL_DEATH_GATES, false);
+                        me->CastSpell(me, SPELL_DEATH_THROES, false);
+                        events.ScheduleEvent(EVENT_DEATH_THROES, TIMER_DEATH_THROES);
                         break;
                     }
                     case EVENT_VISION_OF_DEATH:
                     {
                         CastVisionOfDeath();
-                        events.ScheduleEvent(EVENT_VISION_OF_DEATH, TIMER_VISION_OF_DEATH);
+                        events.ScheduleEvent(EVENT_VISION_OF_DEATH, TIMER_VISION_OF_DEATH_CD);
                         break;
                     }
                     case EVENT_SPAWN_BLOODSUCKER:
                     {
-                        SpawnBloodsucker();
-                        events.ScheduleEvent(EVENT_SPAWN_BLOODSUCKER, TIMER_SPAWN_BLOODSUCKER);
-                        break;
-                    }
-                    case EVENT_UPDATE_CORRUPTION:
-                    {
-                        UpdateCorruption();
-                        events.ScheduleEvent(EVENT_UPDATE_CORRUPTION, TIMER_UPDATE_CORRUPTION);
+                        SpawnBloodthirsters();
+                        events.ScheduleEvent(EVENT_SPAWN_BLOODSUCKER, TIMER_SPAWN_BLOODSUCKER_CD);
                         break;
                     }
                 }
@@ -288,97 +229,34 @@ public:
 
         void CastVisionOfDeath()
         {
-            // Select random players for vision phase
-            Map::PlayerList const& players = me->GetMap()->GetPlayers();
-            std::vector<Player*> availablePlayers;
-            
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            {
-                if (Player* player = itr->getSource())
-                {
-                    if (player->IsAlive() && !player->HasAura(SPELL_VISION_OF_DEATH))
-                        availablePlayers.push_back(player);
-                }
-            }
-            
-            // Select 3-5 players for vision
-            uint8 visionCount = std::min(5, (int)availablePlayers.size());
-            if (visionCount == 0)
-            {
-                // No players available, deal damage to all
-                me->CastSpell(me, SPELL_VISION_OF_DEATH, false);
-                return;
-            }
-            
-            // Randomly select players
-            for (uint8 i = 0; i < visionCount; ++i)
-            {
-                uint32 randomIndex = urand(0, availablePlayers.size() - 1);
-                Player* selectedPlayer = availablePlayers[randomIndex];
-                availablePlayers.erase(availablePlayers.begin() + randomIndex);
-                
-                selectedPlayer->CastSpell(selectedPlayer, SPELL_VISION_OF_DEATH, true);
-                m_VisionPlayers.push_back(selectedPlayer);
-            }
-            
-            EnterPhase(PHASE_VISION_OF_DEATH);
+            /// Kilrogg keeps fighting. The spell itself sends a few players into the vision.
+            /// Stopping him here used to freeze the encounter for everyone else.
+            me->CastSpell(me, SPELL_VISION_OF_DEATH, false);
         }
 
-        void SpawnBloodsucker()
+        void SpawnBloodthirsters()
         {
-            // Spawn bloodsucker near a random blood pool
-            if (m_BloodPools.empty())
-                return;
-            
-            Creature* targetPool = Trinity::Containers::SelectRandomContainerElement(m_BloodPools);
-            if (!targetPool)
-                return;
-            
-            Position spawnPos = *targetPool;
-            spawnPos.m_positionX += frand(-10.0f, 10.0f);
-            spawnPos.m_positionY += frand(-10.0f, 10.0f);
-            
-            if (Creature* bloodsucker = me->SummonCreature(NPC_DROOLING_BLOODSUCKER, spawnPos))
-            {
-                bloodsucker->AI()->DoAction(ACTION_MOVE_TO_BLOOD);
-            }
-        }
+            /// Three Salivating Bloodthirsters. One appears on the fel pool and transforms immediately.
+            /// The other two walk in from the sides and must be killed before they arrive.
+            /// Wowhead Kilrogg guide / BigWigs add warnings.
+            Position l_Pool;
+            me->GetNearPosition(l_Pool, 25.0f, 0.0f);
 
-        void UpdateCorruption()
-        {
-            Map::PlayerList const& players = me->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            if (Creature* l_Immediate = me->SummonCreature(NPC_HULKING_TERROR, l_Pool, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000))
+                l_Immediate->SetInCombatWithZone();
+
+            float l_Side[2] = { -2.2f, 2.2f };
+            for (uint8 i = 0; i < 2; ++i)
             {
-                if (Player* player = itr->getSource())
-                {
-                    if (player->IsAlive())
-                    {
-                        // Apply corruption sickness
-                        if (Aura* corruption = player->GetAura(SPELL_CORRUPTION_SICKNESS))
-                        {
-                            if (corruption->GetStackAmount() >= 100)
-                            {
-                                player->RemoveAura(SPELL_CORRUPTION_SICKNESS);
-                                player->CastSpell(player, SPELL_DEMONIC_POSSESSION, true);
-                            }
-                            else
-                            {
-                                player->CastSpell(player, SPELL_CORRUPTION_SICKNESS, true);
-                            }
-                        }
-                        else
-                        {
-                            player->CastSpell(player, SPELL_CORRUPTION_SICKNESS, true);
-                        }
-                    }
-                }
+                Position l_Spawn;
+                me->GetNearPosition(l_Spawn, 18.0f, l_Side[i]);
+                if (Creature* l_Walker = me->SummonCreature(NPC_SALIVATING_BLOODTHIRSTER, l_Spawn, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
+                    l_Walker->AI()->DoAction(ACTION_MOVE_TO_BLOOD);
             }
         }
 
         void HandleBloodClotReach()
         {
-            // Blood clot reached Kilrogg - deal damage and heal
-            me->CastSpell(me, SPELL_CORRUPTED_BLOOD_FRENZY, false);
         }
 
         void HandleVisionPhase()
@@ -441,7 +319,7 @@ public:
     }
 };
 
-// Drooling Bloodsucker - 93369
+// Salivating Bloodthirster - 90521. Walks to the fel pool.
 class npc_drooling_bloodsucker : public CreatureScript
 {
 public:
@@ -462,9 +340,11 @@ public:
 
         void Reset() override
         {
+            /// Passive so it only walks, but damageable. Players are supposed to kill it
+            /// before it reaches the fel pool. It cannot be stunned (Wowhead).
             me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
             events.ScheduleEvent(EVENT_MOVE_TO_BLOOD, 1000);
         }
 
@@ -493,33 +373,28 @@ public:
 
         void MoveToBloodPool()
         {
-            // Find nearest blood pool
-            Creature* nearestPool = nullptr;
-            float nearestDist = 999.0f;
-            
-            std::list<Creature*> bloodPools;
-            GetCreatureListWithEntryInGrid(bloodPools, me, NPC_BLOOD_POOL, 100.0f);
-            
-            for (Creature* pool : bloodPools)
+            /// The fel pool is in front of Kilrogg. There is no separate pool NPC on retail.
+            Unit* l_Owner = me->GetOwner();
+            if (!l_Owner)
             {
-                float dist = me->GetDistance(pool);
-                if (dist < nearestDist)
-                {
-                    nearestDist = dist;
-                    nearestPool = pool;
-                }
+                if (TempSummon* l_Summon = me->ToTempSummon())
+                    l_Owner = l_Summon->GetSummoner();
             }
-            
-            if (nearestPool)
-            {
-                me->GetMotionMaster()->MovePoint(POINT_BLOOD_POOL, nearestPool->GetPositionX(), nearestPool->GetPositionY(), nearestPool->GetPositionZ());
-            }
+
+            if (!l_Owner)
+                return;
+
+            Position l_Dest;
+            l_Owner->GetNearPosition(l_Dest, 25.0f, 0.0f);
+            me->GetMotionMaster()->MovePoint(POINT_BLOOD_POOL, l_Dest);
         }
 
         void TransformToHorror()
         {
             // Transform to massive horror
-            if (Creature* horror = me->SummonCreature(NPC_MASSIVE_HORROR, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
+            me->CastSpell(me, SPELL_BLOODTHIRSTER_TRANSFORM, true);
+
+            if (Creature* horror = me->SummonCreature(NPC_HULKING_TERROR, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000))
             {
                 horror->SetInCombatWithZone();
             }
@@ -534,7 +409,7 @@ public:
     }
 };
 
-// Massive Horror - 90523
+// Hulking Terror - 93369 (90523 on some difficulties)
 class npc_massive_horror : public CreatureScript
 {
 public:
@@ -650,7 +525,7 @@ public:
             {
                 if (Player* player = killer->ToPlayer())
                 {
-                    if (player->HasAura(SPELL_VISION_OF_DEATH))
+                    if (player->HasAura(SPELL_VISION_OF_DEATH) || player->HasAura(SPELL_VISION_OF_DEATH_AURA))
                     {
                         // Apply appropriate buff based on role
                         if (player->GetRoleForGroup() == ROLE_DAMAGE)
@@ -766,11 +641,9 @@ public:
             if (!caster || !target)
                 return;
 
-            // Create blood pool at target location
-            if (Creature* bloodPool = caster->SummonCreature(NPC_BLOOD_POOL, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
-            {
-                bloodPool->CastSpell(bloodPool, SPELL_BLOOD_POOL, true);
-            }
+            /// Heart Seeker leaves a Blood Globule, which splatters fel blood on the ground.
+            if (Creature* l_Globule = caster->SummonCreature(NPC_BLOOD_GLOBULE, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
+                l_Globule->CastSpell(l_Globule, SPELL_BLOOD_SPLATTER, true);
         }
 
         void Register() override
@@ -798,15 +671,8 @@ public:
             if (!target)
                 return;
 
-            // Add corruption stack
-            if (Aura* corruption = target->GetAura(SPELL_CORRUPTION_SICKNESS))
-            {
-                if (corruption->GetStackAmount() >= 100)
-                {
-                    target->RemoveAura(SPELL_CORRUPTION_SICKNESS);
-                    target->CastSpell(target, SPELL_DEMONIC_POSSESSION, true);
-                }
-            }
+            /// Fel Corruption is an alternate-power bar (182159). Reaching 100 mind-controls
+            /// the player through the spell itself. Do not strip it and apply a stand-in aura.
         }
 
         void Register() override
