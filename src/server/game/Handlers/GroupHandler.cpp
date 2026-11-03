@@ -785,13 +785,32 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleGroupSwapSubGroupOpcode(WorldPacket& recvData)
 {
-    uint8 unk1;
+    Group* group = GetPlayer()->GetGroup();
+    if (!group)
+        return;
+
+    uint8 partyIndex;
     uint64 guid1;
     uint64 guid2;
 
-    recvData >> unk1;
+    recvData >> partyIndex;
     recvData.readPackGUID(guid2);
     recvData.readPackGUID(guid1);
+
+    uint64 sender = GetPlayer()->GetGUID();
+    if (!group->IsLeader(sender) && !group->IsAssistant(sender) && !(group->GetPartyFlags() & PARTY_FLAG_EVERYONE_IS_ASSISTANT))
+        return;
+
+    if (guid1 == guid2 || !group->IsMember(guid1) || !group->IsMember(guid2))
+        return;
+
+    uint8 group1 = group->GetMemberGroup(guid1);
+    uint8 group2 = group->GetMemberGroup(guid2);
+    if (group1 == group2)
+        return;
+
+    group->ChangeMembersGroup(guid1, group2);
+    group->ChangeMembersGroup(guid2, group1);
 }
 
 void WorldSession::HandleGroupEveryoneIsAssistantOpcode(WorldPacket & p_Packet)

@@ -2118,21 +2118,27 @@ void ScriptMgr::OnPlayerLeaveCombat(Player* p_Player)
 void ScriptMgr::OnSceneStart(Player* p_Player, uint32 p_SceneInstanceID)
 {
 	FOREACH_SCRIPT(PlayerScript)->OnSceneStart(p_Player, p_SceneInstanceID);
+	FOREACH_SCRIPT(SceneScript)->OnSceneStart(p_Player, p_SceneInstanceID);
 }
 
 void ScriptMgr::OnSceneTriggerEvent(Player* p_Player, uint32 p_SceneInstanceID, std::string p_Event)
 {
 	FOREACH_SCRIPT(PlayerScript)->OnSceneTriggerEvent(p_Player, p_SceneInstanceID, p_Event);
+	FOREACH_SCRIPT(SceneScript)->OnSceneTriggerEvent(p_Player, p_SceneInstanceID, p_Event);
 }
 
 void ScriptMgr::OnSceneCancel(Player* p_Player, uint32 p_SceneInstanceId)
 {
 	FOREACH_SCRIPT(PlayerScript)->OnSceneCancel(p_Player, p_SceneInstanceId);
+	FOREACH_SCRIPT(SceneScript)->OnSceneCancel(p_Player, p_SceneInstanceId);
+	FOREACH_SCRIPT(SceneScript)->OnSceneEnd(p_Player, p_SceneInstanceId);
 }
 
 void ScriptMgr::OnSceneComplete(Player* p_Player, uint32 p_SceneInstanceId)
 {
 	FOREACH_SCRIPT(PlayerScript)->OnSceneComplete(p_Player, p_SceneInstanceId);
+	FOREACH_SCRIPT(SceneScript)->OnSceneComplete(p_Player, p_SceneInstanceId);
+	FOREACH_SCRIPT(SceneScript)->OnSceneEnd(p_Player, p_SceneInstanceId);
 }
 
 /// Called when a player enter in bg

@@ -106,8 +106,7 @@ namespace lfg
                         m_activeQueueId = itr->first;
                         break;
                     case LFG_STATE_DUNGEON:
-                        // Currently useless
-                        if (topState != LFG_STATE_ROLECHECK || topState != LFG_STATE_PROPOSAL)
+                        if (topState != LFG_STATE_ROLECHECK && topState != LFG_STATE_PROPOSAL)
                         {
                             topState = itr->second.State;
                             m_activeQueueId = itr->first;

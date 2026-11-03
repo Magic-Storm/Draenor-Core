@@ -402,6 +402,9 @@ void WorldSession::HandleGarrisonPurchaseBuildingOpcode(WorldPacket& p_RecvData)
     if (!l_Result)
         l_Result = l_Garrison->CanPurchaseBuilding(l_BuildingID);
 
+    if (!l_Result && !sGarrisonBuildingManager->MatchsConditionsForBuilding(l_BuildingID, m_Player))
+        l_Result = MS::Garrison::PurchaseBuildingResults::InvalidBuildingID;
+
     if (!sGarrisonBuildingManager->IsBluePrintAllowedForPurchasingBuilding(l_BuildingID, m_Player))
     {
         l_Result = MS::Garrison::PurchaseBuildingResults::InvalidBuildingID;
@@ -436,6 +439,36 @@ void WorldSession::HandleGarrisonPurchaseBuildingOpcode(WorldPacket& p_RecvData)
         placeResult.BuildingInfo = ToPacketBuilding(l_Garrison->PurchaseBuilding(l_BuildingID, l_PlotInstanceID));
     placeResult.PlayActivationCinematic = false;
     SendPacket(placeResult.Write());
+}
+
+void WorldSession::HandleGarrisonSetBuildingActiveOpcode(WorldPacket& p_RecvData)
+{
+    if (!m_Player)
+        return;
+
+    MS::Garrison::Manager* l_Garrison = m_Player->GetGarrison();
+
+    if (!l_Garrison)
+        return;
+
+    int32 l_PlotInstanceID = 0;
+    p_RecvData >> l_PlotInstanceID;
+
+    if (l_PlotInstanceID <= 0)
+        return;
+
+    MS::Garrison::GarrisonBuilding l_Building = l_Garrison->GetBuilding(uint32(l_PlotInstanceID));
+
+    if (!l_Building.BuildingID || l_Building.Active)
+        return;
+
+    if (l_Building.TimeBuiltEnd > time(nullptr))
+        return;
+
+    if (!sGarrisonBuildingManager->MatchsConditionsForBuilding(l_Building.BuildingID, m_Player))
+        return;
+
+    l_Garrison->ActivateBuilding(uint32(l_PlotInstanceID));
 }
 
 void WorldSession::HandleGarrisonCancelConstructionOpcode(WorldPacket& p_RecvData)
@@ -1011,38 +1044,52 @@ void WorldSession::HandlePlayerJoinedFriendlyGarrison(WorldPacket& p_RecvData)
 {
 	bool Enabled = p_RecvData.ReadBit();
 
-	if (Enabled)
+	if (!Enabled)
 	{
-		Group* group = m_Player->GetGroup();
+		m_Player->ClearPartyGarrison();
+		m_Player->RemoveFlag(PLAYER_FIELD_LOCAL_FLAGS, PLAYER_LOCAL_FLAG_USING_PARTY_GARRISON);
 
-		if (!group)
-			return;
-
-		uint32 leaderGuid = group->GetLeaderGUID();
-		if (Player* leader = ObjectAccessor::FindPlayer(leaderGuid))
+		if (MS::Garrison::Manager* l_Garrison = m_Player->GetGarrison())
 		{
-			MS::Garrison::Manager* l_Garrison = leader->GetGarrison();
-			if (leader == m_Player)
-				return;
-
-			if (!l_Garrison)
-				return;
-
-			Map* map = leader->GetMap();
-
-			InstancePlayerBind* bind = leader->GetBoundInstance(leader->GetMapId(), leader->GetDifficultyID(map->GetEntry()));
-
-			if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(leader->GetInstanceId()))
-				m_Player->BindToInstance(save, !save->CanReset());
-
-			float x, y, z;
-			leader->GetContactPoint(m_Player, x, y, z);
-			m_Player->TeleportTo(leader->GetMapId(), x, y, z, m_Player->GetAngle(leader), TELE_TO_SEAMLESS);
-			m_Player->SetPhaseMask(leader->GetPhaseMask(), true);
-			m_Player->SetInPartyGarrison();
-			m_Player->SetUInt32Value(PLAYER_FIELD_LOCAL_FLAGS, PLAYER_LOCAL_FLAG_USING_PARTY_GARRISON);
+			if (l_Garrison->GetGarrisonSiteLevelEntry())
+			{
+				uint32 l_Index = (l_Garrison->GetGarrisonFactionIndex() * MS::Garrison::Globals::MaxLevel) + (l_Garrison->GetGarrisonSiteLevelEntry()->Level - 1);
+				m_Player->TeleportTo(l_Garrison->GetGarrisonSiteLevelEntry()->MapID,
+					MS::Garrison::gGarrisonHearthStoneTeleportCoord[l_Index][0],
+					MS::Garrison::gGarrisonHearthStoneTeleportCoord[l_Index][1],
+					MS::Garrison::gGarrisonHearthStoneTeleportCoord[l_Index][2],
+					MS::Garrison::gGarrisonHearthStoneTeleportCoord[l_Index][3]);
+			}
 		}
+
+		m_Player->GetPhaseMgr().ForceMapShiftUpdate();
+		return;
 	}
+
+	Group* group = m_Player->GetGroup();
+	if (!group)
+		return;
+
+	uint64 leaderGuid = group->GetLeaderGUID();
+	Player* leader = ObjectAccessor::FindPlayer(leaderGuid);
+	if (!leader || leader == m_Player)
+		return;
+
+	MS::Garrison::Manager* l_Garrison = leader->GetGarrison();
+	if (!l_Garrison || !l_Garrison->GetGarrisonSiteLevelEntry())
+		return;
+
+	if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(leader->GetInstanceId()))
+		m_Player->BindToInstance(save, !save->CanReset());
+
+	m_Player->SetInPartyGarrison();
+	m_Player->SetFlag(PLAYER_FIELD_LOCAL_FLAGS, PLAYER_LOCAL_FLAG_USING_PARTY_GARRISON);
+
+	float x, y, z;
+	leader->GetContactPoint(m_Player, x, y, z);
+	m_Player->TeleportTo(leader->GetMapId(), x, y, z, m_Player->GetAngle(leader), TELE_TO_SEAMLESS);
+	m_Player->SetPhaseMask(leader->GetPhaseMask(), true);
+	m_Player->GetPhaseMgr().ForceMapShiftUpdate();
 }
 
 //////////////////////////////////////////////////////////////////////////

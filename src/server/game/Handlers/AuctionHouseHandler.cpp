@@ -256,14 +256,14 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& p_RecvData)
         uint32 l_AuctionTime = uint32(l_ETTime * sWorld->getRate(RATE_AUCTION_TIME));
         AuctionHouseObject* l_AuctionHouseObj = sAuctionMgr->GetAuctionsMap(l_Auctioneer->getFaction());
 
-        uint32 l_Deposit = sAuctionMgr->GetAuctionDeposit(l_ETTime, l_Item, l_FinalCount);
-        if (!m_Player->HasEnoughMoney((uint64)l_Deposit))
+        uint64 l_Deposit = sAuctionMgr->GetAuctionDeposit(l_ETTime, l_Item, l_FinalCount);
+        if (!m_Player->HasEnoughMoney(l_Deposit))
         {
             SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_NOT_ENOUGHT_MONEY);
             return;
         }
 
-        m_Player->ModifyMoney(-int32(l_Deposit));
+        m_Player->ModifyMoney(-int64(l_Deposit));
 
         AuctionEntry* l_AHEntry = new AuctionEntry;
         l_AHEntry->Id = sObjectMgr->GenerateAuctionID();
@@ -319,6 +319,8 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& p_RecvData)
             Item* l_NewItem = l_Item->CloneItem(l_FinalCount, m_Player);
             if (!l_NewItem)
             {
+                m_Player->ModifyMoney(int64(l_Deposit));
+                delete l_AHEntry;
                 TC_LOG_ERROR("network", "CMSG_AUCTION_SELL_ITEM: Could not create clone of item %u", l_Item->GetEntry());
                 SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
                 return;
@@ -545,8 +547,11 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket& p_RecvData)
             if (l_Auction->bidder > 0)                        // If we have a bidder, we have to send him the money he paid
             {
                 uint64 l_AuctionCut = l_Auction->GetAuctionCut();
-                if (!m_Player->HasEnoughMoney((uint64)l_AuctionCut))          //player doesn't have enough money, maybe message needed
+                if (!m_Player->HasEnoughMoney(l_AuctionCut))
+                {
+                    SendAuctionCommandResult(l_Auction, AUCTION_CANCEL, ERR_AUCTION_NOT_ENOUGHT_MONEY);
                     return;
+                }
                 sAuctionMgr->SendAuctionCancelledToBidderMail(l_Auction, l_Trans, l_Item);
                 m_Player->ModifyMoney(-int64(l_AuctionCut));
             }

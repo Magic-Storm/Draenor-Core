@@ -45,43 +45,71 @@ void BattlePet::Load(Field* p_Fields)
     DeclinedNames[3] = p_Fields[20].GetString();
     DeclinedNames[4] = p_Fields[21].GetString();
 
+    UpdateAbilities();
+}
+
+void BattlePet::UpdateAbilities()
+{
     for (uint8 l_I = 0; l_I < MAX_PETBATTLE_ABILITIES; ++l_I)
         Abilities[l_I] = 0;
+
+    struct AbilityChoice
+    {
+        uint32 Ability;
+        uint32 Level;
+        bool Set;
+
+        AbilityChoice() : Ability(0), Level(0), Set(false) { }
+    };
+
+    AbilityChoice l_First[MAX_PETBATTLE_ABILITIES];
+    AbilityChoice l_Second[MAX_PETBATTLE_ABILITIES];
 
     for (uint32 l_SpeciesXAbilityId = 0; l_SpeciesXAbilityId < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++l_SpeciesXAbilityId)
     {
         BattlePetSpeciesXAbilityEntry const* l_SpeciesXAbilityInfo = sBattlePetSpeciesXAbilityStore.LookupEntry(l_SpeciesXAbilityId);
-        if (!l_SpeciesXAbilityInfo)
+        if (!l_SpeciesXAbilityInfo || l_SpeciesXAbilityInfo->speciesId != Species)
             continue;
 
-        if (l_SpeciesXAbilityInfo->level > Level)
+        if (l_SpeciesXAbilityInfo->level > Level || l_SpeciesXAbilityInfo->tier >= MAX_PETBATTLE_ABILITIES)
             continue;
 
-        if (l_SpeciesXAbilityInfo->tier >= MAX_PETBATTLE_ABILITIES)
-            continue;
+        uint8 l_Tier = l_SpeciesXAbilityInfo->tier;
+        AbilityChoice& l_Low = l_First[l_Tier];
+        AbilityChoice& l_High = l_Second[l_Tier];
 
-        if (l_SpeciesXAbilityInfo->level < 5)
-            Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-        else
+        if (!l_Low.Set || l_SpeciesXAbilityInfo->level < l_Low.Level)
         {
-            switch (l_SpeciesXAbilityInfo->tier)
-            {
-                case 0:
-                    if (Flags & BATTLEPET_FLAG_ABILITY_1_SECOND)
-                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-                    break;
-                case 1:
-                    if (Flags & BATTLEPET_FLAG_ABILITY_2_SECOND)
-                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-                    break;
-                case 2:
-                    if (Flags & BATTLEPET_FLAG_ABILITY_3_SECOND)
-                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
-                    break;
-                default:
-                    break;
-            }
+            if (l_Low.Set && l_Low.Ability != l_SpeciesXAbilityInfo->abilityId && (!l_High.Set || l_Low.Level >= l_High.Level))
+                l_High = l_Low;
+
+            l_Low.Ability = l_SpeciesXAbilityInfo->abilityId;
+            l_Low.Level = l_SpeciesXAbilityInfo->level;
+            l_Low.Set = true;
         }
+        else if (l_SpeciesXAbilityInfo->abilityId != l_Low.Ability && (!l_High.Set || l_SpeciesXAbilityInfo->level >= l_High.Level))
+        {
+            l_High.Ability = l_SpeciesXAbilityInfo->abilityId;
+            l_High.Level = l_SpeciesXAbilityInfo->level;
+            l_High.Set = true;
+        }
+    }
+
+    for (uint8 l_Tier = 0; l_Tier < MAX_PETBATTLE_ABILITIES; ++l_Tier)
+    {
+        bool l_WantSecond = false;
+        switch (l_Tier)
+        {
+            case 0: l_WantSecond = (Flags & BATTLEPET_FLAG_ABILITY_1_SECOND) != 0; break;
+            case 1: l_WantSecond = (Flags & BATTLEPET_FLAG_ABILITY_2_SECOND) != 0; break;
+            case 2: l_WantSecond = (Flags & BATTLEPET_FLAG_ABILITY_3_SECOND) != 0; break;
+            default: break;
+        }
+
+        if (l_WantSecond && l_Second[l_Tier].Set)
+            Abilities[l_Tier] = l_Second[l_Tier].Ability;
+        else if (l_First[l_Tier].Set)
+            Abilities[l_Tier] = l_First[l_Tier].Ability;
     }
 }
 /// Load
@@ -1408,6 +1436,7 @@ void PetBattle::Finish(uint32 p_WinnerTeamID, bool p_Aborted)
                         l_CurrentPet->XP = (l_CurrentPet->XP + l_XpEarn) - l_XpToNextLevel;
                         l_CurrentPet->Level++;
                         l_CurrentPet->UpdateStats();
+                        l_CurrentPet->UpdateAbilities();
                         l_CurrentPet->Health = l_CurrentPet->InfoMaxHealth;
 
                         if (l_CurrentPet->Level == BATTLEPET_MAX_LEVEL)

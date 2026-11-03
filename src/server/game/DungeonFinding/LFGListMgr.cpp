@@ -179,7 +179,7 @@ void LFGListMgr::PlayerRemoveFromGroup(Player* p_Player, Group* p_Group)
     SendLFGListStatusUpdate(l_Iter->second, p_Player->GetSession(), false);
 }
 
-std::list<LFGListEntry const*> LFGListMgr::GetFilteredList(uint32 p_ActivityCategory, uint32 /*p_ActivitySubCategory*/, std::string p_FilterString, Player* p_Player)
+std::list<LFGListEntry const*> LFGListMgr::GetFilteredList(uint32 p_ActivityCategory, uint32 p_ActivitySubCategory, std::string p_FilterString, Player* p_Player)
 {
     std::list<LFGListEntry const*> l_LFGFiltered;
 
@@ -187,16 +187,24 @@ std::list<LFGListEntry const*> LFGListMgr::GetFilteredList(uint32 p_ActivityCate
     {
         LFGListEntry const* l_ListEntry = l_Iter.second;
 
-        if (l_ListEntry->m_ActivityEntry->CategoryID != p_ActivityCategory) ///< Comparison of integers of different signs: 'const int32' (aka 'const int') and 'uint32' (aka 'unsigned int')
+        if (!l_ListEntry->m_Group || !l_ListEntry->m_ActivityEntry || l_ListEntry->m_ActivityEntry->CategoryID != int32(p_ActivityCategory))
             continue;
 
-        if (p_FilterString.length() && l_ListEntry->m_Name.length())
-        {
-            std::string l_UpperName = l_ListEntry->m_Name;
-            std::transform(l_UpperName.begin(), l_UpperName.end(), l_UpperName.begin(), toupper);
-            std::transform(p_FilterString.begin(), p_FilterString.end(), p_FilterString.begin(), toupper);
+        if (p_ActivitySubCategory && l_ListEntry->m_ActivityEntry->ActivityGroupID != p_ActivitySubCategory)
+            continue;
 
-            if (l_UpperName.find(p_FilterString) == std::string::npos)
+        if (!p_FilterString.empty())
+        {
+            if (l_ListEntry->m_Name.empty())
+                continue;
+
+            auto l_Fold = [](unsigned char p_Char) { return static_cast<char>(std::toupper(p_Char)); };
+            std::string l_UpperName = l_ListEntry->m_Name;
+            std::string l_UpperFilter = p_FilterString;
+            std::transform(l_UpperName.begin(), l_UpperName.end(), l_UpperName.begin(), l_Fold);
+            std::transform(l_UpperFilter.begin(), l_UpperFilter.end(), l_UpperFilter.begin(), l_Fold);
+
+            if (l_UpperName.find(l_UpperFilter) == std::string::npos)
                 continue;
         }
 
@@ -278,7 +286,11 @@ Player* LFGListEntry::LFGListApplicationEntry::GetPlayer() const
 
 bool LFGListEntry::IsApplied(uint32 p_GuidLow) const
 {
-    return m_Applications.find(p_GuidLow) != m_Applications.end();
+    for (auto const& l_Application : m_Applications)
+        if (l_Application.second.m_PlayerLowGuid == p_GuidLow)
+            return true;
+
+    return false;
 }
 
 bool LFGListEntry::IsApplied(Player* p_Player) const
@@ -310,7 +322,8 @@ void LFGListEntry::ResetTimeout()
 
 uint32 LFGListEntry::LFGListApplicationEntry::GetRemainingTimeoutTime() const
 {
-    return m_Timeout - time(nullptr);
+    time_t l_Now = time(nullptr);
+    return time_t(m_Timeout) > l_Now ? uint32(time_t(m_Timeout) - l_Now) : 0;
 }
 
 void LFGListMgr::ChangeApplicantStatus(LFGListEntry::LFGListApplicationEntry* p_Application, LFGListEntry::LFGListApplicationEntry::LFGListApplicationStatus p_Status, bool p_Notify /* = true */)
@@ -355,26 +368,38 @@ void LFGListMgr::ChangeApplicantStatus(LFGListEntry::LFGListApplicationEntry* p_
         }
         case LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_STATUS_INVITEACCEPTED:
         {
-            if ((!p_Application->m_Owner->m_Group->isRaidGroup() && GetMemeberCountInGroupIncludingInvite(p_Application->m_Owner) >= 5) || CanQueueFor(p_Application->m_Owner, p_Application->GetPlayer()) != LFG_LIST_STATUS_ERROR_NONE)
+            Player* l_Player = p_Application->GetPlayer();
+            Group* l_Group = p_Application->m_Owner->m_Group;
+            if (!l_Player || !l_Group)
                 break;
+
+            if ((!l_Group->isRaidGroup() && GetMemeberCountInGroupIncludingInvite(p_Application->m_Owner) >= 5) || CanQueueFor(p_Application->m_Owner, l_Player) != LFG_LIST_STATUS_ERROR_NONE)
+                break;
+
+            if (Group* l_Previous = l_Player->GetGroup())
+                if (l_Previous != l_Group)
+                    l_Previous->RemoveMember(l_Player->GetGUID());
 
             p_Application->m_Listed = false;
             l_Remove = true;
-            p_Application->m_Owner->m_Group->AddMember(p_Application->GetPlayer());
+            if (l_Player->GetGroup() != l_Group)
+                l_Group->AddMember(l_Player);
 
-            if (p_Notify && p_Application->GetPlayer() != nullptr)
-                p_Application->GetPlayer()->GetSession()->SendLfgListApplicantGroupInviteResponse(p_Application);
+            if (p_Notify)
+                l_Player->GetSession()->SendLfgListApplicantGroupInviteResponse(p_Application);
 
             break;
         }
     }
 
-    p_Application->m_Owner->BroadcastApplicantUpdate(p_Application);
+    LFGListEntry* l_Owner = p_Application->m_Owner;
+    l_Owner->BroadcastApplicantUpdate(p_Application);
 
     if (l_Remove)
-        p_Application->m_Owner->m_Applications.erase(p_Application->m_Owner->m_Applications.find(p_Application->m_ID));
+        l_Owner->m_Applications.erase(p_Application->m_ID);
 
-    AutoInviteApplicantsIfPossible(p_Application->m_Owner);
+    // The application pointer is invalid after erase.
+    AutoInviteApplicantsIfPossible(l_Owner);
 }
 
 LFGListEntry::LFGListApplicationEntry* LFGListMgr::GetApplicationByID(uint32 p_ID)
@@ -393,10 +418,14 @@ LFGListEntry::LFGListApplicationEntry* LFGListMgr::GetApplicationByID(uint32 p_I
 
 void LFGListMgr::RemoveAllApplicationsByPlayer(uint32 l_PlayerGUID, bool p_Notify /* = false */)
 {
-    while (LFGListEntry::LFGListApplicationEntry* l_Application = GetApplicationByID(l_PlayerGUID))
-    {
-        sLFGListMgr->ChangeApplicantStatus(l_Application, LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_STATUS_CANCELLED, p_Notify);
-    }
+    std::vector<LFGListEntry::LFGListApplicationEntry*> l_Applications;
+    for (auto& l_Group : m_LFGListQueue)
+        for (auto& l_Applicant : l_Group.second->m_Applications)
+            if (l_Applicant.second.m_PlayerLowGuid == l_PlayerGUID)
+                l_Applications.push_back(&l_Applicant.second);
+
+    for (auto* l_Application : l_Applications)
+        ChangeApplicantStatus(l_Application, LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_STATUS_CANCELLED, p_Notify);
 }
 
 uint8 LFGListMgr::GetApplicationCountByPlayer(uint32 p_GUIDLow) const
@@ -494,8 +523,11 @@ void LFGListMgr::OnPlayerLogin(Player* l_Player)
 
 LFGListMgr::LFGListStatus LFGListMgr::CanQueueFor(LFGListEntry* p_Entry, Player* p_RequestingPlayer, bool p_Apply /* = true */)
 {
-    Group* l_Group = p_Entry->m_Group;
-    GroupFinderActivityEntry const* l_Activity = p_Entry->m_ActivityEntry;
+    Group* l_Group = p_Entry ? p_Entry->m_Group : nullptr;
+    GroupFinderActivityEntry const* l_Activity = p_Entry ? p_Entry->m_ActivityEntry : nullptr;
+    if (!p_RequestingPlayer || !l_Group || !l_Activity)
+        return LFG_LIST_STATUS_ERR_LFG_LIST_INVALID_SLOT;
+
     float l_ILvl = sLFGListMgr->GetPlayerItemLevelForActivity(l_Activity, p_RequestingPlayer);
 
     if (p_RequestingPlayer->GetTeam() != l_Group->GetTeam())
@@ -571,7 +603,7 @@ float LFGListMgr::GetLowestItemLevelInGroup(LFGListEntry* p_Entry) const
 
 uint8 LFGListMgr::GetMemeberCountInGroupIncludingInvite(LFGListEntry* p_Entry)
 {
-    uint8 l_InviteCount = CountEntryApplicationsWithStatus(p_Entry, LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_INVITEDECLINED);
+    uint8 l_InviteCount = CountEntryApplicationsWithStatus(p_Entry, LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_STATUS_INVITED);
     return l_InviteCount + p_Entry->m_Group->GetMembersCount();
 }
 

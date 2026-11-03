@@ -72,6 +72,18 @@ enum LfgType
     LFG_TYPE_RANDOM                              = 6
 };
 
+/// Old 25-man LFR is difficulty 7. Warlords wings use difficulty 17.
+inline bool IsLfrDifficulty(uint32 difficulty)
+{
+    return difficulty == RAID_DIFFICULTY_25MAN_LFR || difficulty == DifficultyRaidLFR;
+}
+
+/// Difficulty 14 is both MoP flex and Warlords normal. Flex exists only on Siege of Orgrimmar.
+inline bool IsSiegeFlex(uint32 difficulty, int32 mapId)
+{
+    return difficulty == RAID_DIFFICULTY_1025MAN_FLEX && mapId == 1136;
+}
+
 /// Proposal states
 enum LfgProposalState
 {

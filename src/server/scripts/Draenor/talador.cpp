@@ -747,11 +747,18 @@ public:
 
 	void OnSceneComplete(Player* p_Player, uint32 p_SceneInstanceId) override
 	{
+		if (!p_Player || p_Player->GetTeamId() != TEAM_ALLIANCE)
+			return;
+
+		if (p_Player->GetQuestStatus(TaladorLegendaryQuests::KhadgarsTask) != QUEST_STATUS_INCOMPLETE)
+			return;
+
 		uint32 l_PhaseMask = p_Player->GetPhaseMask();
 		l_PhaseMask |= TaladorLegendaryPhases::NormalPhase;
 		p_Player->SetPhaseMask(l_PhaseMask, true);
 
 		p_Player->CastSpell(p_Player, 167842, true); // Kill Credit
+		UNUSED(p_SceneInstanceId);
 	}
 };
 
@@ -763,11 +770,18 @@ public:
 
 	void OnSceneComplete(Player* p_Player, uint32 p_SceneInstanceId) override
 	{
+		if (!p_Player || p_Player->GetTeamId() != TEAM_HORDE)
+			return;
+
+		if (p_Player->GetQuestStatus(TaladorLegendaryQuests::KhadgarsTask) != QUEST_STATUS_INCOMPLETE)
+			return;
+
 		uint32 l_PhaseMask = p_Player->GetPhaseMask();
 		l_PhaseMask |= TaladorLegendaryPhases::NormalPhase;
 		p_Player->SetPhaseMask(l_PhaseMask, true);
 
 		p_Player->CastSpell(p_Player, 167842, true); // Kill Credit
+		UNUSED(p_SceneInstanceId);
 	}
 };
 
@@ -779,11 +793,15 @@ public:
 
 	void OnSceneComplete(Player* p_Player, uint32 p_SceneInstanceId) override
 	{
+		if (!p_Player || p_Player->GetQuestStatus(TaladorLegendaryQuests::EyesOfTheArchmage) != QUEST_STATUS_INCOMPLETE)
+			return;
+
 		uint32 l_PhaseMask = p_Player->GetPhaseMask();
 		l_PhaseMask |= TaladorLegendaryPhases::NormalPhase;
 		p_Player->SetPhaseMask(l_PhaseMask, true);
 
 		p_Player->CastSpell(p_Player, 169319, true); // Kill Credit
+		UNUSED(p_SceneInstanceId);
 	}
 };
 

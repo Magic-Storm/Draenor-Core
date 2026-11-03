@@ -53,26 +53,26 @@ AuctionHouseObject* AuctionHouseMgr::GetAuctionsMap(uint32 factionTemplateId)
         return &mNeutralAuctions;
 }
 
-uint32 AuctionHouseMgr::GetAuctionDeposit(uint32 p_DepositTime, Item* p_Item, uint32 p_ItemCount)
+uint64 AuctionHouseMgr::GetAuctionDeposit(uint32 p_DepositTime, Item* p_Item, uint32 p_ItemCount)
 {
     uint32 l_SellPrice = p_Item->GetTemplate()->SellPrice;
+    float l_Rate = sWorld->getRate(Rates::RATE_AUCTION_DEPOSIT);
+    uint64 l_Minimum = uint64(eAuctionHouse::AH_MINIMUM_DEPOSIT * l_Rate);
 
     if (l_SellPrice <= 0)
-        return eAuctionHouse::AH_MINIMUM_DEPOSIT * sWorld->getRate(Rates::RATE_AUCTION_DEPOSIT);
+        return l_Minimum;
 
     /// Magic value found in full-debug client, this is working just right
-    float l_Multiplier  = 0.0041666669f;
-    uint32 l_RunTime    = p_DepositTime / 60;
-    uint32 l_Deposit    = p_ItemCount * uint32(l_RunTime * l_Multiplier * floor(l_SellPrice * 5.0f / 100.0f)) * sWorld->getRate(Rates::RATE_AUCTION_DEPOSIT);
+    float l_Multiplier = 0.0041666669f;
+    uint32 l_RunTime = p_DepositTime / 60;
+    double l_Unit = floor(l_SellPrice * 5.0 / 100.0);
+    uint64 l_Deposit = uint64(double(p_ItemCount) * double(l_RunTime) * l_Multiplier * l_Unit * l_Rate);
 
     TC_LOG_DEBUG("auctionHouse", "SellPrice:  %u", l_SellPrice);
     TC_LOG_DEBUG("auctionHouse", "Items:      %u", p_ItemCount);
-    TC_LOG_DEBUG("auctionHouse", "Deposit:    %u", l_Deposit);
+    TC_LOG_DEBUG("auctionHouse", "Deposit:    " UI64FMTD, l_Deposit);
 
-    if (l_Deposit < eAuctionHouse::AH_MINIMUM_DEPOSIT * sWorld->getRate(Rates::RATE_AUCTION_DEPOSIT))
-        return eAuctionHouse::AH_MINIMUM_DEPOSIT * sWorld->getRate(Rates::RATE_AUCTION_DEPOSIT);
-    else
-        return l_Deposit;
+    return l_Deposit < l_Minimum ? l_Minimum : l_Deposit;
 }
 
 //does not clear ram

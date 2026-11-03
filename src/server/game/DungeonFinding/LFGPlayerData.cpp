@@ -52,7 +52,9 @@ void LfgPlayerData::SetSelectedDungeons(uint32 queueId, LfgDungeonSet const& dun
     auto& queueData = GetQueueData(queueId);
     ASSERT(queueData.Dungeons.empty());
     queueData.Dungeons = dungeons;
-    queueData.Category = LfgCategory(sLFGDungeonStore.LookupEntry(*dungeons.begin())->category);
+    if (!dungeons.empty())
+        if (LFGDungeonEntry const* entry = sLFGDungeonStore.LookupEntry(*dungeons.begin()))
+            queueData.Category = LfgCategory(entry->category);
 }
 
 const LfgLockMap& LfgPlayerData::GetLockedDungeons() const

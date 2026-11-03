@@ -104,13 +104,28 @@ bool Group::Create(Player* leader)
 
     leader->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GROUP_LEADER);
 
-    m_PartyFlags  = (isBGGroup() || isBFGroup()) ? PARTY_FLAG_BGRAID : PARTY_FLAG_NORMAL;
+    // MakeNewGroup marks a finder group before Create so the insert stores the right flags and loot.
+    bool const createdForLfg = isLFGGroup();
+    LootMethod const lfgLoot = m_lootMethod;
+    ItemQualities const lfgThreshold = m_lootThreshold;
+    Difficulty const lfgRaidDifficulty = m_raidDifficulty;
+
+    if (!createdForLfg)
+        m_PartyFlags = (isBGGroup() || isBFGroup()) ? PARTY_FLAG_BGRAID : PARTY_FLAG_NORMAL;
 
     if (m_PartyFlags & PARTY_FLAG_RAID)
         _initRaidSubGroupsCounter();
 
-    m_lootMethod = GROUP_LOOT;
-    m_lootThreshold = ITEM_QUALITY_UNCOMMON;
+    if (!createdForLfg)
+    {
+        m_lootMethod = GROUP_LOOT;
+        m_lootThreshold = ITEM_QUALITY_UNCOMMON;
+    }
+    else
+    {
+        m_lootMethod = lfgLoot;
+        m_lootThreshold = lfgThreshold;
+    }
     m_looterGuid = leaderGuid;
 
     m_dungeonDifficulty = DUNGEON_DIFFICULTY_NORMAL;
@@ -122,16 +137,10 @@ bool Group::Create(Player* leader)
     if (!isBGGroup() && !isBFGroup())
     {
         m_dungeonDifficulty = leader->GetDungeonDifficultyID();
-
-        bool l_NewLFR = leader->getLevel() == MAX_LEVEL;
-        m_raidDifficulty = isLFGGroup() ? (l_NewLFR ? Difficulty::DifficultyRaidLFR : Difficulty::RAID_DIFFICULTY_25MAN_LFR) : leader->GetLegacyRaidDifficultyID();
-
-        if (l_NewLFR)
-        {
-            /// Loot options sniffed from new LFR type
-            m_lootMethod = LootMethod::FREE_FOR_ALL;
-            m_lootThreshold = ItemQualities::ITEM_QUALITY_POOR;
-        }
+        if (createdForLfg)
+            m_raidDifficulty = lfgRaidDifficulty;
+        else
+            m_raidDifficulty = leader->GetLegacyRaidDifficultyID();
 
         m_dbStoreId = sGroupMgr->GenerateNewGroupDbStoreId();
 
@@ -286,13 +295,21 @@ void Group::SaveRolesToDB()
         CharacterDatabase.PExecute("UPDATE group_member SET roles='%u' WHERE guid='%u' AND memberGuid='%u'", itr->roles, m_dbStoreId, GUID_LOPART(itr->guid));
 }
 
-void Group::ConvertToLFG(bool flex)
+void Group::ConvertToLFG(bool lfr)
 {
     m_PartyFlags = PartyFlags(m_PartyFlags | PARTY_FLAG_LFG | PARTY_FLAG_UNK1);
-    m_lootMethod = NEED_BEFORE_GREED;
+    if (lfr)
+    {
+        // Warlords raid finder uses personal loot.
+        m_lootMethod = FREE_FOR_ALL;
+        m_lootThreshold = ITEM_QUALITY_POOR;
+        m_raidDifficulty = DifficultyRaidLFR;
+    }
+    else
+        m_lootMethod = NEED_BEFORE_GREED;
 
 #ifndef CROSS
-    if (!isBGGroup() && !isBFGroup())
+    if (m_dbStoreId && !isBGGroup() && !isBFGroup())
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GROUP_TYPE);
 

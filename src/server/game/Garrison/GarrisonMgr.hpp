@@ -22,11 +22,6 @@
 
 #include "Interfaces/Interface_GarrisonSite.hpp"
 
-/// This macro enabled compilation of debug code in Dev env
-#ifdef _MSC_VER
-    #define GARRISON_CHEST_FORMULA_DEBUG 1
-#endif
-
 namespace MS { namespace Garrison
 {
     /// Garrison manager class
@@ -60,6 +55,8 @@ namespace MS { namespace Garrison
             void RewardGarrisonCache();
             /// Get garrison cache token count
             uint32 GetGarrisonCacheTokenCount() const;
+            /// 500, or 1000 after Trade Agreement: Arakkoa Outcasts
+            uint32 GetCacheTokenCap() const;
 
             /// Get terrain swaps
             void GetTerrainSwaps(std::set<uint32>& p_TerrainSwaps) const;

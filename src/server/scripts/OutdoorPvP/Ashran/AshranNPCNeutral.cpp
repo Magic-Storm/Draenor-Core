@@ -208,11 +208,8 @@ class npc_faction_boss : public CreatureScript
                 for (Player* l_Player : l_PlayerList)
                     l_Player->RewardHonor(l_Player, 1, 50 * 100);
 
-                /// Trigger strongboxes loot for near players
-                if (me->GetEntry() == eCreatures::GrandMarshalTremblade)
-                    p_Killer->CastSpell(p_Killer, eAshranSpells::SpellAllianceReward, true);
-                else
-                    p_Killer->CastSpell(p_Killer, eAshranSpells::SpellHordeReward, true);
+                /// 6.2: killing Tremblade or Volrath no longer grants a Gleaming Ashmaul Strongbox.
+                /// That box moved to the weekly Ashran Dominance quest.
             }
 
             void DoAction(int32 const p_Action) override
@@ -740,7 +737,7 @@ class npc_ashran_faction_champions : public CreatureScript
                 }
             }
 
-            void DamageTaken(Unit* /*p_Attacker*/, uint32& p_Damage, SpellInfo const*  /*p_SpellInfo*/) override
+            void DamageTaken(Unit* p_Attacker, uint32& p_Damage, SpellInfo const*  /*p_SpellInfo*/) override
             {
                 if (p_Damage < me->GetHealth())
                 {
@@ -756,12 +753,18 @@ class npc_ashran_faction_champions : public CreatureScript
                 if (m_Rewarded)
                     return;
 
+                Player* l_Killer = p_Attacker ? p_Attacker->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
+                if (l_Killer == nullptr)
+                    return;
+
                 ZoneScript* l_ZoneScript = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(me->GetZoneId());
                 if (l_ZoneScript == nullptr)
                     return;
 
+                uint8 l_Team = l_Killer->GetTeamId();
+                uint32 l_Spell = l_Team == TeamId::TEAM_ALLIANCE ? eAshranSpells::SpellEventAllianceReward : eAshranSpells::SpellEventHordeReward;
                 if (OutdoorPvPAshran* l_Ashran = (OutdoorPvPAshran*)l_ZoneScript)
-                    l_Ashran->CastSpellOnTeam(me, TeamId::TEAM_ALLIANCE, eAshranSpells::SpellEventAllianceReward);
+                    l_Ashran->CastSpellOnTeam(me, l_Team, l_Spell);
 
                 m_Rewarded = true;
             }

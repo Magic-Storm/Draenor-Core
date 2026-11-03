@@ -1133,8 +1133,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* l_CharacterHolder, LoginD
         SendPacket(&l_Data);
     }
 
-    // OpenWarCraft sends journal lock before initial player packets
+    // The client expects a journal-lock packet during login. The lock only applies
+    // while a pet battle is running, so release it before the player can act.
     SendBattlePetJournalLockAcquired();
+    SendBattlePetJournalLockDenied();
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 

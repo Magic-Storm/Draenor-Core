@@ -26,9 +26,14 @@ enum eAshranDatas
     /// Timers
     AshranTimeForInvite         = 60,
     AshranTimeForBattle         = 25,
-    AshranEventTimer            = 30,   ///< In minutes
+    /// Same event repeats this often. Kor'lok and the race are offset by half of it,
+    /// so a secondary event starts about every 12 minutes (6.2 cadence).
+    AshranEventTimer            = 24,   ///< In minutes
     AshranEventWarning          = 3,    ///< In minutes
     AncientArtifactMaxTime      = 30 * TimeConstants::MINUTE * TimeConstants::IN_MILLISECONDS,
+    /// After the buff ends, the object stays gone for 15 to 30 minutes.
+    AncientArtifactRespawnMin   = 15,
+    AncientArtifactRespawnMax   = 30,
 
     /// Generic data
     BattlefieldWorldPvP         = 0x20000,
@@ -38,7 +43,8 @@ enum eAshranDatas
     AncientArtifactCount        = 9,
     AllianceRacingMovesCount    = 39,
     HordeRacingMovesCount       = 36,
-    MaxStadiumRacingLaps        = 3,
+    /// 6.2: the race is five laps, up from three.
+    MaxStadiumRacingLaps        = 5,
 
     /// Misc
     PlayerMinLevel              = 100,

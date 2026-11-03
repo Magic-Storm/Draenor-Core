@@ -53,9 +53,7 @@ void WorldSession::HandleLfgListJoin(WorldPacket& p_RecvData)
     l_List->m_VoiceChat = l_VoiceChat;
     l_List->m_Group = nullptr;
 
-    if (sLFGListMgr->CanInsert(l_List, GetPlayer(), true))
-        sLFGListMgr->Insert(l_List, GetPlayer());
-    else
+    if (!sLFGListMgr->CanInsert(l_List, GetPlayer(), true) || !sLFGListMgr->Insert(l_List, GetPlayer()))
         delete l_List;
 }
 
@@ -78,8 +76,10 @@ void WorldSession::BuildLfgListApplicationRideTicket(WorldPacket* p_Data, LFGLis
 void WorldSession::BuildLfgListEntryInfo(WorldPacket* p_Data, LFGListEntry const* p_Entry)
 {
     Group* l_Group = p_Entry->m_Group;
-    uint64 l_LeaderGuid = l_Group->GetLeaderGUID(); // Blizz sends 4x same GUID
-    const Group::MemberSlotList l_Members = l_Group->GetMemberSlots();
+    uint64 l_LeaderGuid = l_Group ? l_Group->GetLeaderGUID() : 0; // Blizz sends 4x same GUID
+    Group::MemberSlotList l_Members;
+    if (l_Group)
+        l_Members = l_Group->GetMemberSlots();
     uint32 l_MemberCount = l_Members.size();
 
     BuildLfgListJoinRequest(p_Data, p_Entry);
@@ -107,7 +107,7 @@ void WorldSession::BuildLfgListEntryInfo(WorldPacket* p_Data, LFGListEntry const
 void WorldSession::BuildLfgListJoinRequest(WorldPacket* p_Data, LFGListEntry const* p_Entry)
 {
     BuildLfgListRideTicket(p_Data, p_Entry);
-    *p_Data << uint32(p_Entry->m_ActivityEntry->ID);
+    *p_Data << uint32(p_Entry->m_ActivityEntry ? p_Entry->m_ActivityEntry->ID : 0);
     *p_Data << float(p_Entry->m_RequiredItemLevel);
 
     p_Data->WriteBits(p_Entry->m_Name.size(), 8);
@@ -134,7 +134,8 @@ void WorldSession::BuildLfgListQueueUpdate(WorldPacket* p_Data, LFGListEntry con
 {
     p_Data->Initialize(SMSG_LFG_LIST_UPDATE_STATUS);
     BuildLfgListJoinRequest(p_Data, p_Entry);
-    *p_Data << uint32(p_Entry->m_Timeout - time(nullptr));
+    time_t l_Now = time(nullptr);
+    *p_Data << uint32(time_t(p_Entry->m_Timeout) > l_Now ? uint32(time_t(p_Entry->m_Timeout) - l_Now) : 0);
     *p_Data << uint8(6);        ///< Reason
     p_Data->WriteBit(p_Listed);
     p_Data->FlushBits();
@@ -147,10 +148,11 @@ void WorldSession::HandleLfgListUpdateRequest(WorldPacket& p_RecvData)
 
     LFGListEntry* l_Entry = ReadLfgListRideTicketInfo(&p_RecvData, &l_ID);
 
-    if (!l_Entry)
+    if (!l_Entry || !l_Entry->m_Group)
         return;
 
-    if (!l_Entry->m_Group->IsLeader(m_Player->GetGUID()))
+    Group* l_Group = l_Entry->m_Group;
+    if ((!l_Group->isRaidGroup() || !l_Group->IsAssistant(m_Player->GetGUID())) && !l_Group->IsLeader(m_Player->GetGUID()))
         return;
 
     p_RecvData >> l_ActivityId;
@@ -163,7 +165,11 @@ void WorldSession::HandleLfgListUpdateRequest(WorldPacket& p_RecvData)
     l_Entry->m_Comment = p_RecvData.ReadString(l_CommentLen);
     l_Entry->m_VoiceChat = p_RecvData.ReadString(l_VoiceChatLen);
 
-    if (l_ItemLevel < sLFGListMgr->GetPlayerItemLevelForActivity(l_Entry->m_ActivityEntry, m_Player))
+    if (GroupFinderActivityEntry const* l_Activity = sGroupFinderActivityStore.LookupEntry(l_ActivityId))
+        l_Entry->m_ActivityEntry = l_Activity;
+
+    float l_PlayerItemLevel = sLFGListMgr->GetPlayerItemLevelForActivity(l_Entry->m_ActivityEntry, m_Player);
+    if (l_ItemLevel <= l_PlayerItemLevel)
         l_Entry->m_RequiredItemLevel = l_ItemLevel;
 
     sLFGListMgr->AutoInviteApplicantsIfPossible(l_Entry);
@@ -175,10 +181,7 @@ void WorldSession::HandleLfgListLeave(WorldPacket& p_RecvData)
     uint32 l_ID;
     LFGListEntry* l_Entry = ReadLfgListRideTicketInfo(&p_RecvData, &l_ID);
 
-    if (!l_Entry)
-        return;
-
-    if (!l_Entry->m_Group->IsLeader(GetPlayer()->GetGUID()))
+    if (!l_Entry || !l_Entry->m_Group)
         return;
 
     sLFGListMgr->Remove(l_ID, GetPlayer());
@@ -291,7 +294,6 @@ LFGListEntry::LFGListApplicationEntry* WorldSession::ReadLfgListApplicanmtRideTi
 
 void WorldSession::HandleLfgListApplyForGroup(WorldPacket& p_RecvData)
 {
-    return; ///< tmp disable, prevent crash with ASAN
     uint32 l_ID;
     LFGListEntry* l_Entry = ReadLfgListRideTicketInfo(&p_RecvData, &l_ID);
 
@@ -389,7 +391,8 @@ void WorldSession::HandleLfgListInviteApplicant(WorldPacket& p_RecvData)
     if (!l_Entry || !l_Application)
         return;
 
-    if (!m_Player->GetGroup()->IsAssistant(m_Player->GetGUID()) && !m_Player->GetGroup()->IsLeader(m_Player->GetGUID()))
+    Group* l_Group = m_Player->GetGroup();
+    if (!l_Group || (!l_Group->IsAssistant(m_Player->GetGUID()) && !l_Group->IsLeader(m_Player->GetGUID())))
         return;
 
     sLFGListMgr->ChangeApplicantStatus(l_Application, LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_STATUS_INVITED);
@@ -403,7 +406,8 @@ void WorldSession::HandleLfgListRemoveApplicant(WorldPacket& p_RecvData)
     if (!l_Entry || !l_Application)
         return;
 
-    if (!m_Player->GetGroup()->IsAssistant(m_Player->GetGUID()) && !m_Player->GetGroup()->IsLeader(m_Player->GetGUID()))
+    Group* l_Group = m_Player->GetGroup();
+    if (!l_Group || (!l_Group->IsAssistant(m_Player->GetGUID()) && !l_Group->IsLeader(m_Player->GetGUID())))
         return;
 
     sLFGListMgr->ChangeApplicantStatus(l_Application, LFGListEntry::LFGListApplicationEntry::LFG_LIST_APPLICATION_STATUS_DECLINED);
@@ -416,7 +420,7 @@ void WorldSession::HandleLfgListCancelApplication(WorldPacket& p_RecvData)
     if (!l_Entry)
         return;
 
-    LFGListEntry::LFGListApplicationEntry* l_Applicant = l_Entry->GetApplicant(m_GUIDLow);
+    LFGListEntry::LFGListApplicationEntry* l_Applicant = l_Entry->GetApplicantByGUIDLow(m_GUIDLow);
 
     if (!l_Applicant)
         return;

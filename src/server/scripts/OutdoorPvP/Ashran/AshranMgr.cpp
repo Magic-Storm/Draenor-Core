@@ -631,6 +631,7 @@ OutdoorPvPAshran::OutdoorPvPAshran()
     m_MaxBattleTime         = 0;
     m_GladiatorRespawnTime  = 0;
     m_AncientArtifactTime   = 0;
+    m_AncientArtifactRespawnTimer = 0;
 
     m_PlayerCurrencyLoots.clear();
     m_NeutralVignettes.clear();
@@ -1033,11 +1034,15 @@ void OutdoorPvPAshran::HandleKill(Player* p_Killer, Unit* p_Killed)
 
                 creature_type l_Spawn;
                 AshranCaptain l_Captain;
-                uint8 l_MaxLoop = 255;
+                int l_Tries = 30;
 
                 do
                 {
-                    --l_MaxLoop;
+                    if (l_Tries-- <= 0)
+                    {
+                        l_Captain = AshranCaptain();
+                        break;
+                    }
 
                     if (l_Team == TeamId::TEAM_ALLIANCE)
                     {
@@ -1065,10 +1070,13 @@ void OutdoorPvPAshran::HandleKill(Player* p_Killer, Unit* p_Killed)
                     if (m_ActiveCaptains.find(l_Captain.Type) != m_ActiveCaptains.end())
                         l_Captain = AshranCaptain();
                 }
-                while (!l_Captain.Entry || l_MaxLoop > 0);
+                while (!l_Captain.Entry);
 
-                m_ActiveCaptains.insert(l_Captain.Type);
-                AddCreature(l_Captain.Type, l_Spawn);
+                if (l_Captain.Entry)
+                {
+                    m_ActiveCaptains.insert(l_Captain.Type);
+                    AddCreature(l_Captain.Type, l_Spawn);
+                }
             }
         }
     }
@@ -1266,6 +1274,17 @@ bool OutdoorPvPAshran::Update(uint32 p_Diff)
     ScheduleInitPoints(p_Diff);
     ScheduleEventsUpdate(p_Diff);
     ScheduleGladiatorRespawn(p_Diff);
+
+    if (m_AncientArtifactRespawnTimer)
+    {
+        if (m_AncientArtifactRespawnTimer <= p_Diff)
+        {
+            m_AncientArtifactRespawnTimer = 0;
+            AddObject(eSpecialSpawns::AncientArtifactSpawn, g_AncientArtifactPos[urand(0, eAshranDatas::AncientArtifactCount - 1)]);
+        }
+        else
+            m_AncientArtifactRespawnTimer -= p_Diff;
+    }
 
     return OutdoorPvP::Update(p_Diff);
 }
@@ -1475,6 +1494,8 @@ void OutdoorPvPAshran::StartEvent(uint8 p_EventID)
         }
         case eAshranEvents::EventStadiumRacing:
         {
+            m_StadiumRacingLaps[TeamId::TEAM_ALLIANCE] = 0;
+            m_StadiumRacingLaps[TeamId::TEAM_HORDE] = 0;
             SendEventWarningToPlayers(TrinityStrings::LangStadiumRacingHasBegun);
 
             for (uint8 l_I = 0; l_I < eSpecialSpawns::MaxRacingFlags; ++l_I)
@@ -1518,6 +1539,9 @@ void OutdoorPvPAshran::EndEvent(uint8 p_EventID, bool p_ScheduleNext /*= true*/)
         }
         case eAshranEvents::EventStadiumRacing:
         {
+            m_StadiumRacingLaps[TeamId::TEAM_ALLIANCE] = 0;
+            m_StadiumRacingLaps[TeamId::TEAM_HORDE] = 0;
+
             for (uint8 l_I = 0; l_I < eSpecialSpawns::MaxRacingFlags; ++l_I)
                 DelObject(eSpecialSpawns::AllianceRacingFlagSpawn1 + l_I);
 
@@ -1581,11 +1605,20 @@ void OutdoorPvPAshran::SetEventData(uint8 p_EventID, uint8 p_TeamID, uint32 p_Da
             if (p_TeamID >= TeamId::TEAM_NEUTRAL)
                 break;
 
-            /// End event
+            /// End event. 6.2 awards 150 honor and a Dented Ashmaul Strongbox.
             if ((m_StadiumRacingLaps[p_TeamID] + p_Data) >= eAshranDatas::MaxStadiumRacingLaps)
             {
+                uint32 l_RewardSpell = p_TeamID == TeamId::TEAM_ALLIANCE ? eAshranSpells::SpellEventAllianceReward : eAshranSpells::SpellEventHordeReward;
+                for (uint64 l_Guid : m_PlayersInWar[p_TeamID])
+                {
+                    if (Player* l_Player = sObjectAccessor->FindPlayer(l_Guid))
+                    {
+                        l_Player->CastSpell(l_Player, l_RewardSpell, true);
+                        l_Player->RewardHonor(nullptr, 1, 150 * CURRENCY_PRECISION);
+                    }
+                }
+
                 EndEvent(eAshranEvents::EventStadiumRacing);
-                /// Reward players
 
                 if (Creature* l_Herald = GetHerald())
                 {
@@ -1825,11 +1858,11 @@ bool OutdoorPvPAshran::HandleOpenGo(Player* p_Player, uint64 p_Guid)
 
 void OutdoorPvPAshran::HandleArtifactDrop(Unit* p_Unit, uint32 p_Time)
 {
-    /// Aura was removed by expire, Ancient Artifact must be respawned somewhere...
+    /// Aura expired. The object comes back after 15 to 30 minutes, not at once.
     if (!p_Time)
     {
         m_AncientArtifactTime = 0;
-        AddObject(eSpecialSpawns::AncientArtifactSpawn, g_AncientArtifactPos[urand(0, eAshranDatas::AncientArtifactCount - 1)]);
+        m_AncientArtifactRespawnTimer = urand(eAshranDatas::AncientArtifactRespawnMin, eAshranDatas::AncientArtifactRespawnMax) * TimeConstants::MINUTE * TimeConstants::IN_MILLISECONDS;
     }
     /// Aura was canceled manually or removed by death, Ancient Artifact must be respawned at the target location
     else
@@ -2052,19 +2085,11 @@ void OutdoorPvPAshran::InitializeControlPoints()
 
 void OutdoorPvPAshran::InitializeEvents()
 {
-    /// Initialize timers for events
-    /// Must calculate an equal interval between each events - Should be 6min between each
-    uint32 l_Timer = 0;
-    uint32 l_TimerInterval = eAshranDatas::AshranEventTimer * TimeConstants::MINUTE * TimeConstants::IN_MILLISECONDS / eAshranEvents::MaxEvents;
-    for (uint8 l_Index = 0; l_Index < eAshranEvents::MaxEvents; ++l_Index)
-    {
-        if (l_Index != eAshranEvents::EventKorlokTheOgreKing &&
-            l_Index != eAshranEvents::EventStadiumRacing)   ///< Just Kor'lok and Stadium Racing yet
-            break;
-
-        l_Timer += l_TimerInterval;
-        m_AshranEvents[l_Index] = l_Timer;
-    }
+    /// Ore, spirits and fires are not scripted yet. Kor'lok and the race alternate.
+    /// The old loop broke on the first unscripted event, so the race never started.
+    uint32 l_Gap = (eAshranDatas::AshranEventTimer / 2) * TimeConstants::MINUTE * TimeConstants::IN_MILLISECONDS;
+    m_AshranEvents[eAshranEvents::EventKorlokTheOgreKing] = l_Gap;
+    m_AshranEvents[eAshranEvents::EventStadiumRacing] = l_Gap * 2;
 }
 
 void OutdoorPvPAshran::SetBattleState(uint32 p_NewState)

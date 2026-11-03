@@ -1022,7 +1022,7 @@ class npc_ashran_fangraal : public CreatureScript
                 {
                     if (l_Ashran->IsArtifactEventLaunched(TeamId::TEAM_ALLIANCE, eArtifactsDatas::CountForDruidShaman))
                     {
-                        l_Ashran->CastSpellOnTeam(me, TeamId::TEAM_HORDE, eAshranSpells::SpellEventAllianceReward);
+                        l_Ashran->CastSpellOnTeam(me, TeamId::TEAM_HORDE, eAshranSpells::SpellEventHordeReward);
                         l_Ashran->EndArtifactEvent(TeamId::TEAM_ALLIANCE, eArtifactsDatas::CountForDruidShaman);
                     }
                 }

@@ -219,6 +219,9 @@ void WildBattlePetZonePools::ReplaceCreature(Creature* p_Creature, WildBattlePet
         if (!l_SpeciesXAbilityInfo || l_SpeciesXAbilityInfo->speciesId != l_BattlePetInstance->Species || l_SpeciesXAbilityInfo->level > l_BattlePetInstance->Level)
             continue;
 
+        if (l_SpeciesXAbilityInfo->tier >= MAX_PETBATTLE_ABILITIES)
+            continue;
+
         if (l_AbilityLevels[l_SpeciesXAbilityInfo->tier])
         {
             int l_Chance = 80;

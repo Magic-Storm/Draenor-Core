@@ -65,7 +65,7 @@ typedef std::unordered_map<uint32 /*spellId*/, SpellPhaseInfo> SpellPhaseStore;
 
 struct PhaseInfo
 {
-    PhaseInfo() : phasemask(0), terrainswapmap(0), phaseId(0) {}
+    PhaseInfo() : phasemask(0), terrainswapmap(0), phaseId(0), worldmaparea(0) {}
 
     uint32 phasemask;
     uint32 terrainswapmap;

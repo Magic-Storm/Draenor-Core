@@ -313,6 +313,7 @@ class Group
         bool isBFGroup()   const;
         bool IsCreated()   const;
         bool IsFlex() const { return m_flex; }
+        void SetFlex(bool flex) { m_flex = flex; }
         uint64 GetLeaderGUID() const;
         uint64 GetGUID() const;
         uint32 GetLowGUID() const;
@@ -357,7 +358,7 @@ class Group
         uint8 GetMemberGroup(uint64 guid) const;
 
         void ChangeFlagEveryoneAssistant(bool apply);
-        void ConvertToLFG(bool flex);
+        void ConvertToLFG(bool lfr);
         void ConvertToRaid();
         void ConvertToGroup();
 

@@ -1303,6 +1303,16 @@ void WorldSession::HandleSceneCancelOpcode(WorldPacket & p_Packet)
     sScriptMgr->OnSceneCancel(m_Player, l_SceneInstanceID);
 }
 
+void WorldSession::HandleSceneCompleteOpcode(WorldPacket & p_Packet)
+{
+    if (!m_Player)
+        return;
+
+    uint32 l_SceneInstanceID = p_Packet.read<uint32>();
+
+    sScriptMgr->OnSceneComplete(m_Player, l_SceneInstanceID);
+}
+
 void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& p_Packet)
 {
     uint64 p_MoverGUID;
@@ -2125,7 +2135,8 @@ void WorldSession::SendSetPhaseShift(const std::set<uint32> & p_PhaseIds, const 
 {
 	uint32 unkValue = 0;
 
-	WorldPacket l_ShiftPacket(SMSG_SET_PHASE_SHIFT, 500);
+	// 6.2.4 reads SMSG_PHASE_SHIFT_CHANGE. SMSG_SET_PHASE_SHIFT is an unused leftover opcode.
+	WorldPacket l_ShiftPacket(SMSG_PHASE_SHIFT_CHANGE, 500);
 	l_ShiftPacket.appendPackGUID(m_Player->GetGUID());      ///< CLientGUID
 															// 0x8 or 0x10 is related to areatrigger, if we send flags 0x00 areatrigger doesn't work in some case
 	l_ShiftPacket << uint32(0x18);                          ///< PhaseShiftFlags

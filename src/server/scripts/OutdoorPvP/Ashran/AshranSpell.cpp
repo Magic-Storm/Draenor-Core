@@ -849,8 +849,9 @@ class spell_ashran_horde_and_alliance_racer : public SpellScriptLoader
 
             enum eDatas
             {
-                SpeedPCTPerPlayer   = 30,
-                MaxSpeedPCT         = 500
+                /// 6.2: 20% per nearby player, capped at 300% (was 30% / 500%).
+                SpeedPCTPerPlayer   = 20,
+                MaxSpeedPCT         = 300
             };
 
             uint32 m_CheckTimer;
@@ -904,8 +905,7 @@ class spell_ashran_horde_and_alliance_racer : public SpellScriptLoader
                                 return;
                             }
 
-                            /// The riders move very slowly, but for each player of their faction within their vicinity their speed is increased by 30%,
-                            /// allowing them to outstrip their competitor.
+                            /// Each nearby player of the racer's faction adds 20% speed, up to 300%.
                             if (AuraEffect* l_AurEff = l_Caster->GetAuraEffect(GetSpellInfo()->Id, EFFECT_0))
                                 l_AurEff->ChangeAmount(std::min(((int32)l_PlayerList.size() * eDatas::SpeedPCTPerPlayer), (int32)eDatas::MaxSpeedPCT));
                         }

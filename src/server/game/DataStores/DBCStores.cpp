@@ -181,6 +181,17 @@ DBCStorage<WorldMapTransformsEntry>      sWorldMapTransformsStore(WorldMapTransf
 DBCStorage <World_PVP_AreaEntry>         sWorld_PVP_AreaStore(World_PVP_AreaEntryfmt);
 DBCStorage <WorldSafeLocsEntry>          sWorldSafeLocsStore(WorldSafeLocsEntryfmt);
 DBCStorage <PhaseEntry>                  sPhaseStores(PhaseEntryfmt);
+DBCStorage <PhaseXPhaseGroupEntry>       sPhaseXPhaseGroupStore(PhaseXPhaseGroupfmt);
+static std::map<uint32, std::vector<uint32>> sPhaseIdsByGroup;
+
+std::vector<uint32> const& GetPhasesForGroup(uint32 phaseGroupId)
+{
+    static std::vector<uint32> const empty;
+    std::map<uint32, std::vector<uint32>>::const_iterator itr = sPhaseIdsByGroup.find(phaseGroupId);
+    if (itr == sPhaseIdsByGroup.end())
+        return empty;
+    return itr->second;
+}
 DBCStorage <GtBattlePetXPEntry>          sGtBattlePetXPStore(GtBattlePetXPfmt);
 DBCStorage <GtBattlePetTypeDamageModEntry> sGtBattlePetTypeDamageModStore(GtBattlePetTypeDamageModfmt);
 DBCStorage <WorldStateEntry>             sWorldStateStore(WorldStateEntryfmt);
@@ -369,6 +380,17 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sLiquidTypeStore,             dbcPath, "LiquidType.dbc");                                                   // 17399
     LoadDBC(availableDbcLocales, bad_dbc_files, sLockStore,                   dbcPath, "Lock.dbc");                                                         // 17399
     LoadDBC(availableDbcLocales, bad_dbc_files, sPhaseStores,                 dbcPath, "Phase.dbc");                                                        // 17399
+    LoadDBC(availableDbcLocales, bad_dbc_files, sPhaseXPhaseGroupStore,       dbcPath, "PhaseXPhaseGroup.dbc");
+
+    sPhaseIdsByGroup.clear();
+    for (uint32 i = 0; i < sPhaseXPhaseGroupStore.GetNumRows(); ++i)
+    {
+        PhaseXPhaseGroupEntry const* phaseGroup = sPhaseXPhaseGroupStore.LookupEntry(i);
+        if (!phaseGroup || !phaseGroup->PhaseID || !phaseGroup->PhaseGroupID)
+            continue;
+
+        sPhaseIdsByGroup[phaseGroup->PhaseGroupID].push_back(phaseGroup->PhaseID);
+    }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sMapStore,                    dbcPath, "Map.dbc");                                                          // 17399
     LoadDBC(availableDbcLocales, bad_dbc_files, sMapDifficultyStore, dbcPath, "MapDifficulty.dbc");                                                         // 17399

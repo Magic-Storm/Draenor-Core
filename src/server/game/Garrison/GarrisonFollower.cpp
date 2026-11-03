@@ -74,8 +74,8 @@ namespace MS { namespace Garrison
         {
             /// These values are not present in DBC
             ///   5 000 XP for ITEM_QUALITY_UNCOMMON -> ITEM_QUALITY_RARE
-            /// 200 000 XP for ITEM_QUALITY_RARE     -> ITEM_QUALITY_EPI
-            return Quality == ITEM_QUALITY_UNCOMMON ? 5000 : 40000;
+            /// 200 000 XP for ITEM_QUALITY_RARE     -> ITEM_QUALITY_EPIC
+            return Quality == ITEM_QUALITY_UNCOMMON ? 5000 : 200000;
         }
 
         return 0;

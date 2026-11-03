@@ -3481,24 +3481,32 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
     #pragma endregion Class, Race, Gender, NativeGender
 
     #pragma region Skills
-    for (uint32 l_I = 0; l_I < 4; ++l_I)
+    if (l_Entry->SkillID[0] || l_Entry->SkillID[1] || l_Entry->SkillID[2] || l_Entry->SkillID[3])
     {
-        if (l_Entry->SkillID[l_I] != 0)
+        bool l_Matches[4] { true, true, true, true };
+
+        for (uint32 l_I = 0; l_I < 4; ++l_I)
         {
+            if (l_Entry->SkillID[l_I] == 0)
+                continue;
+
             if (!HasSkill(l_Entry->SkillID[l_I]))
-                return std::pair<bool, std::string>(false, "Failed on SkillID => dbc(" + std::to_string(l_Entry->SkillID[l_I]) + ") you don't known this skill");
+            {
+                l_Matches[l_I] = false;
+                continue;
+            }
 
             int32 l_Skill = (int32)GetSkillValue(l_Entry->SkillID[l_I]);
-
             if (l_Entry->MinSkill[l_I] != 0 && l_Skill < l_Entry->MinSkill[l_I])
-                return std::pair<bool, std::string>(false, "Failed on MinSkill => dbc(" + std::to_string(l_Entry->MinSkill[l_I]) + ") you(" + std::to_string(l_Skill) + ")");
+                l_Matches[l_I] = false;
             if (l_Entry->MaxSkill[l_I] != 0 && l_Skill > l_Entry->MaxSkill[l_I])
-                return std::pair<bool, std::string>(false, "Failed on MaxSkill => dbc(" + std::to_string(l_Entry->MaxSkill[l_I]) + ") you(" + std::to_string(l_Skill) + ")");
+                l_Matches[l_I] = false;
         }
+
+        if (!EvalMatch(l_Matches, l_Entry->SkillLogic))
+            return std::pair<bool, std::string>(false, "Failed on SkillID");
     }
     #pragma endregion Skills
-
-    /// @TODO : SkillLogic
 
     #pragma region Language
     if (l_Entry->LanguageID != 0)
@@ -3517,13 +3525,43 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
     }
     #pragma endregion Language
 
-    /// @TODO : MinFaction
-    /// @TODO : MinReputation
-    /// @TODO : MaxReputation
-    /// @TODO : ReputationLogic
-    /// @TODO : MinPVPRank
-    /// @TODO : MaxPVPRank
-    /// @TODO : PVPMedal
+    if (l_Entry->MinFactionID[0] || l_Entry->MinFactionID[1] || l_Entry->MinFactionID[2] || l_Entry->MaxFactionID)
+    {
+        auto l_MinRankMet = [this](int32 p_FactionID, int32 p_MinRank) -> bool
+        {
+            if (p_FactionID == 0 || !sFactionStore.LookupEntry(p_FactionID))
+                return true;
+
+            return GetReputationRank(p_FactionID) >= ReputationRank(p_MinRank);
+        };
+
+        auto l_MaxRankMet = [this](int32 p_FactionID, int32 p_MaxRank) -> bool
+        {
+            if (p_FactionID == 0 || !sFactionStore.LookupEntry(p_FactionID))
+                return true;
+
+            return GetReputationRank(p_FactionID) <= ReputationRank(p_MaxRank);
+        };
+
+        if (!l_Entry->MinFactionID[0] && !l_Entry->MinFactionID[1] && !l_Entry->MinFactionID[2])
+        {
+            if (!l_MaxRankMet(l_Entry->MaxFactionID, l_Entry->MaxReputation))
+                return std::pair<bool, std::string>(false, "Failed on MaxFactionID");
+        }
+        else
+        {
+            bool l_Matches[4]
+            {
+                l_MinRankMet(l_Entry->MinFactionID[0], l_Entry->MinReputation[0]),
+                l_MinRankMet(l_Entry->MinFactionID[1], l_Entry->MinReputation[1]),
+                l_MinRankMet(l_Entry->MinFactionID[2], l_Entry->MinReputation[2]),
+                l_MaxRankMet(l_Entry->MaxFactionID, l_Entry->MaxReputation)
+            };
+
+            if (!EvalMatch(l_Matches, l_Entry->ReputationLogic))
+                return std::pair<bool, std::string>(false, "Failed on MinFactionID");
+        }
+    }
 
     #pragma region PrevQuestLogic, PrevQuestID
     if (l_Entry->PrevQuestID[0] || l_Entry->PrevQuestID[1] || l_Entry->PrevQuestID[2] || l_Entry->PrevQuestID[3])
@@ -3591,9 +3629,9 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
         bool l_Matches[4] { true, true, true, true };
 
         if (l_Entry->ItemID[0] != 0) l_Matches[0] = HasItemCount(l_Entry->ItemID[0], !l_Entry->ItemCount[0] ? 1 : l_Entry->ItemCount[0], false);
-        if (l_Entry->ItemID[1] != 0) l_Matches[1] = HasItemCount(l_Entry->ItemID[0], !l_Entry->ItemCount[1] ? 1 : l_Entry->ItemCount[1], false);
-        if (l_Entry->ItemID[2] != 0) l_Matches[2] = HasItemCount(l_Entry->ItemID[0], !l_Entry->ItemCount[2] ? 1 : l_Entry->ItemCount[2], false);
-        if (l_Entry->ItemID[3] != 0) l_Matches[3] = HasItemCount(l_Entry->ItemID[0], !l_Entry->ItemCount[3] ? 1 : l_Entry->ItemCount[3], false);
+        if (l_Entry->ItemID[1] != 0) l_Matches[1] = HasItemCount(l_Entry->ItemID[1], !l_Entry->ItemCount[1] ? 1 : l_Entry->ItemCount[1], false);
+        if (l_Entry->ItemID[2] != 0) l_Matches[2] = HasItemCount(l_Entry->ItemID[2], !l_Entry->ItemCount[2] ? 1 : l_Entry->ItemCount[2], false);
+        if (l_Entry->ItemID[3] != 0) l_Matches[3] = HasItemCount(l_Entry->ItemID[3], !l_Entry->ItemCount[3] ? 1 : l_Entry->ItemCount[3], false);
 
         if (!EvalMatch(l_Matches, l_Entry->ItemLogic))
             return std::pair<bool, std::string>(false, "Failed on ItemID");
@@ -3603,23 +3641,18 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
     /// @TODO : ItemFlags
 
     #pragma region Explored
-    auto IsAreaExplored = [this](uint32 p_AreaID) -> bool ///< p_AreaID is unused
+    auto IsAreaExplored = [this](uint32 p_AreaID) -> bool
     {
-        uint16 l_AreaFlag = sAreaStore.LookupEntry(0) ? sAreaStore.LookupEntry(0)->AreaBit : 0xFFFF;
-
-        if (l_AreaFlag == 0xFFFF)
+        int32 l_AreaFlag = GetAreaFlagByAreaID(p_AreaID);
+        if (l_AreaFlag < 0)
             return false;
-        int l_Offset = l_AreaFlag / 32;
 
+        uint32 l_Offset = uint32(l_AreaFlag) / 32;
         if (l_Offset >= PLAYER_EXPLORED_ZONES_SIZE)
             return false;
 
-        uint32 l_Value = (uint32)(1 << (l_AreaFlag % 32));
-
-        if (!(GetUInt32Value(PLAYER_FIELD_EXPLORED_ZONES + l_Offset) & l_Value))
-            return false;
-
-        return true;
+        uint32 l_Mask = 1u << (uint32(l_AreaFlag) % 32);
+        return (GetUInt32Value(PLAYER_FIELD_EXPLORED_ZONES + l_Offset) & l_Mask) != 0;
     };
 
     if (l_Entry->Explored[0] != 0 && !IsAreaExplored(l_Entry->Explored[0]))
@@ -3676,8 +3709,24 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
     }
     #pragma endregion Weather
 
-    /// @TODO : PartyStatus
-    /// @TODO : LifetimeMaxPVPRank
+    if (l_Entry->PartyStatus)
+    {
+        Group const* l_Group = GetGroup();
+        bool l_Matches = false;
+
+        switch (l_Entry->PartyStatus - 1)
+        {
+            case 0: l_Matches = l_Group == nullptr; break;
+            case 1: l_Matches = l_Group != nullptr; break;
+            case 2: l_Matches = l_Group && !l_Group->isRaidGroup(); break;
+            case 3: l_Matches = l_Group && l_Group->isRaidGroup(); break;
+            case 4: l_Matches = !l_Group || !l_Group->isRaidGroup(); break;
+            default: break;
+        }
+
+        if (!l_Matches)
+            return std::pair<bool, std::string>(false, "Failed on PartyStatus");
+    }
 
     #pragma region AchievementLogic, Achievement
     if (l_Entry->Achievement[0] || l_Entry->Achievement[1] || l_Entry->Achievement[2] || l_Entry->Achievement[3])
@@ -3720,9 +3769,9 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
         bool l_Matches[4] { true, true, true, true };
 
         if (l_Entry->CurrencyID[0] != 0) l_Matches[0] = HasCurrency(l_Entry->CurrencyID[0], (!l_Entry->CurrencyCount[0] ? 1 : l_Entry->CurrencyCount[0]));
-        if (l_Entry->CurrencyID[1] != 0) l_Matches[1] = HasCurrency(l_Entry->CurrencyID[0], (!l_Entry->CurrencyCount[1] ? 1 : l_Entry->CurrencyCount[1]));
-        if (l_Entry->CurrencyID[2] != 0) l_Matches[2] = HasCurrency(l_Entry->CurrencyID[0], (!l_Entry->CurrencyCount[2] ? 1 : l_Entry->CurrencyCount[2]));
-        if (l_Entry->CurrencyID[3] != 0) l_Matches[3] = HasCurrency(l_Entry->CurrencyID[0], (!l_Entry->CurrencyCount[3] ? 1 : l_Entry->CurrencyCount[3]));
+        if (l_Entry->CurrencyID[1] != 0) l_Matches[1] = HasCurrency(l_Entry->CurrencyID[1], (!l_Entry->CurrencyCount[1] ? 1 : l_Entry->CurrencyCount[1]));
+        if (l_Entry->CurrencyID[2] != 0) l_Matches[2] = HasCurrency(l_Entry->CurrencyID[2], (!l_Entry->CurrencyCount[2] ? 1 : l_Entry->CurrencyCount[2]));
+        if (l_Entry->CurrencyID[3] != 0) l_Matches[3] = HasCurrency(l_Entry->CurrencyID[3], (!l_Entry->CurrencyCount[3] ? 1 : l_Entry->CurrencyCount[3]));
 
         if (!EvalMatch(l_Matches, l_Entry->CurrencyLogic))
             return std::pair<bool, std::string>(false, "Failed on CurrencyID");
@@ -3766,15 +3815,44 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
     }
     #pragma endregion QuestKillID, QuestKillLogic, QuestKillMonster
 
-    /// @TODO : MinExpansionLevel
-    /// @TODO : MaxExpansionLevel
-    /// @TODO : MinExpansionTier
-    /// @TODO : MaxExpansionTier
+    if (l_Entry->MinExpansionLevel != -1 && int32(GetSession()->Expansion()) < l_Entry->MinExpansionLevel)
+        return std::pair<bool, std::string>(false, "Failed on MinExpansionLevel");
+    if (l_Entry->MaxExpansionLevel != -1 && int32(GetSession()->Expansion()) > l_Entry->MaxExpansionLevel)
+        return std::pair<bool, std::string>(false, "Failed on MaxExpansionLevel");
     /// @OBSOLETE : MinGuildLevel
     /// @OBSOLETE : MaxGuildLevel
-    /// @TODO : PhaseUseFlags
-    /// @TODO : PhaseID
-    /// @TODO : PhaseGroupID
+    if (l_Entry->PhaseID || l_Entry->PhaseGroupID)
+    {
+        std::set<uint32> l_Phases;
+        GetPhaseMgr().GetActivePhases(l_Phases);
+
+        bool l_Matches = true;
+        if (l_Entry->PhaseID && l_Phases.find(l_Entry->PhaseID) == l_Phases.end())
+            l_Matches = false;
+
+        if (l_Matches && l_Entry->PhaseGroupID)
+        {
+            bool l_InGroup = false;
+            for (uint32 l_Phase : GetPhasesForGroup(l_Entry->PhaseGroupID))
+            {
+                if (l_Phases.find(l_Phase) != l_Phases.end())
+                {
+                    l_InGroup = true;
+                    break;
+                }
+            }
+
+            if (!l_InGroup)
+                l_Matches = false;
+        }
+
+        // Bit 0 inverts the test: the player must not be in the phase or group.
+        if ((l_Entry->PhaseUseFlags & 1) != 0)
+            l_Matches = !l_Matches;
+
+        if (!l_Matches)
+            return std::pair<bool, std::string>(false, "Failed on PhaseID");
+    }
 
     #pragma region MinAvgItemLevel, MaxAvgItemLevel
     if (l_Entry->MinAvgItemLevel != 0 && GetAverageItemLevelTotal() < (uint32)l_Entry->MinAvgItemLevel)
@@ -3790,11 +3868,37 @@ std::pair<bool, std::string> Player::EvalPlayerCondition(uint32 p_ConditionsID, 
         return std::pair<bool, std::string>(false, "Failed on MaxAvgEquippedItemLevel => dbc(" + std::to_string(l_Entry->MaxAvgEquippedItemLevel) + ") you(" + std::to_string(GetAverageItemLevelEquipped()) + ")");
     #pragma endregion MinAvgEquippedItemLevel, MaxAvgItemLevel
 
-    /// @TODO : ChrSpecializationIndex
-    /// @TODO : ChrSpecializationRole
-    /// @TODO : PowerType
-    /// @TODO : PowerTypeComp
-    /// @TODO : PowerTypeValue
+    if (l_Entry->ChrSpecializationIndex >= 0 || l_Entry->ChrSpecializationRole >= 0)
+    {
+        ChrSpecializationsEntry const* l_Spec = sChrSpecializationsStore.LookupEntry(GetSpecializationId());
+        if (!l_Spec)
+            return std::pair<bool, std::string>(false, "Failed on ChrSpecializationIndex => no specialization");
+
+        if (l_Entry->ChrSpecializationIndex >= 0 && int32(l_Spec->OrderIndex) != l_Entry->ChrSpecializationIndex)
+            return std::pair<bool, std::string>(false, "Failed on ChrSpecializationIndex");
+        if (l_Entry->ChrSpecializationRole >= 0 && int32(l_Spec->Role) != l_Entry->ChrSpecializationRole)
+            return std::pair<bool, std::string>(false, "Failed on ChrSpecializationRole");
+    }
+
+    if (l_Entry->PowerType != -1 && l_Entry->PowerTypeComp)
+    {
+        auto l_Compare = [](int32 p_Comparison, int32 p_Value, int32 p_Required) -> bool
+        {
+            switch (p_Comparison)
+            {
+                case 1: return p_Value == p_Required;
+                case 2: return p_Value != p_Required;
+                case 3: return p_Value > p_Required;
+                case 4: return p_Value >= p_Required;
+                case 5: return p_Value < p_Required;
+                case 6: return p_Value <= p_Required;
+                default: return false;
+            }
+        };
+
+        if (!l_Compare(l_Entry->PowerTypeComp, GetPower(Powers(l_Entry->PowerType)), l_Entry->PowerTypeValue))
+            return std::pair<bool, std::string>(false, "Failed on PowerType");
+    }
 
     return std::pair<bool, std::string>(true, "");
 }
@@ -9939,6 +10043,9 @@ int32 Player::ModifyCurrency(uint32 p_CurrencyID, int32 p_Count, bool p_Suppress
             }
 
             QuestObjectiveSatisfy(p_CurrencyID, p_Count, QUEST_OBJECTIVE_TYPE_CURRENCY);
+
+            if (p_Count > 0 && p_CurrencyID == CURRENCY_TYPE_ARTIFACT_FRAGEMENT)
+                QuestObjectiveSatisfy(p_CurrencyID, uint32(p_Count), QUEST_OBJECTIVE_TYPE_ASHRAN_ARTIFACT);
 
             WorldPacket l_Packet(SMSG_UPDATE_CURRENCY);
 
@@ -18649,7 +18756,7 @@ bool Player::CanRewardQuest(Quest const* p_Quest, bool msg)
                 return false;
             }
         }
-        else if (l_Objective.Type == QUEST_OBJECTIVE_TYPE_CURRENCY)
+        else if (l_Objective.Type == QUEST_OBJECTIVE_TYPE_CURRENCY || l_Objective.Type == QUEST_OBJECTIVE_TYPE_ASHRAN_ARTIFACT)
         {
             if (!HasCurrency(l_Objective.ObjectID, l_Objective.Amount))
                 return false;
@@ -19975,7 +20082,7 @@ bool Player::TakeQuestSourceItem(uint32 questId, bool msg)
         uint32 srcItemId = quest->GetSrcItemId();
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(srcItemId);
 
-        if (srcItemId > 0)
+        if (srcItemId > 0 && item)
         {
             // exist two cases when destroy source quest item not possible:
             // a) non un-equippable item (equipped non-empty bag, for example)
@@ -19989,15 +20096,14 @@ bool Player::TakeQuestSourceItem(uint32 questId, bool msg)
                 return false;
             }
 
-            if (!quest->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM))
-                return true;
-
             bool destroyItem = true;
-
-            for (QuestObjective l_Objective : quest->QuestObjectives)
+            if (item->StartQuest == questId)
             {
-                if (l_Objective.Type == QUEST_OBJECTIVE_TYPE_ITEM && item->StartQuest == questId && srcItemId == (uint32)l_Objective.ObjectID)
-                    destroyItem = false;
+                for (QuestObjective const& l_Objective : quest->QuestObjectives)
+                {
+                    if (l_Objective.Type == QUEST_OBJECTIVE_TYPE_ITEM && srcItemId == uint32(l_Objective.ObjectID))
+                        destroyItem = false;
+                }
             }
 
             if (destroyItem)

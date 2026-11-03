@@ -125,6 +125,10 @@ extern DBCStorage <LockEntry>                    sLockStore;
 extern DBCStorage <MapEntry>                     sMapStore;
 extern DBCStorage <MinorTalentEntry>             sMinorTalentStore;
 extern DBCStorage <PhaseEntry>                   sPhaseStore;
+extern DBCStorage <PhaseXPhaseGroupEntry>        sPhaseXPhaseGroupStore;
+
+/// Phase ids that belong to a Phase.dbc group. Empty when the group is unknown.
+std::vector<uint32> const& GetPhasesForGroup(uint32 phaseGroupId);
 //extern DBCStorage <MapDifficultyEntry>           sMapDifficultyStore; -- use GetMapDifficultyData insteed
 extern MapDifficultyMap                          sMapDifficultyMap;
 extern DBCStorage <MovieEntry>                   sMovieStore;

@@ -10018,9 +10018,9 @@ void ObjectMgr::LoadSpellPhaseInfo()
 			continue;
 		}
 
-		if (!spell->HasAura(SPELL_AURA_PHASE))
+		if (!spell->HasAura(SPELL_AURA_PHASE) && !spell->HasAura(SPELL_AURA_PHASE_GROUP))
 		{
-			TC_LOG_ERROR("sql.sql", "Spell %u defined in `spell_phase` does not have aura effect type SPELL_AURA_PHASE, useless value.", spellPhaseInfo.spellId);
+			TC_LOG_ERROR("sql.sql", "Spell %u defined in `spell_phase` does not have aura effect type SPELL_AURA_PHASE or SPELL_AURA_PHASE_GROUP, useless value.", spellPhaseInfo.spellId);
 			continue;
 		}
 

@@ -944,6 +944,7 @@ void InitOpcodes()
 
         /// Gossip
         DEFINE_OPCODE_HANDLER(SMSG_GOSSIP_MESSAGE,                                  STATUS_NEVER,         PROCESS_INPLACE,      &WorldSession::Handle_ServerSide,      PROCESS_LOCAL);
+        DEFINE_OPCODE_HANDLER(SMSG_DISPLAY_PLAYER_CHOICE,                           STATUS_NEVER,         PROCESS_INPLACE,      &WorldSession::Handle_ServerSide,      PROCESS_LOCAL);
         DEFINE_OPCODE_HANDLER(SMSG_GOSSIP_COMPLETE,                                 STATUS_NEVER,         PROCESS_INPLACE,      &WorldSession::Handle_ServerSide,      PROCESS_LOCAL);
     #pragma endregion
 
@@ -1055,7 +1056,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_GARRISON_LEARN_BLUEPRINT_CHEAT,                      STATUS_UNHANDLED,   PROCESS_THREADSAFE,        &WorldSession::Handle_NULL                                      , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_GARRISON_REQUEST_BUILDINGS,                          STATUS_AUTHED,      PROCESS_THREADSAFE,        &WorldSession::HandleGarrisonRequestBuildingsOpcode             , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_GARRISON_PURCHASE_BUILDING,                          STATUS_AUTHED,      PROCESS_THREADSAFE,        &WorldSession::HandleGarrisonPurchaseBuildingOpcode             , PROCESS_LOCAL);
-    DEFINE_OPCODE_HANDLER(CMSG_GARRISON_SET_BUILDING_ACTIVE,                        STATUS_UNHANDLED,   PROCESS_THREADSAFE,        &WorldSession::Handle_NULL                                      , PROCESS_LOCAL);
+    DEFINE_OPCODE_HANDLER(CMSG_GARRISON_SET_BUILDING_ACTIVE,                        STATUS_LOGGEDIN,    PROCESS_THREADSAFE,        &WorldSession::HandleGarrisonSetBuildingActiveOpcode             , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_GARRISON_FORCE_BUILDING_ACTIVE,                      STATUS_UNHANDLED,   PROCESS_THREADSAFE,        &WorldSession::Handle_NULL                                      , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_GARRISON_PORT_CHEAT,                                 STATUS_UNHANDLED,   PROCESS_THREADSAFE,        &WorldSession::Handle_NULL                                      , PROCESS_LOCAL);
     DEFINE_OPCODE_HANDLER(CMSG_GARRISON_ADD_FOLLOWER_XPCHEAT,                       STATUS_UNHANDLED,   PROCESS_THREADSAFE,        &WorldSession::Handle_NULL                                      , PROCESS_LOCAL);
@@ -1276,6 +1277,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_QUERY_CORPSE_TRANSPORT,                          STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleCorpseTransportQueryOpcode         , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_RETURN_TO_GRAVEYARD,                             STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleReturnToGraveyard                  , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_CLOSE_INTERACTION,                               STATUS_UNHANDLED,   PROCESS_INPLACE,        &WorldSession::HandleCloseInteraction                   , PROCESS_DISTANT_IF_NEED);
+    DEFINE_OPCODE_HANDLER(CMSG_CHOICE_RESPONSE,                                 STATUS_LOGGEDIN,   PROCESS_THREADUNSAFE,   &WorldSession::HandleChoiceResponseOpcode               , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_ITEM_REFUND_INFO,                                STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleItemRefundInfoRequest              , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_FAR_SIGHT,                                       STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleFarSightOpcode                     , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_MOUNTSPECIAL_ANIM,                               STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleMountSpecialAnimOpcode             , PROCESS_DISTANT_IF_NEED);
@@ -1311,6 +1313,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_COMPLETE_MOVIE,                                  STATUS_LOGGEDIN,    PROCESS_THREADSAFE,     &WorldSession::HandleCompleteMovieOpcode                , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_SCENE_TRIGGER_EVENT,                             STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleSceneTriggerEventOpcode            , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_SCENE_PLAYBACK_CANCELED,                         STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleSceneCancelOpcode                  , PROCESS_DISTANT_IF_NEED);
+    DEFINE_OPCODE_HANDLER(CMSG_SCENE_PLAYBACK_COMPLETE,                         STATUS_LOGGEDIN,    PROCESS_INPLACE,        &WorldSession::HandleSceneCompleteOpcode                , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_SUMMON_RESPONSE,                                 STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleSummonResponseOpcode               , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_SET_FACTION_ATWAR,                               STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleSetFactionAtWar                    , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_UNSET_FACTION_ATWAR,                             STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleUnSetFactionAtWar                  , PROCESS_DISTANT_IF_NEED);
@@ -1507,7 +1510,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_GROUP_ASSIGNMENT,                                STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandlePartyAssignmentOpcode         , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_GROUP_CHANGE_SUB_GROUP,                          STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleGroupChangeSubGroupOpcode     , PROCESS_DISTANT_IF_NEED);
     DEFINE_OPCODE_HANDLER(CMSG_GROUP_REQUEST_JOIN_UPDATES,                      STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleRequestJoinUpdates            , PROCESS_DISTANT_IF_NEED);
-    DEFINE_OPCODE_HANDLER(CMSG_GROUP_SWAP_SUB_GROUP,                            STATUS_UNHANDLED,   PROCESS_THREADUNSAFE,   &WorldSession::HandleGroupSwapSubGroupOpcode       , PROCESS_DISTANT_IF_NEED);
+    DEFINE_OPCODE_HANDLER(CMSG_GROUP_SWAP_SUB_GROUP,                            STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,   &WorldSession::HandleGroupSwapSubGroupOpcode       , PROCESS_DISTANT_IF_NEED);
 
     //////////////////////////////////////////////////////////////////////////
     /// Friend

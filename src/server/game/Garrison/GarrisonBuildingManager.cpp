@@ -66,6 +66,33 @@ namespace MS { namespace Garrison
         m_AllowedBluePrints.push_back(Building::ID::TradingPost_TradingPost_Level1);
         m_AllowedBluePrints.push_back(Building::ID::TradingPost_TradingPost_Level2);
         m_AllowedBluePrints.push_back(Building::ID::GladiatorsSanctum_GladiatorsSanctum_Level1);
+        /// Level 3 plans and the barracks / sanctum upgrades. The architect used to reject these as unavailable.
+        m_AllowedBluePrints.push_back(Building::ID::DwarvenBunker_WarMill_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::Barracks_Barracks_Level2);
+        m_AllowedBluePrints.push_back(Building::ID::Barracks_Barracks_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::Storehouse_Storehouse_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::TheForge_TheForge_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::TradingPost_TradingPost_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::TailoringEmporium_TailoringEmporium_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::AlchemyLab_AlchemyLab_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::TheTannery_TheTannery_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::EnchanterStudy_EnchanterStudy_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::GemBoutique_GemBoutique_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::EngineeringWorks_EngineeringWorks_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::ScribesQuarters_ScribesQuarters_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::HerbGarden_HerbGarden_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::Barn_Barn_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::SalvageYard_SalvageYard_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::LumberMill_LumberMill_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::LunarfallExcavation_FrostwallMines_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::LunarfallInn_FrostwallTavern_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::MageTower_SpiritLodge_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::Stables_Stables_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::GladiatorsSanctum_GladiatorsSanctum_Level2);
+        m_AllowedBluePrints.push_back(Building::ID::GladiatorsSanctum_GladiatorsSanctum_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::GnomishGearworks_GoblinWorkshop_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::FishingShack_FishingShack_Level3);
+        m_AllowedBluePrints.push_back(Building::ID::Menagerie_Menagerie_Level3);
     }
 
     /// Destructor

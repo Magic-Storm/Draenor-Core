@@ -167,7 +167,8 @@ void LFGGroupScript::OnAddMember(Group* group, uint64 guid)
     if (group->IsFlex() && guid != leader)
     {
         uint32 groupQeueuId = sLFGMgr->GetActiveQueueId(gguid);
-        ASSERT(groupQeueuId);
+        if (!groupQeueuId)
+            return;
         if (!sLFGMgr->HasQueueId(guid, groupQeueuId))
         {
             // FIXME ^ 2
@@ -275,6 +276,9 @@ void LFGGroupScript::OnDisband(Group* group)
         return;
 
     uint64 gguid = group->GetGUID();
+
+    // Cancel while the group queue still exists. A leftover rolecheck later reads queue 0 and stops the server.
+    sLFGMgr->UpdateRoleCheck(gguid, 0);
 
     if (sLFGMgr->GetActiveState(gguid) == LFG_STATE_NONE)
         return;

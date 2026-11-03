@@ -21450,15 +21450,17 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
 {
     uint32 spellClickEntry = GetVehicleKit() ? GetVehicleKit()->GetCreatureEntry() : GetEntry();
     SpellClickInfoMapBounds clickPair = sObjectMgr->GetSpellClickInfoMapBounds(spellClickEntry);
+    bool hasClickSpells = clickPair.first != clickPair.second;
+    bool castAny = false;
     for (SpellClickInfoContainer::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
     {
         //! First check simple relations from clicker to clickee
         if (!itr->second.IsFitToRequirements(clicker, this))
-            return false;
+            continue;
 
         //! Check database conditions
         if (!sConditionMgr->IsObjectMeetingSpellClickConditions(spellClickEntry, itr->second.spellId, clicker, this))
-            return false;
+            continue;
 
         Unit* caster = (itr->second.castFlags & NPC_CLICK_CAST_CASTER_CLICKER) ? clicker : this;
         Unit* target = (itr->second.castFlags & NPC_CLICK_CAST_TARGET_CLICKER) ? clicker : this;
@@ -21469,7 +21471,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
         if (!spellEntry)
         {
             TC_LOG_ERROR("server.worldserver", "HandleSpellClick: spellEntry pointer is NULL!!");
-            return false;
+            continue;
         }
 
         if (seatId > -1)
@@ -21487,7 +21489,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             }
 
             if (!valid)
-                return false;
+                continue;
 
             if (IsInMap(caster))
                 caster->CastCustomSpell(itr->second.spellId, SpellValueMod(SPELLVALUE_BASE_POINT0+i), seatId+1, target, false, NULL, nullptr, origCasterGUID);
@@ -21495,7 +21497,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             {
                 int32 bp0[SpellEffIndex::MAX_EFFECTS];
                 for (uint32 eff = 0; eff < SpellEffIndex::MAX_EFFECTS; eff++)
-                    bp0[eff] = spellEntry->Effects[i].BasePoints;
+                    bp0[eff] = eff < spellEntry->EffectCount ? spellEntry->Effects[eff].BasePoints : 0;
                 bp0[i] = seatId + 1;
                 Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, &bp0[0], NULL, origCasterGUID);
             }
@@ -21507,13 +21509,15 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             else
                 Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, NULL, NULL, origCasterGUID);
         }
+
+        castAny = true;
     }
 
     Creature* creature = ToCreature();
-    if (creature && creature->IsAIEnabled)
+    if ((!hasClickSpells || castAny) && creature && creature->IsAIEnabled)
         creature->AI()->OnSpellClick(clicker);
 
-    return true;
+    return !hasClickSpells || castAny;
 }
 
 void Unit::EnterVehicle(Unit* base, int8 seatId, bool fullTriggered)
@@ -21572,12 +21576,14 @@ void Unit::ChangeSeat(int8 seatId, bool next)
     // Todo: the functions below could be consolidated and refactored to take
     // SeatMap::const_iterator as parameter, to save redundant map lookups.
 
+    int8 const targetSeat = seat->first;
     m_vehicle->RemovePassenger(this);
     // Set m_vehicle to NULL before adding passenger as adding new passengers is handled asynchronously
     // and someone may call ExitVehicle again before passenger is added to new seat
     Vehicle* veh = m_vehicle;
     m_vehicle = NULL;
-    if (!veh->AddPassenger(this, seatId))
+    // seatId is -1 for next/previous. AddPassenger would then pick the first empty seat, often the one just left.
+    if (!veh->AddPassenger(this, targetSeat))
         ABORT();
 }
 

@@ -296,7 +296,7 @@ void WorldSession::SendLfgPlayerLockInfo()
         bool has_cta_reward = false;
         if (lfg::LFGDungeonData const* lfg_dungeon = sLFGMgr->GetLFGDungeon(dungeonId))
         {
-            ctaRoleQuest = sObjectMgr->GetQuestTemplate(lfg_dungeon && lfg_dungeon->difficulty == RAID_DIFFICULTY_25MAN_LFR ? QUEST_LFR_SHORTAGE : QUEST_LFG_SHORTAGE);
+            ctaRoleQuest = sObjectMgr->GetQuestTemplate(lfg::IsLfrDifficulty(lfg_dungeon->difficulty) ? QUEST_LFR_SHORTAGE : QUEST_LFG_SHORTAGE);
 
             if (lfg_dungeon->map)
             {
@@ -359,7 +359,7 @@ void WorldSession::SendLfgPlayerLockInfo()
                 }
             }
 
-            if ((lfg_dungeon->type == lfg::LFG_TYPE_RANDOM || lfg_dungeon->difficulty == RAID_DIFFICULTY_25MAN_LFR) && lfg_dungeon->difficulty != SCENARIO_DIFFICULTY_NORMAL && lfg_dungeon->difficulty != SCENARIO_DIFFICULTY_HEROIC)
+            if ((lfg_dungeon->type == lfg::LFG_TYPE_RANDOM || lfg::IsLfrDifficulty(lfg_dungeon->difficulty)) && lfg_dungeon->difficulty != SCENARIO_DIFFICULTY_NORMAL && lfg_dungeon->difficulty != SCENARIO_DIFFICULTY_HEROIC)
                 has_cta_reward = true;
         }
 
@@ -528,7 +528,11 @@ void WorldSession::SendLfgPartyLockInfo()
     data.WriteBits(0, 22); // placeholder
     for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        ObjectGuid pguid = itr->getSource()->GetGUID();
+        Player* member = itr->getSource();
+        if (!member)
+            continue;
+
+        ObjectGuid pguid = member->GetGUID();
 
         if (pguid == guid)
             continue;
@@ -732,34 +736,31 @@ void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck)
 
     if (!roleCheck.roles.empty())
     {
-        // Leader info MUST be sent 1st :S
-        ObjectGuid guid = roleCheck.leader;
-        uint8 roles = roleCheck.roles.find(guid)->second;
-        Player* player = ObjectAccessor::FindPlayer(guid);
-        data.WriteBit(roles > 0);                                // Ready
-        data.WriteGuidMask(guid, 3, 0, 5, 2, 7, 1, 4, 6);        // Guid Bits
+        // Leader info MUST be sent 1st. If the leader already left, the first remaining member takes that slot
+        // so the declared count still matches the records written below.
+        lfg::LfgRolesMap::const_iterator leaderRole = roleCheck.roles.find(roleCheck.leader);
+        lfg::LfgRolesMap::const_iterator first = leaderRole != roleCheck.roles.end() ? leaderRole : roleCheck.roles.begin();
 
-        groupData << uint8(player ? player->getLevel() : 0);     // Level
-        groupData.WriteGuidBytes(guid, 3, 6);                    // Guid Bytes
-        groupData << uint32(roles);                              // Roles
-        groupData.WriteGuidBytes(guid, 2, 4, 0, 1, 5, 7);        // Guid Bytes
+        auto writeMember = [&](lfg::LfgRolesMap::const_iterator memberIt)
+        {
+            ObjectGuid guid = memberIt->first;
+            uint8 roles = memberIt->second;
+            Player* player = ObjectAccessor::FindPlayer(guid);
+            data.WriteBit(roles > 0);                                // Ready
+            data.WriteGuidMask(guid, 3, 0, 5, 2, 7, 1, 4, 6);        // Guid Bits
 
+            groupData << uint8(player ? player->getLevel() : 0);     // Level
+            groupData.WriteGuidBytes(guid, 3, 6);                    // Guid Bytes
+            groupData << uint32(roles);                              // Roles
+            groupData.WriteGuidBytes(guid, 2, 4, 0, 1, 5, 7);        // Guid Bytes
+        };
+
+        writeMember(first);
         for (lfg::LfgRolesMap::const_iterator it = roleCheck.roles.begin(); it != roleCheck.roles.end(); ++it)
         {
-            if (it->first == roleCheck.leader)
+            if (it == first)
                 continue;
-
-            guid = it->first;
-            roles = it->second;
-            player = ObjectAccessor::FindPlayer(guid);
-
-            data.WriteBit(roles > 0);                            // Ready
-            data.WriteGuidMask(guid, 3, 0, 5, 2, 7, 1, 4, 6);    // Guid Bits
-
-            groupData << uint8(player ? player->getLevel() : 0); // Level
-            groupData.WriteGuidBytes(guid, 3, 6);                // Guid Bytes
-            groupData << uint32(roles);                          // Roles
-            groupData.WriteGuidBytes(guid, 2, 4, 0, 1, 5, 7);    // Guid Bytes
+            writeMember(it);
         }
     }
 
@@ -993,11 +994,13 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
 {
     uint64 guid = GetPlayer()->GetGUID();
     uint32 queueId = sLFGMgr->GetActiveQueueId(guid);
-    uint64 gguid = sLFGMgr->GetGroup(guid, queueId);
-    lfg::LfgAnswer playerVote = boot.votes.find(guid)->second;
+    uint64 gguid = queueId ? sLFGMgr->GetGroup(guid, queueId) : 0;
+    auto vote = boot.votes.find(guid);
+    lfg::LfgAnswer playerVote = vote != boot.votes.end() ? vote->second : lfg::LFG_ANSWER_PENDING;
     uint8 votesNum = 0;
     uint8 agreeNum = 0;
-    uint32 secsleft = uint8((boot.cancelTime - time(NULL)) / 1000);
+    time_t now = time(NULL);
+    int32 secsleft = boot.cancelTime > now ? int32(boot.cancelTime - now) : 0;
     for (lfg::LfgAnswerContainer::const_iterator it = boot.votes.begin(); it != boot.votes.end(); ++it)
     {
         if (it->second != lfg::LFG_ANSWER_PENDING)
@@ -1007,38 +1010,34 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
                 ++agreeNum;
         }
     }
-    TC_LOG_DEBUG("network", "SMSG_LFG_BOOT_PROPOSAL_UPDATE " UI64FMTD " inProgress: %u - "
+
+    uint8 votesNeeded = gguid ? sLFGMgr->GetBootVotesNeeded(gguid) : lfg::LFG_GROUP_KICK_VOTES_NEEDED;
+    bool votePassed = agreeNum >= votesNeeded;
+    bool myVoteCompleted = playerVote != lfg::LFG_ANSWER_PENDING;
+    bool myVote = playerVote == lfg::LFG_ANSWER_AGREE;
+
+    TC_LOG_DEBUG("network", "SMSG_LFG_BOOT_PLAYER " UI64FMTD " inProgress: %u - "
         "didVote: %u - agree: %u - victim: %u votes: %u - agrees: %u - left: %u - "
         "needed: %u - reason %s",
-        (uint64)GetPlayer()->GetGUID(), uint8(boot.inProgress), uint8(playerVote != lfg::LFG_ANSWER_PENDING),
-        uint8(playerVote == lfg::LFG_ANSWER_AGREE), GUID_LOPART(boot.victim), votesNum, agreeNum,
-        secsleft, lfg::LFG_GROUP_KICK_VOTES_NEEDED, boot.reason.c_str());
+        (uint64)GetPlayer()->GetGUID(), uint8(boot.inProgress), uint8(myVoteCompleted),
+        uint8(myVote), GUID_LOPART(boot.victim), votesNum, agreeNum,
+        secsleft, votesNeeded, boot.reason.c_str());
 
-    ObjectGuid pguid = boot.victim;
-    WorldPacket data(SMSG_LFG_PROPOSAL_UPDATE);
-    data.WriteBit(boot.reason.empty());
-    data.WriteGuidMask(pguid, 3);
-    data.WriteBit(playerVote != lfg::LFG_ANSWER_PENDING);           // Did Vote
-    data.WriteBit(agreeNum >= sLFGMgr->GetBootVotesNeeded(gguid));  // Did succeed
-    data.WriteBit(playerVote == lfg::LFG_ANSWER_AGREE);             // Agree
-    data.WriteGuidMask(pguid, 6);
-    if (!boot.reason.empty())
-        data.WriteBits(boot.reason.size(), 8);
-    data.WriteBit(boot.inProgress);                                 // Vote in progress
-    data.WriteGuidMask(pguid, 1, 7, 5, 2, 0, 4);
-
+    // ClientLfgBootPlayer: four result bits, reason length, target, counts, time, votes needed, reason.
+    WorldPacket data(SMSG_LFG_BOOT_PLAYER, 1 + 2 + 8 + 4 + 4 + 4 + 4 + boot.reason.size());
+    data.WriteBit(boot.inProgress);
+    data.WriteBit(votePassed);
+    data.WriteBit(myVoteCompleted);
+    data.WriteBit(myVote);
+    data.WriteBits(boot.reason.size(), 9);
     data.FlushBits();
 
-    data.WriteGuidBytes(pguid, 2, 4, 3, 6);
-    data << uint32(sLFGMgr->GetBootVotesNeeded(gguid));             // Needed Votes
-    data << uint32(secsleft);                                       // Time Left
-    if (!boot.reason.empty())
-        data.WriteString(boot.reason);
-    data.WriteGuidBytes(pguid, 5, 0);
-    data << uint32(agreeNum);                                       // Agree Count
-    data.WriteGuidBytes(pguid, 7);
-    data << uint32(votesNum);                                       // Total Votes
-    data.WriteGuidBytes(pguid, 1);
+    data.appendPackGUID(boot.victim);
+    data << uint32(votesNum);
+    data << uint32(agreeNum);
+    data << int32(secsleft);
+    data << uint32(votesNeeded);
+    data.WriteString(boot.reason);
 
     SendPacket(&data);
 }
@@ -1046,10 +1045,17 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
 void WorldSession::SendLfgUpdateProposal(lfg::LfgProposal const& proposal)
 {
     uint64 guid = GetPlayer()->GetGUID();
-    uint64 gguid = proposal.players.find(guid)->second.group;
+    lfg::LfgProposalPlayerContainer::const_iterator proposalPlayer = proposal.players.find(guid);
+    if (proposalPlayer == proposal.players.end())
+        return;
+
+    uint64 gguid = proposalPlayer->second.group;
     bool silent = !proposal.isNew && gguid && gguid == proposal.group;
     uint32 dungeonEntry = proposal.dungeonId;
-    uint32 serverQueueId = proposal.players.find(guid)->second.queueId;
+    uint32 serverQueueId = proposalPlayer->second.queueId;
+    if (!sLFGMgr->HasQueueId(guid, serverQueueId))
+        return;
+
     auto& queueData = sLFGMgr->GetPlayerQueueData(m_Player->GetGUID(), serverQueueId);
 
     TC_LOG_DEBUG("network", "SMSG_LFG_PROPOSAL_UPDATE " UI64FMTD " state: %u",

@@ -723,6 +723,38 @@ namespace MS { namespace Garrison
             }
     };
 
+    /// Trade Agreement: Arakkoa Outcasts - 189205
+    /// Item 128294. Learning the spell is what raises the garrison cache cap to 1000.
+    class spell_garrison_trade_agreement_arakkoa : public SpellScriptLoader
+    {
+        public:
+            spell_garrison_trade_agreement_arakkoa() : SpellScriptLoader("spell_garrison_trade_agreement_arakkoa") { }
+
+            class spell_garrison_trade_agreement_arakkoa_SpellScript : public SpellScript
+            {
+                PrepareSpellScript(spell_garrison_trade_agreement_arakkoa_SpellScript)
+
+                void HandleAfterCast()
+                {
+                    if (Player* l_Player = GetCaster()->ToPlayer())
+                    {
+                        if (!l_Player->HasSpell(Globals::SpellTradeAgreementArakkoa))
+                            l_Player->learnSpell(Globals::SpellTradeAgreementArakkoa, false);
+                    }
+                }
+
+                void Register() override
+                {
+                    AfterCast += SpellCastFn(spell_garrison_trade_agreement_arakkoa_SpellScript::HandleAfterCast);
+                }
+            };
+
+            SpellScript* GetSpellScript() const override
+            {
+                return new spell_garrison_trade_agreement_arakkoa_SpellScript();
+            }
+    };
+
 }   ///< namespace Garrison
 }   ///< namespace MS
 
@@ -742,6 +774,7 @@ void AddSC_Garrison()
     new MS::Garrison::spell_garrison_well_rested();
     new MS::Garrison::spell_garrison_tent_spawn();
     new MS::Garrison::spell_aura_garrison_mine_area_check();
+    new MS::Garrison::spell_garrison_trade_agreement_arakkoa();
 }
 #endif
 #endif

@@ -1079,6 +1079,7 @@ void AddSC_frostfire_ridge();
 void AddSC_draenor_shadowmoon_valley();
 void AddSC_gorgrond();
 void AddSC_talador();
+void AddSC_draenor_outposts();
 void AddSC_tanaan_jungle_100();
 
 #ifndef CROSS
@@ -2153,6 +2154,7 @@ void AddDraenorScripts()
     AddSC_draenor_shadowmoon_valley();
     AddSC_gorgrond();
     AddSC_talador();
+    AddSC_draenor_outposts();
 	AddSC_tanaan_jungle_100();
 #ifndef CROSS
 

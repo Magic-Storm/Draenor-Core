@@ -478,17 +478,29 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& p_RecvData)
     p_RecvData.readPackGUID(l_PetJournalID);
     p_RecvData >> l_Flag;
 
-    l_Action = p_RecvData.ReadBits(2);  ///< 0 add flag, 2 remove it ///< l_Action is never read 01/18/16
+    l_Action = p_RecvData.ReadBits(2);  ///< 0 add flag, 2 remove it
 
     BattlePet::Ptr l_BattlePet = m_Player->GetBattlePet(l_PetJournalID);
 
-    if (l_BattlePet)
-    {
-        if (l_BattlePet->Flags & l_Flag)
-            l_BattlePet->Flags = l_BattlePet->Flags & ~l_Flag;
-        else
-            l_BattlePet->Flags |= l_Flag;
-    }
+    if (!l_BattlePet)
+        return;
+
+    if (l_Action == 0)
+        l_BattlePet->Flags |= l_Flag;
+    else if (l_Action == 2)
+        l_BattlePet->Flags &= ~l_Flag;
+    else if (l_BattlePet->Flags & l_Flag)
+        l_BattlePet->Flags &= ~l_Flag;
+    else
+        l_BattlePet->Flags |= l_Flag;
+
+    l_BattlePet->UpdateAbilities();
+
+    SQLTransaction l_Transaction = LoginDatabase.BeginTransaction();
+    l_BattlePet->Save(l_Transaction);
+    LoginDatabase.CommitTransaction(l_Transaction);
+
+    SendBattlePetUpdates(false);
 }
 
 void WorldSession::HandleBattlePetCage(WorldPacket& p_RecvData)

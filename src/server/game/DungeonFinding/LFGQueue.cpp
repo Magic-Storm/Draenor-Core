@@ -120,10 +120,11 @@ bool Bucket::CanAdd(Queuer const& queuer, LfgRolesMap& assignedRoles) const
     for (auto&& role : roles)
         assignedRoles.insert(role);
 
-    Difficulty difficulty = sLFGMgr->GetLFGDungeon(m_queue->GetDungeonID())->difficulty;
+    LFGDungeonData const* queueDungeon = sLFGMgr->GetLFGDungeon(m_queue->GetDungeonID());
+    Difficulty difficulty = queueDungeon->difficulty;
 
     auto check = m_queue->IsRaid() ? LFGMgr::CheckRaidRoles : LFGMgr::CheckGroupRoles;
-    if (difficulty == RAID_DIFFICULTY_1025MAN_FLEX || difficulty == SCENARIO_DIFFICULTY_NORMAL || difficulty == SCENARIO_DIFFICULTY_HEROIC)
+    if (lfg::IsSiegeFlex(queueDungeon->difficulty, queueDungeon->map) || difficulty == SCENARIO_DIFFICULTY_NORMAL || difficulty == SCENARIO_DIFFICULTY_HEROIC)
         check = LFGMgr::CheckDpsOnly;
 
     if (!check(assignedRoles, m_queue->GetRoleSlots(PLAYER_ROLE_TANK), m_queue->GetRoleSlots(PLAYER_ROLE_HEALER), m_queue->GetRoleSlots(PLAYER_ROLE_DAMAGE)))
@@ -540,7 +541,8 @@ void QueueManager::RemoveQueueData(Queuer const& queuer)
 void QueueManager::UpdateWaitTime(LfgRoles role, time_t waitTime, uint32 dungeonID)
 {
     auto itr = m_queues.find(dungeonID);
-    ASSERT(itr != m_queues.end());
+    if (itr == m_queues.end())
+        return;
     itr->second.UpdateWaitTime(role, waitTime);
 }
 
@@ -659,7 +661,7 @@ void QueueManager::UpdateShortageData()
 
             if (!randomDungeons)
             {
-                if (itr.second.Dungeons.size() == 1 && *itr.second.Dungeons.begin() == randomDungeonId)
+                if (itr.second.Dungeons.size() != 1 || *itr.second.Dungeons.begin() != randomDungeonId)
                     continue;
             }
             else if (itr.second.Dungeons.size() != 1 || *itr.second.Dungeons.begin() != randomDungeonId)
@@ -687,23 +689,11 @@ void QueueManager::UpdateShortageData()
                     continue;
             }
 
-            if (IS_GROUP_GUID(guid))
+            // Premades are not copied into the LFG player set until a dungeon group is formed.
+            // The roles they selected are already stored on the queue entry.
+            for (auto const& role : itr.second.Roles)
             {
-                LfgGuidSet const& members = sLFGMgr->GetPlayers(guid);
-                for (LfgGuidSet::const_iterator mitr = members.begin(); mitr != members.end(); ++mitr)
-                {
-                    uint8 roles = sLFGMgr->GetRoles(*mitr, queueId);
-                    if (roles & PLAYER_ROLE_TANK)
-                        ++tanksCount;
-                    if (roles & PLAYER_ROLE_HEALER)
-                        ++healersCount;
-                    if (roles & PLAYER_ROLE_DAMAGE)
-                        ++dpsCount;
-                }
-            }
-            else
-            {
-                uint8 roles = sLFGMgr->GetRoles(guid, queueId);
+                uint8 roles = role.second;
                 if (roles & PLAYER_ROLE_TANK)
                     ++tanksCount;
                 if (roles & PLAYER_ROLE_HEALER)
@@ -715,7 +705,7 @@ void QueueManager::UpdateShortageData()
 
         bool raid = false;
         if (auto lfg_dungeon = sLFGDungeonStore.LookupEntry(randomDungeonId))
-            raid = lfg_dungeon->difficulty == RAID_DIFFICULTY_25MAN_LFR;
+            raid = lfg::IsLfrDifficulty(lfg_dungeon->difficulty);
 
         // Queue exists for more than 90 seconds and we have "enough" people in queue
         uint32 total = tanksCount + healersCount + dpsCount;

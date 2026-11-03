@@ -43,10 +43,18 @@ namespace MS { namespace Garrison
     static const BuildingCondition gBuildingConditions[] =
     {
         /// BuildingID, MinLevel QuestA                                            QuestH
-        {   29,         96,      BuildingConditionQuest::ClearingTheGardenA,       BuildingConditionQuest::ClearingTheGardenH       },    ///< Herb Garden
-        {   42,         98,      BuildingConditionQuest::PetsVersusPestsA,         BuildingConditionQuest::PetsVersusPestsH         },    ///< Menagerie
-        {   61,         92,      BuildingConditionQuest::ThingsAreNotGorenOurWayA, BuildingConditionQuest::ThingsAreNotGorenOurWayH },    ///< Lunarfall Excavation / Frostwall Mines
-        {   64,         94,      BuildingConditionQuest::FishFight,                BuildingConditionQuest::FishFight                }     ///< Fishing Shack
+        {   29,         96,      BuildingConditionQuest::ClearingTheGardenA,       BuildingConditionQuest::ClearingTheGardenH       },    ///< Herb Garden 1
+        {   136,        96,      BuildingConditionQuest::ClearingTheGardenA,       BuildingConditionQuest::ClearingTheGardenH       },    ///< Herb Garden 2
+        {   137,        96,      BuildingConditionQuest::ClearingTheGardenA,       BuildingConditionQuest::ClearingTheGardenH       },    ///< Herb Garden 3
+        {   42,         98,      BuildingConditionQuest::PetsVersusPestsA,         BuildingConditionQuest::PetsVersusPestsH         },    ///< Menagerie 1
+        {   167,        98,      BuildingConditionQuest::PetsVersusPestsA,         BuildingConditionQuest::PetsVersusPestsH         },    ///< Menagerie 2
+        {   168,        98,      BuildingConditionQuest::PetsVersusPestsA,         BuildingConditionQuest::PetsVersusPestsH         },    ///< Menagerie 3
+        {   61,         92,      BuildingConditionQuest::ThingsAreNotGorenOurWayA, BuildingConditionQuest::ThingsAreNotGorenOurWayH },    ///< Mine 1
+        {   62,         92,      BuildingConditionQuest::ThingsAreNotGorenOurWayA, BuildingConditionQuest::ThingsAreNotGorenOurWayH },    ///< Mine 2
+        {   63,         92,      BuildingConditionQuest::ThingsAreNotGorenOurWayA, BuildingConditionQuest::ThingsAreNotGorenOurWayH },    ///< Mine 3
+        {   64,         94,      BuildingConditionQuest::FishFight,                BuildingConditionQuest::FishFight                },    ///< Fishing Shack 1
+        {   134,        94,      BuildingConditionQuest::FishFight,                BuildingConditionQuest::FishFight                },    ///< Fishing Shack 2
+        {   135,        94,      BuildingConditionQuest::FishFight,                BuildingConditionQuest::FishFight                }     ///< Fishing Shack 3
     };
 
     class Manager;

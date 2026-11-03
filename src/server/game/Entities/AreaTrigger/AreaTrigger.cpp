@@ -250,21 +250,24 @@ bool AreaTrigger::CreateAreaTrigger(uint32 p_Entry, uint32 p_GuidLow, uint32 p_P
 
 void AreaTrigger::Update(uint32 p_Time)
 {
-    // Don't decrease infinite durations
-    if (GetDuration() > int32(p_Time))
-        m_Duration -= p_Time;
-    else if (GetDuration() != -1 && int32(m_CreatedTime) > GetDuration())
-        Remove(p_Time); // expired
+    // Don't decrease infinite durations. A tick larger than the time left must still remove the trigger.
+    if (GetDuration() != -1)
+    {
+        if (GetDuration() > int32(p_Time))
+            m_Duration -= p_Time;
+        else
+            Remove(p_Time);
+    }
 
     m_CreatedTime += p_Time;
     WorldObject::Update(p_Time);
 
-    SpellInfo const* l_SpellInfo = sSpellMgr->GetSpellInfo(GetUInt32Value(AREATRIGGER_FIELD_SPELL_ID));
-    if (!l_SpellInfo)
+    if (!IsInWorld())
         return;
 
-    /// Must be done before...
-    if (!GetCaster())
+    // Spell areatriggers follow their caster. World areatriggers have no spell and no caster.
+    bool l_HasSpell = sSpellMgr->GetSpellInfo(GetUInt32Value(AREATRIGGER_FIELD_SPELL_ID)) != nullptr;
+    if (l_HasSpell && !GetCaster())
     {
         Remove(p_Time);
         return;
@@ -272,8 +275,11 @@ void AreaTrigger::Update(uint32 p_Time)
 
     sScriptMgr->OnUpdateAreaTriggerEntity(this, p_Time);
 
+    if (!IsInWorld())
+        return;
+
     /// And after the update, just in case it would be modified in a script
-    if (!GetCaster())
+    if (l_HasSpell && !GetCaster())
     {
         Remove(p_Time);
         return;
@@ -298,10 +304,13 @@ void AreaTrigger::Update(uint32 p_Time)
         }
         else if (GetMainTemplate()->HasAttached())
         {
-            m_positionX     = m_Caster->m_positionX;
-            m_positionY     = m_Caster->m_positionY;
-            m_positionZ     = m_Caster->m_positionZ;
-            m_orientation   = m_Caster->m_orientation;
+            if (Unit* l_Caster = GetCaster())
+            {
+                m_positionX     = l_Caster->m_positionX;
+                m_positionY     = l_Caster->m_positionY;
+                m_positionZ     = l_Caster->m_positionZ;
+                m_orientation   = l_Caster->m_orientation;
+            }
         }
     }
 }
@@ -310,10 +319,6 @@ void AreaTrigger::Remove(uint32 p_time)
 {
     if (IsInWorld())
     {
-        SpellInfo const* m_spellInfo = sSpellMgr->GetSpellInfo(GetUInt32Value(AREATRIGGER_FIELD_SPELL_ID));
-        if (!m_spellInfo)
-            return;
-
         sScriptMgr->OnRemoveAreaTriggerEntity(this, p_time);
 
         SendObjectDeSpawnAnim(GetGUID());

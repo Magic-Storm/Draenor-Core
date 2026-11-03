@@ -728,6 +728,14 @@ namespace MS {
 			return m_CacheLastTokenAmount;
 		}
 
+		uint32 Manager::GetCacheTokenCap() const
+		{
+			if (m_Owner && m_Owner->HasSpell(Globals::SpellTradeAgreementArakkoa))
+				return Globals::CacheMaxTokenTradeAgreement;
+
+			return Globals::CacheMaxToken;
+		}
+
 		//////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////
 
@@ -828,8 +836,15 @@ namespace MS {
 		/// Reward garrison cache content
 		void Manager::RewardGarrisonCache()
 		{
-			m_Owner->SendDisplayToast(Globals::CurrencyID, m_CacheLastTokenAmount, DISPLAY_TOAST_METHOD_GARRISON_CACHE, TOAST_TYPE_NEW_CURRENCY, false, false);
-			m_Owner->ModifyCurrency(Globals::CurrencyID, m_CacheLastTokenAmount, false);
+			uint32 l_Generated = m_CacheLastTokenAmount;
+			if (time(0) > m_CacheLastUsage)
+				l_Generated = std::min(uint32((time(0) - m_CacheLastUsage) / Globals::CacheTokenGenerateTime), GetCacheTokenCap());
+
+			if (l_Generated)
+			{
+				m_Owner->SendDisplayToast(Globals::CurrencyID, l_Generated, DISPLAY_TOAST_METHOD_GARRISON_CACHE, TOAST_TYPE_NEW_CURRENCY, false, false);
+				m_Owner->ModifyCurrency(Globals::CurrencyID, l_Generated, false);
+			}
 
 			m_CacheLastTokenAmount = 0;
 			m_CacheLastUsage = time(0);
@@ -1118,9 +1133,14 @@ namespace MS {
 
 			for (auto l_Follower : l_Followers)
 			{
-				if (l_Follower.Level < 100)
+				GarrFollowerEntry const* l_FollowerEntry = l_Follower.GetEntry();
+				if (!l_FollowerEntry || l_FollowerEntry->Type != l_MissionEntry->FollowerType)
+					continue;
+
+				if (l_Follower.Level < Globals::MaxFollowerLevel)
 				{
-					l_FollowermaxLevel = l_Follower.Level;
+					if (l_Follower.Level > (int32)l_FollowermaxLevel)
+						l_FollowermaxLevel = l_Follower.Level;
 					continue;
 				}
 
@@ -1206,16 +1226,28 @@ namespace MS {
 
 			GarrMissionEntry const* l_MissionTemplate = sGarrMissionStore.LookupEntry(p_MissionRecID);
 
-			if (CanMissionBeStartedAfterSoftCap(l_MissionTemplate->FollowerType) || (GetActiveFollowerCount(l_MissionTemplate->FollowerType) > GetFollowerSoftCap(l_MissionTemplate->FollowerType)))
-				return;
-
-			if (l_MissionTemplate->CurrencyCost && !m_Owner->HasCurrency(Globals::CurrencyID, l_MissionTemplate->CurrencyCost))
+			if (!l_MissionTemplate)
 			{
 				StartMissionFailed(p_MissionRecID, p_Followers);
 				return;
 			}
 
-			if (p_Followers.size() < l_MissionTemplate->RequiredFollowersCount)
+			/// AllowMissionStartAboveSoftCap is a follower-type flag. Types without it cannot start while over the cap.
+			if (!CanMissionBeStartedAfterSoftCap(l_MissionTemplate->FollowerType) && GetActiveFollowerCount(l_MissionTemplate->FollowerType) > GetFollowerSoftCap(l_MissionTemplate->FollowerType))
+			{
+				StartMissionFailed(p_MissionRecID, p_Followers);
+				return;
+			}
+
+			uint32 l_MissionCurrencyID = l_MissionTemplate->CurrencyID ? l_MissionTemplate->CurrencyID : Globals::CurrencyID;
+
+			if (l_MissionTemplate->CurrencyCost && !m_Owner->HasCurrency(l_MissionCurrencyID, l_MissionTemplate->CurrencyCost))
+			{
+				StartMissionFailed(p_MissionRecID, p_Followers);
+				return;
+			}
+
+			if (p_Followers.size() != l_MissionTemplate->RequiredFollowersCount)
 			{
 				StartMissionFailed(p_MissionRecID, p_Followers);
 				return;
@@ -1223,6 +1255,15 @@ namespace MS {
 
 			for (uint32 l_I = 0; l_I < p_Followers.size(); ++l_I)
 			{
+				for (uint32 l_J = 0; l_J < l_I; ++l_J)
+				{
+					if (p_Followers[l_J] == p_Followers[l_I])
+					{
+						StartMissionFailed(p_MissionRecID, p_Followers);
+						return;
+					}
+				}
+
 				std::vector<GarrisonFollower>::iterator l_It = std::find_if(m_Followers.begin(), m_Followers.end(), [this, p_Followers, l_I](const GarrisonFollower p_Follower) -> bool
 				{
 					if (p_Follower.DatabaseID == uint32(p_Followers[l_I]))
@@ -1249,13 +1290,15 @@ namespace MS {
 					return;
 				}
 
-				/// Should not happen
 				if (l_It->Flags & GARRISON_FOLLOWER_FLAG_INACTIVE)
+				{
+					StartMissionFailed(p_MissionRecID, p_Followers);
 					return;
+				}
 			}
 
 			if (l_MissionTemplate->CurrencyCost)
-				m_Owner->ModifyCurrency(Globals::CurrencyID, -(int32)l_MissionTemplate->CurrencyCost);
+				m_Owner->ModifyCurrency(l_MissionCurrencyID, -(int32)l_MissionTemplate->CurrencyCost);
 
 			std::vector<uint32> l_FollowersIDs;
 			for (uint32 l_I = 0; l_I < p_Followers.size(); ++l_I)
@@ -2157,7 +2200,7 @@ namespace MS {
 								if (!l_AbilityEffectEntry || l_AbilityEffectEntry->AbilityID != l_CurrentAbilityID)
 									continue;
 
-								if (l_AbilityEffectEntry->CounterMechanicTypeID == l_MissionTemplate->GarrMechanicTypeRecID)
+								if (l_AbilityEffectEntry->CounterMechanicTypeID == l_MechanicTypeEntry->ID)
 								{
 									double l_Seil = 0;
 
@@ -2169,7 +2212,7 @@ namespace MS {
 									l_CurrentAdditionalWinChance = (l_Seil * l_V62) + l_CurrentAdditionalWinChance;
 
 #ifdef GARRISON_CHEST_FORMULA_DEBUG
-									printf("Added %.2f to success due to follower %u enemy race ability %d.\n", (l_Seil * l_V62), 0, l_CurrentAbilityID);
+									printf("Added %.2f to success due to follower %u enemy race ability %d.\n", (l_Seil * l_V62), l_MissionFollowers[l_Y]->FollowerID, l_CurrentAbilityID);
 #endif // GARRISON_CHEST_FORMULA_DEBUG
 								}
 							}
@@ -2308,7 +2351,7 @@ namespace MS {
 						}
 
 						if (!l_Proc)
-							break;
+							continue;
 
 						double l_Seil = 0.0;
 
@@ -2653,6 +2696,9 @@ namespace MS {
 					if (!l_It->IsNPC())
 						return;
 
+					if ((l_It->Flags & GARRISON_FOLLOWER_FLAG_INACTIVE) == 0)
+						return;
+
 					if (GetActiveFollowersCount(FollowerType::NPC) >= Globals::MaxActiveFollowerAllowedCount + GetFollowersCountBarracksBonus())
 						return;
 
@@ -2672,20 +2718,14 @@ namespace MS {
 			}
 			else
 			{
-				if (!m_Owner->HasEnoughMoney((uint64)Globals::FollowerActivationCost))
-					return;
-
 				auto l_It = std::find_if(m_Followers.begin(), m_Followers.end(), [p_FollowerDBID](const GarrisonFollower& p_Follower) { return p_Follower.DatabaseID == p_FollowerDBID; });
 
-				if (l_It != m_Followers.end())
-				{
-					m_Owner->ModifyMoney(-Globals::FollowerActivationCost);
+				/// Deactivation is free. A follower on a mission or assigned to a building stays active.
+				if (l_It == m_Followers.end() || !l_It->IsNPC() || l_It->CurrentMissionID || l_It->CurrentBuildingID)
+					return;
 
-					l_It->Flags |= GARRISON_FOLLOWER_FLAG_INACTIVE;
-					l_Follower = &(*l_It); ///< l_follower is never read 01/18/16
-				}
-
-				l_Follower = &*l_It;
+				l_It->Flags |= GARRISON_FOLLOWER_FLAG_INACTIVE;
+				l_Follower = &(*l_It);
 			}
 
 			if (!l_Follower)
@@ -2836,7 +2876,7 @@ namespace MS {
 			return (uint32)std::count_if(m_Followers.begin(), m_Followers.end(), [p_FollowerType](GarrisonFollower p_Folloser) -> bool
 			{
 				auto l_Entry = p_Folloser.GetEntry();
-				return l_Entry ? (l_Entry->Type == p_FollowerType && (p_FollowerType == FollowerType::Ship || !(p_Folloser.Flags & GARRISON_FOLLOWER_FLAG_INACTIVE))) : -1;
+				return l_Entry && l_Entry->Type == p_FollowerType && (p_FollowerType == FollowerType::Ship || !(p_Folloser.Flags & GARRISON_FOLLOWER_FLAG_INACTIVE));
 			});
 		}
 
@@ -4355,55 +4395,54 @@ namespace MS {
 				return;
 			}
 
-			uint32 l_NumRessourceGenerated = std::min((uint32)((time(0) - m_CacheLastUsage) / Globals::CacheTokenGenerateTime), (uint32)Globals::CacheMaxToken);
+			uint32 l_Cap = GetCacheTokenCap();
+			uint32 l_NumRessourceGenerated = 0;
+			if (time(0) > m_CacheLastUsage)
+				l_NumRessourceGenerated = std::min(uint32((time(0) - m_CacheLastUsage) / Globals::CacheTokenGenerateTime), l_Cap);
 
-			if (!m_CacheGameObjectGUID)
+			/// The old path stored the amount only when the chest was first spawned, so it never grew.
+			if (m_CacheLastTokenAmount != l_NumRessourceGenerated)
 			{
 				m_CacheLastTokenAmount = l_NumRessourceGenerated;
 				m_Owner->SendUpdateWorldState(WorldStates::CacheNumToken, l_NumRessourceGenerated);
+			}
 
-				if (l_NumRessourceGenerated >= Globals::CacheMinToken)
+			if (l_NumRessourceGenerated < Globals::CacheMinToken)
+			{
+				if (m_CacheGameObjectGUID)
 				{
-					/// Get display ID
-					uint32 l_DisplayIDOffset = l_NumRessourceGenerated == Globals::CacheMaxToken ? 2 : ((l_NumRessourceGenerated > Globals::CacheHeftyToken) ? 1 : 0);
-					const uint32 & l_DisplayID = gGarrisonCacheGameObjectID[(GetGarrisonFactionIndex() * 3) + l_DisplayIDOffset];
-
-					/// Destroy old cache if exist
-					GameObject* l_Cache = HashMapHolder<GameObject>::Find(m_CacheGameObjectGUID);
-
-					if (l_Cache)
+					if (GameObject* l_Cache = HashMapHolder<GameObject>::Find(m_CacheGameObjectGUID))
 					{
 						l_Cache->DestroyForNearbyPlayers();
 						l_Cache->AddObjectToRemoveList();
 					}
 
 					m_CacheGameObjectGUID = 0;
-
-					/// Create new one
-					if (m_Owner->IsInGarrison())
-					{
-						/// Extract new location
-						const GarrisonCacheInfoLocation& l_Location = gGarrisonCacheInfoLocation[(GetGarrisonFactionIndex() * Globals::MaxLevel) + (m_GarrisonLevel - 1)];
-						l_Cache = m_Owner->SummonGameObject(l_DisplayID, l_Location.X, l_Location.Y, l_Location.Z, l_Location.O, 0, 0, 0, 0, 0);
-
-						if (l_Cache)
-							m_CacheGameObjectGUID = l_Cache->GetGUID();
-					}
-
 				}
+
+				return;
 			}
 
-			if (m_CacheGameObjectGUID && l_NumRessourceGenerated < Globals::CacheMinToken)
+			uint32 l_DisplayIDOffset = l_NumRessourceGenerated >= l_Cap ? 2 : (l_NumRessourceGenerated > Globals::CacheHeftyToken ? 1 : 0);
+			uint32 l_DisplayID = gGarrisonCacheGameObjectID[(GetGarrisonFactionIndex() * 3) + l_DisplayIDOffset];
+			GameObject* l_Cache = m_CacheGameObjectGUID ? HashMapHolder<GameObject>::Find(m_CacheGameObjectGUID) : nullptr;
+			if (l_Cache && l_Cache->GetEntry() == l_DisplayID)
+				return;
+
+			if (l_Cache)
 			{
-				GameObject* l_Cache = HashMapHolder<GameObject>::Find(m_CacheGameObjectGUID);
+				l_Cache->DestroyForNearbyPlayers();
+				l_Cache->AddObjectToRemoveList();
+				m_CacheGameObjectGUID = 0;
+			}
+
+			if (m_Owner->IsInGarrison())
+			{
+				const GarrisonCacheInfoLocation& l_Location = gGarrisonCacheInfoLocation[(GetGarrisonFactionIndex() * Globals::MaxLevel) + (m_GarrisonLevel - 1)];
+				l_Cache = m_Owner->SummonGameObject(l_DisplayID, l_Location.X, l_Location.Y, l_Location.Z, l_Location.O, 0, 0, 0, 0, 0);
 
 				if (l_Cache)
-				{
-					l_Cache->DestroyForNearbyPlayers();
-					l_Cache->AddObjectToRemoveList();
-				}
-
-				m_CacheGameObjectGUID = 0;
+					m_CacheGameObjectGUID = l_Cache->GetGUID();
 			}
 		}
 
@@ -4600,15 +4639,31 @@ namespace MS {
 					uint32 l_MaxFollowerLevel = 90;
 					uint32 l_MinFollowerLevel = 100;
 					uint32 l_MaxFollowerItemLevel = 600;
+					uint32 l_MaxShipLevel = 90;
+					uint32 l_MinShipLevel = 100;
+					uint32 l_MaxShipItemLevel = 0;
+					bool l_HasShip = false;
 
-					std::for_each(m_Followers.begin(), m_Followers.end(), [&l_MaxFollowerLevel, &l_MaxFollowerItemLevel, &l_MinFollowerLevel](const GarrisonFollower& p_Follower) -> void
+					std::for_each(m_Followers.begin(), m_Followers.end(), [&l_MaxFollowerLevel, &l_MaxFollowerItemLevel, &l_MinFollowerLevel, &l_MaxShipLevel, &l_MinShipLevel, &l_MaxShipItemLevel, &l_HasShip](const GarrisonFollower& p_Follower) -> void
 					{
+						uint32 l_Level = (uint32)p_Follower.Level;
+						uint32 l_ItemLevel = (uint32)((p_Follower.ItemLevelArmor + p_Follower.ItemLevelWeapon) / 2);
+
+						if (p_Follower.IsShip())
+						{
+							l_HasShip = true;
+							l_MinShipLevel = std::min(l_MinShipLevel, l_Level);
+							l_MaxShipLevel = std::max(l_MaxShipLevel, l_Level);
+							l_MaxShipItemLevel = std::max(l_MaxShipItemLevel, l_ItemLevel);
+							return;
+						}
+
 						if (!p_Follower.IsNPC())
 							return;
 
-						l_MinFollowerLevel = std::min(l_MinFollowerLevel, (uint32)p_Follower.Level);
-						l_MaxFollowerLevel = std::max(l_MaxFollowerLevel, (uint32)p_Follower.Level);
-						l_MaxFollowerItemLevel = std::max(l_MaxFollowerItemLevel, (uint32)((p_Follower.ItemLevelArmor + p_Follower.ItemLevelWeapon) / 2));
+						l_MinFollowerLevel = std::min(l_MinFollowerLevel, l_Level);
+						l_MaxFollowerLevel = std::max(l_MaxFollowerLevel, l_Level);
+						l_MaxFollowerItemLevel = std::max(l_MaxFollowerItemLevel, l_ItemLevel);
 					});
 
 					std::vector<const GarrMissionEntry*> l_Candidates;
@@ -4628,15 +4683,28 @@ namespace MS {
 						if (l_Count)
 							continue;
 
+						uint32 l_MaxLevel = l_MaxFollowerLevel;
+						uint32 l_MinLevel = l_MinFollowerLevel;
+						uint32 l_MaxItemLevel = l_MaxFollowerItemLevel;
+						if (l_Entry->FollowerType == MS::Garrison::FollowerType::Ship)
+						{
+							if (!l_HasShip)
+								continue;
+
+							l_MaxLevel = l_MaxShipLevel;
+							l_MinLevel = l_MinShipLevel;
+							l_MaxItemLevel = l_MaxShipItemLevel;
+						}
+
 						/// Max Level cap : 2
-						if (l_Entry->RequiredLevel > (int32)(l_MaxFollowerLevel + 2))
+						if (l_Entry->RequiredLevel > (int32)(l_MaxLevel + 2))
 							continue;
 
-						if (l_Entry->RequiredItemLevel > (int32)l_MaxFollowerItemLevel)
+						if (l_Entry->RequiredItemLevel > (int32)l_MaxItemLevel)
 							continue;
 
 						/// We have less chances to get a low lvl mission if your followers' lowest lvl is higher
-						if (l_Entry->RequiredLevel < l_MinFollowerLevel)
+						if (l_Entry->RequiredLevel < l_MinLevel)
 						{
 							if (urand(0, 100) <= 25)
 								continue;
@@ -4702,18 +4770,15 @@ namespace MS {
 
 				++l_RewardCount;
 
-				/// Elemental Rune & Abrogator Stone - Legendary Questline  NYI
-				if (l_RewardEntry->ItemID == 115510 || l_RewardEntry->ItemID == 115280)
-					l_RewardCount = 0;
-
 				/// Special case for XP item, if the owner is already at max level he doesn't need this item anymore
 				if (m_Owner->getLevel() == MAX_LEVEL && l_RewardEntry->ItemID == 120205)
 					l_RewardCount = 0;
 
 				switch (l_RewardEntry->RewardCurrencyID)
 				{
-				case 1101:
-					l_RewardCount = 0; ///< Related to shipyards
+				case 1101: ///< Oil. Shipyard missions stay hidden until the shipyard plot exists.
+					if (!HasShipyard())
+						l_RewardCount = 0;
 					break;
 				case 821:
 				case 828:
@@ -4759,8 +4824,13 @@ namespace MS {
 			if (!l_RewardCount)
 				return false;
 
-			/// Ships NYI
-			if (p_Entry->FollowerType != MS::Garrison::FollowerType::NPC)
+			/// Ship missions need the shipyard. Any other follower type is still unused.
+			if (p_Entry->FollowerType == MS::Garrison::FollowerType::Ship)
+			{
+				if (!HasShipyard())
+					return false;
+			}
+			else if (p_Entry->FollowerType != MS::Garrison::FollowerType::NPC)
 				return false;
 
 			/// We are getting too many rare missions compared to retail

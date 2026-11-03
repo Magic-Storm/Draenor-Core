@@ -1647,6 +1647,8 @@ class Player : public Unit, public GridObject<Player>
 		bool CanJoinPartyGarrison() { return m_CanJoinPartyGarrison; }
 		void SetCanJoinPartyGarrison() { m_CanJoinPartyGarrison = true; }
 		void SetInPartyGarrison() { m_CanJoinPartyGarrison = false; m_InPartyGarrison = true; }
+		bool IsInPartyGarrison() const { return m_InPartyGarrison; }
+		void ClearPartyGarrison() { m_InPartyGarrison = false; m_CanJoinPartyGarrison = true; }
         int32 GetGarrisonMapID() const;
         int32 GetShipyardMapID() const;
         void DeleteGarrison();

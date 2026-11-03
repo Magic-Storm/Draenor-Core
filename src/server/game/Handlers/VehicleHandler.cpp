@@ -64,11 +64,11 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& p_RecvData)
     }
 
     VehicleSeatEntry const* l_VehicleSeat = GetPlayer()->GetVehicle()->GetSeatForPassenger(GetPlayer());
-    if (!l_VehicleSeat->CanSwitchFromSeat())
+    if (!l_VehicleSeat || !l_VehicleSeat->CanSwitchFromSeat())
     {
         p_RecvData.rfinish();
         TC_LOG_ERROR("network", "HandleChangeSeatsOnControlledVehicle, Opcode: %u, Player %u tried to switch seats but current seatflags %u don't permit that.",
-            p_RecvData.GetOpcode(), GetPlayer()->GetGUIDLow(), l_VehicleSeat->m_flags);
+            p_RecvData.GetOpcode(), GetPlayer()->GetGUIDLow(), l_VehicleSeat ? l_VehicleSeat->m_flags : 0);
         return;
     }
 

@@ -227,6 +227,7 @@ class OutdoorPvPAshran : public OutdoorPvP
         uint32 m_MaxBattleTime;
         uint32 m_GladiatorRespawnTime;
         uint32 m_AncientArtifactTime;
+        uint32 m_AncientArtifactRespawnTimer;
 
         AshranVignettesMap m_NeutralVignettes;
         AshranVignettesMap m_FactionVignettes[TeamId::TEAM_NEUTRAL];

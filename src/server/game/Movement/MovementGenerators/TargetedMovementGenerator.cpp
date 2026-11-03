@@ -171,8 +171,15 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
 			distFromTarget = 1.0f + GetTarget()->GetCombatReach() + i_offset;
 		else
 			distFromTarget = owner->GetCombatReach() + GetTarget()->GetCombatReach() + i_offset;
-		if (!result || (i_path->GetPathType() & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH | PATHFIND_NOT_USING_PATH)))
+		// A partial nav path and a flying or swimming shortcut are usable. Rebuilding them
+		// with forceDest false replaces that path with no path and the unit stops.
+		PathType const tried = i_path->GetPathType();
+		if (!result || (tried & PATHFIND_NOPATH) || (forceDest && (tried & PATHFIND_NOT_USING_PATH)))
+		{
 			result = i_path->CalculatePath(x, y, z, false);
+			if (forceDest && (!result || (i_path->GetPathType() & PATHFIND_NOPATH)))
+				result = i_path->CalculatePath(x, y, z, true);
+		}
 		i_path->ReducePathLenghtByDist(distFromTarget, GetTarget()->ToUnit());
 	}
 

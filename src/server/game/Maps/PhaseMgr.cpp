@@ -10,8 +10,11 @@
 #include "Chat.h"
 #include "ObjectMgr.h"
 #include "ConditionMgr.h"
+#include "DBCStores.h"
 #ifndef CROSS
 #include "GarrisonMgr.hpp"
+#include "Group.h"
+#include "ObjectAccessor.h"
 #endif /* not CROSS */
 
 //////////////////////////////////////////////////////////////////
@@ -179,16 +182,24 @@ void PhaseMgr::RegisterPhasingAuraEffect(AuraEffect const* auraEffect)
     }
     else if (auraEffect->GetAuraType() == SPELL_AURA_PHASE_GROUP)
     {
+        // This core stores the phase id of SPELL_AURA_PHASE in MiscValueB.
+        // Phase groups follow the same slot; MiscValue is the fallback.
         uint32 group = auraEffect->GetMiscValueB();
-        //std::set<uint32> const& groupPhases = GetPhasesForGroup(group);
-        //for (auto itr = groupPhases.begin(); itr != groupPhases.end(); ++itr)
-        //{
-           // PhaseInfo phaseInfo;
-            //phaseInfo.phaseId = auraEffect->GetMiscValueB();
-           // if (phaseInfo.NeedsClientSideUpdate())
-                //_UpdateFlags |= PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED;
-           // phases.push_back(phaseInfo);
-       // }
+        std::vector<uint32> const* groupPhases = &GetPhasesForGroup(group);
+        if (groupPhases->empty())
+        {
+            group = auraEffect->GetMiscValue();
+            groupPhases = &GetPhasesForGroup(group);
+        }
+
+        for (uint32 phaseId : *groupPhases)
+        {
+            PhaseInfo phaseInfo;
+            phaseInfo.phaseId = phaseId;
+            if (phaseInfo.NeedsClientSideUpdate())
+                _UpdateFlags |= PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED;
+            phases.push_back(phaseInfo);
+        }
     }
 
     for (auto itr = phases.begin(); itr != phases.end(); ++itr)
@@ -328,20 +339,36 @@ void PhaseData::SendPhaseshiftToPlayer()
 	}
 
 #ifndef CROSS
-	if (player->GetGarrison() && player->GetGarrison()->GetGarrisonSiteLevelEntry())
+	MS::Garrison::Manager* l_Garrison = player->GetGarrison();
+	if (player->IsInPartyGarrison())
 	{
-		if (player->GetMapId() == MS::Garrison::Globals::BaseMap || player->IsInGarrison())
+		if (Group* l_Group = player->GetGroup())
 		{
-			l_InactiveTerrainSwap.insert(player->GetGarrison()->GetGarrisonSiteLevelEntry()->MapID);
-			player->GetGarrison()->GetTerrainSwaps(l_TerrainSwaps);
+			if (Player* l_Leader = ObjectAccessor::FindPlayer(l_Group->GetLeaderGUID()))
+			{
+				if (l_Leader != player && l_Leader->GetGarrison() && l_Leader->GetGarrison()->GetGarrisonSiteLevelEntry()
+					&& l_Leader->GetMapId() == player->GetMapId())
+					l_Garrison = l_Leader->GetGarrison();
+			}
+		}
+	}
+
+	if (l_Garrison && l_Garrison->GetGarrisonSiteLevelEntry())
+	{
+		bool l_InThisGarrison = player->GetMapId() == uint32(l_Garrison->GetGarrisonSiteLevelEntry()->MapID);
+		if (player->GetMapId() == MS::Garrison::Globals::BaseMap || l_InThisGarrison)
+		{
+			l_InactiveTerrainSwap.insert(l_Garrison->GetGarrisonSiteLevelEntry()->MapID);
+			l_Garrison->GetTerrainSwaps(l_TerrainSwaps);
 		}
 
-		if (player->GetGarrison()->HasShipyard() && (player->GetMapId() == MS::Garrison::Globals::BaseMap || player->IsInShipyard() || player->IsInGarrison()))
+		bool l_InThisShipyard = player->GetMapId() == uint32(l_Garrison->GetShipyardMapId());
+		if (l_Garrison->HasShipyard() && (player->GetMapId() == MS::Garrison::Globals::BaseMap || l_InThisShipyard || l_InThisGarrison))
 		{
 			/// Blizz are weird people
 			l_InactiveTerrainSwap.insert(MS::Garrison::ShipyardMapId::Alliance);
 			l_InactiveTerrainSwap.insert(MS::Garrison::ShipyardMapId::Horde);
-			player->GetGarrison()->GetShipyardTerainSwaps(l_TerrainSwaps);
+			l_Garrison->GetShipyardTerainSwaps(l_TerrainSwaps);
 		}
 	}
 #endif
@@ -377,40 +404,41 @@ void PhaseData::AddAuraInfo(uint32 const spellId, PhaseInfo phaseInfo)
 
 uint32 PhaseData::RemoveAuraInfo(uint32 const spellId)
 {
-    PhaseInfoContainer::const_iterator rAura = spellPhaseInfo.find(spellId);
-    if (rAura != spellPhaseInfo.end())
-    {
-        bool serverUpdated = false;
-        bool clientUpdated = false;
-        uint32 updateflag = 0;
-
-        for (auto phase = rAura->second.begin(); phase != rAura->second.end(); ++phase)
-        {
-            if (!clientUpdated && phase->NeedsClientSideUpdate())
-            {
-                clientUpdated = true;
-                updateflag |= PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED;
-            }
-
-            if (!serverUpdated && phase->NeedsServerSideUpdate())
-            {
-                serverUpdated = true;
-                _PhasemaskThroughAuras = 0;
-
-                updateflag |= PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED;
-
-				spellPhaseInfo.erase(rAura);
-
-                for (PhaseInfoContainer::const_iterator itr = spellPhaseInfo.begin(); itr != spellPhaseInfo.end(); ++itr)
-                    for (auto ph = itr->second.begin(); ph != itr->second.end(); ++ph)
-                        _PhasemaskThroughAuras |= ph->phasemask;
-            }
-        }
-
-        return updateflag;
-    }
-    else
+    PhaseInfoContainer::iterator rAura = spellPhaseInfo.find(spellId);
+    if (rAura == spellPhaseInfo.end())
         return 0;
+
+    bool serverUpdated = false;
+    bool clientUpdated = false;
+
+    for (auto phase = rAura->second.begin(); phase != rAura->second.end(); ++phase)
+    {
+        if (phase->NeedsClientSideUpdate())
+            clientUpdated = true;
+        if (phase->NeedsServerSideUpdate())
+            serverUpdated = true;
+    }
+
+    // Drop the aura before rebuilding. A phase-id or phase-group aura has no phasemask,
+    // and leaving it here kept the client phase after the spell expired.
+    spellPhaseInfo.erase(rAura);
+
+    uint32 updateflag = 0;
+
+    if (serverUpdated)
+    {
+        _PhasemaskThroughAuras = 0;
+        updateflag |= PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED;
+
+        for (PhaseInfoContainer::const_iterator itr = spellPhaseInfo.begin(); itr != spellPhaseInfo.end(); ++itr)
+            for (auto ph = itr->second.begin(); ph != itr->second.end(); ++ph)
+                _PhasemaskThroughAuras |= ph->phasemask;
+    }
+
+    if (clientUpdated)
+        updateflag |= PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED;
+
+    return updateflag;
 }
 
 //////////////////////////////////////////////////////////////////

@@ -53,6 +53,7 @@ set(scripts_STAT_SRCS
   Draenor/item_strongboxes.cpp
   Draenor/talador.cpp
   Draenor/talador.h
+  Draenor/draenor_outposts.cpp
 )
 
 message("  -> Prepared: Draenor")

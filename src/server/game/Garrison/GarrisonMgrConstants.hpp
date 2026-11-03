@@ -34,6 +34,9 @@ namespace MS { namespace Garrison
             CacheMinToken                   = 5,
             CacheHeftyToken                 = 200,
             CacheMaxToken                   = 500,
+            /// Trade Agreement: Arakkoa Outcasts (item 128294, spell 189205) raises the cap to 1000.
+            CacheMaxTokenTradeAgreement     = 1000,
+            SpellTradeAgreementArakkoa      = 189205,
             CacheTokenGenerateTime          = (10 * MINUTE),
             MissionDistributionInterval     = (25 * MINUTE),
             DefaultFollowerItemLevel        = 600,

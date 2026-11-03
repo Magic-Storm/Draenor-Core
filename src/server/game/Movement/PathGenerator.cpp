@@ -535,13 +535,10 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
         _type = PATHFIND_NOPATH;
         return;
     }
-    else if (pointCount == _pointPathLimit)
-    {
-        //TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath FAILED! path sized %d returned, lower than limit set to %d\n", pointCount, _pointPathLimit);
-        BuildShortcut();
-        _type = PATHFIND_SHORT;
-        return;
-    }
+
+    // The smooth path hit the point cap. Keep the points we have instead of
+    // replacing them with a straight line through terrain.
+    bool pathCapped = pointCount == _pointPathLimit;
 
     _pathPoints.resize(pointCount);
     for (uint32 i = 0; i < pointCount; ++i)
@@ -551,6 +548,12 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
 
     // first point is always our current location - we need the next one
     SetActualEndPosition(_pathPoints[pointCount-1]);
+
+    if (pathCapped)
+    {
+        _type = PathType(PATHFIND_NORMAL | PATHFIND_SHORT);
+        return;
+    }
 
     // force the given destination, if needed
     if (_forceDestination &&

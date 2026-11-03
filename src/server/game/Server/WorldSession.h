@@ -1196,6 +1196,7 @@ class WorldSession
         void HandleCompleteMovieOpcode(WorldPacket & p_Packet);
         void HandleSceneTriggerEventOpcode(WorldPacket & p_Packet);
         void HandleSceneCancelOpcode(WorldPacket & p_Packet);
+        void HandleSceneCompleteOpcode(WorldPacket & p_Packet);
 
         void HandlePageTextQueryOpcode(WorldPacket& recvPacket);
 
@@ -1253,6 +1254,7 @@ class WorldSession
         void HandleRandomRollOpcode(WorldPacket& recvData);
         void HandleFarSightOpcode(WorldPacket& recvData);
         void HandleCloseInteraction(WorldPacket& p_RecvData);
+        void HandleChoiceResponseOpcode(WorldPacket& p_RecvData);
         void HandleSetDungeonDifficultyOpcode(WorldPacket& recvData);
         void HandleSetRaidDifficultyOpcode(WorldPacket& recvData);
         void HandleMoveSetCanFlyAckOpcode(WorldPacket& recvData);
@@ -1438,6 +1440,7 @@ class WorldSession
         void HandleGarrisonRequestBuildingsOpcode(WorldPacket& p_RecvData);
         void HandleGarrisonPurchaseBuildingOpcode(WorldPacket& p_RecvData);
         void HandleGarrisonCancelConstructionOpcode(WorldPacket& p_RecvData);
+        void HandleGarrisonSetBuildingActiveOpcode(WorldPacket& p_RecvData);
         void HandleGarrisonStartMissionOpcode(WorldPacket& p_RecvData);
         void HandleGarrisonCompleteMissionOpcode(WorldPacket& p_RecvData);
         void HandleGarrisonMissionBonusRollOpcode(WorldPacket& p_RecvData);

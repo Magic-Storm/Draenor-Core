@@ -303,16 +303,18 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket& p_Packet)
         return;
 
     Mail * l_Mail = m_Player->GetMail(l_MailID);
+    if (!l_Mail || l_Mail->state == MAIL_STATE_DELETED || l_Mail->deliver_time > time(NULL))
+        return;
 
-    if (l_Mail)
-    {
-        if (m_Player->unReadMails)
-            --m_Player->unReadMails;
+    if (l_Mail->checked & MAIL_CHECK_MASK_READ)
+        return;
 
-        l_Mail->checked = l_Mail->checked | MAIL_CHECK_MASK_READ;
-        m_Player->m_mailsUpdated = true;
-        l_Mail->state = MAIL_STATE_CHANGED;
-    }
+    if (m_Player->unReadMails)
+        --m_Player->unReadMails;
+
+    l_Mail->checked = l_Mail->checked | MAIL_CHECK_MASK_READ;
+    m_Player->m_mailsUpdated = true;
+    l_Mail->state = MAIL_STATE_CHANGED;
 }
 
 // Called when client deletes mail
@@ -324,20 +326,24 @@ void WorldSession::HandleMailDelete(WorldPacket & p_Packet)
     p_Packet.read_skip<uint32>();
 
     Mail * l_Mail = m_Player->GetMail(l_MailID);
-
-    m_Player->m_mailsUpdated = true;
-
-    if (l_Mail)
+    if (!l_Mail || l_Mail->state == MAIL_STATE_DELETED)
     {
-        // delete shouldn't show up for COD mails
-        if (l_Mail->COD)
-        {
-            m_Player->SendMailResult(l_MailID, MAIL_DELETED, MAIL_ERR_INTERNAL_ERROR);
-            return;
-        }
-
-        l_Mail->state = MAIL_STATE_DELETED;
+        m_Player->SendMailResult(l_MailID, MAIL_DELETED, MAIL_ERR_INTERNAL_ERROR);
+        return;
     }
+
+    // delete shouldn't show up for COD mails
+    if (l_Mail->COD)
+    {
+        m_Player->SendMailResult(l_MailID, MAIL_DELETED, MAIL_ERR_INTERNAL_ERROR);
+        return;
+    }
+
+    if (!(l_Mail->checked & MAIL_CHECK_MASK_READ) && l_Mail->deliver_time <= time(NULL) && m_Player->unReadMails)
+        --m_Player->unReadMails;
+
+    l_Mail->state = MAIL_STATE_DELETED;
+    m_Player->m_mailsUpdated = true;
     m_Player->SendMailResult(l_MailID, MAIL_DELETED, MAIL_OK);
 }
 
@@ -524,15 +530,14 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& p_Packet)
 
     Mail * l_Mail = m_Player->GetMail(l_MailID);
 
-    if ((!l_Mail || l_Mail->state == MAIL_STATE_DELETED || l_Mail->deliver_time > time(NULL)) ||
-        (l_Money > 0 && l_Mail->money != l_Money))
+    if (!l_Mail || l_Mail->state == MAIL_STATE_DELETED || l_Mail->deliver_time > time(NULL) || !l_Mail->money || l_Money != l_Mail->money)
     {
         m_Player->SendMailResult(l_MailID, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
     }
 
     // Don't take money if it exceed the max amount
-    if (m_Player->GetMoney() + l_Money > MAX_MONEY_AMOUNT)
+    if (l_Money > MAX_MONEY_AMOUNT - m_Player->GetMoney())
     {
         m_Player->SendMailResult(l_MailID, MAIL_MONEY_TAKEN, MAIL_ERR_EQUIP_ERROR);
         return;
@@ -753,57 +758,54 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & p_Packet)
     }
 }
 
-// @TODO Fix me! ... this void has probably bad condition, but good data are sent
 void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/)
 {
     WorldPacket l_Data(SMSG_MAIL_QUERY_NEXT_TIME_RESULT, 400);
+    ByteBuffer l_Entries;
 
-    if (m_Player->unReadMails > 0)
+    uint32 l_Count = 0;
+    time_t l_NowTime = time(NULL);
+    std::set<uint32> l_SentSenders;
+
+    for (PlayerMails::iterator itr = m_Player->GetMailBegin(); itr != m_Player->GetMailEnd(); ++itr)
     {
-        l_Data << float(0);                                                             ///< NextMailTime
-        l_Data << uint32(0);                                                            ///< Next
+        Mail* l_Mail = *itr;
+        if (l_Mail->state == MAIL_STATE_DELETED)
+            continue;
 
-        uint32 l_Count = 0;
-        time_t l_NowTime = time(NULL);
-        std::set<uint32> l_SentSenders;
+        // Already opened, or still on the delivery timer.
+        if (l_Mail->checked & MAIL_CHECK_MASK_READ)
+            continue;
+        if (l_NowTime < l_Mail->deliver_time)
+            continue;
+        if (l_Mail->expire_time && l_NowTime >= l_Mail->expire_time)
+            continue;
 
-        for (PlayerMails::iterator itr = m_Player->GetMailBegin(); itr != m_Player->GetMailEnd(); ++itr)
-        {
-            Mail * l_Mail = (*itr);
-            // must be not checked yet
-            if (l_Mail->checked & MAIL_CHECK_MASK_READ)
-                continue;
+        if (!l_SentSenders.insert(l_Mail->sender).second)
+            continue;
 
-            // and already delivered
-            if (l_NowTime < l_Mail->deliver_time)
-                continue;
+        uint64 l_Guid = MAKE_NEW_GUID(l_Mail->sender, 0, HIGHGUID_PLAYER);
+        l_Entries.appendPackGUID(l_Mail->messageType == MAIL_NORMAL ? l_Guid : 0);
+        l_Entries << float(0);                                                          ///< Already delivered
+        l_Entries << uint32(l_Mail->messageType != MAIL_NORMAL ? l_Mail->sender : 0);
+        l_Entries << uint8(l_Mail->messageType);
+        l_Entries << uint32(l_Mail->stationery);
 
-            // only send each mail sender once
-            if (l_SentSenders.count(l_Mail->sender))
-                continue;
-
-            uint64 l_Guid = MAKE_NEW_GUID(l_Mail->sender, 0, HIGHGUID_PLAYER);
-            l_Data.appendPackGUID(l_Mail->messageType == MAIL_NORMAL ? l_Guid : 0);     ///< SenderGUID
-
-            l_Data << float(l_Mail->deliver_time - l_NowTime);                          ///< TimeLeft
-            l_Data << uint32(l_Mail->messageType != MAIL_NORMAL ? l_Mail->sender : 0);  ///< AltSenderID
-            l_Data << uint8(l_Mail->messageType);                                       ///< AltSenderType
-            l_Data << uint32(l_Mail->stationery);                                       ///< StationeryID
-
-            l_SentSenders.insert(l_Mail->sender);
-            ++l_Count;
-
-            if (l_Count == 2)                                  // do not display more than 2 mails
-                break;
-        }
-
-        l_Data.put<uint32>(4, l_Count);
+        if (++l_Count == 2)
+            break;
     }
-    else
-    {
-        l_Data << float(-DAY);
-        l_Data << uint32(0);
-    }
+
+    // A non-zero unread counter with no remaining letters used to report "mail is here".
+    float l_NextMailTime = -float(DAY);
+    if (l_Count)
+        l_NextMailTime = 0.0f;
+    else if (m_Player->m_nextMailDelivereTime > l_NowTime)
+        l_NextMailTime = float(m_Player->m_nextMailDelivereTime - l_NowTime);
+
+    l_Data << l_NextMailTime;
+    l_Data << uint32(l_Count);
+    if (l_Count)
+        l_Data.append(l_Entries);
 
     SendPacket(&l_Data);
 }

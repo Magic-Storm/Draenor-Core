@@ -841,6 +841,14 @@ struct PhaseEntry
     uint32  flag;                                           // 1        m_Flags
 };
 
+// PhaseXPhaseGroup.dbc — 6.2: which phase ids belong to a phase group
+struct PhaseXPhaseGroupEntry
+{
+    uint32 ID;
+    uint32 PhaseID;
+    uint32 PhaseGroupID;
+};
+
 struct MapEntry
 {
     uint32  MapID;                                          // 0        m_ID

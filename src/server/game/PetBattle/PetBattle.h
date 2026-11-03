@@ -302,6 +302,8 @@ class BattlePet
     public:
         /// Load
         void Load(Field* p_Fields);
+        /// Pick the three abilities for this species, level and chosen alternate slots
+        void UpdateAbilities();
         /// Load
         void CloneFrom(BattlePet::Ptr & p_BattlePet);
         /// Save
