@@ -5826,6 +5826,24 @@ void Unit::GetAreaTriggerList(std::list<AreaTrigger*> &list, uint32 spellId)
     }
 }
 
+void Unit::MoveAreaTriggersTo(uint32 p_Entry, Position const& p_Dest, uint32 p_TimeToTarget)
+{
+    if (m_AreaTrigger.empty() || !p_Entry || !p_TimeToTarget)
+        return;
+
+    for (AreaTrigger* l_AreaTrigger : m_AreaTrigger)
+    {
+        if (!l_AreaTrigger)
+            continue;
+
+        AreaTriggerTemplate const* l_Template = l_AreaTrigger->GetMainTemplate();
+        if (!l_Template || l_Template->m_Entry != p_Entry)
+            continue;
+
+        l_AreaTrigger->StartLinearMove(*l_AreaTrigger, p_Dest, p_TimeToTarget);
+    }
+}
+
 void Unit::RemoveDynObject(uint32 spellId)
 {
     if (m_dynObj.empty())

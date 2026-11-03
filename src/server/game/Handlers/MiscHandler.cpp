@@ -1290,6 +1290,9 @@ void WorldSession::HandleSceneTriggerEventOpcode(WorldPacket & p_Packet)
     uint32 l_SceneInstanceID    = p_Packet.read<uint32>();
     std::string l_Event         = p_Packet.ReadString(l_EventLenght);
 
+    if (m_Player->IsStandaloneSceneFinished(l_SceneInstanceID))
+        return;
+
     sScriptMgr->OnSceneTriggerEvent(m_Player, l_SceneInstanceID, l_Event);
 }
 
@@ -1300,6 +1303,11 @@ void WorldSession::HandleSceneCancelOpcode(WorldPacket & p_Packet)
 
     uint32 l_SceneInstanceID = p_Packet.read<uint32>();
 
+    if (m_Player->IsStandaloneSceneFinished(l_SceneInstanceID))
+        return;
+
+    m_Player->RemoveSceneObject(l_SceneInstanceID);
+    m_Player->FinishStandaloneScene(l_SceneInstanceID);
     sScriptMgr->OnSceneCancel(m_Player, l_SceneInstanceID);
 }
 
@@ -1310,6 +1318,11 @@ void WorldSession::HandleSceneCompleteOpcode(WorldPacket & p_Packet)
 
     uint32 l_SceneInstanceID = p_Packet.read<uint32>();
 
+    if (m_Player->IsStandaloneSceneFinished(l_SceneInstanceID))
+        return;
+
+    m_Player->RemoveSceneObject(l_SceneInstanceID);
+    m_Player->FinishStandaloneScene(l_SceneInstanceID);
     sScriptMgr->OnSceneComplete(m_Player, l_SceneInstanceID);
 }
 

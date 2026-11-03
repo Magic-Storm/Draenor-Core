@@ -188,6 +188,8 @@ SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem);
 
 uint32 GetItemDisplayID(uint32 p_ItemID, uint32 p_AppearanceModID);
 
+bool GetCurveValueAt(uint32 curveId, float x, float& y);
+bool GetCurveRange(uint32 curveId, float& minX, float& maxX);
 uint32 GetHeirloomItemLevel(uint32 curveId, uint32 level);
 HeirloomEntry const* GetHeirloomEntryByItemID(uint32 p_ItemID);
 

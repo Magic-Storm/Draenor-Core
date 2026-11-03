@@ -551,8 +551,6 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
 
     m_needSummonPetAfterStopFlying = false;
 
-    m_LastPlayedScene = NULL;
-
     m_PvPCombatTimer = 0;
     m_pvpCombat = false;
 
@@ -672,6 +670,8 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
 {
     TradeCancel(false);
     DuelComplete(DUEL_INTERRUPTED);
+
+    ClearSceneObjects();
 
     Unit::CleanupsBeforeDelete(finalCleanup);
 
@@ -33943,17 +33943,44 @@ void Player::SendRefreshSpellMods()
 
 void Player::PlayScene(uint32 sceneId, WorldObject* spectator)
 {
-    if (m_LastPlayedScene)
+    SceneObject* l_Scene = SceneObject::CreateSceneObject(sceneId, spectator);
+    if (!l_Scene)
+        return;
+
+    m_SceneObjects.push_back(l_Scene);
+    l_Scene->SendUpdateToPlayer(this);
+    sScriptMgr->OnSceneStart(this, l_Scene->GetGUIDLow());
+}
+
+bool Player::RemoveSceneObject(uint32 p_SceneInstanceID)
+{
+    for (std::vector<SceneObject*>::iterator l_Itr = m_SceneObjects.begin(); l_Itr != m_SceneObjects.end(); ++l_Itr)
     {
-        m_LastPlayedScene->DestroyForPlayer(this);
-        delete m_LastPlayedScene;
-        m_LastPlayedScene = NULL;
+        SceneObject* l_Scene = *l_Itr;
+        if (!l_Scene || l_Scene->GetGUIDLow() != p_SceneInstanceID)
+            continue;
+
+        l_Scene->DestroyForPlayer(this);
+        delete l_Scene;
+        m_SceneObjects.erase(l_Itr);
+        return true;
     }
 
-    m_LastPlayedScene = SceneObject::CreateSceneObject(sceneId, spectator);
+    return false;
+}
 
-    if (m_LastPlayedScene)
-        m_LastPlayedScene->SendUpdateToPlayer(this);
+void Player::ClearSceneObjects()
+{
+    for (SceneObject* l_Scene : m_SceneObjects)
+    {
+        if (!l_Scene)
+            continue;
+
+        l_Scene->DestroyForPlayer(this);
+        delete l_Scene;
+    }
+
+    m_SceneObjects.clear();
 }
 
 /// Play standalone scene script on client size
@@ -33986,7 +34013,21 @@ uint32 Player::PlayStandaloneScene(uint32 p_ScenePackageID, uint32 p_PlaybackFla
 
     SendDirectMessage(&l_PlayScenePacket);
 
+    m_ActiveStandaloneScenes[l_SceneInstanceID] = p_ScenePackageID;
+    sScriptMgr->OnSceneStart(this, l_SceneInstanceID);
+
     return l_SceneInstanceID;
+}
+
+bool Player::IsStandaloneSceneFinished(uint32 p_SceneInstanceID) const
+{
+    return m_FinishedStandaloneScenes.find(p_SceneInstanceID) != m_FinishedStandaloneScenes.end();
+}
+
+void Player::FinishStandaloneScene(uint32 p_SceneInstanceID)
+{
+    if (m_ActiveStandaloneScenes.erase(p_SceneInstanceID))
+        m_FinishedStandaloneScenes.insert(p_SceneInstanceID);
 }
 
 /// Cancel a client-side played standalone scene

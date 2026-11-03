@@ -84,11 +84,7 @@ Copy `libmysql` / `libssl` / `libcrypto` DLLs next to the Windows executables if
 
 ## Known issues
 
-- Pathfinding / movement generators need smooth-path updates.
-- Areatriggers are outdated vs Legion-era cores.
-- Scene system is only partial.
 - Pet Battles are incomplete.
-- Phasing still uses `phasemask`, not PhaseID / PhaseGroup.
 - Low-level zones are playable; unpopular ones are not fully blizzlike.
 - Some NPCs have bad coordinates or duplicates; Tanaan and Hellfire Citadel spawn coverage is incomplete (map 1448 has scripts but few `creature` rows).
 - Draenor content is not blizzlike overall. Garrison intro and the legendary questline were reworked. **Hellfire Citadel has boss/trash scripts (partial / not blizzlike); doors, loot, and full spawns still need work.**

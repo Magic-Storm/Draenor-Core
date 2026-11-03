@@ -45,6 +45,8 @@
 #include <chrono>
 #include <deque>
 #include <map>
+#include <set>
+#include <vector>
 
 struct Mail;
 struct ItemExtendedCostEntry;
@@ -3556,6 +3558,8 @@ class Player : public Unit, public GridObject<Player>
 		S SYSTEM                    ***/
         /*********************************************************/
         void PlayScene(uint32 sceneId, WorldObject* spectator);
+        bool RemoveSceneObject(uint32 p_SceneInstanceID);
+        void ClearSceneObjects();
         /// Play standalone scene script on client side
         /// @p_ScenePackageID : Scene package ID @ScenePackage.db2
         /// @p_PlaybackFlags  : Playback flags (@TODO make some reverse on it)
@@ -3565,6 +3569,8 @@ class Player : public Unit, public GridObject<Player>
         /// Cancel a client-side played standalone scene
         /// @p_SceneInstanceID : Scene instance ID
         void CancelStandaloneScene(uint32 p_SceneInstanceID);
+        bool IsStandaloneSceneFinished(uint32 p_SceneInstanceID) const;
+        void FinishStandaloneScene(uint32 p_SceneInstanceID);
 
         /// Has battle pet training
         bool HasBattlePetTraining();
@@ -4394,7 +4400,9 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         /***                  SCENES SYSTEM                    ***/
         /*********************************************************/
-        SceneObject* m_LastPlayedScene;
+        std::vector<SceneObject*> m_SceneObjects;
+        std::map<uint32, uint32> m_ActiveStandaloneScenes;
+        std::set<uint32> m_FinishedStandaloneScenes;
 
 #ifndef CROSS
         uint32 m_irZoneId;

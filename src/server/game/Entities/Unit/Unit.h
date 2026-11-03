@@ -2421,6 +2421,7 @@ class Unit : public WorldObject
         AreaTrigger* GetAreaTrigger(uint32 spellId);
         int32 CountAreaTrigger(uint32 spellId);
         void GetAreaTriggerList(std::list<AreaTrigger*> &list, uint32 spellId);
+        void MoveAreaTriggersTo(uint32 p_Entry, Position const& p_Dest, uint32 p_TimeToTarget);
         void RemoveAreaTrigger(uint32 spellId);
         void RemoveAllAreasTrigger();
 

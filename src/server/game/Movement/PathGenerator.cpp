@@ -797,6 +797,7 @@ dtStatus PathGenerator::FindSmoothPath(float const* startPos, float const* endPo
 
         bool endOfPath = (steerPosFlag & DT_STRAIGHTPATH_END) != 0;
         bool offMeshConnection = (steerPosFlag & DT_STRAIGHTPATH_OFFMESH_CONNECTION) != 0;
+        bool storedOffMeshEnd = false;
 
         // Find movement delta.
         float delta[VERTEX_SIZE];
@@ -863,6 +864,12 @@ dtStatus PathGenerator::FindSmoothPath(float const* startPos, float const* endPo
                     dtVcopy(&smoothPath[nsmoothPath*VERTEX_SIZE], connectionStartPos);
                     nsmoothPath++;
                 }
+                if (nsmoothPath < maxSmoothPathSize)
+                {
+                    dtVcopy(&smoothPath[nsmoothPath*VERTEX_SIZE], connectionEndPos);
+                    nsmoothPath++;
+                    storedOffMeshEnd = true;
+                }
                 // Move position at the other side of the off-mesh link.
                 dtVcopy(iterPos, connectionEndPos);
                 _navMeshQuery->getPolyHeight(polys[0], iterPos, &iterPos[1]);
@@ -870,8 +877,8 @@ dtStatus PathGenerator::FindSmoothPath(float const* startPos, float const* endPo
             }
         }
 
-        // Store results.
-        if (nsmoothPath < maxSmoothPathSize)
+        // Store results. The off-mesh landing was already written above.
+        if (!storedOffMeshEnd && nsmoothPath < maxSmoothPathSize)
         {
             dtVcopy(&smoothPath[nsmoothPath*VERTEX_SIZE], iterPos);
             nsmoothPath++;
@@ -880,8 +887,9 @@ dtStatus PathGenerator::FindSmoothPath(float const* startPos, float const* endPo
 
     *smoothPathSize = nsmoothPath;
 
-    // this is most likely a loop
-    return nsmoothPath < MAX_POINT_PATH_LENGTH ? DT_SUCCESS : DT_FAILURE;
+    // A full buffer is a usable partial path. Reporting failure makes BuildPointPath
+    // throw those points away and cut straight through terrain.
+    return nsmoothPath >= 2 ? DT_SUCCESS : DT_FAILURE;
 }
 
 bool PathGenerator::InRangeYZX(const float* v1, const float* v2, float r, float h) const

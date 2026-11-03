@@ -139,7 +139,12 @@ bool LFGListMgr::Remove(uint32 l_GroupGuidLow, Player* p_Requester /* = nullptr 
 
     Group* l_Group = l_Iter->second->m_Group;
     if (!l_Group)
+    {
+        LFGListEntry* l_Entry = l_Iter->second;
+        m_LFGListQueue.erase(l_Iter);
+        delete l_Entry;
         return false;
+    }
 
     if (p_Requester && ((!l_Group->isRaidGroup() || !l_Group->IsAssistant(p_Requester->GetGUID())) && !l_Group->IsLeader(p_Requester->GetGUID())))
         return false;

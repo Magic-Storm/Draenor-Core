@@ -117,6 +117,7 @@ class TarrenMillEvent
         /// Methods
         TarrenMillEvent(uint32 p_ID, uint8 p_State, uint32 p_Duration, TimeRanges p_StartRange);
         TarrenMillEvent() {}
+        virtual ~TarrenMillEvent() = default;
 
         void Start();
         OutdoorPvP* GetTarrenZoneScript();
@@ -170,6 +171,7 @@ class OutdoorPvPTarrenMillFun : public OutdoorPvP
     public:
 
         OutdoorPvPTarrenMillFun();
+        ~OutdoorPvPTarrenMillFun();
 
         /// Overrides
         bool SetupOutdoorPvP() override;

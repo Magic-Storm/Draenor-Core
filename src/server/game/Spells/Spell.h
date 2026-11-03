@@ -503,6 +503,7 @@ public:
     void EffectLootBonus(SpellEffIndex p_EffIndex);
     void EffectTeleportToDigsite(SpellEffIndex effIndex);
     void EffectPlaySceneObject(SpellEffIndex effIndex);
+    void EffectPlayScene(SpellEffIndex effIndex);
     void EffectLearnBluePrint(SpellEffIndex p_EffIndex);
     void EffectGarrisonFinalize(SpellEffIndex p_EffIndex);
     void EffectIncreaseSkill(SpellEffIndex p_EffIndex);
@@ -520,6 +521,7 @@ public:
     void EffectForcePlayerInteraction(SpellEffIndex p_EffIndex);
     void EffectBecomeUntargettable(SpellEffIndex p_EffIndex);
     void EffectDespawnAreaTrigger(SpellEffIndex p_EffIndex);
+    void EffectUpdateAreaTrigger(SpellEffIndex p_EffIndex);
     void EffectRandomizeArchaeologyDigsites(SpellEffIndex p_EffIndex);
     void EffectStampede(SpellEffIndex p_EffIndex);
     void EffectCreateHeirloom(SpellEffIndex p_EffIndex);

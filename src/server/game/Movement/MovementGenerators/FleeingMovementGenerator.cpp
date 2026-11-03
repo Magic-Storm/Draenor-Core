@@ -52,7 +52,8 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
     PathGenerator path(owner);
     path.SetPathLengthLimit(30.0f);
     bool result = path.CalculatePath(x, y, z);
-	if (!result || (path.GetPathType() & (PATHFIND_NOPATH | PATHFIND_SHORT))) ///< PATHFIND_SHORT makes player fall of the platform
+    // A short result is the navmesh path cut at the length cap. It still stays on the mesh.
+	if (!result || (path.GetPathType() & PATHFIND_NOPATH) || path.GetPath().size() < 2)
 	{
 		i_nextCheckTime.Reset(100);
 		return;

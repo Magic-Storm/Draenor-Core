@@ -373,6 +373,7 @@ void PhaseData::SendPhaseshiftToPlayer()
 	}
 #endif
 
+	player->SetPhaseIds(l_PhaseIDs);
 	player->GetSession()->SendSetPhaseShift(l_PhaseIDs, l_TerrainSwaps, l_InactiveTerrainSwap);
 }
 

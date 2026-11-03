@@ -251,7 +251,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS] =
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_DESPAWN_AREA_AURA
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_ABANDON_SCENARIO_QUEST
     &Spell::EffectCreateAreatrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
-    &Spell::EffectUnused,                                   //180 SPELL_EFFECT_UPDATE_AREATRIGGER      "Update Area Triggers" 106584 & 1333355
+    &Spell::EffectUpdateAreaTrigger,                        //180 SPELL_EFFECT_UPDATE_AREATRIGGER
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectDespawnAreaTrigger,                       //182 SPELL_EFFECT_DESPAWN_AREA_TRIGGER
     &Spell::EffectNULL,                                     //183 SPELL_EFFECT_183                     Unused 6.0.3
@@ -266,10 +266,10 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS] =
     &Spell::EffectUncagePetBattle,                          //192 SPELL_EFFECT_UNCAGE_BATTLE_PET       Battle pet exchange (123302)
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_START_PET_BATTLE        157417 Launch NPC Pet Battle
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194                     Unused 6.0.3
-    &Spell::EffectNULL,                                     //195 SPELL_EFFECT_195                     Scene related
+    &Spell::EffectPlayScene,                                //195 SPELL_EFFECT_PLAY_SCENE_SCRIPT_PACKAGE
     &Spell::EffectNULL,                                     //196 SPELL_EFFECT_196                     summon multi NPC
-    &Spell::EffectNULL,                                     //197 SPELL_EFFECT_197                     Scene related
-    &Spell::EffectNULL,                                     //198 SPELL_EFFECT_PLAY_CINEMATIC
+    &Spell::EffectPlaySceneObject,                          //197 SPELL_EFFECT_CREATE_PERSONAL_SCENE_OBJECT
+    &Spell::EffectPlayScene,                                //198 SPELL_EFFECT_PLAY_SCENE
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
     &Spell::EffectResurectPetBattles,                       //200 SPELL_EFFECT_RESURECT_BATTLE_PETS    Battle pet Healing  125439, 125801
     &Spell::EffectCanPetBattle,                             //201 SPELL_EFFECT_CAN_PETBATTLE           Battle pet first slot and track
@@ -7975,6 +7975,23 @@ void Spell::EffectPlaySceneObject(SpellEffIndex effIndex)
     target->PlayScene(sceneId, target);
 }
 
+void Spell::EffectPlayScene(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    if (!unitTarget || !unitTarget->IsInWorld())
+        return;
+
+    Player* target = unitTarget->ToPlayer();
+    if (!target)
+        return;
+
+    uint32 scenePackageId = m_spellInfo->Effects[effIndex].MiscValue;
+    uint32 playbackFlags = m_spellInfo->Effects[effIndex].MiscValueB > 0 ? uint32(m_spellInfo->Effects[effIndex].MiscValueB) : 0;
+    target->PlayStandaloneScene(scenePackageId, playbackFlags, *target);
+}
+
 void Spell::EffectLearnBluePrint(SpellEffIndex p_EffIndex)
 {
 #ifndef CROSS
@@ -8386,6 +8403,29 @@ void Spell::EffectBecomeUntargettable(SpellEffIndex /*p_EffIndex*/)
     WorldPacket l_Data(SMSG_CLEAR_TARGET, 16 + 2);
     l_Data.appendPackGUID(m_caster->GetGUID());
     m_caster->SendMessageToSet(&l_Data, true, l_IgnoredPlayers);
+}
+
+void Spell::EffectUpdateAreaTrigger(SpellEffIndex p_EffIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    Unit* l_Caster = m_caster->ToUnit();
+    if (!l_Caster || !m_targets.HasDst())
+        return;
+
+    uint32 l_Entry = uint32(m_spellInfo->Effects[p_EffIndex].MiscValue);
+    if (!l_Entry)
+        return;
+
+    Position l_Dest;
+    destTarget->GetPosition(&l_Dest);
+
+    uint32 l_TimeToTarget = m_spellInfo->GetDuration();
+    if (!l_TimeToTarget || l_TimeToTarget == uint32(-1))
+        l_TimeToTarget = 1000;
+
+    l_Caster->MoveAreaTriggersTo(l_Entry, l_Dest, l_TimeToTarget);
 }
 
 void Spell::EffectDespawnAreaTrigger(SpellEffIndex p_EffIndex)

@@ -153,6 +153,18 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
         z = end.z;
     }
 
+    // The target is rechecked every 100ms. Restarting the spline for a step
+    // that is still on the current path makes the unit hitch.
+    if (updateDestination && !m_IsCharge && !owner->movespline->Finalized())
+    {
+        G3D::Vector3 const end = owner->movespline->FinalDestination();
+        float const dx = end.x - x;
+        float const dy = end.y - y;
+        float const dz = end.z - z;
+        if ((dx * dx + dy * dy + dz * dz) < (1.5f * 1.5f))
+            return;
+    }
+
     if (!i_path)
         i_path = new PathGenerator(owner);
 

@@ -363,6 +363,7 @@ class OutdoorGraveyard
 {
     public:
         OutdoorGraveyard(OutdoorPvP* p_OutdoorPvP);
+        virtual ~OutdoorGraveyard() = default;
 
         /// Method to changing who controls the graveyard
         void GiveControlTo(TeamId p_Team);

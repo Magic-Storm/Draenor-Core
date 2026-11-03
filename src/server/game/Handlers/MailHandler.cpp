@@ -402,6 +402,19 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & p_Packet)
         }
         l_Draft.AddMoney(l_Mail->money).SendReturnToSender(GetAccountId(), l_Mail->receiver, l_Mail->sender, l_Transaction);
     }
+    else if (l_Mail->HasItems())
+    {
+        // The mail row is already removed. Leave the attachments out of mMitems or they stay until logout.
+        for (MailItemInfoVec::iterator itr2 = l_Mail->items.begin(); itr2 != l_Mail->items.end(); ++itr2)
+        {
+            if (Item* l_Item = m_Player->GetMItem(itr2->item_guid))
+            {
+                l_Item->DeleteFromDB(l_Transaction);
+                m_Player->RemoveMItem(itr2->item_guid);
+                delete l_Item;
+            }
+        }
+    }
 
     CharacterDatabase.CommitTransaction(l_Transaction);
 
@@ -727,6 +740,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & p_Packet)
         MailTemplateEntry const* mailTemplateEntry = sMailTemplateStore.LookupEntry(l_Mail->mailTemplateId);
         if (!mailTemplateEntry)
         {
+            delete l_BodyItem;
             m_Player->SendMailResult(l_MailID, MAIL_MADE_PERMANENT, MAIL_ERR_INTERNAL_ERROR);
             return;
         }

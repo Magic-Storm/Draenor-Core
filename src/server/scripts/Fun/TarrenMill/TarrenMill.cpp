@@ -125,6 +125,12 @@ OutdoorPvPTarrenMillFun::OutdoorPvPTarrenMillFun()
     m_TypeId = OUTDOOR_PVP_TARRENMILL;
 }
 
+OutdoorPvPTarrenMillFun::~OutdoorPvPTarrenMillFun()
+{
+    for (TarrenMillEvent* l_Event : m_Events)
+        delete l_Event;
+}
+
 uint32 OutdoorPvPTarrenMillFun::GetCurrentScore(TeamId p_TeamId)
 {
     if (p_TeamId == TeamId::TEAM_ALLIANCE)

@@ -22,6 +22,7 @@ DB2Storage <PathNodeEntry>                  sPathNodeStore(PathNodeEntryfmt);
 DB2Storage <LocationEntry>                  sLocationStore(LocationEntryfmt);
 
 std::map<uint32 /*curveID*/, std::map<uint32/*index*/, CurvePointEntry const*, std::greater<uint32>>> HeirloomCurvePoints;
+std::map<uint32 /*curveID*/, std::map<float /*x*/, CurvePointEntry const*>> sCurvePointsByCurve;
 std::unordered_map<uint32 /*ItemID*/, HeirloomEntry const*> HeirloomEntryByItemID;
 std::map<uint32 /*itemID*/, uint32 /*filedataID*/> g_ItemFileDataId;
 std::map<uint32, uint32> g_ItemDisplayIDs;
@@ -530,9 +531,15 @@ void LoadDB2Stores(const std::string& dataPath)
             scalingCurves.insert(ssd->CurveProperties);
 
     for (uint32 i = 0; i < sCurvePointStore.GetNumRows(); ++i)
+    {
         if (CurvePointEntry const* curvePoint = sCurvePointStore.LookupEntry(i))
+        {
             if (scalingCurves.count(curvePoint->CurveID))
                 HeirloomCurvePoints[curvePoint->CurveID][curvePoint->Index] = curvePoint;
+
+            sCurvePointsByCurve[curvePoint->CurveID][curvePoint->X] = curvePoint;
+        }
+    }
 
     for (uint32 l_Y = 0; l_Y < sItemModifiedAppearanceStore.GetNumRows(); l_Y++)
     {
@@ -810,6 +817,47 @@ std::vector<ItemBonusEntry const*> const* GetItemBonusesByID(uint32 Id)
 {
     std::map<uint32, std::vector<ItemBonusEntry const*>>::const_iterator iter = sItemBonusesByID.find(Id);
     return iter != sItemBonusesByID.end() ? &(iter->second) : nullptr;
+}
+
+bool GetCurveValueAt(uint32 curveId, float x, float& y)
+{
+    auto curve = sCurvePointsByCurve.find(curveId);
+    if (curve == sCurvePointsByCurve.end() || curve->second.empty())
+        return false;
+
+    auto const& points = curve->second;
+    auto upper = points.lower_bound(x);
+    if (upper == points.begin())
+    {
+        y = upper->second->Y;
+        return true;
+    }
+
+    if (upper == points.end())
+    {
+        y = points.rbegin()->second->Y;
+        return true;
+    }
+
+    auto lower = upper;
+    --lower;
+    float x0 = lower->first;
+    float x1 = upper->first;
+    float span = x1 - x0;
+    float t = span > 0.0001f ? (x - x0) / span : 0.0f;
+    y = lower->second->Y + t * (upper->second->Y - lower->second->Y);
+    return true;
+}
+
+bool GetCurveRange(uint32 curveId, float& minX, float& maxX)
+{
+    auto curve = sCurvePointsByCurve.find(curveId);
+    if (curve == sCurvePointsByCurve.end() || curve->second.empty())
+        return false;
+
+    minX = curve->second.begin()->first;
+    maxX = curve->second.rbegin()->first;
+    return true;
 }
 
 uint32 GetHeirloomItemLevel(uint32 curveId, uint32 level)

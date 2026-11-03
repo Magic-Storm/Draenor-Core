@@ -239,6 +239,11 @@ OutdoorPvP::OutdoorPvP() : m_sendUpdate(true), m_LastResurectTimer(0)
 OutdoorPvP::~OutdoorPvP()
 {
     DeleteSpawns();
+
+    for (GraveyardVector::iterator itr = m_GraveyardList.begin(); itr != m_GraveyardList.end(); ++itr)
+        delete *itr;
+
+    m_GraveyardList.clear();
 }
 
 void OutdoorPvP::HandlePlayerEnterZone(Player* p_Player, uint32 /*p_Zone*/)

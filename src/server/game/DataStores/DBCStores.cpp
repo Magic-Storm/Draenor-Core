@@ -180,7 +180,7 @@ DBCStorage <WorldMapAreaEntry>           sWorldMapAreaStore(WorldMapAreaEntryfmt
 DBCStorage<WorldMapTransformsEntry>      sWorldMapTransformsStore(WorldMapTransformsfmt);
 DBCStorage <World_PVP_AreaEntry>         sWorld_PVP_AreaStore(World_PVP_AreaEntryfmt);
 DBCStorage <WorldSafeLocsEntry>          sWorldSafeLocsStore(WorldSafeLocsEntryfmt);
-DBCStorage <PhaseEntry>                  sPhaseStores(PhaseEntryfmt);
+DBCStorage <PhaseEntry>                  sPhaseStore(PhaseEntryfmt);
 DBCStorage <PhaseXPhaseGroupEntry>       sPhaseXPhaseGroupStore(PhaseXPhaseGroupfmt);
 static std::map<uint32, std::vector<uint32>> sPhaseIdsByGroup;
 
@@ -379,7 +379,7 @@ void LoadDBCStores(const std::string& dataPath)
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sLiquidTypeStore,             dbcPath, "LiquidType.dbc");                                                   // 17399
     LoadDBC(availableDbcLocales, bad_dbc_files, sLockStore,                   dbcPath, "Lock.dbc");                                                         // 17399
-    LoadDBC(availableDbcLocales, bad_dbc_files, sPhaseStores,                 dbcPath, "Phase.dbc");                                                        // 17399
+    LoadDBC(availableDbcLocales, bad_dbc_files, sPhaseStore,                  dbcPath, "Phase.dbc");                                                        // 17399
     LoadDBC(availableDbcLocales, bad_dbc_files, sPhaseXPhaseGroupStore,       dbcPath, "PhaseXPhaseGroup.dbc");
 
     sPhaseIdsByGroup.clear();

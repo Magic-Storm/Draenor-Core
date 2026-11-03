@@ -19,6 +19,7 @@
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
 #include "MoveSplineInit.h"
+#include "DB2Stores.h"
 
 AreaTrigger::AreaTrigger()
     : WorldObject(false),
@@ -37,6 +38,7 @@ AreaTrigger::AreaTrigger()
     m_Flags = 0;
     m_CreatureVisualGUID = 0;
     m_TimeToTarget = 0;
+    m_MoveStart = 0;
 
     m_Trajectory = AREATRIGGER_INTERPOLATION_NONE;
     m_Templates.clear();
@@ -256,7 +258,10 @@ void AreaTrigger::Update(uint32 p_Time)
         if (GetDuration() > int32(p_Time))
             m_Duration -= p_Time;
         else
+        {
             Remove(p_Time);
+            return;
+        }
     }
 
     m_CreatedTime += p_Time;
@@ -291,6 +296,9 @@ void AreaTrigger::Update(uint32 p_Time)
     {
         m_UpdateTimer.Reset();
 
+        float l_OldX = m_positionX;
+        float l_OldY = m_positionY;
+
         /// Calculate new position
         if (GetMainTemplate()->m_MoveCurveID != 0 && GetTrajectory() != AREATRIGGER_INTERPOLATION_LINEAR)
             UpdatePositionWithPathId(m_CreatedTime, this);
@@ -311,6 +319,87 @@ void AreaTrigger::Update(uint32 p_Time)
                 m_positionZ     = l_Caster->m_positionZ;
                 m_orientation   = l_Caster->m_orientation;
             }
+        }
+
+        AreaTriggerTemplate const* l_Template = GetMainTemplate();
+        if (l_Template && l_Template->HasFaceMovementDir() && !l_Template->HasFacingCurveID() && !l_Template->HasAbsoluteOrientation())
+        {
+            float l_Dx = m_positionX - l_OldX;
+            float l_Dy = m_positionY - l_OldY;
+            if ((l_Dx * l_Dx + l_Dy * l_Dy) > 0.0001f)
+                m_orientation = atan2(l_Dy, l_Dx);
+        }
+
+        if (l_Template && l_Template->HasFollowsTerrain())
+            UpdateAllowedPositionZ(m_positionX, m_positionY, m_positionZ);
+    }
+
+    UpdateCurves();
+}
+
+void AreaTrigger::StartLinearMove(Position const& p_Source, Position const& p_Dest, uint32 p_TimeToTarget)
+{
+    m_MoveStart = m_CreatedTime;
+    SetSource(p_Source);
+    SetDestination(p_Dest);
+    SetTrajectory(AREATRIGGER_INTERPOLATION_LINEAR);
+    SetTimeToTarget(p_TimeToTarget);
+    m_PathToLinearDestination.clear();
+    SendAreaTriggerRePath(p_TimeToTarget, m_CreatedTime);
+}
+
+void AreaTrigger::UpdateCurves()
+{
+    AreaTriggerTemplate const* l_Template = GetMainTemplate();
+    if (!l_Template)
+        return;
+
+    auto l_Sample = [this](uint32 p_CurveID, float& p_Y) -> bool
+    {
+        float l_MinX = 0.0f;
+        float l_MaxX = 0.0f;
+        if (!GetCurveRange(p_CurveID, l_MinX, l_MaxX))
+            return false;
+
+        int32 l_Total = int32(GetTimeToTarget());
+        if (l_Total <= 0 && GetDuration() != -1)
+            l_Total = GetDuration() + int32(m_CreatedTime);
+
+        float l_Input = m_CreatedTime / 1000.0f;
+        if (l_MaxX <= 1.5f && l_Total > 0)
+            l_Input = std::min(1.0f, float(m_CreatedTime) / float(l_Total));
+        else if (l_MaxX > 120.0f)
+            l_Input = float(m_CreatedTime);
+
+        return GetCurveValueAt(p_CurveID, l_Input, p_Y);
+    };
+
+    if (l_Template->HasScaleCurveID())
+    {
+        float l_Scale = 1.0f;
+        if (l_Sample(l_Template->m_ScaleCurveID, l_Scale) && l_Scale > 0.0f)
+        {
+            float l_Current = GetFloatValue(OBJECT_FIELD_SCALE);
+            if (l_Current - l_Scale > 0.01f || l_Scale - l_Current > 0.01f)
+            {
+                SetObjectScale(l_Scale);
+                SetFloatValue(AREATRIGGER_FIELD_EXPLICIT_SCALE, l_Scale);
+            }
+        }
+    }
+
+    if (l_Template->HasFacingCurveID())
+    {
+        float l_Facing = 0.0f;
+        if (l_Sample(l_Template->m_FacingCurveID, l_Facing))
+        {
+            if (l_Facing > float(M_PI * 2.0) || l_Facing < -float(M_PI * 2.0))
+                l_Facing = l_Facing * float(M_PI) / 180.0f;
+
+            float l_Orientation = l_Template->HasAbsoluteOrientation() ? l_Facing : m_Source.GetOrientation() + l_Facing;
+            float l_Delta = m_orientation - l_Orientation;
+            if (l_Delta > 0.01f || l_Delta < -0.01f)
+                SetOrientation(l_Orientation);
         }
     }
 }
@@ -378,6 +467,9 @@ void AreaTrigger::UpdatePositionWithPathId(uint32 p_Time, Position* p_OutPos)
         }
 
         int32 l_LocalDuration = l_MoveTemplate.m_duration / l_MoveTemplate.m_path_size;
+        if (l_LocalDuration <= 0)
+            return;
+
         float l_Progress = float(p_Time % l_LocalDuration) / l_LocalDuration;
         uint32 l_PathId = float(p_Time) / l_LocalDuration;
 
@@ -438,7 +530,13 @@ void AreaTrigger::GetPositionAtTime(uint32 p_Time, Position* p_OutPos) const
                 AreaTriggerTemplate const* l_MainTemplate = GetMainTemplate();
                 /// Durations get decreased over time so create time + remaining duration = max duration
                 int32 l_Duration = l_MainTemplate && l_MainTemplate->m_Type == AREATRIGGER_TYPE_SPLINE && l_MainTemplate->m_SplineDatas.TimeToTarget ? l_MainTemplate->m_SplineDatas.TimeToTarget : GetTimeToTarget();
-                float l_Progress = std::min((float)l_Duration, (float)p_Time) / l_Duration;
+                if (l_Duration <= 0)
+                {
+                    *p_OutPos = m_Destination;
+                    break;
+                }
+                uint32 l_Elapsed = p_Time > m_MoveStart ? p_Time - m_MoveStart : 0;
+                float l_Progress = std::min((float)l_Duration, (float)l_Elapsed) / l_Duration;
                 p_OutPos->m_positionX = m_Source.m_positionX + l_Progress * (m_Destination.m_positionX - m_Source.m_positionX);
                 p_OutPos->m_positionY = m_Source.m_positionY + l_Progress * (m_Destination.m_positionY - m_Source.m_positionY);
                 p_OutPos->m_positionZ = m_Source.m_positionZ + l_Progress * (m_Destination.m_positionZ - m_Source.m_positionZ);
@@ -464,7 +562,13 @@ void AreaTrigger::GetPositionAtTime(uint32 p_Time, Position* p_OutPos) const
                 AreaTriggerTemplate const* l_MainTemplate = GetMainTemplate();
                 /// Durations get decreased over time so create time + remaining duration = max duration
                 int32 l_Duration = l_MainTemplate && l_MainTemplate->m_Type == AREATRIGGER_TYPE_SPLINE && l_MainTemplate->m_SplineDatas.TimeToTarget ? l_MainTemplate->m_SplineDatas.TimeToTarget : GetDuration() + GetCreatedTime();
-                float l_Progress = std::min((float)l_Duration, (float)p_Time) / l_Duration;
+                if (l_Duration <= 0 || l_Dist <= 0.0f)
+                {
+                    *p_OutPos = m_Destination;
+                    break;
+                }
+                uint32 l_Elapsed = p_Time > m_MoveStart ? p_Time - m_MoveStart : 0;
+                float l_Progress = std::min((float)l_Duration, (float)l_Elapsed) / l_Duration;
 
                 float l_CurrentDistanceProgress = l_Progress * l_Dist;
                 bool l_Found = false;
@@ -474,6 +578,9 @@ void AreaTrigger::GetPositionAtTime(uint32 p_Time, Position* p_OutPos) const
                     Position& l_NextPosition = l_PathList[l_I];
 
                     float l_CurrentDistance = l_NextPosition.GetExactDist(&l_CurrentPosition);
+                    if (l_CurrentDistance <= 0.0f)
+                        continue;
+
                     if ((l_CurrentDistanceProgress - l_CurrentDistance) > 0)
                     {
                         l_CurrentDistanceProgress -= l_CurrentDistance;

@@ -919,8 +919,22 @@ class WorldObject : public Object, public WorldLocation
 
         virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
         uint32 GetPhaseMask() const { return m_phaseMask; }
-        bool InSamePhase(WorldObject const* obj) const { return InSamePhase(obj->GetPhaseMask()); }
+        bool InSamePhase(WorldObject const* obj) const
+        {
+            if (GetPhaseMask() & obj->GetPhaseMask())
+                return true;
+
+            if (_phases.empty() || obj->_phases.empty())
+                return false;
+
+            for (uint32 phase : _phases)
+                if (obj->IsInPhase(phase))
+                    return true;
+
+            return false;
+        }
         bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask); }
+        void SetPhaseIds(std::set<uint32> const& phases) { _phases = phases; }
 
         bool IsInPhase(uint32 phase) const { return _phases.find(phase) != _phases.end(); }
 
@@ -983,7 +997,7 @@ class WorldObject : public Object, public WorldLocation
         }
         bool IsInPhase(WorldObject const* p_Object) const
         {
-            return InSamePhase(p_Object->GetPhaseMask());
+            return InSamePhase(p_Object);
         }
         bool IsWithinDist3d(float x, float y, float z, float dist) const
             { return IsInDist(x, y, z, dist + GetObjectSize()); }

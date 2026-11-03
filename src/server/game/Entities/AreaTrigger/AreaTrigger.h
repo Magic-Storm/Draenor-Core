@@ -295,6 +295,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetTrajectory(AreatriggerInterpolation p_Trajectory) { m_Trajectory = p_Trajectory; }
         void SetUpdateTimerInterval(uint32 p_Timer) { m_UpdateTimer.SetInterval(p_Timer); }
         void SetPathToLinearDestination(std::list<Position>& l_List) { m_PathToLinearDestination = l_List; }
+        void StartLinearMove(Position const& p_Source, Position const& p_Dest, uint32 p_TimeToTarget);
         Position const& GetDestination() const { return m_Destination; };
 
         static AreaTrigger* GetAreaTrigger(WorldObject const& p_Object, uint64 p_Guid);
@@ -309,6 +310,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         bool IsInAreaTriggerPolygon(std::vector<G3D::Vector2> p_Polygon, G3D::Vector2 p_Point, float p_Radius = 0.5f) const;
 
         void SendAreaTriggerRePath(uint32 p_TimeToTarget, uint32 p_OldTime);
+        void UpdateCurves();
 
     protected:
         int32 m_Duration;
@@ -323,6 +325,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         AreaTriggerEntityScript* m_Script;
 
         uint32 m_TimeToTarget;
+        uint32 m_MoveStart;
 
         uint64 m_CreatureVisualGUID;
         std::list<Position> m_PathToLinearDestination;
